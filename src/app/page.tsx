@@ -171,7 +171,9 @@ export default function DashboardPage() {
               selected={date}
               onSelect={(newDate) => setDate(newDate || new Date())}
               initialFocus
-              onMonthChange={setDate}
+              captionLayout="dropdown-buttons"
+              fromYear={2020}
+              toYear={2030}
             />
           </PopoverContent>
         </Popover>
