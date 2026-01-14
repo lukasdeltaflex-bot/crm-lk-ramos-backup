@@ -28,7 +28,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
-import { customers, productTypes, proposalStatuses, approvingBodies, banks } from '@/lib/data';
+import { customers } from '@/lib/data';
+import { productTypes, proposalStatuses, approvingBodies, banks } from '@/lib/config-data';
 import type { Proposal } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -509,3 +510,5 @@ export function ProposalForm({ proposal, onSubmit }: ProposalFormProps) {
     </Form>
   );
 }
+
+    
