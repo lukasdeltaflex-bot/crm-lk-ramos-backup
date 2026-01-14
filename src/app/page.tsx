@@ -11,6 +11,7 @@ import {
   Users,
   Clock,
 } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils';
 
 export default function DashboardPage() {
   const totalProposals = proposals.length;
@@ -41,18 +42,12 @@ export default function DashboardPage() {
           />
           <StatsCard
             title="Comissão Recebida"
-            value={new Intl.NumberFormat('pt-BR', {
-              style: 'currency',
-              currency: 'BRL',
-            }).format(totalCommission)}
+            value={formatCurrency(totalCommission)}
             icon={CircleDollarSign}
           />
           <StatsCard
             title="Comissão Pendente"
-            value={new Intl.NumberFormat('pt-BR', {
-              style: 'currency',
-              currency: 'BRL',
-            }).format(pendingCommission)}
+            value={formatCurrency(pendingCommission)}
             icon={Clock}
           />
         </div>
