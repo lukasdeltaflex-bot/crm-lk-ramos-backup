@@ -22,7 +22,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import { format, startOfMonth, addMonths, subMonths } from 'date-fns';
+import { format, startOfMonth, addMonths, subMonths, isSameMonth, isSameYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency, cn } from '@/lib/utils';
 import type { Proposal, ProposalStatus, Customer } from '@/lib/types';
@@ -59,14 +59,9 @@ export default function DashboardPage() {
 
   const isLoading = proposalsLoading || customersLoading || isUserLoading;
 
-  const currentYear = date.getFullYear();
-  const currentMonth = date.getMonth();
-
-  const previousMonthDate = new Date(date);
-  previousMonthDate.setMonth(previousMonthDate.getMonth() - 1);
-  const previousMonth = previousMonthDate.getMonth();
-  const previousMonthYear = previousMonthDate.getFullYear();
-
+  const currentMonthDate = startOfMonth(date);
+  const previousMonthDate = subMonths(currentMonthDate, 1);
+  
   const getProposalsByStatus = (
     statuses: ProposalStatus[],
     includePreviousMonth: boolean = false
@@ -77,15 +72,11 @@ export default function DashboardPage() {
         return false;
       }
       const proposalDate = new Date(p.dateDigitized);
-      const proposalYear = proposalDate.getFullYear();
-      const proposalMonth = proposalDate.getMonth();
 
-      const isCurrentMonth =
-        proposalYear === currentYear && proposalMonth === currentMonth;
+      const isCurrentMonth = isSameMonth(proposalDate, currentMonthDate) && isSameYear(proposalDate, currentMonthDate);
 
       if (includePreviousMonth) {
-        const isPreviousMonth =
-          proposalYear === previousMonthYear && proposalMonth === previousMonth;
+        const isPreviousMonth = isSameMonth(proposalDate, previousMonthDate) && isSameYear(proposalDate, previousMonthDate);
         return isCurrentMonth || isPreviousMonth;
       }
 
