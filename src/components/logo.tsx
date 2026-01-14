@@ -5,14 +5,14 @@ export function Logo({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'flex items-center gap-2 text-lg font-bold text-primary',
+        'flex items-center gap-2 text-lg font-bold',
         className
       )}
     >
       <div className="bg-primary text-primary-foreground p-2 rounded-md">
         <Landmark className="h-5 w-5" />
       </div>
-      <span className="font-headline text-xl">INSS Manager</span>
+      <span className="text-xl">INSS Manager</span>
     </div>
   );
 }
