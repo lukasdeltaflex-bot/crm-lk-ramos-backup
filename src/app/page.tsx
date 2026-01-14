@@ -18,17 +18,16 @@ import { formatCurrency } from '@/lib/utils';
 import type { ProposalStatus } from '@/lib/types';
 
 export default function DashboardPage() {
-  const getProposalsCountByStatus = (status: ProposalStatus) => {
-    return proposals.filter((p) => p.status === status).length;
+  const getProposalsSumByStatus = (status: ProposalStatus) => {
+    return proposals
+      .filter((p) => p.status === status)
+      .reduce((sum, p) => sum + p.grossAmount, 0);
   };
 
-  const paidCommission = proposals
-    .filter((p) => p.commissionPaid)
-    .reduce((sum, p) => sum + p.commissionValue, 0);
-
-  const pendingCommission = proposals
-    .filter((p) => !p.commissionPaid && p.status !== 'Rejeitado')
-    .reduce((sum, p) => sum + p.commissionValue, 0);
+  const paidAmount = getProposalsSumByStatus('Pago');
+  const pendingAmount = proposals
+    .filter((p) => p.status !== 'Pago' && p.status !== 'Rejeitado')
+    .reduce((sum, p) => sum + p.grossAmount, 0);
 
   return (
     <AppLayout>
@@ -37,32 +36,32 @@ export default function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           <StatsCard
             title="Em Andamento"
-            value={getProposalsCountByStatus('Em Andamento').toString()}
+            value={formatCurrency(getProposalsSumByStatus('Em Andamento'))}
             icon={Hourglass}
           />
           <StatsCard
             title="Aguardando Saldo"
-            value={getProposalsCountByStatus('Aguardando Saldo').toString()}
+            value={formatCurrency(getProposalsSumByStatus('Aguardando Saldo'))}
             icon={Clock}
           />
           <StatsCard
             title="Pago"
-            value={getProposalsCountByStatus('Pago').toString()}
+            value={formatCurrency(getProposalsSumByStatus('Pago'))}
             icon={CheckCircle}
           />
            <StatsCard
             title="Reprovado"
-            value={getProposalsCountByStatus('Rejeitado').toString()}
+            value={formatCurrency(getProposalsSumByStatus('Rejeitado'))}
             icon={XCircle}
           />
           <StatsCard
-            title="Comissão Paga"
-            value={formatCurrency(paidCommission)}
+            title="Saldo Pago"
+            value={formatCurrency(paidAmount)}
             icon={CircleDollarSign}
           />
           <StatsCard
-            title="Comissão a Receber"
-            value={formatCurrency(pendingCommission)}
+            title="Pendente"
+            value={formatCurrency(pendingAmount)}
             icon={BadgePercent}
           />
         </div>
