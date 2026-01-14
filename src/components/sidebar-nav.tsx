@@ -7,12 +7,13 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, FileText, Users } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, CircleDollarSign } from 'lucide-react';
 
 const links = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/proposals', label: 'Propostas', icon: FileText },
   { href: '/customers', label: 'Clientes', icon: Users },
+  { href: '/financial', label: 'Financeiro', icon: CircleDollarSign },
 ];
 
 export function SidebarNav() {

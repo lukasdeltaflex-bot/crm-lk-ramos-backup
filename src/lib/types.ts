@@ -37,6 +37,9 @@ export type Proposal = {
   status: ProposalStatus;
   commissionValue: number;
   commissionPaid: boolean;
+  commissionPercentage: number;
+  promoter: string;
+  bank: string;
   dateDigitized: string; // YYYY-MM-DD
   dateApproved?: string; // YYYY-MM-DD
   datePaid?: string; // YYYY-MM-DD
