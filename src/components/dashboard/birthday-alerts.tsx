@@ -44,21 +44,27 @@ export function BirthdayAlerts() {
   useEffect(() => {
     async function fetchAlerts() {
       if (upcoming75.length > 0) {
-        const alertPromises = upcoming75.map(customer => 
-          customerBirthdayAlert({
-            customerName: customer.name,
-            customerAge: 75,
-          }).then(response => ({
-            customerName: customer.name,
-            alertMessage: response.alertMessage,
-          }))
-        );
-        const results = await Promise.all(alertPromises);
-        setAlerts(results);
+        try {
+          const alertPromises = upcoming75.map(customer => 
+            customerBirthdayAlert({
+              customerName: customer.name,
+              customerAge: 75,
+            }).then(response => ({
+              customerName: customer.name,
+              alertMessage: response.alertMessage,
+            }))
+          );
+          const results = await Promise.all(alertPromises);
+          setAlerts(results);
+        } catch (error) {
+          console.error("Error fetching birthday alerts:", error);
+          // Handle error gracefully, maybe set an error state
+        }
       }
       setLoading(false);
     }
     fetchAlerts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -69,8 +75,8 @@ export function BirthdayAlerts() {
       <CardContent className="space-y-4">
         {loading ? (
           <div className="space-y-4">
-            {upcoming75.map(c => (
-              <div key={c.id} className="p-4 border rounded-lg">
+            {Array.from({ length: upcoming75.length > 0 ? upcoming75.length : 1 }).map((_, index) => (
+              <div key={index} className="p-4 border rounded-lg">
                 <Skeleton className="h-5 w-24 mb-2" />
                 <Skeleton className="h-4 w-full" />
               </div>

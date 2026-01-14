@@ -30,33 +30,37 @@ export function FollowUpReminders() {
   const [reminders, setReminders] = useState<ReminderMessage[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const proposalsWithCustomer = getProposalsWithCustomerData();
-
-  const longRunningProposals = proposalsWithCustomer.filter(p => 
+  const longRunningProposals = getProposalsWithCustomerData().filter(p => 
     p.status === 'Em Andamento' && differenceInDays(new Date(), new Date(p.dateDigitized)) > 20
   );
 
   useEffect(() => {
     async function fetchReminders() {
       if (longRunningProposals.length > 0) {
-        const reminderPromises = longRunningProposals.map(proposal => 
-          followUpReminder({
-            customerName: proposal.customer.name,
-            proposalNumber: proposal.proposalNumber,
-            daysOpen: differenceInDays(new Date(), new Date(proposal.dateDigitized)),
-          }).then(response => ({
-            proposalNumber: proposal.proposalNumber,
-            customerName: proposal.customer.name,
-            reminderMessage: response.reminderMessage,
-          }))
-        );
-        const results = await Promise.all(reminderPromises);
-        setReminders(results);
+        try {
+            const reminderPromises = longRunningProposals.map(proposal => 
+            followUpReminder({
+                customerName: proposal.customer.name,
+                proposalNumber: proposal.proposalNumber,
+                daysOpen: differenceInDays(new Date(), new Date(proposal.dateDigitized)),
+            }).then(response => ({
+                proposalNumber: proposal.proposalNumber,
+                customerName: proposal.customer.name,
+                reminderMessage: response.reminderMessage,
+            }))
+            );
+            const results = await Promise.all(reminderPromises);
+            setReminders(results);
+        } catch (error) {
+            console.error("Error fetching follow-up reminders:", error);
+            // Handle error gracefully
+        }
       }
       setLoading(false);
     }
     fetchReminders();
-  }, []); // Dependency array is empty, but the data is filtered on each render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Card>
@@ -66,8 +70,8 @@ export function FollowUpReminders() {
       <CardContent className="space-y-4">
         {loading ? (
           <div className="space-y-4">
-             {longRunningProposals.map(p => (
-              <div key={p.id} className="p-4 border rounded-lg">
+             {Array.from({ length: longRunningProposals.length > 0 ? longRunningProposals.length : 1 }).map((_, index) => (
+              <div key={index} className="p-4 border rounded-lg">
                 <Skeleton className="h-5 w-3/4 mb-2" />
                 <Skeleton className="h-4 w-full" />
               </div>
