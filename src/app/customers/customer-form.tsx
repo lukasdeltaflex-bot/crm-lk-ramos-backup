@@ -19,7 +19,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { CalendarIcon, Sparkles } from 'lucide-react';
+import { CalendarIcon, Sparkles, AlertCircle } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -29,6 +29,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useEffect, useState } from 'react';
 import { summarizeNotes } from '@/ai/flows/summarize-notes-flow';
 import { toast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const customerSchema = z.object({
   name: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres.'),
@@ -52,6 +53,8 @@ interface CustomerFormProps {
 
 export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [age, setAge] = useState<number | null>(null);
+
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
     defaultValues: {
@@ -62,6 +65,23 @@ export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
       observations: '',
     },
   });
+
+  const birthDate = form.watch('birthDate');
+
+  useEffect(() => {
+    if (birthDate) {
+      const today = new Date();
+      const birth = new Date(birthDate);
+      let calculatedAge = today.getFullYear() - birth.getFullYear();
+      const m = today.getMonth() - birth.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+        calculatedAge--;
+      }
+      setAge(calculatedAge);
+    } else {
+      setAge(null);
+    }
+  }, [birthDate]);
 
   useEffect(() => {
     if (customer) {
@@ -188,47 +208,60 @@ export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
                 </FormItem>
               )}
             />
-             <FormField
-                    control={form.control}
-                    name="birthDate"
-                    render={({ field }) => (
-                    <FormItem className="flex flex-col pt-2">
-                        <FormLabel>Data de Nascimento</FormLabel>
-                        <Popover>
-                        <PopoverTrigger asChild>
-                            <FormControl>
-                            <Button
-                                variant={'outline'}
-                                className={cn(
-                                'w-[240px] pl-3 text-left font-normal',
-                                !field.value && 'text-muted-foreground'
-                                )}
-                            >
-                                {field.value ? (
-                                format(field.value, 'PPP')
-                                ) : (
-                                <span>Escolha uma data</span>
-                                )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                            </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) =>
-                                date > new Date() || date < new Date('1900-01-01')
-                            }
-                            initialFocus
-                            />
-                        </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
+             <div className="flex items-start gap-4">
+                <FormField
+                        control={form.control}
+                        name="birthDate"
+                        render={({ field }) => (
+                        <FormItem className="flex flex-col pt-2">
+                            <FormLabel>
+                                Data de Nascimento {age !== null && <span className="text-muted-foreground">({age} anos)</span>}
+                            </FormLabel>
+                            <Popover>
+                            <PopoverTrigger asChild>
+                                <FormControl>
+                                <Button
+                                    variant={'outline'}
+                                    className={cn(
+                                    'w-[240px] pl-3 text-left font-normal',
+                                    !field.value && 'text-muted-foreground'
+                                    )}
+                                >
+                                    {field.value ? (
+                                    format(field.value, 'PPP')
+                                    ) : (
+                                    <span>Escolha uma data</span>
+                                    )}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                                </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) =>
+                                    date > new Date() || date < new Date('1900-01-01')
+                                }
+                                initialFocus
+                                />
+                            </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                {age !== null && age >= 74 && (
+                    <Alert variant="destructive" className="mt-2 max-w-xs">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Atenção!</AlertTitle>
+                        <AlertDescription>
+                            Cliente com {age} anos. Verifique as restrições de idade para os produtos de empréstimo.
+                        </AlertDescription>
+                    </Alert>
+                )}
+            </div>
             <FormField
               control={form.control}
               name="observations"
@@ -267,3 +300,4 @@ export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
     </Form>
   );
 }
+
