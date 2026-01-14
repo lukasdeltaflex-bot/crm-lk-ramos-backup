@@ -36,8 +36,8 @@ export function getSdks(firebaseApp: FirebaseApp) {
   const firestore = getFirestore(firebaseApp);
   if (process.env.NODE_ENV === "development") {
     try {
-        connectFirestoreEmulator(firestore, "localhost", 8080);
-        console.log("Connected to local Firestore emulator");
+        // connectFirestoreEmulator(firestore, "localhost", 8080);
+        // console.log("Connected to local Firestore emulator");
     } catch (error) {
         console.warn("Could not connect to local Firestore emulator. This is expected in production.", error);
     }
