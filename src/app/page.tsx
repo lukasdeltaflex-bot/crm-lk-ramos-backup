@@ -1,3 +1,6 @@
+
+'use client';
+import React from 'react';
 import { AppLayout } from '@/components/app-layout';
 import { BirthdayAlerts } from '@/components/dashboard/birthday-alerts';
 import { CommissionChart } from '@/components/dashboard/commission-chart';
@@ -15,67 +18,109 @@ import {
   BadgePercent,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
-import type { ProposalStatus } from '@/lib/types';
+import type { Proposal, ProposalStatus } from '@/lib/types';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { StatusBreakdownChart } from '@/components/dashboard/status-breakdown-chart';
 
 export default function DashboardPage() {
-  const getProposalsSumByStatus = (status: ProposalStatus) => {
-    return proposals
-      .filter((p) => p.status === status)
-      .reduce((sum, p) => sum + p.grossAmount, 0);
+  const getProposalsByStatus = (statuses: ProposalStatus[]): Proposal[] => {
+    return proposals.filter((p) => statuses.includes(p.status));
   };
 
-  const paidAmount = getProposalsSumByStatus('Pago');
-  const pendingAmount = proposals
-    .filter((p) => p.status !== 'Pago' && p.status !== 'Rejeitado')
-    .reduce((sum, p) => sum + p.grossAmount, 0);
+  const getProposalsSum = (proposalsList: Proposal[]): number => {
+    return proposalsList.reduce((sum, p) => sum + p.grossAmount, 0);
+  };
+  
+  const emAndamentoProposals = getProposalsByStatus(['Em Andamento']);
+  const aguardandoSaldoProposals = getProposalsByStatus(['Aguardando Saldo']);
+  const pagoProposals = getProposalsByStatus(['Pago']);
+  const rejeitadoProposals = getProposalsByStatus(['Rejeitado']);
+  const saldoPagoProposals = getProposalsByStatus(['Saldo Pago']);
+  const pendenteProposals = getProposalsByStatus(['Pendente']);
+
+  const cardData = [
+    {
+      title: 'Em Andamento',
+      value: getProposalsSum(emAndamentoProposals),
+      icon: Hourglass,
+      className: 'border-yellow-500/50',
+      valueClassName: 'text-yellow-500',
+      proposals: emAndamentoProposals,
+    },
+    {
+      title: 'Aguardando Saldo',
+      value: getProposalsSum(aguardandoSaldoProposals),
+      icon: Clock,
+      className: 'border-blue-500/50',
+      valueClassName: 'text-blue-500',
+      proposals: aguardandoSaldoProposals,
+    },
+    {
+      title: 'Pago',
+      value: getProposalsSum(pagoProposals),
+      icon: CheckCircle,
+      className: 'border-green-500/50',
+      valueClassName: 'text-green-500',
+      proposals: pagoProposals,
+    },
+    {
+      title: 'Reprovado',
+      value: getProposalsSum(rejeitadoProposals),
+      icon: XCircle,
+      className: 'border-red-500/50',
+      valueClassName: 'text-red-500',
+      proposals: rejeitadoProposals,
+    },
+    {
+      title: 'Saldo Pago',
+      value: getProposalsSum(saldoPagoProposals),
+      icon: CircleDollarSign,
+      className: 'border-orange-500/50',
+      valueClassName: 'text-orange-500',
+      proposals: saldoPagoProposals,
+    },
+    {
+      title: 'Pendente',
+      value: getProposalsSum(pendenteProposals),
+      icon: BadgePercent,
+      className: 'border-purple-500/50',
+      valueClassName: 'text-purple-500',
+      proposals: pendenteProposals,
+    },
+  ];
 
   return (
     <AppLayout>
       <PageHeader title="Dashboard" />
       <div className="space-y-8">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          <StatsCard
-            title="Em Andamento"
-            value={formatCurrency(getProposalsSumByStatus('Em Andamento'))}
-            icon={Hourglass}
-            className="border-yellow-500/50"
-            valueClassName="text-yellow-500"
-          />
-          <StatsCard
-            title="Aguardando Saldo"
-            value={formatCurrency(getProposalsSumByStatus('Aguardando Saldo'))}
-            icon={Clock}
-            className="border-blue-500/50"
-            valueClassName="text-blue-500"
-          />
-          <StatsCard
-            title="Pago"
-            value={formatCurrency(getProposalsSumByStatus('Pago'))}
-            icon={CheckCircle}
-            className="border-green-500/50"
-            valueClassName="text-green-500"
-          />
-           <StatsCard
-            title="Reprovado"
-            value={formatCurrency(getProposalsSumByStatus('Rejeitado'))}
-            icon={XCircle}
-            className="border-red-500/50"
-            valueClassName="text-red-500"
-          />
-          <StatsCard
-            title="Saldo Pago"
-            value={formatCurrency(paidAmount)}
-            icon={CircleDollarSign}
-            className="border-orange-500/50"
-            valueClassName="text-orange-500"
-          />
-          <StatsCard
-            title="Pendente"
-            value={formatCurrency(pendingAmount)}
-            icon={BadgePercent}
-            className="border-purple-500/50"
-            valueClassName="text-purple-500"
-          />
+          {cardData.map((card) => (
+            <Dialog key={card.title}>
+              <DialogTrigger asChild>
+                <div className="cursor-pointer">
+                  <StatsCard
+                    title={card.title}
+                    value={formatCurrency(card.value)}
+                    icon={card.icon}
+                    className={card.className}
+                    valueClassName={card.valueClassName}
+                  />
+                </div>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl">
+                <DialogHeader>
+                  <DialogTitle>Detalhes de: {card.title}</DialogTitle>
+                </DialogHeader>
+                <StatusBreakdownChart proposals={card.proposals} />
+              </DialogContent>
+            </Dialog>
+          ))}
         </div>
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
