@@ -18,6 +18,43 @@ export const proposalStatuses: ProposalStatus[] = ['Em Andamento', 'Pago', 'Agua
 export const commissionStatuses: CommissionStatus[] = ['Pendente', 'Paga', 'Parcial'];
 export const approvingBodies: string[] = ['INSS', 'SPPREV', 'Federal', 'Outro'];
 
+export const banks: string[] = [
+  "Banco do Brasil S.A.",
+  "Caixa Econômica Federal",
+  "Banco Bradesco S.A.",
+  "Itaú Unibanco S.A.",
+  "Banco Santander (Brasil) S.A.",
+  "Nu Pagamentos S.A. - Nubank",
+  "Banco Inter S.A.",
+  "Banco C6 S.A.",
+  "Banco Original S.A.",
+  "Banco BTG Pactual S.A.",
+  "Banco Safra S.A.",
+  "Banco Votorantim S.A.",
+  "Citibank N.A.",
+  "Banco Pan S.A.",
+  "Banco Neon S.A.",
+  "Banco BMG S.A.",
+  "Banco Daycoval S.A.",
+  "Banco Alfa S.A.",
+  "Banco Sofisa S.A.",
+  "Banco Pine S.A.",
+  "Banco Indusval S.A.",
+  "Banco Agibank S.A.",
+  "Banco Modal S.A.",
+  "Banco da Amazônia S.A.",
+  "Banco do Nordeste do Brasil S.A.",
+  "Banrisul - Banco do Estado do Rio Grande do Sul S.A.",
+  "BRB - Banco de Brasília S.A.",
+  "Banco ABC Brasil S.A.",
+  "Banco Fibra S.A.",
+  "Banco Luso Brasileiro S.A.",
+  "Banco Rendimento S.A.",
+  "Banco Triângulo S.A. (Tribanco)",
+  "Banco Mercantil do Brasil S.A.",
+  "Paraná Banco S.A.",
+  "Outro"
+];
 
 export const proposals: Proposal[] = [
   {

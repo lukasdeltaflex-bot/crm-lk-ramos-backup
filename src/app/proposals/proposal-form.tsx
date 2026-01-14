@@ -28,7 +28,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
-import { customers, productTypes, proposalStatuses, approvingBodies } from '@/lib/data';
+import { customers, productTypes, proposalStatuses, approvingBodies, banks } from '@/lib/data';
 import type { Proposal } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -328,9 +328,20 @@ export function ProposalForm({ proposal, onSubmit }: ProposalFormProps) {
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>Banco Digitado</FormLabel>
-                            <FormControl>
-                            <Input placeholder="Banco A" {...field} />
-                            </FormControl>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                    <SelectValue placeholder="Selecione um banco" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {banks.map((bank) => (
+                                    <SelectItem key={bank} value={bank}>
+                                        {bank}
+                                    </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             <FormMessage />
                         </FormItem>
                         )}
@@ -342,9 +353,20 @@ export function ProposalForm({ proposal, onSubmit }: ProposalFormProps) {
                             render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Banco de Origem</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
-                                <Input placeholder="Banco Z" {...field} />
+                                    <SelectTrigger>
+                                    <SelectValue placeholder="Selecione um banco" />
+                                    </SelectTrigger>
                                 </FormControl>
+                                <SelectContent>
+                                    {banks.map((bank) => (
+                                    <SelectItem key={bank} value={bank}>
+                                        {bank}
+                                    </SelectItem>
+                                    ))}
+                                </SelectContent>
+                                </Select>
                                 <FormMessage />
                             </FormItem>
                             )}
