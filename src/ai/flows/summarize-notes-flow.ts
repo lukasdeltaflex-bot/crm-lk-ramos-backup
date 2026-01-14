@@ -31,7 +31,7 @@ Use bullet points for key information.
 The output should be in Brazilian Portuguese.
 
 Here are the notes:
-"{{{input}}}"
+{{{input}}}
 
 Generate a well-structured summary.`,
 });
