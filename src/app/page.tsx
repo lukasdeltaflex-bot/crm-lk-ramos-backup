@@ -64,25 +64,27 @@ export default function DashboardPage() {
   const filteredProposals = React.useMemo(() => {
     if (!proposals) return [];
     
-    // If no date range is selected, default to the current month.
-    if (!date?.from) {
-        const start = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-        const end = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
-        end.setHours(23, 59, 59, 999);
-        return proposals.filter(p => {
-            const proposalDate = new Date(p.dateDigitized);
-            return proposalDate >= start && proposalDate <= end;
-        });
+    // If a date range is selected, use it to filter.
+    if (date?.from) {
+      const fromDate = date.from;
+      const toDate = date.to ? new Date(date.to) : new Date(date.from);
+      toDate.setHours(23, 59, 59, 999);
+  
+      return proposals.filter(p => {
+          const proposalDate = new Date(p.dateDigitized);
+          return proposalDate >= fromDate && proposalDate <= toDate;
+      })
     }
 
-    const fromDate = date.from;
-    const toDate = date.to ? new Date(date.to) : new Date(date.from);
-    toDate.setHours(23, 59, 59, 999);
-
+    // If no date range is selected, default to the current month.
+    const start = startOfMonth(new Date());
+    const end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+    end.setHours(23, 59, 59, 999);
     return proposals.filter(p => {
         const proposalDate = new Date(p.dateDigitized);
-        return proposalDate >= fromDate && proposalDate <= toDate;
-    })
+        return proposalDate >= start && proposalDate <= end;
+    });
+
   }, [proposals, date]);
 
   const getProposalsByStatus = (
