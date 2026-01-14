@@ -9,6 +9,7 @@
  * - CustomerBirthdayAlertOutput - O tipo de saída para a função customerBirthdayAlert.
  */
 
+import { ai } from '@/ai/genkit';
 import {z} from 'genkit';
 
 const CustomerBirthdayAlertInputSchema = z.object({
@@ -23,8 +24,24 @@ const CustomerBirthdayAlertOutputSchema = z.object({
 export type CustomerBirthdayAlertOutput = z.infer<typeof CustomerBirthdayAlertOutputSchema>;
 
 export async function customerBirthdayAlert(input: CustomerBirthdayAlertInput): Promise<CustomerBirthdayAlertOutput> {
-  // Implementação simulada para evitar erros de chave de API
-  return {
-    alertMessage: `Lembrete: O aniversário de 75 anos de ${input.customerName} está se aproximando.`
-  }
+  return customerBirthdayAlertFlow(input);
 }
+
+const prompt = ai.definePrompt({
+    name: 'customerBirthdayAlertPrompt',
+    input: { schema: CustomerBirthdayAlertInputSchema },
+    output: { schema: CustomerBirthdayAlertOutputSchema },
+    prompt: `Gere uma mensagem de alerta curta para um agente de crédito sobre um cliente chamado {{{customerName}}} que fará {{{customerAge}}} anos em breve. A mensagem deve ser um lembrete para verificar as políticas de empréstimo para essa idade. A saída deve ser em português do Brasil.`
+});
+
+const customerBirthdayAlertFlow = ai.defineFlow(
+    {
+      name: 'customerBirthdayAlertFlow',
+      inputSchema: CustomerBirthdayAlertInputSchema,
+      outputSchema: CustomerBirthdayAlertOutputSchema,
+    },
+    async (input) => {
+      const { output } = await prompt(input);
+      return output!;
+    }
+);

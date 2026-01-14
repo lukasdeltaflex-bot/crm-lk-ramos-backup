@@ -9,6 +9,7 @@
  * - FollowUpReminderOutput - O tipo de saída para a função.
  */
 
+import { ai } from '@/ai/genkit';
 import {z} from 'genkit';
 
 const FollowUpReminderInputSchema = z.object({
@@ -24,8 +25,24 @@ const FollowUpReminderOutputSchema = z.object({
 export type FollowUpReminderOutput = z.infer<typeof FollowUpReminderOutputSchema>;
 
 export async function followUpReminder(input: FollowUpReminderInput): Promise<FollowUpReminderOutput> {
-  // Implementação simulada para evitar erros de chave de API
-  return {
-    reminderMessage: `Atenção: A proposta ${input.proposalNumber} está em andamento há ${input.daysOpen} dias. Considere contatar o cliente ${input.customerName} para uma atualização.`
-  }
+  return followUpReminderFlow(input);
 }
+
+const prompt = ai.definePrompt({
+    name: 'followUpReminderPrompt',
+    input: { schema: FollowUpReminderInputSchema },
+    output: { schema: FollowUpReminderOutputSchema },
+    prompt: `Gere um lembrete conciso para um agente de crédito. A proposta de empréstimo nº {{{proposalNumber}}} para o cliente {{{customerName}}} está aberta há {{{daysOpen}}} dias. A mensagem deve sugerir um contato com o cliente para uma atualização. A saída deve ser em português do Brasil.`
+});
+
+const followUpReminderFlow = ai.defineFlow(
+    {
+        name: 'followUpReminderFlow',
+        inputSchema: FollowUpReminderInputSchema,
+        outputSchema: FollowUpReminderOutputSchema,
+    },
+    async (input) => {
+        const { output } = await prompt(input);
+        return output!;
+    }
+);
