@@ -12,9 +12,10 @@ interface StatsCardProps {
   value: string;
   icon: LucideIcon;
   className?: string;
+  valueClassName?: string;
 }
 
-export function StatsCard({ title, value, icon: Icon, className }: StatsCardProps) {
+export function StatsCard({ title, value, icon: Icon, className, valueClassName }: StatsCardProps) {
   return (
     <Card className={cn(className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -22,7 +23,7 @@ export function StatsCard({ title, value, icon: Icon, className }: StatsCardProp
         <Icon className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className={cn("text-2xl font-bold", valueClassName)}>{value}</div>
       </CardContent>
     </Card>
   );

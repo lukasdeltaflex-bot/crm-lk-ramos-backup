@@ -39,36 +39,42 @@ export default function DashboardPage() {
             value={formatCurrency(getProposalsSumByStatus('Em Andamento'))}
             icon={Hourglass}
             className="border-yellow-500/50"
+            valueClassName="text-yellow-500"
           />
           <StatsCard
             title="Aguardando Saldo"
             value={formatCurrency(getProposalsSumByStatus('Aguardando Saldo'))}
             icon={Clock}
             className="border-yellow-500/50"
+            valueClassName="text-yellow-500"
           />
           <StatsCard
             title="Pago"
             value={formatCurrency(getProposalsSumByStatus('Pago'))}
             icon={CheckCircle}
             className="border-green-500/50"
+            valueClassName="text-green-500"
           />
            <StatsCard
             title="Reprovado"
             value={formatCurrency(getProposalsSumByStatus('Rejeitado'))}
             icon={XCircle}
             className="border-red-500/50"
+            valueClassName="text-red-500"
           />
           <StatsCard
             title="Saldo Pago"
             value={formatCurrency(paidAmount)}
             icon={CircleDollarSign}
             className="border-green-500/50"
+            valueClassName="text-green-500"
           />
           <StatsCard
             title="Pendente"
             value={formatCurrency(pendingAmount)}
             icon={BadgePercent}
             className="border-yellow-500/50"
+            valueClassName="text-yellow-500"
           />
         </div>
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
