@@ -110,7 +110,7 @@ const DatePickerField = ({ name, label, control, isReadOnly }: { name: any, labe
                 mode="single"
                 selected={field.value}
                 onSelect={field.onChange}
-                defaultMonth={field.value}
+                defaultMonth={field.value || new Date()}
                 disabled={(date) =>
                     date > new Date() || date < new Date('1900-01-01')
                 }
@@ -291,12 +291,12 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField
                         control={form.control}
-                        name="grossAmount"
+                        name="installmentAmount"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Valor Bruto</FormLabel>
+                            <FormLabel>Valor da Parcela</FormLabel>
                             <FormControl>
-                            <Input type="number" step="0.01" placeholder="30000" {...field} readOnly={isReadOnly} />
+                            <Input type="number" step="0.01" placeholder="450.50" {...field} readOnly={isReadOnly} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -317,12 +317,12 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
                     />
                     <FormField
                         control={form.control}
-                        name="installmentAmount"
+                        name="grossAmount"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Valor da Parcela</FormLabel>
+                            <FormLabel>Valor Bruto</FormLabel>
                             <FormControl>
-                            <Input type="number" step="0.01" placeholder="450.50" {...field} readOnly={isReadOnly} />
+                            <Input type="number" step="0.01" placeholder="30000" {...field} readOnly={isReadOnly} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -566,3 +566,4 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
     </Form>
   );
 }
+
