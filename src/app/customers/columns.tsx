@@ -55,20 +55,20 @@ const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit, onDelete }) => {
                 onSelect={(e) => e.preventDefault()}
                 className="text-destructive focus:text-destructive focus:bg-destructive/10"
               >
-                Deletar
+                Remover
               </DropdownMenuItem>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Essa ação não pode ser desfeita. Isso irá remover permanentemente o cliente &quot;{customer.name}&quot;.
+                  Essa ação não pode ser desfeita. Os dados pessoais do cliente &quot;{customer.name}&quot; serão anonimizados, mas o histórico de propostas será mantido.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
                 <AlertDialogAction onClick={() => onDelete(customer.id)}>
-                  Deletar
+                  Remover
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

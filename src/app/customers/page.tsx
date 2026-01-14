@@ -16,12 +16,12 @@ import {
 import { CustomerForm } from './customer-form';
 import type { Customer } from '@/lib/types';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, writeBatch } from 'firebase/firestore';
+import { collection, doc, writeBatch, query, where, getDocs } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import {
   addDocumentNonBlocking,
   setDocumentNonBlocking,
-  deleteDocumentNonBlocking,
+  updateDocumentNonBlocking,
 } from '@/firebase/non-blocking-updates';
 import {
   AlertDialog,
@@ -44,10 +44,11 @@ export default function CustomersPage() {
   const [sheetMode, setSheetMode] = React.useState<'new' | 'edit'>('new');
   const [rowSelection, setRowSelection] = React.useState({});
 
+  // Query to get only non-anonymized customers
   const customersCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'customers');
-  }, [firestore]);
+    if (!firestore || !user) return null;
+    return query(collection(firestore, 'customers'), where('userId', '==', user.uid), where('name', '!=', 'Cliente Removido'));
+  }, [firestore, user]);
 
   const { data: customers, isLoading } = useCollection<Customer>(customersCollectionRef);
 
@@ -63,38 +64,55 @@ export default function CustomersPage() {
     setIsSheetOpen(true);
   };
 
-  const handleDeleteCustomer = (customerId: string) => {
+  const handleAnonymizeCustomer = (customerId: string) => {
     if (!firestore) return;
-    deleteDocumentNonBlocking(doc(firestore, 'customers', customerId));
+    const customerRef = doc(firestore, 'customers', customerId);
+    const anonymizedData = {
+      name: 'Cliente Removido',
+      cpf: '000.000.000-00',
+      phone: '(00) 00000-0000',
+      email: 'removido@removido.com',
+      observations: `Dados do cliente anonimizados em ${new Date().toISOString()}`
+    };
+    updateDocumentNonBlocking(customerRef, anonymizedData);
     toast({
-      title: 'Cliente deletado',
-      description: 'O cliente foi removido com sucesso.',
+      title: 'Cliente Removido',
+      description: 'Os dados do cliente foram anonimizados com sucesso. O histórico de propostas foi mantido.',
     });
   };
 
-  const handleDeleteSelected = async () => {
+  const handleAnonymizeSelected = async () => {
     if (!firestore) return;
     const selectedIds = Object.keys(rowSelection);
     if (selectedIds.length === 0) return;
 
     const batch = writeBatch(firestore);
+    const anonymizedData = {
+        name: 'Cliente Removido',
+        cpf: '000.000.000-00',
+        phone: '(00) 00000-0000',
+        email: 'removido@removido.com',
+        observations: `Dados do cliente anonimizados em ${new Date().toISOString()}`
+      };
+
     selectedIds.forEach((id) => {
-      batch.delete(doc(firestore, 'customers', id));
+      const docRef = doc(firestore, 'customers', id);
+      batch.update(docRef, anonymizedData);
     });
 
     try {
       await batch.commit();
       toast({
-        title: 'Clientes deletados',
-        description: `${selectedIds.length} cliente(s) foram removidos com sucesso.`,
+        title: 'Clientes Removidos',
+        description: `${selectedIds.length} cliente(s) foram anonimizados com sucesso.`,
       });
       setRowSelection({});
     } catch (error) {
-      console.error('Error deleting customers:', error);
+      console.error('Error anonymizing customers:', error);
       toast({
         variant: 'destructive',
-        title: 'Erro ao deletar',
-        description: 'Ocorreu um erro ao deletar os clientes selecionados.',
+        title: 'Erro ao remover',
+        description: 'Ocorreu um erro ao remover os clientes selecionados.',
       });
     }
   };
@@ -117,7 +135,11 @@ export default function CustomersPage() {
         ...data,
         userId: user.uid,
       };
-      addDocumentNonBlocking(collection(firestore, 'customers'), newCustomer);
+      // We need to add 'id' to the object before adding it to Firestore for it to be queryable by id
+      const newDocRef = doc(collection(firestore, 'customers'));
+      const newCustomerWithId = { ...newCustomer, id: newDocRef.id };
+      setDocumentNonBlocking(newDocRef, newCustomerWithId, {});
+      
       toast({
         title: 'Cliente Salvo!',
         description: `O cliente ${data.name} foi salvo com sucesso.`,
@@ -126,7 +148,7 @@ export default function CustomersPage() {
     setIsSheetOpen(false);
   };
 
-  const columns = React.useMemo(() => getColumns({ onEdit: handleEditCustomer, onDelete: handleDeleteCustomer }), []);
+  const columns = React.useMemo(() => getColumns({ onEdit: handleEditCustomer, onDelete: handleAnonymizeCustomer }), []);
 
   const getSheetTitle = () => {
     if (sheetMode === 'edit') return 'Editar Cliente';
@@ -145,19 +167,19 @@ export default function CustomersPage() {
                     <AlertDialogTrigger asChild>
                         <Button variant="destructive">
                             <Trash2 />
-                            Deletar ({selectedCount})
+                            Remover ({selectedCount})
                         </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                             <AlertDialogDescription>
-                                Essa ação não pode ser desfeita. Isso irá remover permanentemente {selectedCount} cliente(s).
+                                Essa ação não pode ser desfeita. Isso irá anonimizar permanentemente {selectedCount} cliente(s). O histórico de propostas será mantido.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleDeleteSelected}>Deletar</AlertDialogAction>
+                            <AlertDialogAction onClick={handleAnonymizeSelected}>Remover</AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                  </AlertDialog>
