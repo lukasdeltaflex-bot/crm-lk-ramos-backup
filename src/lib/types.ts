@@ -26,6 +26,8 @@ export type ProposalStatus =
   | 'Saldo Pago'
   | 'Pendente';
 
+export type CommissionStatus = 'Pendente' | 'Paga' | 'Parcial';
+
 export type Proposal = {
   id: string;
   proposalNumber: string;
@@ -38,8 +40,9 @@ export type Proposal = {
   grossAmount: number;
   status: ProposalStatus;
   commissionValue: number;
-  commissionPaid: boolean;
+  commissionStatus: CommissionStatus;
   commissionPercentage: number;
+  amountPaid?: number;
   promoter: string;
   bank: string;
   dateDigitized: string; // YYYY-MM-DD

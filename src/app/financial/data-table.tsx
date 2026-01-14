@@ -13,6 +13,8 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
+import { format } from 'date-fns';
+import { Calendar as CalendarIcon } from 'lucide-react';
 
 import {
   Table,
@@ -35,8 +37,12 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { ChevronDown, X } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import type { CommissionStatus } from '@/lib/types';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -54,7 +60,8 @@ export function FinancialDataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
-  const [commissionStatusFilter, setCommissionStatusFilter] = React.useState('Todos');
+  const [statusFilter, setStatusFilter] = React.useState<CommissionStatus | 'Todos'>('Todos');
+  const [date, setDate] = React.useState<Date | undefined>(undefined);
 
   const table = useReactTable({
     data,
@@ -76,24 +83,64 @@ export function FinancialDataTable<TData, TValue>({
   });
 
   React.useEffect(() => {
-    const column = table.getColumn('commissionPaid');
-    if (commissionStatusFilter === 'Todos') {
-        column?.setFilterValue(undefined);
+    const statusColumn = table.getColumn('commissionStatus');
+    if (statusFilter === 'Todos') {
+        statusColumn?.setFilterValue(undefined);
     } else {
-        column?.setFilterValue(commissionStatusFilter === 'Paga');
+        statusColumn?.setFilterValue(statusFilter);
     }
-  }, [commissionStatusFilter, table]);
+  }, [statusFilter, table]);
+
+  React.useEffect(() => {
+    const dateColumn = table.getColumn('commissionPaymentDate');
+    if (date) {
+        // We need to compare dates without time.
+        const formattedDate = format(date, 'yyyy-MM-dd');
+        dateColumn?.setFilterValue((cellValue: unknown) => {
+            if (typeof cellValue !== 'string') return false;
+            return cellValue.startsWith(formattedDate);
+        });
+    } else {
+        dateColumn?.setFilterValue(undefined);
+    }
+  }, [date, table]);
 
   return (
     <Card>
       <div className="p-4">
-      <Tabs value={commissionStatusFilter} onValueChange={setCommissionStatusFilter}>
-            <TabsList>
-                <TabsTrigger value="Todos">Todos</TabsTrigger>
-                <TabsTrigger value="Paga">Pagas</TabsTrigger>
-                <TabsTrigger value="Pendente">Pendentes</TabsTrigger>
-            </TabsList>
-        </Tabs>
+        <div className="flex flex-wrap gap-2 items-center mb-4">
+            <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as CommissionStatus | 'Todos')}>
+                <TabsList>
+                    <TabsTrigger value="Todos">Todos</TabsTrigger>
+                    <TabsTrigger value="Paga">Pagas</TabsTrigger>
+                    <TabsTrigger value="Pendente">Pendentes</TabsTrigger>
+                    <TabsTrigger value="Parcial">Parciais</TabsTrigger>
+                </TabsList>
+            </Tabs>
+             <Popover>
+                <PopoverTrigger asChild>
+                <Button
+                    variant={"outline"}
+                    className={cn(
+                    "w-[240px] justify-start text-left font-normal",
+                    !date && "text-muted-foreground"
+                    )}
+                >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "PPP") : <span>Filtrar por data</span>}
+                </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    initialFocus
+                />
+                </PopoverContent>
+            </Popover>
+            {date && <Button variant="ghost" size="icon" onClick={() => setDate(undefined)}><X className="h-4 w-4" /></Button>}
+        </div>
         <div className="flex items-center justify-between py-4">
           <Input
             placeholder="Filtrar por promotora..."

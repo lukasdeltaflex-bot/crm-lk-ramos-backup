@@ -9,12 +9,12 @@ const getMonthlyCommissions = () => {
     const monthlyData: { [key: string]: number } = {};
 
     proposals.forEach(p => {
-        if (p.commissionPaid && p.commissionPaymentDate) {
+        if (p.commissionStatus !== 'Pendente' && p.commissionPaymentDate && p.amountPaid) {
             const month = new Date(p.commissionPaymentDate).toLocaleString('default', { month: 'short' });
             if (!monthlyData[month]) {
                 monthlyData[month] = 0;
             }
-            monthlyData[month] += p.commissionValue;
+            monthlyData[month] += p.amountPaid;
         }
     });
 

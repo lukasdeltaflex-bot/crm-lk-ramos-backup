@@ -81,19 +81,28 @@ export const columns: ColumnDef<ProposalWithCustomer>[] = [
       },
   },
   {
-    accessorKey: 'commissionPaid',
+    accessorKey: 'amountPaid',
+    header: 'Valor Pago',
+    cell: ({ row }) => {
+      const amount = parseFloat(row.getValue('amountPaid') || '0');
+      return formatCurrency(amount);
+    },
+  },
+  {
+    accessorKey: 'commissionStatus',
     header: 'Status Comissão',
     cell: ({ row }) => {
-      const isPaid = row.getValue('commissionPaid');
+      const status = row.getValue('commissionStatus') as string;
       return (
         <Badge
           variant="outline"
           className={cn({
-            'border-green-500 text-green-500': isPaid,
-            'border-yellow-500 text-yellow-500': !isPaid,
+            'border-green-500 text-green-500': status === 'Paga',
+            'border-yellow-500 text-yellow-500': status === 'Pendente',
+            'border-orange-500 text-orange-500': status === 'Parcial',
           })}
         >
-          {isPaid ? 'Paga' : 'Pendente'}
+          {status}
         </Badge>
       );
     },
@@ -104,7 +113,10 @@ export const columns: ColumnDef<ProposalWithCustomer>[] = [
     cell: ({ row }) => {
         const date = row.getValue('commissionPaymentDate') as string | undefined;
         if (!date) return '-';
-        return new Intl.DateTimeFormat('pt-BR').format(new Date(date));
+        // Adjusting for timezone to show the correct date
+        const adjustedDate = new Date(date);
+        adjustedDate.setMinutes(adjustedDate.getMinutes() + adjustedDate.getTimezoneOffset());
+        return new Intl.DateTimeFormat('pt-BR').format(adjustedDate);
     }
   },
 ];
