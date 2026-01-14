@@ -21,6 +21,7 @@ import {
 import { Button } from '@/components/ui/button';
 import type { Customer, Proposal } from '@/lib/types';
 import { statusColumns } from './status-columns';
+import { StatusBreakdownChart } from './status-breakdown-chart';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -135,5 +136,10 @@ export function ProposalsStatusTable({ proposals, customers }: { proposals: Prop
     );
   }
 
-  return <DataTable columns={statusColumns} data={data} />;
+  return (
+    <div className="space-y-4">
+        <StatusBreakdownChart proposals={proposals} />
+        <DataTable columns={statusColumns} data={data} />
+    </div>
+    );
 }
