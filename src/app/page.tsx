@@ -19,10 +19,9 @@ import {
   Calendar as CalendarIcon,
   Eye,
   EyeOff,
-  ChevronLeft,
-  ChevronRight
+  X,
 } from 'lucide-react';
-import { format, startOfMonth, addMonths, subMonths, isSameMonth, isSameYear } from 'date-fns';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency, cn } from '@/lib/utils';
 import type { Proposal, ProposalStatus, Customer } from '@/lib/types';
@@ -38,9 +37,12 @@ import { FollowUpReminders } from '@/components/dashboard/follow-up-reminders';
 import { ProposalsStatusTable } from '@/components/dashboard/proposals-status-table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
+import { DateRange } from 'react-day-picker';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 
 export default function DashboardPage() {
-  const [date, setDate] = React.useState<Date>(startOfMonth(new Date()));
+  const [date, setDate] = React.useState<DateRange | undefined>(undefined);
   const [isPrivacyMode, setIsPrivacyMode] = React.useState(false);
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
@@ -59,45 +61,47 @@ export default function DashboardPage() {
 
   const isLoading = proposalsLoading || customersLoading || isUserLoading;
 
-  const currentMonthDate = startOfMonth(date);
-  const previousMonthDate = subMonths(currentMonthDate, 1);
-  
-  const getProposalsByStatus = (
-    statuses: ProposalStatus[],
-    includePreviousMonth: boolean = false
-  ): Proposal[] => {
+  const filteredProposals = React.useMemo(() => {
     if (!proposals) return [];
-    return proposals.filter((p) => {
-      if (!statuses.includes(p.status)) {
-        return false;
-      }
-      const proposalDate = new Date(p.dateDigitized);
+    if (!date?.from) {
+        // Default to current month if no range is selected
+        const start = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        const end = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+        end.setHours(23, 59, 59, 999);
+        return proposals.filter(p => {
+            const proposalDate = new Date(p.dateDigitized);
+            return proposalDate >= start && proposalDate <= end;
+        });
+    }
+    const fromDate = date.from;
+    const toDate = date.to ? new Date(date.to) : new Date(date.from);
+    toDate.setHours(23, 59, 59, 999);
 
-      const isCurrentMonth = isSameMonth(proposalDate, currentMonthDate) && isSameYear(proposalDate, currentMonthDate);
+    return proposals.filter(p => {
+        const proposalDate = new Date(p.dateDigitized);
+        return proposalDate >= fromDate && proposalDate <= toDate;
+    })
+  }, [proposals, date]);
 
-      if (includePreviousMonth) {
-        const isPreviousMonth = isSameMonth(proposalDate, previousMonthDate) && isSameYear(proposalDate, previousMonthDate);
-        return isCurrentMonth || isPreviousMonth;
-      }
-
-      return isCurrentMonth;
-    });
+  const getProposalsByStatus = (
+    proposalsList: Proposal[],
+    statuses: ProposalStatus[]
+  ): Proposal[] => {
+    if (!proposalsList) return [];
+    return proposalsList.filter((p) => statuses.includes(p.status));
   };
-
+  
   const getProposalsSum = (proposalsList: Proposal[]): number => {
     return proposalsList.reduce((sum, p) => sum + p.grossAmount, 0);
   };
 
-  const emAndamentoProposals = getProposalsByStatus(['Em Andamento'], true);
-  const aguardandoSaldoProposals = getProposalsByStatus(
-    ['Aguardando Saldo'],
-    true
-  );
-  const saldoPagoProposals = getProposalsByStatus(['Saldo Pago'], true);
-  const pendenteProposals = getProposalsByStatus(['Pendente'], true);
+  const emAndamentoProposals = getProposalsByStatus(filteredProposals, ['Em Andamento']);
+  const aguardandoSaldoProposals = getProposalsByStatus(filteredProposals, ['Aguardando Saldo']);
+  const saldoPagoProposals = getProposalsByStatus(filteredProposals, ['Saldo Pago']);
+  const pendenteProposals = getProposalsByStatus(filteredProposals, ['Pendente']);
+  const pagoProposals = getProposalsByStatus(filteredProposals, ['Pago']);
+  const rejeitadoProposals = getProposalsByStatus(filteredProposals, ['Reprovado']);
 
-  const pagoProposals = getProposalsByStatus(['Pago']);
-  const rejeitadoProposals = getProposalsByStatus(['Reprovado']);
 
   const cardData = [
     {
@@ -150,31 +154,49 @@ export default function DashboardPage() {
     },
   ];
 
-  const handleNextMonth = () => {
-    setDate(current => addMonths(current, 1));
-  };
-
-  const handlePreviousMonth = () => {
-    setDate(current => subMonths(current, 1));
-  };
-
-
   return (
     <AppLayout>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <PageHeader title="Dashboard" />
         <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 rounded-md border p-1">
-              <Button variant="ghost" size="icon" onClick={handlePreviousMonth}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="w-40 text-center font-semibold capitalize">
-                {format(date, 'MMMM yyyy', { locale: ptBR })}
-              </span>
-              <Button variant="ghost" size="icon" onClick={handleNextMonth}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
+            <Popover>
+                <PopoverTrigger asChild>
+                <Button
+                    id="date"
+                    variant={"outline"}
+                    className={cn(
+                        "w-[300px] justify-start text-left font-normal",
+                        !date && "text-muted-foreground"
+                    )}
+                >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date?.from ? (
+                        date.to ? (
+                        <>
+                            {format(date.from, "dd/MM/y", {locale: ptBR})} -{" "}
+                            {format(date.to, "dd/MM/y", {locale: ptBR})}
+                        </>
+                        ) : (
+                        format(date.from, "dd/MM/y", {locale: ptBR})
+                        )
+                    ) : (
+                        <span>Filtrar por data...</span>
+                    )}
+                </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                    initialFocus
+                    mode="range"
+                    defaultMonth={date?.from}
+                    selected={date}
+                    onSelect={setDate}
+                    numberOfMonths={2}
+                    locale={ptBR}
+                />
+                </PopoverContent>
+            </Popover>
+            {date && <Button variant="ghost" size="icon" onClick={() => setDate(undefined)}><X className="h-4 w-4" /></Button>}
             <Button variant="ghost" size="icon" onClick={() => setIsPrivacyMode(!isPrivacyMode)}>
             {isPrivacyMode ? <EyeOff /> : <Eye />}
             <span className="sr-only">{isPrivacyMode ? 'Mostrar valores' : 'Ocultar valores'}</span>
