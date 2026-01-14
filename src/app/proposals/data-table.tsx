@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ChevronDown } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import type { ProposalStatus } from '@/lib/types';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -54,7 +55,7 @@ export function ProposalsDataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
-  const [statusFilter, setStatusFilter] = React.useState('Todos');
+  const [statusFilter, setStatusFilter] = React.useState<ProposalStatus | 'Todos'>('Todos');
 
   const table = useReactTable({
     data,
@@ -76,33 +77,34 @@ export function ProposalsDataTable<TData, TValue>({
   });
   
   React.useEffect(() => {
+    const statusColumn = table.getColumn('status');
     if (statusFilter === 'Todos') {
-        table.getColumn('status')?.setFilterValue(undefined);
+        statusColumn?.setFilterValue(undefined);
     } else {
-        table.getColumn('status')?.setFilterValue(statusFilter);
+        statusColumn?.setFilterValue([statusFilter]);
     }
   }, [statusFilter, table]);
 
   return (
     <Card>
       <div className="p-4">
-        <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-            <TabsList>
+        <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as ProposalStatus | 'Todos')}>
+            <TabsList className="h-auto flex-wrap justify-start">
                 <TabsTrigger value="Todos">Todos</TabsTrigger>
                 <TabsTrigger value="Em Andamento">Em Andamento</TabsTrigger>
-                <TabsTrigger value="Pago">Pagos</TabsTrigger>
                 <TabsTrigger value="Aguardando Saldo">Aguardando Saldo</TabsTrigger>
+                <TabsTrigger value="Pago">Pago</TabsTrigger>
                 <TabsTrigger value="Saldo Pago">Saldo Pago</TabsTrigger>
                 <TabsTrigger value="Pendente">Pendente</TabsTrigger>
-                <TabsTrigger value="Rejeitado">Reprovados</TabsTrigger>
+                <TabsTrigger value="Rejeitado">Reprovado</TabsTrigger>
             </TabsList>
         </Tabs>
         <div className="flex items-center justify-between py-4">
           <Input
             placeholder="Filtrar por cliente..."
-            value={(table.getColumn('customer.name')?.getFilterValue() as string) ?? ''}
+            value={(table.getColumn('customer_name')?.getFilterValue() as string) ?? ''}
             onChange={(event) =>
-              table.getColumn('customer.name')?.setFilterValue(event.target.value)
+              table.getColumn('customer_name')?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
           />
@@ -117,6 +119,13 @@ export function ProposalsDataTable<TData, TValue>({
                 .getAllColumns()
                 .filter((column) => column.getCanHide())
                 .map((column) => {
+                  const idMap: {[key: string]: string} = {
+                    proposalNumber: 'Proposta nº',
+                    customer_name: 'Cliente',
+                    grossAmount: 'Valor Bruto',
+                    commissionValue: 'Comissão',
+                    dateDigitized: 'Data Digitação'
+                  }
                   return (
                     <DropdownMenuCheckboxItem
                       key={column.id}
@@ -126,7 +135,7 @@ export function ProposalsDataTable<TData, TValue>({
                         column.toggleVisibility(!!value)
                       }
                     >
-                      {column.id === 'proposalNumber' ? 'Proposta nº' : column.id === 'customer.name' ? 'Cliente' : column.id}
+                      {idMap[column.id] || column.id}
                     </DropdownMenuCheckboxItem>
                   );
                 })}

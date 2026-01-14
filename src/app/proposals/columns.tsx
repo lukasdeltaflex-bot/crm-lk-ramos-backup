@@ -55,25 +55,27 @@ export const columns: ColumnDef<ProposalWithCustomer>[] = [
     header: 'Produto',
   },
   {
-    accessorKey: 'approvingBody',
-    header: 'Órgão Aprovador',
+    accessorKey: 'operator',
+    header: 'Operador',
   },
   {
     accessorKey: 'grossAmount',
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Valor Bruto
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <div className="text-right">
+            <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            >
+            Valor Bruto
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+        </div>
       );
     },
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue('grossAmount'));
-      return <div className="text-left font-medium">{formatCurrency(amount)}</div>;
+      return <div className="text-right font-medium">{formatCurrency(amount)}</div>;
     },
   },
   {
@@ -84,7 +86,7 @@ export const columns: ColumnDef<ProposalWithCustomer>[] = [
       return (
         <Badge
           variant="outline"
-          className={cn({
+          className={cn('w-24 justify-center', {
             'border-green-500 text-green-500': status === 'Pago' || status === 'Saldo Pago',
             'border-yellow-500 text-yellow-500': status === 'Em Andamento',
             'border-blue-500 text-blue-500': status === 'Aguardando Saldo',
@@ -96,13 +98,16 @@ export const columns: ColumnDef<ProposalWithCustomer>[] = [
         </Badge>
       );
     },
+    filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id))
+    }
   },
   {
     accessorKey: 'commissionValue',
-    header: 'Comissão',
+    header: () => <div className="text-right">Comissão</div>,
     cell: ({ row }) => {
         const amount = parseFloat(row.getValue('commissionValue'));
-        return formatCurrency(amount);
+        return <div className="text-right">{formatCurrency(amount)}</div>;
       },
   },
   {
@@ -110,7 +115,9 @@ export const columns: ColumnDef<ProposalWithCustomer>[] = [
     header: 'Data Digitação',
     cell: ({ row }) => {
         const date = new Date(row.getValue('dateDigitized'))
-        return new Intl.DateTimeFormat('pt-BR').format(date);
+        // Adjust for timezone to show the correct date
+        const adjustedDate = new Date(date.valueOf() + date.getTimezoneOffset() * 60 * 1000);
+        return new Intl.DateTimeFormat('pt-BR').format(adjustedDate);
     }
   },
   {

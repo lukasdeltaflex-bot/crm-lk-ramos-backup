@@ -13,7 +13,7 @@ export type ProductType =
   | 'Margem CLT'
   | 'Saque Complementar'
   | 'Cartão - Plástico'
-  | 'Port'
+  | 'Portabilidade'
   | 'Refin Port'
   | 'Refin'
   | 'Saque FGTS';
@@ -50,4 +50,8 @@ export type Proposal = {
   dateApproved?: string; // YYYY-MM-DD
   datePaid?: string; // YYYY-MM-DD
   commissionPaymentDate?: string; // YYYY-MM-DD
+  bankOrigin?: string;
+  interestRate?: number;
+  operator?: string;
+  commissionBase?: 'gross' | 'net';
 };
