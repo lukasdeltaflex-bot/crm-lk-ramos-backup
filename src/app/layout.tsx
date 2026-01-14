@@ -3,6 +3,8 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Inter as FontSans } from 'next/font/google';
 import { cn } from '@/lib/utils';
+import { FirebaseClientProvider } from '@/firebase';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 export const metadata: Metadata = {
   title: 'INSS Manager',
@@ -27,7 +29,10 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
-        {children}
+        <FirebaseClientProvider>
+          <FirebaseErrorListener />
+          {children}
+        </FirebaseClientProvider>
         <Toaster />
       </body>
     </html>
