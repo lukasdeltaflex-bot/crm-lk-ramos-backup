@@ -3,7 +3,6 @@
 import React from 'react';
 import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
-import { getProposalsWithCustomerData } from '@/lib/data';
 import { ProposalsDataTable } from './data-table';
 import { getColumns } from './columns';
 import { Button } from '@/components/ui/button';
@@ -17,14 +16,47 @@ import {
 import { ProposalForm } from './proposal-form';
 import type { Proposal, Customer, ProposalStatus } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, doc, query, where } from 'firebase/firestore';
+import {
+  addDocumentNonBlocking,
+  setDocumentNonBlocking,
+} from '@/firebase/non-blocking-updates';
+import { Skeleton } from '@/components/ui/skeleton';
 
-type ProposalWithCustomer = Proposal & { customer: Customer };
+export type ProposalWithCustomer = Proposal & { customer: Customer | undefined };
 
 export default function ProposalsPage() {
-  const [proposals, setProposals] = React.useState(getProposalsWithCustomerData);
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
   const [selectedProposal, setSelectedProposal] = React.useState<ProposalWithCustomer | undefined>(undefined);
   const [sheetMode, setSheetMode] = React.useState<'new' | 'edit' | 'view'>('new');
+  
+  const proposalsQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return query(collection(firestore, 'loanProposals'), where('userId', '==', user.uid));
+  }, [firestore, user]);
+
+  const customersQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return query(collection(firestore, 'customers'), where('userId', '==', user.uid));
+  }, [firestore, user]);
+  
+  const { data: proposals, isLoading: proposalsLoading } = useCollection<Proposal>(proposalsQuery);
+  const { data: customers, isLoading: customersLoading } = useCollection<Customer>(customersQuery);
+
+  const proposalsWithCustomerData: ProposalWithCustomer[] = React.useMemo(() => {
+    if (!proposals || !customers) return [];
+    
+    const customersMap = new Map(customers.map(c => [c.id, c]));
+
+    return proposals.map(p => ({
+      ...p,
+      customer: customersMap.get(p.customerId),
+    }));
+  }, [proposals, customers]);
 
   const handleNewProposal = () => {
     setSelectedProposal(undefined);
@@ -45,20 +77,48 @@ export default function ProposalsPage() {
   };
 
   const handleStatusChange = (proposalId: string, newStatus: ProposalStatus) => {
-    setProposals(currentProposals => 
-      currentProposals.map(p => 
-        p.id === proposalId ? { ...p, status: newStatus } : p
-      )
-    );
+    if (!firestore) return;
+    setDocumentNonBlocking(doc(firestore, 'loanProposals', proposalId), { status: newStatus }, { merge: true });
     toast({
         title: 'Status Atualizado!',
         description: `O status da proposta foi alterado para "${newStatus}".`,
     });
   };
 
-  const handleCloseSheet = () => {
+  const handleFormSubmit = (data: Omit<Proposal, 'id' | 'userId' | 'proposalNumber'> & { proposalNumber?: string }) => {
+    if (!firestore || !user) return;
+
+    if (sheetMode === 'edit' && selectedProposal) {
+      const proposalToUpdate: Partial<Proposal> = {
+        ...data,
+        // Ensure dates are strings
+        dateDigitized: data.dateDigitized ? new Date(data.dateDigitized).toISOString() : '',
+        dateApproved: data.dateApproved ? new Date(data.dateApproved).toISOString() : undefined,
+        datePaidToClient: data.datePaidToClient ? new Date(data.datePaidToClient).toISOString() : undefined,
+        debtBalanceArrivalDate: data.debtBalanceArrivalDate ? new Date(data.debtBalanceArrivalDate).toISOString() : undefined,
+      };
+      setDocumentNonBlocking(doc(firestore, 'loanProposals', selectedProposal.id), proposalToUpdate, { merge: true });
+      toast({
+        title: 'Proposta Atualizada!',
+        description: `A proposta foi atualizada com sucesso.`,
+      });
+    } else {
+      const newProposal: Omit<Proposal, 'id'> = {
+        ...data,
+        userId: user.uid,
+        proposalNumber: `PRO${Date.now()}`,
+        dateDigitized: data.dateDigitized ? new Date(data.dateDigitized).toISOString() : '',
+        dateApproved: data.dateApproved ? new Date(data.dateApproved).toISOString() : undefined,
+        datePaidToClient: data.datePaidToClient ? new Date(data.datePaidToClient).toISOString() : undefined,
+        debtBalanceArrivalDate: data.debtBalanceArrivalDate ? new Date(data.debtBalanceArrivalDate).toISOString() : undefined,
+      };
+      addDocumentNonBlocking(collection(firestore, 'loanProposals'), newProposal);
+      toast({
+        title: 'Proposta Salva!',
+        description: `A nova proposta foi criada com sucesso.`,
+      });
+    }
     setIsSheetOpen(false);
-    setSelectedProposal(undefined);
   };
 
   const getSheetTitle = () => {
@@ -66,6 +126,8 @@ export default function ProposalsPage() {
     if (sheetMode === 'edit') return 'Editar Proposta';
     return 'Detalhes da Proposta';
   };
+
+  const isLoading = proposalsLoading || customersLoading || isUserLoading;
 
   const columns = getColumns(handleEditProposal, handleViewProposal, handleStatusChange);
 
@@ -85,12 +147,24 @@ export default function ProposalsPage() {
           </SheetHeader>
           <ProposalForm 
             proposal={selectedProposal} 
+            customers={customers || []}
             isReadOnly={sheetMode === 'view'}
-            onSubmit={handleCloseSheet} 
+            onSubmit={handleFormSubmit} 
           />
         </SheetContent>
       </Sheet>
-      <ProposalsDataTable columns={columns} data={proposals} />
+      {isLoading ? (
+        <div className="rounded-md border p-4">
+            <div className="space-y-2">
+              <Skeleton className="h-10 w-full" />
+              {Array.from({ length: 10 }).map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
+            </div>
+        </div>
+      ) : (
+        <ProposalsDataTable columns={columns} data={proposalsWithCustomerData} />
+      )}
     </AppLayout>
   );
 }

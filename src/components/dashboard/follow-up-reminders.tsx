@@ -1,7 +1,6 @@
 
 'use client';
 
-import { getProposalsWithCustomerData } from '@/lib/data';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Clock, Info } from 'lucide-react';
@@ -9,12 +8,20 @@ import { followUpReminder } from '@/ai/flows/follow-up-reminder';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import { differenceInDays } from 'date-fns';
+import type { Proposal, Customer } from '@/lib/types';
+import { useMemo } from 'react';
 
 type ReminderMessage = {
   proposalNumber: string;
   customerName: string;
   reminderMessage: string;
 };
+
+interface FollowUpRemindersProps {
+    proposals: Proposal[];
+    customers: Customer[];
+    isLoading: boolean;
+}
 
 function FollowUpReminderItem({ reminder }: { reminder: ReminderMessage }) {
   return (
@@ -26,26 +33,33 @@ function FollowUpReminderItem({ reminder }: { reminder: ReminderMessage }) {
   );
 }
 
-export function FollowUpReminders() {
+export function FollowUpReminders({ proposals, customers, isLoading }: FollowUpRemindersProps) {
   const [reminders, setReminders] = useState<ReminderMessage[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(true);
 
-  const longRunningProposals = getProposalsWithCustomerData().filter(p => 
-    p.status === 'Em Andamento' && differenceInDays(new Date(), new Date(p.dateDigitized)) > 20
-  );
+  const longRunningProposals = useMemo(() => {
+    const customerMap = new Map(customers.map(c => [c.id, c]));
+    return proposals
+      .filter(p => p.status === 'Em Andamento' && differenceInDays(new Date(), new Date(p.dateDigitized)) > 20)
+      .map(p => ({...p, customer: customerMap.get(p.customerId)}))
+      .filter(p => p.customer); // Ensure customer exists
+  }, [proposals, customers]);
 
   useEffect(() => {
     async function fetchReminders() {
+      if (isLoading) return;
+
+      setIsGenerating(true);
       if (longRunningProposals.length > 0) {
         try {
             const reminderPromises = longRunningProposals.map(proposal => 
             followUpReminder({
-                customerName: proposal.customer.name,
+                customerName: proposal.customer!.name,
                 proposalNumber: proposal.proposalNumber,
                 daysOpen: differenceInDays(new Date(), new Date(proposal.dateDigitized)),
             }).then(response => ({
                 proposalNumber: proposal.proposalNumber,
-                customerName: proposal.customer.name,
+                customerName: proposal.customer!.name,
                 reminderMessage: response.reminderMessage,
             }))
             );
@@ -53,14 +67,14 @@ export function FollowUpReminders() {
             setReminders(results);
         } catch (error) {
             console.error("Error fetching follow-up reminders:", error);
-            // Handle error gracefully
         }
       }
-      setLoading(false);
+      setIsGenerating(false);
     }
     fetchReminders();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isLoading, longRunningProposals]);
+
+  const showLoadingState = isLoading || isGenerating;
 
   return (
     <Card>
@@ -68,14 +82,12 @@ export function FollowUpReminders() {
         <CardTitle className="font-headline">Lembretes de Acompanhamento</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {loading ? (
+        {showLoadingState ? (
           <div className="space-y-4">
-             {Array.from({ length: longRunningProposals.length > 0 ? longRunningProposals.length : 1 }).map((_, index) => (
-              <div key={index} className="p-4 border rounded-lg">
+             <div className="p-4 border rounded-lg">
                 <Skeleton className="h-5 w-3/4 mb-2" />
                 <Skeleton className="h-4 w-full" />
               </div>
-            ))}
           </div>
         ) : reminders.length > 0 ? (
           reminders.map((reminder) => (

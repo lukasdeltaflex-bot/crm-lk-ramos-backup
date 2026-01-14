@@ -33,6 +33,7 @@ export type CommissionStatus = 'Pendente' | 'Paga' | 'Parcial';
 
 export type Proposal = {
   id: string;
+  userId: string;
   proposalNumber: string;
   customerId: string;
   product: ProductType;

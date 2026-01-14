@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "Customer": {
@@ -30,16 +31,20 @@
         "birthDate": {
           "type": "string",
           "description": "Customer's birth date.",
-          "format": "date-time"
+          "format": "date"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who owns this customer record."
         }
       },
       "required": [
-        "id",
         "name",
         "cpf",
         "phone",
         "email",
-        "birthDate"
+        "birthDate",
+        "userId"
       ]
     },
     "LoanProposal": {
@@ -51,6 +56,10 @@
         "id": {
           "type": "string",
           "description": "Unique identifier for the LoanProposal entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who owns this proposal."
         },
         "customerId": {
           "type": "string",
@@ -106,6 +115,7 @@
       },
       "required": [
         "id",
+        "userId",
         "customerId",
         "table",
         "term",
@@ -189,27 +199,37 @@
       "properties": {
         "productTypes": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "List of available product types."
         },
         "proposalStatuses": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "List of possible statuses for a proposal."
         },
         "commissionStatuses": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "List of possible statuses for a commission."
         },
         "approvingBodies": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "List of approving bodies."
         },
         "banks": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "List of banks."
         }
       }
@@ -217,8 +237,7 @@
   },
   "auth": {
     "providers": [
-      "password",
-      "anonymous"
+      "password"
     ]
   },
   "firestore": {
@@ -230,7 +249,7 @@
           "schema": {
             "$ref": "#/backend/entities/Customer"
           },
-          "description": "Stores customer profiles.  All customer operations will be accessible to the user if `request.auth.uid == customerId`",
+          "description": "Stores customer profiles. All customer operations will be accessible to the user if `request.auth.uid == resource.data.userId`",
           "params": [
             {
               "name": "customerId",
@@ -246,7 +265,7 @@
           "schema": {
             "$ref": "#/backend/entities/LoanProposal"
           },
-          "description": "Stores loan proposals associated with customers. Access is restricted to the customer who owns the proposal (`request.auth.uid == resource.data.customerId`).",
+          "description": "Stores loan proposals associated with customers. Access is restricted to the user who owns the proposal (`request.auth.uid == resource.data.userId`).",
           "params": [
             {
               "name": "loanProposalId",
@@ -287,7 +306,7 @@
           ]
         }
       },
-       {
+      {
         "path": "/userSettings/{userId}",
         "definition": {
           "entityName": "UserSettings",

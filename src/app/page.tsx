@@ -7,7 +7,8 @@ import { CommissionChart } from '@/components/dashboard/commission-chart';
 import { RecentProposals } from '@/components/dashboard/recent-proposals';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import { PageHeader } from '@/components/page-header';
-import { proposals } from '@/lib/data';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
 import {
   FileText,
   Clock,
@@ -21,7 +22,7 @@ import {
 import { format, startOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency, cn } from '@/lib/utils';
-import type { Proposal, ProposalStatus } from '@/lib/types';
+import type { Proposal, ProposalStatus, Customer } from '@/lib/types';
 import {
   Dialog,
   DialogContent,
@@ -38,14 +39,31 @@ import {
 } from '@/components/ui/popover';
 import { FollowUpReminders } from '@/components/dashboard/follow-up-reminders';
 import { ProposalsStatusTable } from '@/components/dashboard/proposals-status-table';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card } from '@/components/ui/card';
 
 export default function DashboardPage() {
   const [date, setDate] = React.useState<Date>(startOfMonth(new Date()));
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+
+  const proposalsQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return query(collection(firestore, 'loanProposals'), where('userId', '==', user.uid));
+  }, [firestore, user]);
+
+  const { data: proposals, isLoading: proposalsLoading } = useCollection<Proposal>(proposalsQuery);
+  const customersQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return query(collection(firestore, 'customers'), where('userId', '==', user.uid));
+  }, [firestore, user]);
+  const { data: customers, isLoading: customersLoading } = useCollection<Customer>(customersQuery);
+
+  const isLoading = proposalsLoading || customersLoading || isUserLoading;
 
   const currentYear = date.getFullYear();
   const currentMonth = date.getMonth();
 
-  // Previous month logic
   const previousMonthDate = new Date(date);
   previousMonthDate.setMonth(previousMonthDate.getMonth() - 1);
   const previousMonth = previousMonthDate.getMonth();
@@ -55,6 +73,7 @@ export default function DashboardPage() {
     statuses: ProposalStatus[],
     includePreviousMonth: boolean = false
   ): Proposal[] => {
+    if (!proposals) return [];
     return proposals.filter((p) => {
       if (!statuses.includes(p.status)) {
         return false;
@@ -181,7 +200,12 @@ export default function DashboardPage() {
       </div>
       <div className="space-y-8">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          {cardData.map((card) => (
+          {isLoading ? Array.from({length: 6}).map((_, i) => (
+             <Card key={i} className="p-6">
+                <Skeleton className="h-5 w-24 mb-4" />
+                <Skeleton className="h-8 w-32" />
+             </Card>
+          )) : cardData.map((card) => (
             <Dialog key={card.title}>
               <DialogTrigger asChild>
                 <div className="cursor-pointer">
@@ -198,22 +222,22 @@ export default function DashboardPage() {
                 <DialogHeader>
                   <DialogTitle>Propostas com Status: {card.title}</DialogTitle>
                 </DialogHeader>
-                <ProposalsStatusTable proposals={card.proposals} />
+                <ProposalsStatusTable proposals={card.proposals} customers={customers || []} />
               </DialogContent>
             </Dialog>
           ))}
         </div>
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <CommissionChart />
+            <CommissionChart proposals={proposals || []}/>
           </div>
           <div className="space-y-8">
-            <BirthdayAlerts />
-            <FollowUpReminders />
+            <BirthdayAlerts customers={customers || []} isLoading={isLoading}/>
+            <FollowUpReminders proposals={proposals || []} customers={customers || []} isLoading={isLoading}/>
           </div>
         </div>
         <div>
-          <RecentProposals />
+          <RecentProposals proposals={proposals || []} customers={customers || []} isLoading={isLoading}/>
         </div>
       </div>
     </AppLayout>

@@ -1,18 +1,23 @@
 
 'use client';
 
-import { customers } from '@/lib/data';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { BellRing, UserCheck } from 'lucide-react';
 import { customerBirthdayAlert } from '@/ai/flows/customer-birthday-alert';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
+import type { Customer } from '@/lib/types';
 
 type AlertMessage = {
   customerName: string;
   alertMessage: string;
 };
+
+interface BirthdayAlertsProps {
+  customers: Customer[];
+  isLoading: boolean;
+}
 
 function BirthdayAlertItem({ alert }: { alert: AlertMessage }) {
   return (
@@ -24,9 +29,9 @@ function BirthdayAlertItem({ alert }: { alert: AlertMessage }) {
   );
 }
 
-export function BirthdayAlerts() {
+export function BirthdayAlerts({ customers, isLoading }: BirthdayAlertsProps) {
   const [alerts, setAlerts] = useState<AlertMessage[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(true);
 
   const getAge = (birthDate: string) => {
     const today = new Date();
@@ -43,6 +48,9 @@ export function BirthdayAlerts() {
 
   useEffect(() => {
     async function fetchAlerts() {
+      if (isLoading) return;
+      
+      setIsGenerating(true);
       if (upcoming75.length > 0) {
         try {
           const alertPromises = upcoming75.map(customer => 
@@ -58,14 +66,14 @@ export function BirthdayAlerts() {
           setAlerts(results);
         } catch (error) {
           console.error("Error fetching birthday alerts:", error);
-          // Handle error gracefully, maybe set an error state
         }
       }
-      setLoading(false);
+      setIsGenerating(false);
     }
     fetchAlerts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isLoading, customers]); // Rerun when isLoading changes
+
+  const showLoadingState = isLoading || isGenerating;
 
   return (
     <Card>
@@ -73,14 +81,12 @@ export function BirthdayAlerts() {
         <CardTitle className="font-headline">Alertas de Aniversário (75 anos)</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {loading ? (
+        {showLoadingState ? (
           <div className="space-y-4">
-            {Array.from({ length: upcoming75.length > 0 ? upcoming75.length : 1 }).map((_, index) => (
-              <div key={index} className="p-4 border rounded-lg">
+            <div className="p-4 border rounded-lg">
                 <Skeleton className="h-5 w-24 mb-2" />
                 <Skeleton className="h-4 w-full" />
-              </div>
-            ))}
+            </div>
           </div>
         ) : alerts.length > 0 ? (
           alerts.map((alert) => (

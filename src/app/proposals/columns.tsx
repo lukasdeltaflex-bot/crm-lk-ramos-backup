@@ -17,8 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { formatCurrency } from '@/lib/utils';
 import React from 'react';
 import { StatusCell } from './status-cell';
-
-type ProposalWithCustomer = Proposal & { customer: Customer };
+import { type ProposalWithCustomer } from './page';
 
 type ActionsCellProps = {
     row: {
@@ -96,6 +95,9 @@ export const getColumns = (
   {
     accessorKey: 'customer.name',
     header: 'Cliente',
+    cell: ({ row }) => {
+        return row.original.customer?.name || <span className="text-muted-foreground">Cliente não encontrado</span>
+    }
   },
   {
     accessorKey: 'product',

@@ -1,34 +1,45 @@
+
 'use client';
 
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { proposals } from '@/lib/data';
 import { formatCurrency } from '@/lib/utils';
+import type { Proposal } from '@/lib/types';
+import { useMemo } from 'react';
 
-const getMonthlyCommissions = () => {
-    const monthlyData: { [key: string]: number } = {};
-
-    proposals.forEach(p => {
-        if (p.commissionStatus !== 'Pendente' && p.commissionPaymentDate && p.amountPaid) {
-            const month = new Date(p.commissionPaymentDate).toLocaleString('default', { month: 'short' });
-            if (!monthlyData[month]) {
-                monthlyData[month] = 0;
-            }
-            monthlyData[month] += p.amountPaid;
-        }
-    });
-
-    const monthOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    
-    return monthOrder.map(month => ({
-        name: month,
-        total: monthlyData[month] || 0,
-    })).filter(d => d.total > 0);
+interface CommissionChartProps {
+    proposals: Proposal[];
 }
 
+export function CommissionChart({ proposals }: CommissionChartProps) {
+    const data = useMemo(() => {
+        const monthlyData: { [key: string]: number } = {};
 
-export function CommissionChart() {
-    const data = getMonthlyCommissions();
+        proposals.forEach(p => {
+            if (p.commissionStatus !== 'Pendente' && p.commissionPaymentDate && p.amountPaid) {
+                const month = new Date(p.commissionPaymentDate).toLocaleString('default', { month: 'short' });
+                if (!monthlyData[month]) {
+                    monthlyData[month] = 0;
+                }
+                monthlyData[month] += p.amountPaid;
+            }
+        });
+
+        const monthOrder = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+        
+        const currentYear = new Date().getFullYear();
+        const yearData = monthOrder.map(month => {
+            const date = new Date(`${month} 1, ${currentYear}`);
+            const monthName = date.toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
+            return {
+                name: monthName.charAt(0).toUpperCase() + monthName.slice(1),
+                total: monthlyData[month] || 0,
+            };
+        });
+
+        return yearData;
+    }, [proposals]);
+
   return (
     <Card>
         <CardHeader>

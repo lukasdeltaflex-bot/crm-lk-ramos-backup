@@ -1,5 +1,4 @@
-import { getProposalsWithCustomerData } from '@/lib/data';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+
 import {
   Table,
   TableBody,
@@ -8,12 +7,27 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '../ui/badge';
-import { formatCurrency } from '@/lib/utils';
-import { cn } from '@/lib/utils';
+import { Skeleton } from '../ui/skeleton';
+import { formatCurrency, cn } from '@/lib/utils';
+import type { Proposal, Customer } from '@/lib/types';
+import { useMemo } from 'react';
 
-export function RecentProposals() {
-  const recentProposals = getProposalsWithCustomerData().slice(0, 5);
+interface RecentProposalsProps {
+    proposals: Proposal[];
+    customers: Customer[];
+    isLoading: boolean;
+}
+
+export function RecentProposals({ proposals, customers, isLoading }: RecentProposalsProps) {
+  const recentProposals = useMemo(() => {
+    const customerMap = new Map(customers.map(c => [c.id, c]));
+    return proposals
+        .sort((a, b) => new Date(b.dateDigitized).getTime() - new Date(a.dateDigitized).getTime())
+        .slice(0, 5)
+        .map(p => ({...p, customer: customerMap.get(p.customerId)}))
+  }, [proposals, customers]);
 
   return (
     <Card>
@@ -31,34 +45,49 @@ export function RecentProposals() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {recentProposals.map((proposal) => (
-              <TableRow key={proposal.id}>
-                <TableCell>
-                  <div className="font-medium">{proposal.customer.name}</div>
-                  <div className="hidden text-sm text-muted-foreground md:inline">
-                    {proposal.customer.email}
-                  </div>
-                </TableCell>
-                <TableCell>{proposal.product}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant="outline"
-                    className={cn({
-                        'border-green-500 text-green-500': proposal.status === 'Pago' || proposal.status === 'Saldo Pago',
-                        'border-yellow-500 text-yellow-500': proposal.status === 'Em Andamento',
-                        'border-blue-500 text-blue-500': proposal.status === 'Aguardando Saldo',
-                        'border-red-500 text-red-500': proposal.status === 'Rejeitado',
-                        'border-purple-500 text-purple-500': proposal.status === 'Pendente',
-                    })}
-                  >
-                    {proposal.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  {formatCurrency(proposal.grossAmount)}
-                </TableCell>
-              </TableRow>
-            ))}
+            {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                        <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-5 w-28 ml-auto" /></TableCell>
+                    </TableRow>
+                ))
+            ) : recentProposals.length === 0 ? (
+                <TableRow>
+                    <TableCell colSpan={4} className="text-center h-24">Nenhuma proposta recente.</TableCell>
+                </TableRow>
+            ) : (
+                recentProposals.map((proposal) => (
+                <TableRow key={proposal.id}>
+                    <TableCell>
+                    <div className="font-medium">{proposal.customer?.name || 'Cliente não encontrado'}</div>
+                    <div className="hidden text-sm text-muted-foreground md:inline">
+                        {proposal.customer?.email}
+                    </div>
+                    </TableCell>
+                    <TableCell>{proposal.product}</TableCell>
+                    <TableCell>
+                    <Badge
+                        variant="outline"
+                        className={cn({
+                            'border-green-500 text-green-500': proposal.status === 'Pago' || proposal.status === 'Saldo Pago',
+                            'border-yellow-500 text-yellow-500': proposal.status === 'Em Andamento',
+                            'border-blue-500 text-blue-500': proposal.status === 'Aguardando Saldo',
+                            'border-red-500 text-red-500': proposal.status === 'Rejeitado',
+                            'border-purple-500 text-purple-500': proposal.status === 'Pendente',
+                        })}
+                    >
+                        {proposal.status}
+                    </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                    {formatCurrency(proposal.grossAmount)}
+                    </TableCell>
+                </TableRow>
+                ))
+            )}
           </TableBody>
         </Table>
       </CardContent>

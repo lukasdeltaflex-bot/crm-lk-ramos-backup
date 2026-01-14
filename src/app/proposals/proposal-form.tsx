@@ -27,10 +27,8 @@ import { CalendarIcon, Info } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { toast } from '@/hooks/use-toast';
-import { customers } from '@/lib/data';
 import { productTypes, proposalStatuses, approvingBodies, banks } from '@/lib/config-data';
-import type { Proposal } from '@/lib/types';
+import type { Proposal, Customer } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -40,6 +38,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useEffect } from 'react';
 
 const proposalSchema = z.object({
   customerId: z.string({ required_error: 'Selecione um cliente.' }),
@@ -74,8 +73,9 @@ type ProposalFormValues = z.infer<typeof proposalSchema>;
 
 interface ProposalFormProps {
   proposal?: Proposal;
+  customers: Customer[];
   isReadOnly?: boolean;
-  onSubmit: () => void;
+  onSubmit: (data: ProposalFormValues) => void;
 }
 
 const DatePickerField = ({ name, label, control, isReadOnly }: { name: any, label: string, control: any, isReadOnly?: boolean }) => (
@@ -123,32 +123,57 @@ const DatePickerField = ({ name, label, control, isReadOnly }: { name: any, labe
     />
 );
 
-
-export function ProposalForm({ proposal, isReadOnly, onSubmit }: ProposalFormProps) {
-  const form = useForm<ProposalFormValues>({
-    resolver: zodResolver(proposalSchema),
-    defaultValues: {
-        ...(proposal ? {
-            ...proposal,
-            dateDigitized: proposal.dateDigitized ? new Date(proposal.dateDigitized) : undefined,
-            dateApproved: proposal.dateApproved ? new Date(proposal.dateApproved) : undefined,
-            datePaidToClient: proposal.datePaidToClient ? new Date(proposal.datePaidToClient) : undefined,
-            debtBalanceArrivalDate: proposal.debtBalanceArrivalDate ? new Date(proposal.debtBalanceArrivalDate) : undefined,
-        } : {
+export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: ProposalFormProps) {
+    const form = useForm<ProposalFormValues>({
+        resolver: zodResolver(proposalSchema),
+        defaultValues: {
+            // Set sensible defaults for a new proposal
+            status: 'Em Andamento',
             dateDigitized: new Date(),
-        })
-    } as any,
-  });
+        },
+    });
+
+  useEffect(() => {
+    if (proposal) {
+      form.reset({
+        ...proposal,
+        dateDigitized: proposal.dateDigitized ? new Date(proposal.dateDigitized) : new Date(),
+        dateApproved: proposal.dateApproved ? new Date(proposal.dateApproved) : undefined,
+        datePaidToClient: proposal.datePaidToClient ? new Date(proposal.datePaidToClient) : undefined,
+        debtBalanceArrivalDate: proposal.debtBalanceArrivalDate ? new Date(proposal.debtBalanceArrivalDate) : undefined,
+      });
+    } else {
+      form.reset({
+        customerId: '',
+        product: '',
+        status: 'Em Andamento',
+        table: '',
+        term: undefined,
+        interestRate: undefined,
+        grossAmount: undefined,
+        netAmount: undefined,
+        installmentAmount: undefined,
+        commissionBase: undefined,
+        commissionPercentage: undefined,
+        commissionValue: undefined,
+        promoter: '',
+        bank: '',
+        bankOrigin: '',
+        approvingBody: '',
+        operator: '',
+        dateDigitized: new Date(),
+        dateApproved: undefined,
+        datePaidToClient: undefined,
+        debtBalanceArrivalDate: undefined,
+      });
+    }
+  }, [proposal, form]);
+
 
   const product = form.watch('product');
 
   function handleFormSubmit(data: ProposalFormValues) {
-    console.log(data);
-    toast({
-      title: 'Proposta Salva!',
-      description: `A proposta para o cliente foi ${proposal ? 'atualizada' : 'criada'} com sucesso.`,
-    });
-    onSubmit();
+    onSubmit(data);
   }
 
   return (
@@ -165,7 +190,7 @@ export function ProposalForm({ proposal, isReadOnly, onSubmit }: ProposalFormPro
                     render={({ field }) => (
                     <FormItem>
                         <FormLabel>Cliente</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly}>
                         <FormControl>
                             <SelectTrigger>
                             <SelectValue placeholder="Selecione um cliente" />
@@ -189,7 +214,7 @@ export function ProposalForm({ proposal, isReadOnly, onSubmit }: ProposalFormPro
                     render={({ field }) => (
                     <FormItem>
                         <FormLabel>Produto</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly}>
                         <FormControl>
                             <SelectTrigger>
                             <SelectValue placeholder="Selecione o produto" />
@@ -320,6 +345,7 @@ export function ProposalForm({ proposal, isReadOnly, onSubmit }: ProposalFormPro
                             <RadioGroup
                             onValueChange={field.onChange}
                             defaultValue={field.value}
+                            value={field.value}
                             className="flex items-center space-x-4"
                             disabled={isReadOnly}
                             >
@@ -387,7 +413,7 @@ export function ProposalForm({ proposal, isReadOnly, onSubmit }: ProposalFormPro
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>Banco Digitado</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}>
+                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly}>
                                 <FormControl>
                                     <SelectTrigger>
                                     <SelectValue placeholder="Selecione um banco" />
@@ -412,7 +438,7 @@ export function ProposalForm({ proposal, isReadOnly, onSubmit }: ProposalFormPro
                             render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Banco de Origem</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}>
+                                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly}>
                                 <FormControl>
                                     <SelectTrigger>
                                     <SelectValue placeholder="Selecione um banco" />
@@ -474,7 +500,7 @@ export function ProposalForm({ proposal, isReadOnly, onSubmit }: ProposalFormPro
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>Status da Proposta</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}>
+                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly}>
                             <FormControl>
                                 <SelectTrigger>
                                 <SelectValue placeholder="Selecione o status" />
@@ -498,7 +524,7 @@ export function ProposalForm({ proposal, isReadOnly, onSubmit }: ProposalFormPro
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>Órgão Aprovador</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}>
+                                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly}>
                                 <FormControl>
                                     <SelectTrigger>
                                     <SelectValue placeholder="Selecione o órgão" />

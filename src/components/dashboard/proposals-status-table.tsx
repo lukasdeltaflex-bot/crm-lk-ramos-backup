@@ -21,7 +21,6 @@ import {
 import { Button } from '@/components/ui/button';
 import type { Customer, Proposal } from '@/lib/types';
 import { statusColumns } from './status-columns';
-import { customers } from '@/lib/data';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -113,23 +112,20 @@ function DataTable<TData, TValue>({
   );
 }
 
-type ProposalWithCustomer = Proposal & { customer: { name: string } };
+type ProposalWithCustomer = Proposal & { customer: { name: string } | undefined };
 
-export function ProposalsStatusTable({ proposals }: { proposals: Proposal[] }) {
+export function ProposalsStatusTable({ proposals, customers }: { proposals: Proposal[], customers: Customer[] }) {
     
     const data: ProposalWithCustomer[] = React.useMemo(() => {
-        const customerData = customers as (Omit<Customer, 'userId'> & { userId?: string })[];
-
+        const customerMap = new Map(customers.map(c => [c.id, c]));
         return proposals.map(proposal => {
-            const customer = customerData.find(c => c.id === proposal.customerId);
+            const customer = customerMap.get(proposal.customerId);
             return {
                 ...proposal,
-                customer: {
-                    name: customer?.name || 'Cliente não encontrado'
-                }
+                customer: customer ? { name: customer.name } : undefined
             }
         })
-    }, [proposals]);
+    }, [proposals, customers]);
 
   if (proposals.length === 0) {
     return (
