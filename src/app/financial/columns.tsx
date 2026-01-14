@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
@@ -16,6 +15,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 type ProposalWithCustomer = Proposal & { customer: Customer };
 
@@ -158,10 +159,7 @@ export const getColumns = (
     cell: ({ row }) => {
         const date = row.getValue('commissionPaymentDate') as string | undefined;
         if (!date) return '-';
-        // Adjusting for timezone to show the correct date
-        const adjustedDate = new Date(date);
-        adjustedDate.setMinutes(adjustedDate.getMinutes() + adjustedDate.getTimezoneOffset());
-        return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(adjustedDate);
+        return format(new Date(date), "dd/MM/yyyy", { locale: ptBR });
     }
   },
   {

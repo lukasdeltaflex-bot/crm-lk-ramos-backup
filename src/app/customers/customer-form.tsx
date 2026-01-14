@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -264,6 +263,9 @@ export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
                                     date > new Date() || date < new Date('1900-01-01')
                                 }
                                 initialFocus
+                                fromYear={1930}
+                                toYear={new Date().getFullYear()}
+                                captionLayout="dropdown-buttons"
                                 />
                             </PopoverContent>
                             </Popover>

@@ -1,6 +1,5 @@
-
 'use client';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
 import { CustomerDataTable } from './data-table';
@@ -19,7 +18,6 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { collection, doc, writeBatch, query, where, getDocs } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import {
-  addDocumentNonBlocking,
   setDocumentNonBlocking,
   updateDocumentNonBlocking,
 } from '@/firebase/non-blocking-updates';
@@ -32,8 +30,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { customers as sampleCustomers, proposals as sampleProposals } from '@/lib/data';
 
 export default function CustomersPage() {
   const { user } = useUser();
@@ -47,10 +45,64 @@ export default function CustomersPage() {
   // Query to get only non-anonymized customers for the current user
   const customersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    return query(collection(firestore, 'customers'), where('userId', '==', user.uid), where('name', '!=', 'Cliente Removido'));
+    return query(collection(firestore, 'customers'), where('userId', '==', user.uid));
   }, [firestore, user]);
 
   const { data: customers, isLoading } = useCollection<Customer>(customersQuery);
+
+  // Function to seed data
+  useEffect(() => {
+    const seedData = async () => {
+      if (firestore && user && customers && customers.length === 0) {
+        console.log("Seeding initial data...");
+        const batch = writeBatch(firestore);
+        
+        const customerRefs = new Map<string, string>();
+        
+        sampleCustomers.forEach((customerData, index) => {
+            const docRef = doc(collection(firestore, 'customers'));
+            const newCustomer: Customer = {
+              ...customerData,
+              id: docRef.id,
+              userId: user.uid,
+            };
+            batch.set(docRef, newCustomer);
+            customerRefs.set(`customer_${index}`, docRef.id);
+        });
+
+        sampleProposals.forEach((proposalData, index) => {
+            const docRef = doc(collection(firestore, 'loanProposals'));
+            // Assign a customer ID cyclically
+            const customerId = customerRefs.get(`customer_${index % sampleCustomers.length}`);
+            if (customerId) {
+              const newProposal = {
+                  ...proposalData,
+                  id: docRef.id,
+                  userId: user.uid,
+                  proposalNumber: `PRO${Date.now() + index}`,
+                  customerId: customerId,
+              };
+              batch.set(docRef, newProposal);
+            }
+        });
+
+        try {
+          await batch.commit();
+          toast({
+            title: "Dados de exemplo criados!",
+            description: "Clientes e propostas de exemplo foram adicionados.",
+          });
+        } catch (error) {
+          console.error("Error seeding data: ", error);
+        }
+      }
+    };
+    // Only run seed if not loading and data is confirmed empty
+    if (!isLoading && customers) {
+        seedData();
+    }
+  }, [firestore, user, customers, isLoading]);
+
 
   const handleNewCustomer = () => {
     setSelectedCustomer(undefined);
@@ -157,6 +209,7 @@ export default function CustomersPage() {
   };
   
   const selectedCount = Object.keys(rowSelection).length;
+  const nonAnonymizedCustomers = customers?.filter(c => c.name !== 'Cliente Removido') || [];
 
   return (
     <AppLayout>
@@ -204,7 +257,7 @@ export default function CustomersPage() {
       </Sheet>
       <CustomerDataTable 
         columns={columns} 
-        data={customers || []} 
+        data={nonAnonymizedCustomers} 
         isLoading={isLoading}
         rowSelection={rowSelection}
         setRowSelection={setRowSelection}

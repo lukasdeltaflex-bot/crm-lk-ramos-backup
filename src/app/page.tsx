@@ -1,4 +1,3 @@
-
 'use client';
 import React from 'react';
 import { AppLayout } from '@/components/app-layout';
@@ -193,8 +192,7 @@ export default function DashboardPage() {
                 mode="single"
                 selected={date}
                 onSelect={(newDate) => setDate(newDate || new Date())}
-                defaultMonth={date}
-                onMonthChange={setDate}
+                defaultMonth={date || new Date()}
                 locale={ptBR}
                 initialFocus
                 captionLayout="dropdown-buttons"

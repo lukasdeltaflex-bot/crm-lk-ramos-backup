@@ -1,8 +1,7 @@
-
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import type { Proposal, Customer, ProposalStatus } from '@/lib/types';
+import type { Proposal, ProposalStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -18,6 +17,8 @@ import { formatCurrency } from '@/lib/utils';
 import React from 'react';
 import { StatusCell } from './status-cell';
 import { type ProposalWithCustomer } from './page';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 type ActionsCellProps = {
     row: {
@@ -31,9 +32,7 @@ type ActionsCellProps = {
 const formatDate = (dateString?: string) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
-    // Adjust for timezone to show the correct date
-    const adjustedDate = new Date(date.valueOf() + date.getTimezoneOffset() * 60 * 1000);
-    return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(adjustedDate);
+    return format(date, "dd/MM/yyyy", { locale: ptBR });
 }
 
 
@@ -45,6 +44,7 @@ const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit, onView, onDelete
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">Abrir menu</span>
+              <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
