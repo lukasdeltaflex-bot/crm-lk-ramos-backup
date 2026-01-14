@@ -114,7 +114,6 @@
         }
       },
       "required": [
-        "id",
         "userId",
         "customerId",
         "table",
@@ -122,11 +121,7 @@
         "installmentAmount",
         "netAmount",
         "grossAmount",
-        "approvalDate",
-        "bankInputDate",
-        "customerPaymentDate",
         "proposalNumber",
-        "productId",
         "status"
       ]
     },
