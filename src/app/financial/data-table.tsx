@@ -16,6 +16,7 @@ import {
 } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
+import { DateRange } from 'react-day-picker';
 
 import {
   Table,
@@ -43,7 +44,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { ChevronDown, X, Printer } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import type { CommissionStatus, Proposal } from '@/lib/types';
+import type { CommissionStatus, Proposal, Customer } from '@/lib/types';
 import { FinancialSummary } from '@/components/financial/financial-summary';
 
 type ProposalWithCustomer = Proposal & { customer: Customer };
@@ -64,7 +65,7 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [statusFilter, setStatusFilter] = React.useState<CommissionStatus | 'Todos'>('Todos');
-  const [date, setDate] = React.useState<Date | undefined>(undefined);
+  const [date, setDate] = React.useState<DateRange | undefined>(undefined);
 
   const table = useReactTable({
     data,
@@ -100,12 +101,12 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
 
   React.useEffect(() => {
     const dateColumn = table.getColumn('commissionPaymentDate');
-    if (date) {
-        // We need to compare dates without time.
-        const formattedDate = format(date, 'yyyy-MM-dd');
+    if (date?.from && date?.to) {
+        date.to.setHours(23, 59, 59, 999); // Include the whole end day
         dateColumn?.setFilterValue((cellValue: unknown) => {
             if (typeof cellValue !== 'string') return false;
-            return cellValue.startsWith(formattedDate);
+            const cellDate = new Date(cellValue);
+            return cellDate >= date.from! && cellDate <= date.to!;
         });
     } else {
         dateColumn?.setFilterValue(undefined);
@@ -127,22 +128,36 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
              <Popover>
                 <PopoverTrigger asChild>
                 <Button
+                    id="date"
                     variant={"outline"}
                     className={cn(
-                    "w-[240px] justify-start text-left font-normal",
-                    !date && "text-muted-foreground"
+                        "w-[300px] justify-start text-left font-normal",
+                        !date && "text-muted-foreground"
                     )}
                 >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "PPP") : <span>Filtrar por data</span>}
+                    {date?.from ? (
+                        date.to ? (
+                        <>
+                            {format(date.from, "LLL dd, y")} -{" "}
+                            {format(date.to, "LLL dd, y")}
+                        </>
+                        ) : (
+                        format(date.from, "LLL dd, y")
+                        )
+                    ) : (
+                        <span>Filtrar por data</span>
+                    )}
                 </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
-                    mode="single"
+                    initialFocus
+                    mode="range"
+                    defaultMonth={date?.from}
                     selected={date}
                     onSelect={setDate}
-                    initialFocus
+                    numberOfMonths={2}
                 />
                 </PopoverContent>
             </Popover>
