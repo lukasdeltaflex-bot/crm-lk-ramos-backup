@@ -1,20 +1,21 @@
 import type { Customer, Proposal, ProductType, ProposalStatus } from './types';
 
 export const customers: Customer[] = [
-  { id: '1', name: 'João da Silva', cpf: '111.222.333-44', phone: '(11) 98765-4321', email: 'joao.silva@example.com', dateOfBirth: '1955-03-15' },
-  { id: '2', name: 'Maria Oliveira', cpf: '222.333.444-55', phone: '(21) 91234-5678', email: 'maria.oliveira@example.com', dateOfBirth: '1949-11-20' },
-  { id: '3', name: 'Carlos Pereira', cpf: '333.444.555-66', phone: '(31) 95555-4444', email: 'carlos.pereira@example.com', dateOfBirth: '1960-07-01' },
-  { id: '4', name: 'Ana Costa', cpf: '444.555.666-77', phone: '(41) 98888-7777', email: 'ana.costa@example.com', dateOfBirth: '1952-01-30' },
-  { id: '5', name: 'Pedro Martins', cpf: '555.666.777-88', phone: '(51) 97777-6666', email: 'pedro.martins@example.com', dateOfBirth: '1949-08-10' },
-  { id: '6', name: 'Sandra Santos', cpf: '666.777.888-99', phone: '(61) 96666-5555', email: 'sandra.santos@example.com', dateOfBirth: '1968-12-05' },
-  { id: '7', name: 'Bruno Lima', cpf: '777.888.999-00', phone: '(71) 95432-1098', email: 'bruno.lima@example.com', dateOfBirth: '1970-02-25' },
-  { id: '8', name: 'Lúcia Ferreira', cpf: '888.999.000-11', phone: '(81) 99876-5432', email: 'lucia.ferreira@example.com', dateOfBirth: '1958-09-18' },
-  { id: '9', name: 'Ricardo Almeida', cpf: '999.000.111-22', phone: '(91) 98765-1234', email: 'ricardo.almeida@example.com', dateOfBirth: '1963-05-22' },
-  { id: '10', name: 'Fernanda Rocha', cpf: '000.111.222-33', phone: '(11) 91111-2222', email: 'fernanda.rocha@example.com', dateOfBirth: '1954-10-12' },
+  { id: '1', name: 'João da Silva', cpf: '111.222.333-44', benefit: '123456789-0', phone: '(11) 98765-4321', email: 'joao.silva@example.com', dateOfBirth: '1955-03-15' },
+  { id: '2', name: 'Maria Oliveira', cpf: '222.333.444-55', benefit: '234567890-1', phone: '(21) 91234-5678', email: 'maria.oliveira@example.com', dateOfBirth: '1949-11-20' },
+  { id: '3', name: 'Carlos Pereira', cpf: '333.444.555-66', benefit: '345678901-2', phone: '(31) 95555-4444', email: 'carlos.pereira@example.com', dateOfBirth: '1960-07-01' },
+  { id: '4', name: 'Ana Costa', cpf: '444.555.666-77', benefit: '456789012-3', phone: '(41) 98888-7777', email: 'ana.costa@example.com', dateOfBirth: '1952-01-30' },
+  { id: '5', name: 'Pedro Martins', cpf: '555.666.777-88', benefit: '567890123-4', phone: '(51) 97777-6666', email: 'pedro.martins@example.com', dateOfBirth: '1949-08-10' },
+  { id: '6', name: 'Sandra Santos', cpf: '666.777.888-99', benefit: '678901234-5', phone: '(61) 96666-5555', email: 'sandra.santos@example.com', dateOfBirth: '1968-12-05' },
+  { id: '7', name: 'Bruno Lima', cpf: '777.888.999-00', benefit: '789012345-6', phone: '(71) 95432-1098', email: 'bruno.lima@example.com', dateOfBirth: '1970-02-25' },
+  { id: '8', name: 'Lúcia Ferreira', cpf: '888.999.000-11', benefit: '890123456-7', phone: '(81) 99876-5432', email: 'lucia.ferreira@example.com', dateOfBirth: '1958-09-18' },
+  { id: '9', name: 'Ricardo Almeida', cpf: '999.000.111-22', benefit: '901234567-8', phone: '(91) 98765-1234', email: 'ricardo.almeida@example.com', dateOfBirth: '1963-05-22' },
+  { id: '10', name: 'Fernanda Rocha', cpf: '000.111.222-33', benefit: '012345678-9', phone: '(11) 91111-2222', email: 'fernanda.rocha@example.com', dateOfBirth: '1954-10-12' },
 ];
 
 const productTypes: ProductType[] = ['Margem', 'Margem CLT', 'Saque Complementar', 'Cartão - Plástico', 'Port', 'Refin Port', 'Refin', 'Saque FGTS'];
-const proposalStatuses: ProposalStatus[] = ['Pago', 'Em Andamento', 'Aguardando Saldo', 'Rejeitado', 'Saldo Pago', 'Pendente'];
+const proposalStatuses: ProposalStatus[] = ['Em Andamento', 'Pago', 'Aguardando Saldo', 'Rejeitado', 'Saldo Pago', 'Pendente'];
+
 
 export const proposals: Proposal[] = [
   {

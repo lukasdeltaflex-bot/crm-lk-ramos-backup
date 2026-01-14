@@ -46,6 +46,10 @@ export const columns: ColumnDef<Customer>[] = [
     header: 'CPF',
   },
   {
+    accessorKey: 'benefit',
+    header: 'Benefício',
+  },
+  {
     accessorKey: 'phone',
     header: 'Telefone',
   },
