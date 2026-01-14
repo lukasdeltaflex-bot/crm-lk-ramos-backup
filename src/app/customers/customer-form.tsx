@@ -53,7 +53,12 @@ export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
   });
 
   function handleFormSubmit(data: CustomerFormValues) {
-    console.log(data);
+    const newCustomer: Customer = {
+      id: customer?.id || Date.now().toString(),
+      ...data,
+      dateOfBirth: format(data.dateOfBirth, 'yyyy-MM-dd'),
+    }
+    console.log('New Customer Data:', newCustomer);
     toast({
       title: 'Cliente Salvo!',
       description: `O cliente ${data.name} foi salvo com sucesso.`,
