@@ -6,8 +6,8 @@
  * an ownership field on the documents themselves.
  *
  * Data Structure:
- * The data is organized into four top-level collections: /customers, /products,
- * /loanProposals, and /commissions. This flat structure relies on denormalized
+ * The data is organized into five top-level collections: /customers, /products,
+ * /loanProposals, /commissions, and /userSettings. This flat structure relies on denormalized
  * ownership fields within documents rather than nested user-specific paths to
  * manage permissions.
  *
@@ -17,7 +17,7 @@
  * - No User Listing: To protect user privacy, listing the top-level /customers
  *   collection is disallowed. Clients must fetch a specific customer document
  *   by its ID, which must match their own UID. Similarly, private collections
- *   like /loanProposals are not publicly listable.
+ *   like /loanProposals and /userSettings are not publicly listable.
  * - Public Product Catalog: The /products collection is read-only for all users,
  *   acting as a public catalog of available loan products. All write operations
  *   are disabled for maximum security, implying products are managed out-of-band.
@@ -153,6 +153,27 @@ service cloud.firestore {
       allow create: if false;
       allow update: if false;
       allow delete: if false;
+    }
+
+    /**
+     * @description
+     *   Stores user-specific application settings. Each user can manage their
+     *   own settings document, but cannot access anyone else's.
+     * @path
+     *   /userSettings/{userId}
+     * @allow
+     *   (get, create, update, delete) A signed-in user modifies their own settings document.
+     * @deny
+     *   (list) Listing all settings is forbidden.
+     * @deny
+     *   (get) A user tries to read another user's settings.
+     * @principle
+     *   Restricts access to a user's own document using the document ID as the ownership key.
+     */
+    match /userSettings/{userId} {
+      allow get, update, delete: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId);
     }
   }
 }

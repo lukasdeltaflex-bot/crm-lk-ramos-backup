@@ -59,3 +59,11 @@ export type Proposal = {
   operator?: string;
   commissionBase?: 'gross' | 'net';
 };
+
+export type UserSettings = {
+  productTypes: string[];
+  proposalStatuses: string[];
+  commissionStatuses: string[];
+  approvingBodies: string[];
+  banks: string[];
+};
