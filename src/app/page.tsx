@@ -36,8 +36,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { StatusBreakdownChart } from '@/components/dashboard/status-breakdown-chart';
 import { FollowUpReminders } from '@/components/dashboard/follow-up-reminders';
+import { ProposalsStatusTable } from '@/components/dashboard/proposals-status-table';
 
 export default function DashboardPage() {
   const [date, setDate] = React.useState<Date>(startOfMonth(new Date()));
@@ -170,6 +170,7 @@ export default function DashboardPage() {
               mode="single"
               selected={date}
               onSelect={(newDate) => setDate(newDate || new Date())}
+              onMonthChange={setDate}
               initialFocus
               captionLayout="dropdown-buttons"
               fromYear={2020}
@@ -193,11 +194,11 @@ export default function DashboardPage() {
                   />
                 </div>
               </DialogTrigger>
-              <DialogContent className="max-w-3xl">
+              <DialogContent className="max-w-4xl">
                 <DialogHeader>
-                  <DialogTitle>Detalhes de: {card.title}</DialogTitle>
+                  <DialogTitle>Propostas com Status: {card.title}</DialogTitle>
                 </DialogHeader>
-                <StatusBreakdownChart proposals={card.proposals} />
+                <ProposalsStatusTable proposals={card.proposals} />
               </DialogContent>
             </Dialog>
           ))}
