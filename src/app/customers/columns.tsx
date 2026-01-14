@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
@@ -36,6 +37,10 @@ export const columns: ColumnDef<Customer>[] = [
     ),
     enableSorting: false,
     enableHiding: false,
+  },
+  {
+    accessorKey: 'id',
+    header: 'ID',
   },
   {
     accessorKey: 'name',
