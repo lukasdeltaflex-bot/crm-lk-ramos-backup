@@ -17,12 +17,23 @@ import { ProposalForm } from './proposal-form';
 import type { Proposal, Customer, ProposalStatus } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, query, where } from 'firebase/firestore';
+import { collection, doc, query, where, deleteDoc } from 'firebase/firestore';
 import {
   addDocumentNonBlocking,
   setDocumentNonBlocking,
 } from '@/firebase/non-blocking-updates';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+  } from "@/components/ui/alert-dialog"
 
 export type ProposalWithCustomer = Proposal & { customer: Customer | undefined };
 
@@ -41,7 +52,7 @@ export default function ProposalsPage() {
 
   const customersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    return query(collection(firestore, 'customers'), where('userId', '==', user.uid));
+    return query(collection(firestore, 'customers'), where('userId', '==', user.uid), where('name', '!=', 'Cliente Removido'));
   }, [firestore, user]);
   
   const { data: proposals, isLoading: proposalsLoading } = useCollection<Proposal>(proposalsQuery);
@@ -76,6 +87,24 @@ export default function ProposalsPage() {
     setIsSheetOpen(true);
   };
 
+  const handleDeleteProposal = async (proposalId: string) => {
+    if (!firestore) return;
+    try {
+      await deleteDoc(doc(firestore, 'loanProposals', proposalId));
+      toast({
+        title: 'Proposta Cancelada!',
+        description: 'A proposta foi cancelada e removida com sucesso.',
+      });
+    } catch (error) {
+        toast({
+            variant: 'destructive',
+            title: 'Erro ao cancelar',
+            description: 'Não foi possível remover a proposta. Tente novamente.',
+        });
+        console.error('Error deleting proposal: ', error);
+    }
+  }
+
   const handleStatusChange = (proposalId: string, newStatus: ProposalStatus) => {
     if (!firestore) return;
     setDocumentNonBlocking(doc(firestore, 'loanProposals', proposalId), { status: newStatus }, { merge: true });
@@ -103,20 +132,23 @@ export default function ProposalsPage() {
         description: `A proposta foi atualizada com sucesso.`,
       });
     } else {
-      const newProposal: Omit<Proposal, 'id'> = {
-        ...data,
-        userId: user.uid,
-        proposalNumber: `PRO${Date.now()}`,
-        dateDigitized: data.dateDigitized ? new Date(data.dateDigitized).toISOString() : '',
-        dateApproved: data.dateApproved ? new Date(data.dateApproved).toISOString() : undefined,
-        datePaidToClient: data.datePaidToClient ? new Date(data.datePaidToClient).toISOString() : undefined,
-        debtBalanceArrivalDate: data.debtBalanceArrivalDate ? new Date(data.debtBalanceArrivalDate).toISOString() : undefined,
-      };
-      addDocumentNonBlocking(collection(firestore, 'loanProposals'), newProposal);
-      toast({
-        title: 'Proposta Salva!',
-        description: `A nova proposta foi criada com sucesso.`,
-      });
+        const newDocRef = doc(collection(firestore, 'loanProposals'));
+        const newProposal: Omit<Proposal, 'id'> = {
+            ...data,
+            userId: user.uid,
+            proposalNumber: `PRO${Date.now()}`,
+            dateDigitized: data.dateDigitized ? new Date(data.dateDigitized).toISOString() : '',
+            dateApproved: data.dateApproved ? new Date(data.dateApproved).toISOString() : undefined,
+            datePaidToClient: data.datePaidToClient ? new Date(data.datePaidToClient).toISOString() : undefined,
+            debtBalanceArrivalDate: data.debtBalanceArrivalDate ? new Date(data.debtBalanceArrivalDate).toISOString() : undefined,
+        };
+        const newProposalWithId = { ...newProposal, id: newDocRef.id };
+
+        setDocumentNonBlocking(newDocRef, newProposalWithId, {});
+        toast({
+            title: 'Proposta Salva!',
+            description: `A nova proposta foi criada com sucesso.`,
+        });
     }
     setIsSheetOpen(false);
   };
@@ -129,7 +161,8 @@ export default function ProposalsPage() {
 
   const isLoading = proposalsLoading || customersLoading || isUserLoading;
 
-  const columns = getColumns(handleEditProposal, handleViewProposal, handleStatusChange);
+  const columns = React.useMemo(() => getColumns(handleEditProposal, handleViewProposal, handleDeleteProposal, handleStatusChange), [customers]);
+
 
   return (
     <AppLayout>

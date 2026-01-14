@@ -25,6 +25,7 @@ type ActionsCellProps = {
     };
     onEdit: (proposal: ProposalWithCustomer) => void;
     onView: (proposal: ProposalWithCustomer) => void;
+    onDelete: (proposalId: string) => void;
 };
 
 const formatDate = (dateString?: string) => {
@@ -36,7 +37,7 @@ const formatDate = (dateString?: string) => {
 }
 
 
-const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit, onView }) => {
+const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit, onView, onDelete }) => {
     const proposal = row.original;
     return (
       <div className="text-right">
@@ -52,7 +53,10 @@ const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit, onView }) => {
             <DropdownMenuItem onClick={() => onView(proposal)}>Ver detalhes</DropdownMenuItem>
             <DropdownMenuItem onClick={() => onEdit(proposal)}>Editar</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
+            <DropdownMenuItem 
+              className="text-destructive focus:text-destructive focus:bg-destructive/10"
+              onClick={() => onDelete(proposal.id)}
+            >
               Cancelar
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -64,6 +68,7 @@ const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit, onView }) => {
 export const getColumns = (
     onEdit: (proposal: ProposalWithCustomer) => void,
     onView: (proposal: ProposalWithCustomer) => void,
+    onDelete: (proposalId: string) => void,
     onStatusChange: (proposalId: string, newStatus: ProposalStatus) => void
     ): ColumnDef<ProposalWithCustomer>[] => [
   {
@@ -174,6 +179,6 @@ export const getColumns = (
   },
   {
     id: 'actions',
-    cell: (props) => <ActionsCell {...props} onEdit={onEdit} onView={onView} />,
+    cell: (props) => <ActionsCell {...props} onEdit={onEdit} onView={onView} onDelete={onDelete} />,
   },
 ];
