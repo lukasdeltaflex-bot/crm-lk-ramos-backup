@@ -63,6 +63,10 @@ export const columns: ColumnDef<Customer>[] = [
     header: 'Email',
   },
   {
+    accessorKey: 'observations',
+    header: 'Observações',
+  },
+  {
     id: 'actions',
     cell: ({ row }) => {
       const customer = row.original;
