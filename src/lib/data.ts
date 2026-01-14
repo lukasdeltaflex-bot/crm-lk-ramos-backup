@@ -1,16 +1,17 @@
+
 import type { Customer, Proposal, ProductType, ProposalStatus, CommissionStatus } from './types';
 
 export const customers: Customer[] = [
-  { id: '1', name: 'João da Silva', cpf: '111.222.333-44', benefit: '123456789-0', phone: '(11) 98765-4321', email: 'joao.silva@example.com', dateOfBirth: '1955-03-15' },
-  { id: '2', name: 'Maria Oliveira', cpf: '222.333.444-55', benefit: '234567890-1', phone: '(21) 91234-5678', email: 'maria.oliveira@example.com', dateOfBirth: '1949-11-20' },
+  { id: '1', name: 'João da Silva', cpf: '111.222.333-44', benefit: '123456789-0', phone: '(11) 98765-4321', email: 'joao.silva@example.com', dateOfBirth: '1955-03-15', observations: 'Cliente antigo, prefere contato por telefone.' },
+  { id: '2', name: 'Maria Oliveira', cpf: '222.333.444-55', benefit: '234567890-1', phone: '(21) 91234-5678', email: 'maria.oliveira@example.com', dateOfBirth: '1949-11-20', observations: 'Possui 2 benefícios.' },
   { id: '3', name: 'Carlos Pereira', cpf: '333.444.555-66', benefit: '345678901-2', phone: '(31) 95555-4444', email: 'carlos.pereira@example.com', dateOfBirth: '1960-07-01' },
   { id: '4', name: 'Ana Costa', cpf: '444.555.666-77', benefit: '456789012-3', phone: '(41) 98888-7777', email: 'ana.costa@example.com', dateOfBirth: '1952-01-30' },
-  { id: '5', name: 'Pedro Martins', cpf: '555.666.777-88', benefit: '567890123-4', phone: '(51) 97777-6666', email: 'pedro.martins@example.com', dateOfBirth: '1949-08-10' },
+  { id: '5', name: 'Pedro Martins', cpf: '555.666.777-88', benefit: '567890123-4', phone: '(51) 97777-6666', email: 'pedro.martins@example.com', dateOfBirth: '1949-08-10', observations: 'Indicado por João da Silva.' },
   { id: '6', name: 'Sandra Santos', cpf: '666.777.888-99', benefit: '678901234-5', phone: '(61) 96666-5555', email: 'sandra.santos@example.com', dateOfBirth: '1968-12-05' },
   { id: '7', name: 'Bruno Lima', cpf: '777.888.999-00', benefit: '789012345-6', phone: '(71) 95432-1098', email: 'bruno.lima@example.com', dateOfBirth: '1970-02-25' },
   { id: '8', name: 'Lúcia Ferreira', cpf: '888.999.000-11', benefit: '890123456-7', phone: '(81) 99876-5432', email: 'lucia.ferreira@example.com', dateOfBirth: '1958-09-18' },
   { id: '9', name: 'Ricardo Almeida', cpf: '999.000.111-22', benefit: '901234567-8', phone: '(91) 98765-1234', email: 'ricardo.almeida@example.com', dateOfBirth: '1963-05-22' },
-  { id: '10', name: 'Fernanda Rocha', cpf: '000.111.222-33', benefit: '012345678-9', phone: '(11) 91111-2222', email: 'fernanda.rocha@example.com', dateOfBirth: '1954-10-12' },
+  { id: '10', name: 'Fernanda Rocha', cpf: '000.111.222-33', benefit: '012345678-9', phone: '(11) 91111-2222', email: 'fernanda.rocha@example.com', dateOfBirth: '1954-10-12', observations: 'Cliente solicitou não receber contatos de marketing.' },
 ];
 
 export const productTypes: ProductType[] = ['Margem', 'Margem CLT', 'Saque Complementar', 'Cartão - Plástico', 'Portabilidade', 'Refin Port', 'Refin', 'Saque FGTS'];
@@ -66,13 +67,13 @@ export const proposals: Proposal[] = [
   {
     id: 'p2', proposalNumber: 'PRO123457', customerId: '2', product: 'Portabilidade', table: 'Tabela B', term: 72,
     installmentAmount: 500.00, netAmount: 20000, grossAmount: 36000, status: 'Pendente', approvingBody: 'SPPREV', commissionValue: 1200,
-    commissionStatus: 'Pendente', commissionPercentage: 6, promoter: 'Promotora Y', bank: '237 - Bradesco S.A.', dateDigitized: '2024-02-05', dateApproved: '2024-02-10',
+    commissionStatus: 'Pendente', commissionPercentage: 6, promoter: 'Promotora Y', bank: '237 - Bradesco S.A.', dateDigitized: '2024-05-05', dateApproved: '2024-05-10',
     bankOrigin: '033 - Santander (Brasil) S.A.', operator: 'Operador 2', commissionBase: 'gross', interestRate: 1.9
   },
   {
     id: 'p3', proposalNumber: 'PRO123458', customerId: '3', product: 'Refin', table: 'Tabela C', term: 84,
     installmentAmount: 200.00, netAmount: 8000, grossAmount: 16800, status: 'Em Andamento', approvingBody: 'INSS', commissionValue: 400,
-    commissionStatus: 'Pendente', commissionPercentage: 5, promoter: 'Promotora Z', bank: '341 - Itaú Unibanco S.A.', dateDigitized: '2024-03-01',
+    commissionStatus: 'Pendente', commissionPercentage: 5, promoter: 'Promotora Z', bank: '341 - Itaú Unibanco S.A.', dateDigitized: '2024-07-01',
     operator: 'Operador 1', commissionBase: 'net', interestRate: 2.0
   },
   {

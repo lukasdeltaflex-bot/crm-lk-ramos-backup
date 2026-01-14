@@ -26,6 +26,7 @@ import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import type { Customer } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
 
 const customerSchema = z.object({
   name: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres.'),
@@ -34,6 +35,7 @@ const customerSchema = z.object({
   phone: z.string().min(10, 'O telefone é obrigatório.'),
   email: z.string().email('O email é inválido.'),
   dateOfBirth: z.date({ required_error: 'A data de nascimento é obrigatória.' }),
+  observations: z.string().optional(),
 });
 
 type CustomerFormValues = z.infer<typeof customerSchema>;
@@ -186,6 +188,23 @@ export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
                     </FormItem>
                     )}
                 />
+            <FormField
+              control={form.control}
+              name="observations"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Observações</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Anotações sobre o cliente..."
+                      className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
         </ScrollArea>
         <div className="flex justify-end pt-8">
