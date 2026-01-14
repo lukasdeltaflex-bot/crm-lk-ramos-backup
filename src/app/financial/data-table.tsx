@@ -170,10 +170,10 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
 
         <div className="flex items-center justify-between py-4 print:hidden">
           <Input
-            placeholder="Filtrar por promotora..."
-            value={(table.getColumn('promoter')?.getFilterValue() as string) ?? ''}
+            placeholder="Filtrar por cliente..."
+            value={(table.getColumn('customer.name')?.getFilterValue() as string) ?? ''}
             onChange={(event) =>
-              table.getColumn('promoter')?.setFilterValue(event.target.value)
+              table.getColumn('customer.name')?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
           />
