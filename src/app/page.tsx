@@ -4,51 +4,66 @@ import { CommissionChart } from '@/components/dashboard/commission-chart';
 import { RecentProposals } from '@/components/dashboard/recent-proposals';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import { PageHeader } from '@/components/page-header';
-import { proposals, customers } from '@/lib/data';
+import { proposals } from '@/lib/data';
 import {
-  CircleDollarSign,
   FileText,
-  Users,
   Clock,
+  CircleDollarSign,
+  CheckCircle,
+  XCircle,
+  Hourglass,
+  BadgePercent,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
+import type { ProposalStatus } from '@/lib/types';
 
 export default function DashboardPage() {
-  const totalProposals = proposals.length;
-  const totalCustomers = customers.length;
-  
-  const totalCommission = proposals
+  const getProposalsCountByStatus = (status: ProposalStatus) => {
+    return proposals.filter((p) => p.status === status).length;
+  };
+
+  const paidCommission = proposals
     .filter((p) => p.commissionPaid)
     .reduce((sum, p) => sum + p.commissionValue, 0);
 
   const pendingCommission = proposals
-    .filter((p) => !p.commissionPaid)
+    .filter((p) => !p.commissionPaid && p.status !== 'Rejeitado')
     .reduce((sum, p) => sum + p.commissionValue, 0);
 
   return (
     <AppLayout>
       <PageHeader title="Dashboard" />
       <div className="space-y-8">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           <StatsCard
-            title="Total de Clientes"
-            value={totalCustomers.toString()}
-            icon={Users}
+            title="Em Andamento"
+            value={getProposalsCountByStatus('Em Andamento').toString()}
+            icon={Hourglass}
           />
           <StatsCard
-            title="Total de Propostas"
-            value={totalProposals.toString()}
-            icon={FileText}
+            title="Aguardando Saldo"
+            value={getProposalsCountByStatus('Aguardando Saldo').toString()}
+            icon={Clock}
           />
           <StatsCard
-            title="Comissão Recebida"
-            value={formatCurrency(totalCommission)}
+            title="Pago"
+            value={getProposalsCountByStatus('Pago').toString()}
+            icon={CheckCircle}
+          />
+           <StatsCard
+            title="Reprovado"
+            value={getProposalsCountByStatus('Rejeitado').toString()}
+            icon={XCircle}
+          />
+          <StatsCard
+            title="Comissão Paga"
+            value={formatCurrency(paidCommission)}
             icon={CircleDollarSign}
           />
           <StatsCard
-            title="Comissão Pendente"
+            title="Comissão a Receber"
             value={formatCurrency(pendingCommission)}
-            icon={Clock}
+            icon={BadgePercent}
           />
         </div>
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">

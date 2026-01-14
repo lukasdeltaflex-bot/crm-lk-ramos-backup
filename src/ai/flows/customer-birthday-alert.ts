@@ -24,7 +24,11 @@ const CustomerBirthdayAlertOutputSchema = z.object({
 export type CustomerBirthdayAlertOutput = z.infer<typeof CustomerBirthdayAlertOutputSchema>;
 
 export async function customerBirthdayAlert(input: CustomerBirthdayAlertInput): Promise<CustomerBirthdayAlertOutput> {
-  return customerBirthdayAlertFlow(input);
+  // return customerBirthdayAlertFlow(input);
+  // Mock implementation to avoid API key errors
+  return {
+    alertMessage: `Lembrete: O aniversário de 75 anos de ${input.customerName} está se aproximando.`
+  }
 }
 
 const prompt = ai.definePrompt({

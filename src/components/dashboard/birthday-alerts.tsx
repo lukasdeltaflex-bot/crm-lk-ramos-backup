@@ -2,10 +2,14 @@ import { customers } from '@/lib/data';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { BellRing, UserCheck } from 'lucide-react';
+import { customerBirthdayAlert } from '@/ai/flows/customer-birthday-alert';
 
 async function BirthdayAlertItem({ customerName }: { customerName: string }) {
   // Mocked alert message to avoid Genkit error due to missing API key.
-  const alertMessage = `Lembrete: O aniversário de 75 anos de ${customerName} está se aproximando.`;
+  const { alertMessage } = await customerBirthdayAlert({
+    customerName,
+    customerAge: 75,
+  });
 
   return (
     <Alert>
