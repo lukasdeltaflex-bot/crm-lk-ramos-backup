@@ -18,6 +18,8 @@ import {
   Hourglass,
   BadgePercent,
   Calendar as CalendarIcon,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { format, startOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -44,6 +46,7 @@ import { Card } from '@/components/ui/card';
 
 export default function DashboardPage() {
   const [date, setDate] = React.useState<Date>(startOfMonth(new Date()));
+  const [isPrivacyMode, setIsPrivacyMode] = React.useState(false);
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
 
@@ -165,38 +168,44 @@ export default function DashboardPage() {
     <AppLayout>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <PageHeader title="Dashboard" />
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant={'outline'}
-              className={cn(
-                'w-[280px] justify-start text-left font-normal',
-                !date && 'text-muted-foreground'
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? (
-                <span className="capitalize">
-                  {format(date, 'MMMM yyyy', { locale: ptBR })}
-                </span>
-              ) : (
-                <span>Escolha um mês</span>
-              )}
+        <div className="flex items-center gap-2">
+            <Popover>
+            <PopoverTrigger asChild>
+                <Button
+                variant={'outline'}
+                className={cn(
+                    'w-[280px] justify-start text-left font-normal',
+                    !date && 'text-muted-foreground'
+                )}
+                >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {date ? (
+                    <span className="capitalize">
+                    {format(date, 'MMMM yyyy', { locale: ptBR })}
+                    </span>
+                ) : (
+                    <span>Escolha um mês</span>
+                )}
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+                <Calendar
+                mode="single"
+                selected={date}
+                onSelect={(newDate) => setDate(newDate || new Date())}
+                onMonthChange={setDate}
+                initialFocus
+                captionLayout="dropdown-buttons"
+                fromYear={2020}
+                toYear={2030}
+                />
+            </PopoverContent>
+            </Popover>
+            <Button variant="ghost" size="icon" onClick={() => setIsPrivacyMode(!isPrivacyMode)}>
+            {isPrivacyMode ? <EyeOff /> : <Eye />}
+            <span className="sr-only">{isPrivacyMode ? 'Mostrar valores' : 'Ocultar valores'}</span>
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={(newDate) => setDate(newDate || new Date())}
-              onMonthChange={setDate}
-              initialFocus
-              captionLayout="dropdown-buttons"
-              fromYear={2020}
-              toYear={2030}
-            />
-          </PopoverContent>
-        </Popover>
+        </div>
       </div>
       <div className="space-y-8">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
@@ -211,7 +220,7 @@ export default function DashboardPage() {
                 <div className="cursor-pointer">
                   <StatsCard
                     title={card.title}
-                    value={formatCurrency(card.value)}
+                    value={isPrivacyMode ? '•••••' : formatCurrency(card.value)}
                     icon={card.icon}
                     className={card.className}
                     valueClassName={card.valueClassName}
@@ -229,7 +238,7 @@ export default function DashboardPage() {
         </div>
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <CommissionChart proposals={proposals || []}/>
+            <CommissionChart proposals={proposals || []} isPrivacyMode={isPrivacyMode}/>
           </div>
           <div className="space-y-8">
             <BirthdayAlerts customers={customers || []} isLoading={isLoading}/>

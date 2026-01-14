@@ -6,12 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils';
 import type { Proposal } from '@/lib/types';
 import { useMemo } from 'react';
+import { Skeleton } from '../ui/skeleton';
 
 interface CommissionChartProps {
     proposals: Proposal[];
+    isPrivacyMode: boolean;
 }
 
-export function CommissionChart({ proposals }: CommissionChartProps) {
+export function CommissionChart({ proposals, isPrivacyMode }: CommissionChartProps) {
     const data = useMemo(() => {
         const monthlyData: { [key: string]: number } = {};
 
@@ -47,6 +49,11 @@ export function CommissionChart({ proposals }: CommissionChartProps) {
         </CardHeader>
         <CardContent>
             <ResponsiveContainer width="100%" height={350}>
+            {isPrivacyMode ? (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                    <Skeleton className="h-full w-full" />
+                </div>
+            ) : (
                 <BarChart data={data}>
                 <XAxis
                     dataKey="name"
@@ -73,6 +80,7 @@ export function CommissionChart({ proposals }: CommissionChartProps) {
                 />
                 <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                 </BarChart>
+            )}
             </ResponsiveContainer>
         </CardContent>
     </Card>
