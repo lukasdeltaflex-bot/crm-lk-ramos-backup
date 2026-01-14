@@ -1,4 +1,3 @@
-
 export type Customer = {
   id: string;
   name: string;
@@ -47,7 +46,7 @@ export type Proposal = {
   commissionValue: number;
   commissionStatus: CommissionStatus;
   commissionPercentage: number;
-  amountPaid?: number;
+  amountPaid: number;
   promoter: string;
   bank: string;
   dateDigitized: string; // YYYY-MM-DD

@@ -3,15 +3,51 @@
 import { ColumnDef } from '@tanstack/react-table';
 import type { Proposal, Customer } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/utils';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 type ProposalWithCustomer = Proposal & { customer: Customer };
 
-export const columns: ColumnDef<ProposalWithCustomer>[] = [
+interface ActionsCellProps {
+  row: { original: ProposalWithCustomer };
+  onEdit: (proposal: ProposalWithCustomer) => void;
+}
+
+const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit }) => {
+  const proposal = row.original;
+  return (
+    <div className="text-right">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Abrir menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Ações</DropdownMenuLabel>
+          <DropdownMenuItem onClick={() => onEdit(proposal)}>
+            Editar Comissão
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+};
+
+export const getColumns = (
+  { onEdit }: { onEdit: (proposal: ProposalWithCustomer) => void; }
+): ColumnDef<ProposalWithCustomer>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -59,7 +95,9 @@ export const columns: ColumnDef<ProposalWithCustomer>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
+      const isPrivacyMode = table.options.meta?.isPrivacyMode;
+      if (isPrivacyMode) return <div className="text-left font-medium">•••••</div>;
       const amount = parseFloat(row.getValue('grossAmount'));
       return <div className="text-left font-medium">{formatCurrency(amount)}</div>;
     },
@@ -67,7 +105,9 @@ export const columns: ColumnDef<ProposalWithCustomer>[] = [
   {
     accessorKey: 'commissionPercentage',
     header: 'Comissão (%)',
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
+      const isPrivacyMode = table.options.meta?.isPrivacyMode;
+      if (isPrivacyMode) return '•••••';
       const percentage = parseFloat(row.getValue('commissionPercentage'));
       return `${percentage.toFixed(2)}%`;
     }
@@ -75,7 +115,9 @@ export const columns: ColumnDef<ProposalWithCustomer>[] = [
   {
     accessorKey: 'commissionValue',
     header: 'Valor Comissão',
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
+        const isPrivacyMode = table.options.meta?.isPrivacyMode;
+        if (isPrivacyMode) return '•••••';
         const amount = parseFloat(row.getValue('commissionValue'));
         return formatCurrency(amount);
       },
@@ -83,7 +125,9 @@ export const columns: ColumnDef<ProposalWithCustomer>[] = [
   {
     accessorKey: 'amountPaid',
     header: 'Valor Pago',
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
+      const isPrivacyMode = table.options.meta?.isPrivacyMode;
+      if (isPrivacyMode) return '•••••';
       const amount = parseFloat(row.getValue('amountPaid') || '0');
       return formatCurrency(amount);
     },
@@ -118,5 +162,9 @@ export const columns: ColumnDef<ProposalWithCustomer>[] = [
         adjustedDate.setMinutes(adjustedDate.getMinutes() + adjustedDate.getTimezoneOffset());
         return new Intl.DateTimeFormat('pt-BR').format(adjustedDate);
     }
+  },
+  {
+    id: 'actions',
+    cell: (props) => <ActionsCell {...props} onEdit={onEdit} />,
   },
 ];

@@ -51,11 +51,13 @@ type ProposalWithCustomer = Proposal & { customer: Customer };
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  isPrivacyMode: boolean;
 }
 
 export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
   columns,
   data,
+  isPrivacyMode
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -84,6 +86,9 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
       columnVisibility,
       rowSelection,
     },
+    meta: {
+      isPrivacyMode,
+    }
   });
 
   const handlePrint = () => {
@@ -166,7 +171,7 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
             <Button onClick={handlePrint}><Printer /> Imprimir Relatório</Button>
         </div>
 
-        <FinancialSummary rows={table.getFilteredRowModel().rows as Row<ProposalWithCustomer>[]} />
+        <FinancialSummary rows={table.getFilteredRowModel().rows as Row<ProposalWithCustomer>[]} isPrivacyMode={isPrivacyMode}/>
 
         <div className="flex items-center justify-between py-4 print:hidden">
           <Input

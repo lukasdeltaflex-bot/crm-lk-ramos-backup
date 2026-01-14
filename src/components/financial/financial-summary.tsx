@@ -11,9 +11,10 @@ type ProposalWithCustomer = Proposal & { customer: Customer };
 
 interface FinancialSummaryProps {
   rows: Row<ProposalWithCustomer>[];
+  isPrivacyMode: boolean;
 }
 
-export function FinancialSummary({ rows }: FinancialSummaryProps) {
+export function FinancialSummary({ rows, isPrivacyMode }: FinancialSummaryProps) {
   const summary = React.useMemo(() => {
     let totalGrossAmount = 0;
     let totalCommissionValue = 0;
@@ -34,32 +35,34 @@ export function FinancialSummary({ rows }: FinancialSummaryProps) {
       pendingAmount,
     };
   }, [rows]);
+  
+  const privacyPlaceholder = '•••••';
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 print:bg-white print:text-black">
       <StatsCard
         title="Total Contratos"
-        value={formatCurrency(summary.totalGrossAmount)}
+        value={isPrivacyMode ? privacyPlaceholder : formatCurrency(summary.totalGrossAmount)}
         icon={FileText}
         className="print:shadow-none print:border-gray-300"
       />
       <StatsCard
         title="Comissão Esperada"
-        value={formatCurrency(summary.totalCommissionValue)}
+        value={isPrivacyMode ? privacyPlaceholder : formatCurrency(summary.totalCommissionValue)}
         icon={CircleDollarSign}
         className="print:shadow-none print:border-gray-300"
         valueClassName="text-blue-500"
       />
       <StatsCard
         title="Comissão Recebida"
-        value={formatCurrency(summary.totalAmountPaid)}
+        value={isPrivacyMode ? privacyPlaceholder : formatCurrency(summary.totalAmountPaid)}
         icon={CheckCircle}
         className="print:shadow-none print:border-gray-300"
         valueClassName="text-green-500"
       />
       <StatsCard
         title="Saldo a Receber"
-        value={formatCurrency(summary.pendingAmount)}
+        value={isPrivacyMode ? privacyPlaceholder : formatCurrency(summary.pendingAmount)}
         icon={Hourglass}
         className="print:shadow-none print:border-gray-300"
         valueClassName="text-orange-500"
