@@ -1,0 +1,158 @@
+/**
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership security model. All data entities,
+ * except for public 'products', are privately owned by a specific user. Access is
+ * granted by comparing the authenticated user's ID (request.auth.uid) against
+ * an ownership field on the documents themselves.
+ *
+ * Data Structure:
+ * The data is organized into four top-level collections: /customers, /products,
+ * /loanProposals, and /commissions. This flat structure relies on denormalized
+ * ownership fields within documents rather than nested user-specific paths to
+ * manage permissions.
+ *
+ * Key Security Decisions:
+ * - User Isolation: Users can only interact with their own data. They cannot
+ *   read, list, or write data belonging to other users.
+ * - No User Listing: To protect user privacy, listing the top-level /customers
+ *   collection is disallowed. Clients must fetch a specific customer document
+ *   by its ID, which must match their own UID. Similarly, private collections
+ *   like /loanProposals are not publicly listable.
+ * - Public Product Catalog: The /products collection is read-only for all users,
+ *   acting as a public catalog of available loan products. All write operations
+ *   are disabled for maximum security, implying products are managed out-of-band.
+ * - Default Deny: All access is implicitly denied unless explicitly granted by
+ *   a rule. Permissions are granularly defined for get, list, create, update,
+ *   and delete operations on every path.
+ *
+ * Denormalization for Authorization:
+ * This ruleset leverages denormalization for efficient and secure authorization.
+ * The /loanProposals collection contains a `customerId` field. This allows
+ * security rules to verify ownership with a direct field check, avoiding slow
+ * and costly `get()` calls to the parent `/customers` document.
+ *
+ * However, the /commissions collection does not have a direct `customerId`. Its
+ * rules must perform a `get()` call to the related `/loanProposals` document to
+ * determine ownership, which is less performant but necessary given the current
+ * data model.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions for reusable logic
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Checks if the requesting user's UID matches the provided userId.
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Verifies that a document exists for state-changing operations.
+    function isExistingDocument() {
+      return resource != null;
+    }
+
+    /**
+      * Checks if the user is the owner of a loan proposal, which is referenced
+      * by a commission document. This requires an extra database read (`get`)
+      * because the commission document itself does not contain the customerId.
+      */
+    function ownsReferencedProposal(loanProposalId) {
+      let proposalData = get(/databases/$(database)/documents/loanProposals/$(loanProposalId)).data;
+      return isOwner(proposalData.customerId);
+    }
+
+
+    /**
+     * @description
+     *   Manages customer profiles. Each user can create, read, update, and
+     *   delete their own customer document.
+     * @path
+     *   /customers/{customerId}
+     * @allow
+     *   (create) A signed-in user creates their own profile: `create /customers/user_abc` where auth.uid is 'user_abc'.
+     * @deny
+     *   (get) A user tries to read another user's profile: `get /customers/user_xyz` where auth.uid is 'user_abc'.
+     * @deny
+     *   (list) A user tries to list all customers: `list /customers`.
+     * @principle
+     *   Restricts access to a user's own data tree using the document ID as the ownership key.
+     */
+    match /customers/{customerId} {
+      allow get: if isOwner(customerId);
+      allow list: if false;
+      allow create: if isOwner(customerId) && request.resource.data.id == customerId;
+      allow update: if isOwner(customerId) && isExistingDocument() && request.resource.data.id == resource.data.id;
+      allow delete: if isOwner(customerId) && isExistingDocument();
+    }
+
+    /**
+     * @description
+     *   Stores loan proposals. Access is granted if the user's UID matches the
+     *   `customerId` field denormalized onto the proposal document.
+     * @path
+     *   /loanProposals/{loanProposalId}
+     * @allow
+     *   (create) A user creates a proposal for themselves: `create /loanProposals/prop_123` with data `{ customerId: 'user_abc' }` where auth.uid is 'user_abc'.
+     * @deny
+     *   (get) A user tries to read a proposal belonging to someone else.
+     * @deny
+     *   (list) Listing all proposals is forbidden to prevent data leakage.
+     * @principle
+     *   Enforces document ownership for all operations using a denormalized `customerId` field.
+     */
+    match /loanProposals/{loanProposalId} {
+      allow get: if isExistingDocument() && isOwner(resource.data.customerId);
+      allow list: if false;
+      allow create: if isOwner(request.resource.data.customerId);
+      allow update: if isExistingDocument() && isOwner(resource.data.customerId) && request.resource.data.customerId == resource.data.customerId;
+      allow delete: if isExistingDocument() && isOwner(resource.data.customerId);
+    }
+
+    /**
+     * @description
+     *   Stores commission records linked to loan proposals. Access is determined by
+     *   checking ownership of the parent loan proposal, which requires a `get()` call.
+     * @path
+     *   /commissions/{commissionId}
+     * @allow
+     *   (get) A user reads a commission for a loan proposal they own.
+     * @deny
+     *   (create) A user tries to create a commission linked to another user's loan proposal.
+     * @deny
+     *   (list) Listing all commissions is forbidden.
+     * @principle
+     *   Secures a child document by performing a lookup on its parent's ownership status.
+     */
+    match /commissions/{commissionId} {
+      allow get: if isExistingDocument() && ownsReferencedProposal(resource.data.loanProposalId);
+      allow list: if false;
+      allow create: if isSignedIn() && ownsReferencedProposal(request.resource.data.loanProposalId);
+      allow update: if isExistingDocument() && ownsReferencedProposal(resource.data.loanProposalId) && request.resource.data.loanProposalId == resource.data.loanProposalId;
+      allow delete: if isExistingDocument() && ownsReferencedProposal(resource.data.loanProposalId);
+    }
+
+    /**
+     * @description
+     *   Contains public, read-only information about loan products.
+     * @path
+     *   /products/{productId}
+     * @allow
+     *   (get, list) Any user, signed in or not, can read product information.
+     * @deny
+     *   (create, update, delete) No user can modify the product catalog.
+     * @principle
+     *   Provides public read access for non-sensitive data while completely locking down all write operations.
+     */
+    match /products/{productId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}

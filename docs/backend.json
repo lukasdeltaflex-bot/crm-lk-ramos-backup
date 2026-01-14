@@ -1,0 +1,260 @@
+{
+  "entities": {
+    "Customer": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Customer",
+      "type": "object",
+      "description": "Represents a customer who is an INSS retiree or pensioner.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Customer entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the customer."
+        },
+        "cpf": {
+          "type": "string",
+          "description": "Customer's CPF (Brazilian individual taxpayer registry number)."
+        },
+        "phone": {
+          "type": "string",
+          "description": "Customer's phone number."
+        },
+        "email": {
+          "type": "string",
+          "description": "Customer's email address.",
+          "format": "email"
+        },
+        "birthDate": {
+          "type": "string",
+          "description": "Customer's birth date.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "cpf",
+        "phone",
+        "email",
+        "birthDate"
+      ]
+    },
+    "LoanProposal": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "LoanProposal",
+      "type": "object",
+      "description": "Represents a loan proposal for a customer.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the LoanProposal entity."
+        },
+        "customerId": {
+          "type": "string",
+          "description": "Reference to Customer. (Relationship: Customer 1:N LoanProposal)"
+        },
+        "table": {
+          "type": "string",
+          "description": "Loan table information."
+        },
+        "term": {
+          "type": "number",
+          "description": "Loan term in months."
+        },
+        "installmentAmount": {
+          "type": "number",
+          "description": "Installment amount for the loan."
+        },
+        "netAmount": {
+          "type": "number",
+          "description": "Net amount released to the customer."
+        },
+        "grossAmount": {
+          "type": "number",
+          "description": "Gross amount (contract value) of the loan."
+        },
+        "approvalDate": {
+          "type": "string",
+          "description": "Date the loan proposal was approved.",
+          "format": "date-time"
+        },
+        "bankInputDate": {
+          "type": "string",
+          "description": "Date the loan proposal was entered into the bank's system.",
+          "format": "date-time"
+        },
+        "customerPaymentDate": {
+          "type": "string",
+          "description": "Date the customer received the loan payment.",
+          "format": "date-time"
+        },
+        "proposalNumber": {
+          "type": "string",
+          "description": "Loan proposal number."
+        },
+        "productId": {
+          "type": "string",
+          "description": "Reference to Product. (Relationship: Product 1:N LoanProposal)"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the proposal (e.g., Averaged, In Progress, Rejected, Awaiting Debt Balance)."
+        }
+      },
+      "required": [
+        "id",
+        "customerId",
+        "table",
+        "term",
+        "installmentAmount",
+        "netAmount",
+        "grossAmount",
+        "approvalDate",
+        "bankInputDate",
+        "customerPaymentDate",
+        "proposalNumber",
+        "productId",
+        "status"
+      ]
+    },
+    "Commission": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Commission",
+      "type": "object",
+      "description": "Represents a commission received for a loan proposal.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Commission entity."
+        },
+        "loanProposalId": {
+          "type": "string",
+          "description": "Reference to LoanProposal. (Relationship: LoanProposal 1:N Commission)"
+        },
+        "amountReceived": {
+          "type": "number",
+          "description": "Amount of commission received."
+        },
+        "paymentDate": {
+          "type": "string",
+          "description": "Date the commission was paid.",
+          "format": "date-time"
+        },
+        "pendingPayment": {
+          "type": "boolean",
+          "description": "Indicates if the commission payment is pending."
+        }
+      },
+      "required": [
+        "id",
+        "loanProposalId",
+        "amountReceived",
+        "paymentDate",
+        "pendingPayment"
+      ]
+    },
+    "Product": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Product",
+      "type": "object",
+      "description": "Represents a loan product type.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Product entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the loan product (e.g., Margin, CLT Margin, Supplementary Withdrawal)."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the product"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/customers/{customerId}",
+        "definition": {
+          "entityName": "Customer",
+          "schema": {
+            "$ref": "#/backend/entities/Customer"
+          },
+          "description": "Stores customer profiles.  All customer operations will be accessible to the user if `request.auth.uid == customerId`",
+          "params": [
+            {
+              "name": "customerId",
+              "description": "The unique identifier for the customer."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/loanProposals/{loanProposalId}",
+        "definition": {
+          "entityName": "LoanProposal",
+          "schema": {
+            "$ref": "#/backend/entities/LoanProposal"
+          },
+          "description": "Stores loan proposals associated with customers. Access is restricted to the customer who owns the proposal (`request.auth.uid == resource.data.customerId`).",
+          "params": [
+            {
+              "name": "loanProposalId",
+              "description": "The unique identifier for the loan proposal."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/commissions/{commissionId}",
+        "definition": {
+          "entityName": "Commission",
+          "schema": {
+            "$ref": "#/backend/entities/Commission"
+          },
+          "description": "Holds commission data tied to specific loan proposals. Access is controlled based on the associated loan proposal's ownership.",
+          "params": [
+            {
+              "name": "commissionId",
+              "description": "The unique identifier for the commission."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/products/{productId}",
+        "definition": {
+          "entityName": "Product",
+          "schema": {
+            "$ref": "#/backend/entities/Product"
+          },
+          "description": "Contains product information, used for product categorization.",
+          "params": [
+            {
+              "name": "productId",
+              "description": "The unique identifier for the product."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "This Firestore structure is designed to manage customer and loan information for a bank correspondent application, prioritizing security, scalability, and ease of debugging.  It focuses on authorization independence by denormalizing customer information into loan proposals, eliminating the need for `get()` calls in security rules. The structure supports secure listing of data and maintains invariants for ownership and timestamps. This approach enhances security rule simplicity and allows for atomic operations.\n\n*   **Customers Collection:** Stores customer profiles. No security rules are enforced here, as customer data is considered private and only accessible to the authenticated user who owns the data. All customer operations will be accessible to the user if `request.auth.uid == customerId`\n*   **Products Collection:** Contains product information, used for product categorization.\n*   **LoanProposals Collection:** Stores loan proposals associated with customers. Includes denormalized customer data (e.g., customerId) to ensure authorization independence. Access is restricted to the customer who owns the proposal (`request.auth.uid == resource.data.customerId`).\n*   **Commissions Collection:** Holds commission data tied to specific loan proposals. Access is controlled based on the associated loan proposal's ownership. This simplifies commission access management, as the security rules only need to check the loan proposal's ownership.\n\nThis design supports the required QAPs (Queryable Access Patterns):\n\n*   **Secure Listing:** The segregation of data into user-specific subcollections (e.g., `/users/{userId}/loanProposals`) enables secure and efficient listing of data because rules can be based on the path.\n*   **Authorization Independence:** Denormalizing authorization context (e.g., copying customerId to loanProposals) removes the need for `get()` calls in security rules, making them simpler, more robust, and facilitating atomic writes.\n*   **No Custom Claims (DBAC):** Authorization relies solely on `request.auth.uid` and data stored in the database.\n*   **Clarity of Intent:** The structure clearly separates different types of data and establishes ownership through explicit user-specific paths and fields."
+  }
+}
