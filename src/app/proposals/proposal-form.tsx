@@ -545,7 +545,9 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
                  </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
                     <DatePickerField name="dateDigitized" label="Data de Digitação" control={form.control} isReadOnly={isReadOnly} />
-                    <DatePickerField name="dateApproved" label="Data de Averbação" control={form.control} isReadOnly={isReadOnly} />
+                    {proposal && (
+                      <DatePickerField name="dateApproved" label="Data de Averbação" control={form.control} isReadOnly={isReadOnly} />
+                    )}
                     <DatePickerField name="datePaidToClient" label="Data de Pagamento ao Cliente" control={form.control} isReadOnly={isReadOnly} />
                     {(product === 'Portabilidade' || product === 'Refin Port') && (
                         <DatePickerField name="debtBalanceArrivalDate" label="Chegada Saldo Devedor" control={form.control} isReadOnly={isReadOnly} />
