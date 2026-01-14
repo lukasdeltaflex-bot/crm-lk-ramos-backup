@@ -39,6 +39,7 @@ export type Proposal = {
   netAmount: number;
   grossAmount: number;
   status: ProposalStatus;
+  approvingBody: string;
   commissionValue: number;
   commissionStatus: CommissionStatus;
   commissionPercentage: number;

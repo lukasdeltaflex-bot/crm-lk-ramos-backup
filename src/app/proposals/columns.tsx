@@ -55,6 +55,10 @@ export const columns: ColumnDef<ProposalWithCustomer>[] = [
     header: 'Produto',
   },
   {
+    accessorKey: 'approvingBody',
+    header: 'Órgão Aprovador',
+  },
+  {
     accessorKey: 'grossAmount',
     header: ({ column }) => {
       return (
