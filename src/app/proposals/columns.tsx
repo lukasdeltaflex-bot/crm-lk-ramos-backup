@@ -1,7 +1,7 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import type { Proposal, Customer } from '@/lib/types';
+import type { Proposal, Customer, ProposalStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,10 +13,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, ArrowUpDown } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/utils';
-import { cn } from '@/lib/utils';
 import React from 'react';
+import { StatusCell } from './status-cell';
 
 type ProposalWithCustomer = Proposal & { customer: Customer };
 
@@ -55,7 +54,8 @@ const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit, onView }) => {
 
 export const getColumns = (
     onEdit: (proposal: ProposalWithCustomer) => void,
-    onView: (proposal: ProposalWithCustomer) => void
+    onView: (proposal: ProposalWithCustomer) => void,
+    onStatusChange: (proposalId: string, newStatus: ProposalStatus) => void
     ): ColumnDef<ProposalWithCustomer>[] => [
   {
     id: 'select',
@@ -119,20 +119,13 @@ export const getColumns = (
     accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => {
-      const status = row.getValue('status') as string;
+      const proposal = row.original;
       return (
-        <Badge
-          variant="outline"
-          className={cn('w-24 justify-center', {
-            'border-green-500 text-green-500': status === 'Pago' || status === 'Saldo Pago',
-            'border-yellow-500 text-yellow-500': status === 'Em Andamento',
-            'border-blue-500 text-blue-500': status === 'Aguardando Saldo',
-            'border-red-500 text-red-500': status === 'Rejeitado',
-            'border-purple-500 text-purple-500': status === 'Pendente',
-          })}
-        >
-          {status}
-        </Badge>
+        <StatusCell
+          proposalId={proposal.id}
+          currentStatus={proposal.status}
+          onStatusChange={onStatusChange}
+        />
       );
     },
     filterFn: (row, id, value) => {

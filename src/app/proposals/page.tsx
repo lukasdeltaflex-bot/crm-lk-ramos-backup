@@ -15,12 +15,13 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { ProposalForm } from './proposal-form';
-import type { Proposal, Customer } from '@/lib/types';
+import type { Proposal, Customer, ProposalStatus } from '@/lib/types';
+import { toast } from '@/hooks/use-toast';
 
 type ProposalWithCustomer = Proposal & { customer: Customer };
 
 export default function ProposalsPage() {
-  const proposals = getProposalsWithCustomerData();
+  const [proposals, setProposals] = React.useState(getProposalsWithCustomerData);
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
   const [selectedProposal, setSelectedProposal] = React.useState<ProposalWithCustomer | undefined>(undefined);
   const [sheetMode, setSheetMode] = React.useState<'new' | 'edit' | 'view'>('new');
@@ -43,6 +44,18 @@ export default function ProposalsPage() {
     setIsSheetOpen(true);
   };
 
+  const handleStatusChange = (proposalId: string, newStatus: ProposalStatus) => {
+    setProposals(currentProposals => 
+      currentProposals.map(p => 
+        p.id === proposalId ? { ...p, status: newStatus } : p
+      )
+    );
+    toast({
+        title: 'Status Atualizado!',
+        description: `O status da proposta foi alterado para "${newStatus}".`,
+    });
+  };
+
   const handleCloseSheet = () => {
     setIsSheetOpen(false);
     setSelectedProposal(undefined);
@@ -54,7 +67,7 @@ export default function ProposalsPage() {
     return 'Detalhes da Proposta';
   };
 
-  const columns = getColumns(handleEditProposal, handleViewProposal);
+  const columns = getColumns(handleEditProposal, handleViewProposal, handleStatusChange);
 
   return (
     <AppLayout>
