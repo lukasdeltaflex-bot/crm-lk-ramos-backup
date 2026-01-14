@@ -25,7 +25,11 @@ const FollowUpReminderOutputSchema = z.object({
 export type FollowUpReminderOutput = z.infer<typeof FollowUpReminderOutputSchema>;
 
 export async function followUpReminder(input: FollowUpReminderInput): Promise<FollowUpReminderOutput> {
-  return followUpReminderFlow(input);
+  // return followUpReminderFlow(input);
+  // Mock implementation to avoid API key errors
+  return {
+    reminderMessage: `Atenção: A proposta ${input.proposalNumber} está em andamento há ${input.daysOpen} dias. Considere contatar o cliente ${input.customerName} para uma atualização.`
+  }
 }
 
 const prompt = ai.definePrompt({
