@@ -101,7 +101,7 @@ export function ProposalsDataTable<TData, TValue>({
                 <TabsTrigger value="Pago">Pago</TabsTrigger>
                 <TabsTrigger value="Saldo Pago">Saldo Pago</TabsTrigger>
                 <TabsTrigger value="Pendente">Pendente</TabsTrigger>
-                <TabsTrigger value="Rejeitado">Reprovado</TabsTrigger>
+                <TabsTrigger value="Reprovado">Reprovado</TabsTrigger>
             </TabsList>
         </Tabs>
         <div className="flex items-center justify-between py-4">

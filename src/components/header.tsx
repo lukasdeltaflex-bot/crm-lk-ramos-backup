@@ -48,13 +48,13 @@ export function Header() {
     <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
       <SidebarTrigger className="md:hidden" />
       <div className="w-full flex-1">
-        {/* Can be used for a global search */}
+        {/* Pode ser usado para uma busca global */}
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="secondary" size="icon" className="rounded-full">
             <Avatar>
-              <AvatarImage src={auth.currentUser?.photoURL || ''} data-ai-hint="person face" />
+              <AvatarImage src={auth.currentUser?.photoURL || ''} data-ai-hint="rosto de pessoa" />
               <AvatarFallback>{getInitials(auth.currentUser?.email)}</AvatarFallback>
             </Avatar>
             <span className="sr-only">Alternar menu de usuário</span>

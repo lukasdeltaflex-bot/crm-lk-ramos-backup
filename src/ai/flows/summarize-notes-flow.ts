@@ -1,19 +1,19 @@
 'use server';
 /**
- * @fileOverview A Genkit flow to summarize customer notes.
+ * @fileOverview Um fluxo Genkit para resumir anotações de clientes.
  *
- * - summarizeNotes - The function to call the summarization flow.
- * - SummarizeNotesInput - The input type (string).
- * - SummarizeNotesOutput - The output type (string).
+ * - summarizeNotes - A função para chamar o fluxo de sumarização.
+ * - SummarizeNotesInput - O tipo de entrada (string).
+ * - SummarizeNotesOutput - O tipo de saída (string).
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const SummarizeNotesInputSchema = z.string().describe('The customer notes to be summarized.');
+const SummarizeNotesInputSchema = z.string().describe('As anotações do cliente a serem resumidas.');
 export type SummarizeNotesInput = z.infer<typeof SummarizeNotesInputSchema>;
 
-const SummarizeNotesOutputSchema = z.string().describe('The summarized and well-formatted customer notes.');
+const SummarizeNotesOutputSchema = z.string().describe('As anotações do cliente resumidas e bem formatadas.');
 export type SummarizeNotesOutput = z.infer<typeof SummarizeNotesOutputSchema>;
 
 export async function summarizeNotes(input: SummarizeNotesInput): Promise<SummarizeNotesOutput> {
@@ -24,16 +24,16 @@ const prompt = ai.definePrompt({
   name: 'summarizeNotesPrompt',
   input: {schema: SummarizeNotesInputSchema},
   output: {schema: SummarizeNotesOutputSchema},
-  prompt: `You are an expert assistant. Your task is to summarize and format customer notes for a loan officer.
-The notes may be messy, contain typos, or be unstructured.
-Your goal is to create a clean, concise, and easy-to-read summary.
-Use bullet points for key information.
-The output should be in Brazilian Portuguese.
+  prompt: `Você é um assistente especialista. Sua tarefa é resumir e formatar anotações de clientes para um agente de crédito.
+As anotações podem estar bagunçadas, conter erros de digitação ou não estarem estruturadas.
+Seu objetivo é criar um resumo limpo, conciso e de fácil leitura.
+Use marcadores para informações importantes.
+A saída deve ser em português do Brasil.
 
-Here are the notes:
+Aqui estão as anotações:
 {{{input}}}
 
-Generate a well-structured summary.`,
+Gere um resumo bem estruturado.`,
 });
 
 const summarizeNotesFlow = ai.defineFlow(

@@ -28,7 +28,8 @@ export type ProposalStatus =
   | 'Pago'
   | 'Rejeitado'
   | 'Saldo Pago'
-  | 'Pendente';
+  | 'Pendente'
+  | 'Reprovado';
 
 export type CommissionStatus = 'Pendente' | 'Paga' | 'Parcial';
 

@@ -111,7 +111,7 @@ export default function DashboardPage() {
   const pendenteProposals = getProposalsByStatus(['Pendente'], true);
 
   const pagoProposals = getProposalsByStatus(['Pago']);
-  const rejeitadoProposals = getProposalsByStatus(['Rejeitado']);
+  const rejeitadoProposals = getProposalsByStatus(['Reprovado']);
 
   const cardData = [
     {
@@ -195,6 +195,7 @@ export default function DashboardPage() {
                 onSelect={(newDate) => setDate(newDate || new Date())}
                 defaultMonth={date}
                 onMonthChange={setDate}
+                locale={ptBR}
                 initialFocus
                 captionLayout="dropdown-buttons"
                 fromYear={2020}

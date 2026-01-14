@@ -5,6 +5,10 @@ import { Inter as FontSans } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import { setDefaultOptions } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
+setDefaultOptions({ locale: ptBR });
 
 export const metadata: Metadata = {
   title: 'INSS Manager',
