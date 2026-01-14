@@ -174,7 +174,7 @@ export default function ProposalsPage() {
         </Button>
       </div>
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="w-full max-w-2xl sm:w-3/4">
+        <SheetContent className="w-full max-w-3xl sm:max-w-3xl">
           <SheetHeader>
             <SheetTitle>{getSheetTitle()}</SheetTitle>
           </SheetHeader>

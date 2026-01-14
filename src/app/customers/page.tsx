@@ -192,7 +192,7 @@ export default function CustomersPage() {
         </div>
       </div>
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="w-full max-w-lg sm:w-3/4">
+        <SheetContent className="w-full max-w-2xl sm:max-w-2xl">
           <SheetHeader>
             <SheetTitle>{getSheetTitle()}</SheetTitle>
           </SheetHeader>
