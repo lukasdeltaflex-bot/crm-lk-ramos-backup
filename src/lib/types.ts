@@ -20,9 +20,10 @@ export type ProductType =
 export type ProposalStatus =
   | 'Em Andamento'
   | 'Aguardando Saldo'
-  | 'Aprovado'
   | 'Pago'
-  | 'Rejeitado';
+  | 'Rejeitado'
+  | 'Saldo Pago'
+  | 'Pendente';
 
 export type Proposal = {
   id: string;

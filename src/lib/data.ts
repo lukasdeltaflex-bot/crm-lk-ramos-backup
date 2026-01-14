@@ -14,7 +14,7 @@ export const customers: Customer[] = [
 ];
 
 const productTypes: ProductType[] = ['Margem', 'Margem CLT', 'Saque Complementar', 'Cartão - Plástico', 'Port', 'Refin Port', 'Refin', 'Saque FGTS'];
-const proposalStatuses: ProposalStatus[] = ['Pago', 'Aprovado', 'Em Andamento', 'Aguardando Saldo', 'Rejeitado'];
+const proposalStatuses: ProposalStatus[] = ['Pago', 'Em Andamento', 'Aguardando Saldo', 'Rejeitado', 'Saldo Pago', 'Pendente'];
 
 export const proposals: Proposal[] = [
   {
@@ -24,7 +24,7 @@ export const proposals: Proposal[] = [
   },
   {
     id: 'p2', proposalNumber: 'PRO123457', customerId: '2', product: 'Port', table: 'Tabela B', term: 72,
-    installmentAmount: 500.00, netAmount: 20000, grossAmount: 36000, status: 'Aprovado', commissionValue: 1200,
+    installmentAmount: 500.00, netAmount: 20000, grossAmount: 36000, status: 'Pendente', commissionValue: 1200,
     commissionPaid: false, commissionPercentage: 6, promoter: 'Promotora Y', bank: 'Banco B', dateDigitized: '2023-02-05', dateApproved: '2023-02-10'
   },
   {
@@ -39,7 +39,7 @@ export const proposals: Proposal[] = [
   },
   {
     id: 'p5', proposalNumber: 'PRO123460', customerId: '5', product: 'Saque Complementar', table: 'Saque RMC', term: 1,
-    installmentAmount: 0, netAmount: 2500, grossAmount: 2500, status: 'Pago', commissionValue: 125,
+    installmentAmount: 0, netAmount: 2500, grossAmount: 2500, status: 'Saldo Pago', commissionValue: 125,
     commissionPaid: true, commissionPercentage: 5, promoter: 'Promotora Y', bank: 'Banco E', dateDigitized: '2023-04-02', dateApproved: '2023-04-03', datePaid: '2023-04-05', commissionPaymentDate: '2023-05-01'
   },
   {
@@ -54,7 +54,7 @@ export const proposals: Proposal[] = [
   },
   {
     id: 'p8', proposalNumber: 'PRO123463', customerId: '7', product: 'Margem', table: 'Tabela F', term: 84,
-    installmentAmount: 1000.00, netAmount: 40000, grossAmount: 84000, status: 'Aprovado', commissionValue: 2000,
+    installmentAmount: 1000.00, netAmount: 40000, grossAmount: 84000, status: 'Pendente', commissionValue: 2000,
     commissionPaid: false, commissionPercentage: 5, promoter: 'Promotora Y', bank: 'Banco C', dateDigitized: '2023-05-25', dateApproved: '2023-05-28'
   },
   {
@@ -64,17 +64,17 @@ export const proposals: Proposal[] = [
   },
   {
     id: 'p10', proposalNumber: 'PRO123465', customerId: '9', product: 'Margem', table: 'Tabela G', term: 84,
-    installmentAmount: 650.00, netAmount: 25000, grossAmount: 54600, status: 'Pago', commissionValue: 1250,
+    installmentAmount: 650.00, netAmount: 25000, grossAmount: 54600, status: 'Saldo Pago', commissionValue: 1250,
     commissionPaid: true, commissionPercentage: 5, promoter: 'Promotora X', bank: 'Banco E', dateDigitized: '2023-06-10', dateApproved: '2023-06-12', datePaid: '2023-06-15', commissionPaymentDate: '2023-07-01'
   },
   {
     id: 'p11', proposalNumber: 'PRO123466', customerId: '10', product: 'Refin Port', table: 'Tabela E', term: 84,
-    installmentAmount: 300.00, netAmount: 12000, grossAmount: 25200, status: 'Aprovado', commissionValue: 600,
+    installmentAmount: 300.00, netAmount: 12000, grossAmount: 25200, status: 'Pendente', commissionValue: 600,
     commissionPaid: false, commissionPercentage: 5, promoter: 'Promotora Y', bank: 'Banco A', dateDigitized: '2023-07-02', dateApproved: '2023-07-05'
   },
   {
     id: 'p12', proposalNumber: 'PRO123467', customerId: '2', product: 'Cartão - Plástico', table: 'Cartão Benefício', term: 1,
-    installmentAmount: 0, netAmount: 1800, grossAmount: 1800, status: 'Pago', commissionValue: 90,
+    installmentAmount: 0, netAmount: 1800, grossAmount: 1800, status: 'Saldo Pago', commissionValue: 90,
     commissionPaid: true, commissionPercentage: 5, promoter: 'Promotora Z', bank: 'Banco B', dateDigitized: '2023-07-20', dateApproved: '2023-07-21', datePaid: '2023-07-22', commissionPaymentDate: '2023-08-01'
   }
 ];

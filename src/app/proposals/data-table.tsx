@@ -90,10 +90,11 @@ export function ProposalsDataTable<TData, TValue>({
             <TabsList>
                 <TabsTrigger value="Todos">Todos</TabsTrigger>
                 <TabsTrigger value="Em Andamento">Em Andamento</TabsTrigger>
-                <TabsTrigger value="Aprovado">Aprovados</TabsTrigger>
                 <TabsTrigger value="Pago">Pagos</TabsTrigger>
-                <TabsTrigger value="Rejeitado">Reprovados</TabsTrigger>
                 <TabsTrigger value="Aguardando Saldo">Aguardando Saldo</TabsTrigger>
+                <TabsTrigger value="Saldo Pago">Saldo Pago</TabsTrigger>
+                <TabsTrigger value="Pendente">Pendente</TabsTrigger>
+                <TabsTrigger value="Rejeitado">Reprovados</TabsTrigger>
             </TabsList>
         </Tabs>
         <div className="flex items-center justify-between py-4">
