@@ -78,7 +78,7 @@ export default function FinancialPage() {
     setIsSheetOpen(false);
   };
 
-  const columns = React.useMemo(() => getColumns({ onEdit: handleEditCommission }), [handleEditCommission]);
+  const columns = React.useMemo(() => getColumns({ onEdit: handleEditCommission }), []);
 
   return (
     <AppLayout>
