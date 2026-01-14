@@ -60,31 +60,31 @@ export const proposals: Proposal[] = [
   {
     id: 'p1', proposalNumber: 'PRO123456', customerId: '1', product: 'Margem', table: 'Tabela A', term: 84,
     installmentAmount: 350.50, netAmount: 15000, grossAmount: 29442, status: 'Pago', approvingBody: 'INSS', commissionValue: 750,
-    commissionStatus: 'Paga', amountPaid: 750, commissionPercentage: 5, promoter: 'Promotora X', bank: '104 - Caixa Econômica Federal', dateDigitized: '2023-01-10', dateApproved: '2023-01-12', datePaid: '2023-01-15', commissionPaymentDate: '2023-02-01',
+    commissionStatus: 'Paga', amountPaid: 750, commissionPercentage: 5, promoter: 'Promotora X', bank: '104 - Caixa Econômica Federal', dateDigitized: '2024-01-10', dateApproved: '2024-01-12', datePaid: '2024-01-15', commissionPaymentDate: '2024-02-01',
     operator: 'Operador 1', commissionBase: 'net', interestRate: 1.8
   },
   {
     id: 'p2', proposalNumber: 'PRO123457', customerId: '2', product: 'Portabilidade', table: 'Tabela B', term: 72,
     installmentAmount: 500.00, netAmount: 20000, grossAmount: 36000, status: 'Pendente', approvingBody: 'SPPREV', commissionValue: 1200,
-    commissionStatus: 'Pendente', commissionPercentage: 6, promoter: 'Promotora Y', bank: '237 - Bradesco S.A.', dateDigitized: '2023-02-05', dateApproved: '2023-02-10',
+    commissionStatus: 'Pendente', commissionPercentage: 6, promoter: 'Promotora Y', bank: '237 - Bradesco S.A.', dateDigitized: '2024-02-05', dateApproved: '2024-02-10',
     bankOrigin: '033 - Santander (Brasil) S.A.', operator: 'Operador 2', commissionBase: 'gross', interestRate: 1.9
   },
   {
     id: 'p3', proposalNumber: 'PRO123458', customerId: '3', product: 'Refin', table: 'Tabela C', term: 84,
     installmentAmount: 200.00, netAmount: 8000, grossAmount: 16800, status: 'Em Andamento', approvingBody: 'INSS', commissionValue: 400,
-    commissionStatus: 'Pendente', commissionPercentage: 5, promoter: 'Promotora Z', bank: '341 - Itaú Unibanco S.A.', dateDigitized: '2023-03-01',
+    commissionStatus: 'Pendente', commissionPercentage: 5, promoter: 'Promotora Z', bank: '341 - Itaú Unibanco S.A.', dateDigitized: '2024-03-01',
     operator: 'Operador 1', commissionBase: 'net', interestRate: 2.0
   },
   {
     id: 'p4', proposalNumber: 'PRO123459', customerId: '4', product: 'Cartão - Plástico', table: 'Cartão Benefício', term: 1,
     installmentAmount: 0, netAmount: 1500, grossAmount: 1500, status: 'Reprovado', approvingBody: 'INSS', commissionValue: 50,
-    commissionStatus: 'Pendente', commissionPercentage: 3.33, promoter: 'Promotora X', bank: '077 - Inter S.A.', dateDigitized: '2023-03-15',
+    commissionStatus: 'Pendente', commissionPercentage: 3.33, promoter: 'Promotora X', bank: '077 - Inter S.A.', dateDigitized: '2024-04-15',
     operator: 'Operador 3', commissionBase: 'gross', interestRate: 22.0
   },
   {
     id: 'p5', proposalNumber: 'PRO123460', customerId: '5', product: 'Saque Complementar', table: 'Saque RMC', term: 1,
     installmentAmount: 0, netAmount: 2500, grossAmount: 2500, status: 'Saldo Pago', approvingBody: 'Federal', commissionValue: 125,
-    commissionStatus: 'Paga', amountPaid: 125, commissionPercentage: 5, promoter: 'Promotora Y', bank: '260 - Nu Pagamentos S.A. - Nubank', dateDigitized: '2023-04-02', dateApproved: '2023-04-03', datePaid: '2023-04-05', commissionPaymentDate: '2023-05-01',
+    commissionStatus: 'Paga', amountPaid: 125, commissionPercentage: 5, promoter: 'Promotora Y', bank: '260 - Nu Pagamentos S.A. - Nubank', dateDigitized: '2024-05-02', dateApproved: '2024-05-03', datePaid: '2024-05-05', commissionPaymentDate: '2024-06-01',
     operator: 'Operador 2', commissionBase: 'net', interestRate: 0
   },
   {
@@ -108,13 +108,13 @@ export const proposals: Proposal[] = [
   {
     id: 'p9', proposalNumber: 'PRO123464', customerId: '8', product: 'Portabilidade', table: 'Tabela B', term: 60,
     installmentAmount: 800.00, netAmount: 30000, grossAmount: 48000, status: 'Em Andamento', approvingBody: 'Federal', commissionValue: 1800,
-    commissionStatus: 'Pendente', commissionPercentage: 6, promoter: 'Promotora Z', bank: '077 - Inter S.A.', dateDigitized: '2024-06-01',
+    commissionStatus: 'Pendente', commissionPercentage: 6, promoter: 'Promotora Z', bank: '077 - Inter S.A.', dateDigitized: '2023-11-01',
     bankOrigin: '041 - Banrisul - do Estado do Rio Grande do Sul S.A.', operator: 'Operador 1', commissionBase: 'gross', interestRate: 2.1
   },
   {
     id: 'p10', proposalNumber: 'PRO123465', customerId: '9', product: 'Margem', table: 'Tabela G', term: 84,
     installmentAmount: 650.00, netAmount: 25000, grossAmount: 54600, status: 'Saldo Pago', approvingBody: 'INSS', commissionValue: 1250,
-    commissionStatus: 'Paga', amountPaid: 1250, commissionPercentage: 5, promoter: 'Promotora X', bank: '260 - Nu Pagamentos S.A. - Nubank', dateDigitized: '2024-06-10', dateApproved: '2024-06-12', datePaid: '2024-06-15', commissionPaymentDate: '2024-07-01',
+    commissionStatus: 'Paga', amountPaid: 1250, commissionPercentage: 5, promoter: 'Promotora X', bank: '260 - Nu Pagamentos S.A. - Nubank', dateDigitized: '2023-12-10', dateApproved: '2023-12-12', datePaid: '2023-12-15', commissionPaymentDate: '2024-01-01',
     operator: 'Operador 3', commissionBase: 'net', interestRate: 1.88
   },
   {
@@ -126,7 +126,7 @@ export const proposals: Proposal[] = [
   {
     id: 'p12', proposalNumber: 'PRO123467', customerId: '2', product: 'Cartão - Plástico', table: 'Cartão Benefício', term: 1,
     installmentAmount: 0, netAmount: 1800, grossAmount: 1800, status: 'Saldo Pago', approvingBody: 'INSS', commissionValue: 90,
-    commissionStatus: 'Parcial', amountPaid: 70, commissionPercentage: 5, promoter: 'Promotora Z', bank: '237 - Bradesco S.A.', dateDigitized: '2024-07-20', dateApproved: '2024-07-21', datePaid: '2024-07-22', commissionPaymentDate: '2024-08-01',
+    commissionStatus: 'Parcial', amountPaid: 70, commissionPercentage: 5, promoter: 'Promotora Z', bank: '237 - Bradesco S.A.', dateDigitized: '2024-05-20', dateApproved: '2024-05-21', datePaid: '2024-05-22', commissionPaymentDate: '2024-06-01',
     operator: 'Operador 1', commissionBase: 'net', interestRate: 23.5
   }
 ];
