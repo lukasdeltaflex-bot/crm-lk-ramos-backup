@@ -11,10 +11,10 @@ export type ProductType =
   | 'Margem'
   | 'Margem CLT'
   | 'Saque Complementar'
-  | 'Cartão de Crédito'
-  | 'Portabilidade'
-  | 'Refin da Port'
-  | 'Refinanciamento'
+  | 'Cartão - Plástico'
+  | 'Port'
+  | 'Refin Port'
+  | 'Refin'
   | 'Saque FGTS';
 
 export type ProposalStatus =
