@@ -66,19 +66,16 @@ export const DraggableHeader = ({ header }: { header: Header<ProposalWithCustome
         <TableHead
             ref={setNodeRef}
             style={style}
-            className={cn(
-                'relative',
-                header.column.getCanSort() && 'cursor-pointer select-none'
-            )}
+            className={cn('relative')}
         >
             <div className="flex items-center gap-1">
-                <div
+                <button
                     {...attributes}
                     {...listeners}
                     className="cursor-grab p-1"
                 >
                     <GripVertical className="h-4 w-4" />
-                </div>
+                </button>
                 {header.isPlaceholder
                 ? null
                 : flexRender(
