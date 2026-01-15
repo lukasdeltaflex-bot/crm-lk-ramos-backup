@@ -144,8 +144,8 @@ export function CommissionForm({ proposal, onSubmit }: CommissionFormProps) {
                                 defaultMonth={field.value || new Date()}
                                 locale={ptBR}
                                 initialFocus
-                                fromYear={new Date().getFullYear() - 10}
-                                toYear={new Date().getFullYear() + 5}
+                                fromYear={new Date().getFullYear() - 20}
+                                toYear={new Date().getFullYear() + 20}
                                 captionLayout="dropdown-buttons"
                                 />
                             </PopoverContent>

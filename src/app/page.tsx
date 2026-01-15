@@ -200,8 +200,8 @@ export default function DashboardPage() {
                     numberOfMonths={2}
                     locale={ptBR}
                     captionLayout="dropdown-buttons"
-                    fromYear={new Date().getFullYear() - 10}
-                    toYear={new Date().getFullYear() + 5}
+                    fromYear={new Date().getFullYear() - 20}
+                    toYear={new Date().getFullYear() + 20}
                 />
                 </PopoverContent>
             </Popover>
