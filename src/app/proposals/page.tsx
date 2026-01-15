@@ -16,7 +16,7 @@ import { ProposalForm } from './proposal-form';
 import type { Proposal, Customer, ProposalStatus } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, query, where, deleteDoc } from 'firebase/firestore';
+import { collection, doc, query, where, deleteDoc, writeBatch } from 'firebase/firestore';
 import {
   setDocumentNonBlocking,
 } from '@/firebase/non-blocking-updates';
@@ -31,6 +31,7 @@ export default function ProposalsPage() {
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
   const [selectedProposal, setSelectedProposal] = React.useState<ProposalWithCustomer | undefined>(undefined);
   const [sheetMode, setSheetMode] = React.useState<'new' | 'edit' | 'view'>('new');
+  const [rowSelection, setRowSelection] = React.useState({});
   
   const proposalsQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
@@ -100,6 +101,35 @@ export default function ProposalsPage() {
         description: `O status da proposta foi alterado para "${newStatus}".`,
     });
   };
+
+  const handleBulkStatusChange = async (newStatus: ProposalStatus) => {
+    if (!firestore) return;
+    const selectedIds = Object.keys(rowSelection);
+    if (selectedIds.length === 0) return;
+
+    const batch = writeBatch(firestore);
+    selectedIds.forEach((id) => {
+      const docRef = doc(firestore, 'loanProposals', id);
+      batch.update(docRef, { status: newStatus });
+    });
+
+    try {
+      await batch.commit();
+      toast({
+        title: 'Status Atualizado em Massa!',
+        description: `${selectedIds.length} proposta(s) foram atualizadas para "${newStatus}".`,
+      });
+      setRowSelection({}); // Limpa a seleção após a atualização
+    } catch (error) {
+      console.error('Error updating statuses in bulk:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao atualizar',
+        description: 'Ocorreu um erro ao atualizar o status das propostas.',
+      });
+    }
+  };
+
 
   const handleFormSubmit = (data: Omit<Proposal, 'id' | 'userId' | 'proposalNumber'> & { proposalNumber?: string }) => {
     if (!firestore || !user) return;
@@ -185,7 +215,13 @@ export default function ProposalsPage() {
             </div>
         </div>
       ) : (
-        <ProposalsDataTable columns={columns} data={proposalsWithCustomerData} />
+        <ProposalsDataTable 
+            columns={columns} 
+            data={proposalsWithCustomerData}
+            rowSelection={rowSelection}
+            setRowSelection={setRowSelection}
+            onBulkStatusChange={handleBulkStatusChange}
+        />
       )}
     </AppLayout>
   );

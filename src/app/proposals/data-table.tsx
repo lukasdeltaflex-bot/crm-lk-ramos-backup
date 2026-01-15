@@ -4,6 +4,7 @@ import * as React from 'react';
 import {
   ColumnDef,
   ColumnFiltersState,
+  RowSelectionState,
   SortingState,
   VisibilityState,
   flexRender,
@@ -33,20 +34,30 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { proposalStatuses } from '@/lib/config-data';
+import type { ProposalStatus } from '@/lib/types';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  rowSelection: RowSelectionState;
+  setRowSelection: React.Dispatch<React.SetStateAction<RowSelectionState>>;
+  onBulkStatusChange: (newStatus: ProposalStatus) => void;
 }
 
 export function ProposalsDataTable<TData, TValue>({
   columns,
   data,
+  rowSelection,
+  setRowSelection,
+  onBulkStatusChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -60,8 +71,6 @@ export function ProposalsDataTable<TData, TValue>({
       operator: false,
       commissionValue: false,
     });
-  const [rowSelection, setRowSelection] = React.useState({});
-  
 
   const table = useReactTable({
     data,
@@ -83,6 +92,7 @@ export function ProposalsDataTable<TData, TValue>({
   });
   
   const statusFilter = (table.getColumn('status')?.getFilterValue() as string[])?.[0] ?? 'Todos';
+  const selectedRowCount = Object.keys(rowSelection).length;
 
   const setStatusFilter = (value: string) => {
     const newValue = value === 'Todos' ? undefined : [value];
@@ -105,14 +115,38 @@ export function ProposalsDataTable<TData, TValue>({
             </TabsList>
         </Tabs>
         <div className="flex items-center justify-between py-4">
-          <Input
-            placeholder="Filtrar por cliente..."
-            value={(table.getColumn('customerName')?.getFilterValue() as string) ?? ''}
-            onChange={(event) =>
-              table.getColumn('customerName')?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
-          />
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="Filtrar por cliente..."
+              value={(table.getColumn('customerName')?.getFilterValue() as string) ?? ''}
+              onChange={(event) =>
+                table.getColumn('customerName')?.setFilterValue(event.target.value)
+              }
+              className="max-w-sm"
+            />
+             {selectedRowCount > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    Alterar status ({selectedRowCount})
+                    <ChevronsUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuLabel>Escolha o novo status</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {proposalStatuses.map(status => (
+                    <DropdownMenuItem
+                      key={status}
+                      onSelect={() => onBulkStatusChange(status as ProposalStatus)}
+                    >
+                      {status}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="ml-auto">
