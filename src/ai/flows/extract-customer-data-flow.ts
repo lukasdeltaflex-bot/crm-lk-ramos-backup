@@ -42,7 +42,7 @@ Aqui estão algumas regras importantes:
 1.  **CPF**: Formate sempre como '000.000.000-00'. Se o texto tiver apenas os números, adicione a pontuação.
 2.  **Datas**: Converta qualquer formato de data (ex: 30/11/1970) para o formato 'YYYY-MM-DD'.
 3.  **CEP**: Formate como '00000-000'.
-4.  **Campos Vazios**: Se uma informação não for encontrada no texto, deixe o campo correspondente como 'undefined'. Não invente dados.
+4.  **Campos Vazios**: Se uma informação não for encontrada no texto, simplesmente omita a chave do objeto JSON de saída. Não invente dados e não use o valor "undefined" como string.
 5.  **Extração**: Extraia o máximo de informações que conseguir do texto.
 
 Texto para análise:
