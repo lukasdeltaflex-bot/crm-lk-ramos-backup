@@ -80,6 +80,10 @@ export const getColumns = (
     id: 'customerName',
   },
   {
+    accessorKey: 'product',
+    header: 'Produto',
+  },
+  {
     accessorKey: 'promoter',
     header: 'Promotora',
   },
