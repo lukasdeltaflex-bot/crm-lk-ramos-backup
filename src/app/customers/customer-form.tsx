@@ -75,6 +75,7 @@ export function CustomerForm({ customer, defaultValues, onSubmit }: CustomerForm
       benefitNumber: '',
       phone: '',
       email: '',
+      birthDate: undefined,
       observations: '',
       cep: '',
       street: '',
@@ -104,31 +105,32 @@ export function CustomerForm({ customer, defaultValues, onSubmit }: CustomerForm
   }, [birthDate]);
 
   useEffect(() => {
-    if (customer) {
-      form.reset({
-        ...customer,
-        birthDate: customer.birthDate ? new Date(customer.birthDate) : undefined,
-      });
-    } else if (defaultValues) {
-      const initialData = {
-        name: defaultValues?.name || '',
-        cpf: defaultValues?.cpf || '',
-        benefitNumber: defaultValues?.benefitNumber || '',
-        phone: defaultValues?.phone || '',
-        email: defaultValues?.email || '',
-        birthDate: defaultValues?.birthDate,
-        observations: defaultValues?.observations || '',
-        cep: defaultValues?.cep || '',
-        street: defaultValues?.street || '',
-        number: defaultValues?.number || '',
-        complement: defaultValues?.complement || '',
-        neighborhood: defaultValues?.neighborhood || '',
-        city: defaultValues?.city || '',
-        state: defaultValues?.state || '',
-      };
-      form.reset(initialData);
-    } else {
-        form.reset({
+    const getInitialData = () => {
+        if (customer) {
+          return {
+            ...customer,
+            birthDate: customer.birthDate ? new Date(customer.birthDate) : undefined,
+          };
+        }
+        if (defaultValues) {
+            return {
+                name: defaultValues?.name || '',
+                cpf: defaultValues?.cpf || '',
+                benefitNumber: defaultValues?.benefitNumber || '',
+                phone: defaultValues?.phone || '',
+                email: defaultValues?.email || '',
+                birthDate: defaultValues?.birthDate,
+                observations: defaultValues?.observations || '',
+                cep: defaultValues?.cep || '',
+                street: defaultValues?.street || '',
+                number: defaultValues?.number || '',
+                complement: defaultValues?.complement || '',
+                neighborhood: defaultValues?.neighborhood || '',
+                city: defaultValues?.city || '',
+                state: defaultValues?.state || '',
+            };
+        }
+        return {
             name: '',
             cpf: '',
             benefitNumber: '',
@@ -143,8 +145,9 @@ export function CustomerForm({ customer, defaultValues, onSubmit }: CustomerForm
             neighborhood: '',
             city: '',
             state: '',
-        });
+        };
     }
+    form.reset(getInitialData());
   }, [customer, defaultValues, form]);
 
   function handleFormSubmit(data: CustomerFormValues) {
