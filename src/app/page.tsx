@@ -16,12 +16,11 @@ import {
   XCircle,
   Hourglass,
   BadgePercent,
-  Calendar as CalendarIcon,
   Eye,
   EyeOff,
   X,
 } from 'lucide-react';
-import { format, startOfMonth } from 'date-fns';
+import { format, parse, startOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency, cn } from '@/lib/utils';
 import type { Proposal, ProposalStatus, Customer } from '@/lib/types';
@@ -30,7 +29,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { FollowUpReminders } from '@/components/dashboard/follow-up-reminders';
@@ -38,11 +36,12 @@ import { ProposalsStatusTable } from '@/components/dashboard/proposals-status-ta
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
 import { DateRange } from 'react-day-picker';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
+import { Input } from '@/components/ui/input';
 
 export default function DashboardPage() {
   const [date, setDate] = React.useState<DateRange | undefined>(undefined);
+  const [startDateInput, setStartDateInput] = React.useState('');
+  const [endDateInput, setEndDateInput] = React.useState('');
   const [isPrivacyMode, setIsPrivacyMode] = React.useState(false);
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
@@ -61,10 +60,50 @@ export default function DashboardPage() {
 
   const isLoading = proposalsLoading || customersLoading || isUserLoading;
 
+  const handleDateChange = (value: string, type: 'start' | 'end') => {
+    let formattedValue = value.replace(/\D/g, '');
+    if (formattedValue.length > 8) formattedValue = formattedValue.substring(0, 8);
+    formattedValue = formattedValue.replace(/(\d{2})(\d)/, '$1/$2');
+    formattedValue = formattedValue.replace(/(\d{2})(\d)/, '$1/$2');
+    
+    if (type === 'start') {
+      setStartDateInput(formattedValue);
+    } else {
+      setEndDateInput(formattedValue);
+    }
+
+    const updateDateState = (start: string, end: string) => {
+      const startDate = parse(start, 'dd/MM/yyyy', new Date());
+      const endDate = parse(end, 'dd/MM/yyyy', new Date());
+      
+      const isValidStart = !isNaN(startDate.getTime()) && start.length === 10;
+      const isValidEnd = !isNaN(endDate.getTime()) && end.length === 10;
+      
+      if (isValidStart && isValidEnd) {
+        setDate({ from: startDate, to: endDate });
+      } else if (isValidStart) {
+        setDate({ from: startDate, to: undefined });
+      } else {
+        setDate(undefined);
+      }
+    };
+    
+    if (type === 'start') {
+      updateDateState(formattedValue, endDateInput);
+    } else {
+      updateDateState(startDateInput, formattedValue);
+    }
+  };
+
+  const clearDates = () => {
+    setStartDateInput('');
+    setEndDateInput('');
+    setDate(undefined);
+  }
+
   const filteredProposals = React.useMemo(() => {
     if (!proposals) return [];
     
-    // If a date range is selected, use it to filter.
     if (date?.from) {
       const fromDate = date.from;
       const toDate = date.to ? new Date(date.to) : new Date(date.from);
@@ -77,7 +116,6 @@ export default function DashboardPage() {
       })
     }
 
-    // If no date range is selected, default to the current month.
     const start = startOfMonth(new Date());
     const end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
     end.setHours(23, 59, 59, 999);
@@ -165,47 +203,21 @@ export default function DashboardPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <PageHeader title="Dashboard" />
         <div className="flex items-center gap-2">
-            <Popover>
-                <PopoverTrigger asChild>
-                <Button
-                    id="date"
-                    variant={"outline"}
-                    className={cn(
-                        "w-[300px] justify-start text-left font-normal",
-                        !date && "text-muted-foreground"
-                    )}
-                >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date?.from ? (
-                        date.to ? (
-                        <>
-                            {format(date.from, "dd/MM/y", {locale: ptBR})} -{" "}
-                            {format(date.to, "dd/MM/y", {locale: ptBR})}
-                        </>
-                        ) : (
-                        format(date.from, "dd/MM/y", {locale: ptBR})
-                        )
-                    ) : (
-                        <span>Filtrar por data...</span>
-                    )}
-                </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end">
-                <Calendar
-                    initialFocus
-                    mode="range"
-                    defaultMonth={date?.from}
-                    selected={date}
-                    onSelect={setDate}
-                    numberOfMonths={2}
-                    locale={ptBR}
-                    captionLayout="dropdown-buttons"
-                    fromYear={new Date().getFullYear() - 20}
-                    toYear={new Date().getFullYear() + 20}
-                />
-                </PopoverContent>
-            </Popover>
-            {date && <Button variant="ghost" size="icon" onClick={() => setDate(undefined)}><X className="h-4 w-4" /></Button>}
+            <Input 
+                placeholder="Data Início (dd/mm/aaaa)" 
+                value={startDateInput}
+                onChange={(e) => handleDateChange(e.target.value, 'start')}
+                maxLength={10}
+                className="w-48"
+            />
+             <Input 
+                placeholder="Data Fim (dd/mm/aaaa)" 
+                value={endDateInput}
+                onChange={(e) => handleDateChange(e.target.value, 'end')}
+                maxLength={10}
+                className="w-48"
+            />
+            {(startDateInput || endDateInput) && <Button variant="ghost" size="icon" onClick={clearDates}><X className="h-4 w-4" /></Button>}
             <Button variant="ghost" size="icon" onClick={() => setIsPrivacyMode(!isPrivacyMode)}>
             {isPrivacyMode ? <EyeOff /> : <Eye />}
             <span className="sr-only">{isPrivacyMode ? 'Mostrar valores' : 'Ocultar valores'}</span>
