@@ -63,6 +63,7 @@ export function ProposalsDataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
+  const [globalFilter, setGlobalFilter] = React.useState('');
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({
       dateApproved: false,
@@ -81,14 +82,34 @@ export function ProposalsDataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    onGlobalFilterChange: setGlobalFilter,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
+      globalFilter,
       columnVisibility,
       rowSelection,
     },
+    globalFilterFn: (row, columnId, filterValue) => {
+        const safeValue = (value: any): string =>
+          String(value ?? '').toLowerCase();
+    
+        const customerName = safeValue(row.getValue('customerName'));
+        const customerCpf = safeValue(row.getValue('customerCpf'));
+        const proposalNumber = safeValue(row.getValue('proposalNumber'));
+        const promoter = safeValue(row.getValue('promoter'));
+    
+        const filter = filterValue.toLowerCase();
+    
+        return (
+          customerName.includes(filter) ||
+          customerCpf.includes(filter) ||
+          proposalNumber.includes(filter) ||
+          promoter.includes(filter)
+        );
+      },
   });
   
   const statusFilter = (table.getColumn('status')?.getFilterValue() as string[])?.[0] ?? 'Todos';
@@ -117,11 +138,9 @@ export function ProposalsDataTable<TData, TValue>({
         <div className="flex items-center justify-between py-4">
           <div className="flex items-center gap-2">
             <Input
-              placeholder="Filtrar por cliente..."
-              value={(table.getColumn('customerName')?.getFilterValue() as string) ?? ''}
-              onChange={(event) =>
-                table.getColumn('customerName')?.setFilterValue(event.target.value)
-              }
+              placeholder="Filtrar por cliente, cpf, proposta..."
+              value={globalFilter ?? ''}
+              onChange={(event) => setGlobalFilter(event.target.value)}
               className="max-w-sm"
             />
              {selectedRowCount > 0 && (
@@ -159,8 +178,9 @@ export function ProposalsDataTable<TData, TValue>({
                 .filter((column) => column.getCanHide())
                 .map((column) => {
                   const idMap: {[key: string]: string} = {
-                    proposalNumber: 'Proposta nº',
+                    proposalNumber: 'Nº Proposta',
                     customerName: 'Cliente',
+                    customerCpf: 'CPF',
                     grossAmount: 'Valor Bruto',
                     commissionValue: 'Comissão',
                     dateDigitized: 'Data Digitação',

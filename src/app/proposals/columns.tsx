@@ -126,8 +126,12 @@ export const getColumns = (
     enableHiding: false,
   },
   {
+    accessorKey: 'promoter',
+    header: 'Promotora',
+  },
+  {
     accessorKey: 'proposalNumber',
-    header: 'Proposta nº',
+    header: 'Nº Proposta',
   },
   {
     id: 'customerName',
@@ -135,6 +139,14 @@ export const getColumns = (
     header: 'Cliente',
     cell: ({ row }) => {
         return row.original.customer?.name || <span className="text-muted-foreground">Cliente não encontrado</span>
+    }
+  },
+  {
+    id: 'customerCpf',
+    accessorFn: (row) => row.customer?.cpf,
+    header: 'CPF',
+    cell: ({ row }) => {
+        return row.original.customer?.cpf || <span className="text-muted-foreground">-</span>
     }
   },
   {
