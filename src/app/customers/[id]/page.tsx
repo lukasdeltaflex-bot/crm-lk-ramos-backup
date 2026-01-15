@@ -17,6 +17,8 @@ import { formatCurrency } from '@/lib/utils';
 import { SimpleProposalsTable } from '@/components/customers/simple-proposals-table';
 import { Separator } from '@/components/ui/separator';
 import { CustomerAiSummary } from '@/components/customers/customer-ai-summary';
+import { isWhatsApp, getWhatsAppUrl } from '@/lib/utils';
+import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
 
 
 const CustomerInfoCard = ({ customer }: { customer: Customer }) => {
@@ -30,6 +32,8 @@ const CustomerInfoCard = ({ customer }: { customer: Customer }) => {
         }
         return age;
     };
+
+    const isWhatsAppNumber = isWhatsApp(customer.phone);
     
     return (
         <Card>
@@ -64,7 +68,15 @@ const CustomerInfoCard = ({ customer }: { customer: Customer }) => {
                         </div>
                         <div className="flex items-center gap-2">
                             <Phone className="h-4 w-4 text-muted-foreground" />
-                            <strong>Telefone:</strong> {customer.phone}
+                            <strong>Telefone:</strong>
+                            <div className="flex items-center gap-2">
+                                <span>{customer.phone}</span>
+                                {isWhatsAppNumber && (
+                                <a href={getWhatsAppUrl(customer.phone)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:text-green-600">
+                                    <WhatsAppIcon />
+                                </a>
+                                )}
+                            </div>
                         </div>
                         <div className="flex items-center gap-2 col-span-1 md:col-span-2">
                             <Mail className="h-4 w-4 text-muted-foreground" />

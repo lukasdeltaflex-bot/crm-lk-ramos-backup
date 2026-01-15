@@ -106,31 +106,7 @@ export function CustomerForm({ customer, defaultValues, onSubmit }: CustomerForm
 
   useEffect(() => {
     const getInitialData = () => {
-        if (customer) {
-          return {
-            ...customer,
-            birthDate: customer.birthDate ? new Date(customer.birthDate) : undefined,
-          };
-        }
-        if (defaultValues) {
-            return {
-                name: defaultValues?.name || '',
-                cpf: defaultValues?.cpf || '',
-                benefitNumber: defaultValues?.benefitNumber || '',
-                phone: defaultValues?.phone || '',
-                email: defaultValues?.email || '',
-                birthDate: defaultValues?.birthDate,
-                observations: defaultValues?.observations || '',
-                cep: defaultValues?.cep || '',
-                street: defaultValues?.street || '',
-                number: defaultValues?.number || '',
-                complement: defaultValues?.complement || '',
-                neighborhood: defaultValues?.neighborhood || '',
-                city: defaultValues?.city || '',
-                state: defaultValues?.state || '',
-            };
-        }
-        return {
+        const initial = {
             name: '',
             cpf: '',
             benefitNumber: '',
@@ -146,6 +122,20 @@ export function CustomerForm({ customer, defaultValues, onSubmit }: CustomerForm
             city: '',
             state: '',
         };
+
+        if (customer) {
+          return {
+            ...customer,
+            birthDate: customer.birthDate ? new Date(customer.birthDate) : undefined,
+          };
+        }
+        if (defaultValues) {
+            return {
+                ...initial,
+                ...defaultValues,
+            };
+        }
+        return initial;
     }
     form.reset(getInitialData());
   }, [customer, defaultValues, form]);
@@ -168,6 +158,17 @@ export function CustomerForm({ customer, defaultValues, onSubmit }: CustomerForm
     form.setValue('cpf', value, { shouldValidate: true });
   };
   
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, "");
+    if (value.length > 11) value = value.substring(0, 11);
+    value = value.replace(/^(\d{2})(\d)/, "($1) $2");
+    if (value.length > 9) {
+        value = value.replace(/(\d{5})(\d)/, "$1-$2");
+    }
+    e.target.value = value;
+    form.setValue('phone', value, { shouldValidate: true });
+  };
+
   const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "");
     if (value.length > 8) value = value.substring(0, 8);
@@ -315,7 +316,7 @@ export function CustomerForm({ customer, defaultValues, onSubmit }: CustomerForm
                         <FormItem>
                         <FormLabel>Telefone</FormLabel>
                         <FormControl>
-                            <Input placeholder="(11) 98765-4321" {...field} />
+                            <Input placeholder="(11) 98765-4321" {...field} onChange={handlePhoneChange} maxLength={15} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>

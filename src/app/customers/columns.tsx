@@ -26,6 +26,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import Link from 'next/link';
+import { isWhatsApp, getWhatsAppUrl } from '@/lib/utils';
+import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
 
 interface ActionsCellProps {
   row: { original: Customer };
@@ -135,6 +137,20 @@ export const getColumns = (
   {
     accessorKey: 'phone',
     header: 'Telefone',
+    cell: ({ row }) => {
+        const phone = row.getValue('phone') as string;
+        const isWhatsAppNumber = isWhatsApp(phone);
+        return (
+          <div className="flex items-center gap-2">
+            <span>{phone}</span>
+            {isWhatsAppNumber && (
+              <a href={getWhatsAppUrl(phone)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:text-green-600">
+                <WhatsAppIcon />
+              </a>
+            )}
+          </div>
+        );
+      },
   },
   {
     accessorKey: 'benefitNumber',
