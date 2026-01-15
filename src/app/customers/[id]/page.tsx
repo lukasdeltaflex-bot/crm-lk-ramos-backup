@@ -16,6 +16,7 @@ import { StatsCard } from '@/components/dashboard/stats-card';
 import { formatCurrency } from '@/lib/utils';
 import { SimpleProposalsTable } from '@/components/customers/simple-proposals-table';
 import { Separator } from '@/components/ui/separator';
+import { CustomerAiSummary } from '@/components/customers/customer-ai-summary';
 
 
 const CustomerInfoCard = ({ customer }: { customer: Customer }) => {
@@ -177,6 +178,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
         <AppLayout>
             <div className="space-y-4">
                 <Skeleton className="h-48 w-full" />
+                <Skeleton className="h-32 w-full" />
                 <div className="grid gap-4 md:grid-cols-3">
                     <Skeleton className="h-24 w-full" />
                     <Skeleton className="h-24 w-full" />
@@ -201,6 +203,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
     <AppLayout>
       <div className='space-y-8'>
         <CustomerInfoCard customer={customer} />
+        <CustomerAiSummary customer={customer} proposals={proposals || []} />
         <CustomerFinancialSummary proposals={proposals || []} />
         <Card>
             <CardHeader>
