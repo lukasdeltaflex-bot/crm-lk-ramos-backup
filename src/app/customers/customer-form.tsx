@@ -109,7 +109,7 @@ export function CustomerForm({ customer, defaultValues, onSubmit }: CustomerForm
         ...customer,
         birthDate: customer.birthDate ? new Date(customer.birthDate) : undefined,
       });
-    } else {
+    } else if (defaultValues) {
       const initialData = {
         name: defaultValues?.name || '',
         cpf: defaultValues?.cpf || '',
@@ -127,6 +127,23 @@ export function CustomerForm({ customer, defaultValues, onSubmit }: CustomerForm
         state: defaultValues?.state || '',
       };
       form.reset(initialData);
+    } else {
+        form.reset({
+            name: '',
+            cpf: '',
+            benefitNumber: '',
+            phone: '',
+            email: '',
+            birthDate: undefined,
+            observations: '',
+            cep: '',
+            street: '',
+            number: '',
+            complement: '',
+            neighborhood: '',
+            city: '',
+            state: '',
+        });
     }
   }, [customer, defaultValues, form]);
 
