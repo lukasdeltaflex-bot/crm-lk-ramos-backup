@@ -31,6 +31,8 @@ import { summarizeNotes } from '@/ai/flows/summarize-notes-flow';
 import { toast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
+import { isWhatsApp, getWhatsAppUrl } from '@/lib/utils';
+import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
 
 const customerSchema = z.object({
   name: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres.'),
@@ -90,6 +92,8 @@ export function CustomerForm({ customer, defaultValues, onSubmit }: CustomerForm
   });
 
   const birthDate = form.watch('birthDate');
+  const phone1Value = form.watch('phone');
+  const phone2Value = form.watch('phone2');
 
   useEffect(() => {
     if (birthDate) {
@@ -319,11 +323,24 @@ export function CustomerForm({ customer, defaultValues, onSubmit }: CustomerForm
                         name="phone"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel>Telefone</FormLabel>
-                            <FormControl>
-                                <Input placeholder="(11) 98765-4321" {...field} onChange={(e) => handlePhoneChange(e, 'phone')} maxLength={15} />
-                            </FormControl>
-                            <FormMessage />
+                                <FormLabel>Telefone</FormLabel>
+                                <FormControl>
+                                    <div className="relative flex items-center">
+                                        <Input
+                                            placeholder="(11) 98765-4321"
+                                            {...field}
+                                            onChange={(e) => handlePhoneChange(e, 'phone')}
+                                            maxLength={15}
+                                            className="pr-10"
+                                        />
+                                        {isWhatsApp(phone1Value) && (
+                                            <a href={getWhatsAppUrl(phone1Value)} target="_blank" rel="noopener noreferrer" className="absolute right-3 text-green-500 hover:text-green-600">
+                                                <WhatsAppIcon />
+                                            </a>
+                                        )}
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
                             </FormItem>
                         )}
                     />
@@ -332,11 +349,25 @@ export function CustomerForm({ customer, defaultValues, onSubmit }: CustomerForm
                         name="phone2"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel>Telefone 2 (Opcional)</FormLabel>
-                            <FormControl>
-                                <Input placeholder="(11) 98765-4321" {...field} onChange={(e) => handlePhoneChange(e, 'phone2')} maxLength={15} value={field.value || ''} />
-                            </FormControl>
-                            <FormMessage />
+                                <FormLabel>Telefone 2 (Opcional)</FormLabel>
+                                <FormControl>
+                                    <div className="relative flex items-center">
+                                        <Input
+                                            placeholder="(11) 91234-5678"
+                                            {...field}
+                                            onChange={(e) => handlePhoneChange(e, 'phone2')}
+                                            maxLength={15}
+                                            value={field.value || ''}
+                                            className="pr-10"
+                                        />
+                                        {phone2Value && isWhatsApp(phone2Value) && (
+                                            <a href={getWhatsAppUrl(phone2Value)} target="_blank" rel="noopener noreferrer" className="absolute right-3 text-green-500 hover:text-green-600">
+                                                <WhatsAppIcon />
+                                            </a>
+                                        )}
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
                             </FormItem>
                         )}
                     />
@@ -551,5 +582,3 @@ export function CustomerForm({ customer, defaultValues, onSubmit }: CustomerForm
     </Form>
   );
 }
-
-    
