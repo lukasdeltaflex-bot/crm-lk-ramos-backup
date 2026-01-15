@@ -64,7 +64,7 @@ export function StatusBreakdownChart({ proposals }: StatusBreakdownChartProps) {
                 }}
                 formatter={(value: number) => [formatCurrency(value), 'Total']}
             />
-            <Bar dataKey="total" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={30}/>
+            <Bar dataKey="total" fill="hsl(var(--accent))" radius={[0, 4, 4, 0]} barSize={30}/>
             </BarChart>
         </ResponsiveContainer>
     </div>

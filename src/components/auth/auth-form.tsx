@@ -123,7 +123,7 @@ export function AuthForm({ type }: AuthFormProps) {
 
   return (
     <Card>
-      <CardHeader className="text-center">
+      <CardHeader className="items-center text-center">
         <div className='flex justify-center mb-4'>
             <Logo />
         </div>

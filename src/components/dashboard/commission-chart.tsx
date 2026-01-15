@@ -78,7 +78,7 @@ export function CommissionChart({ proposals, isPrivacyMode }: CommissionChartPro
                     }}
                     formatter={(value: number) => [formatCurrency(value), 'Total']}
                 />
-                <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="total" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} />
                 </BarChart>
             )}
             </ResponsiveContainer>
