@@ -24,6 +24,8 @@ import {
   useSensors,
   DragEndEvent,
 } from '@dnd-kit/core';
+import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
+
 
 import {
   Table,
@@ -53,6 +55,8 @@ import { ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { proposalStatuses } from '@/lib/config-data';
 import type { ProposalStatus, Proposal } from '@/lib/types';
+import { DraggableHeader } from './columns';
+import type { ProposalWithCustomer } from './page';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -100,10 +104,7 @@ export function ProposalsDataTable<TData, TValue>({
       setColumnOrder((items) => {
         const oldIndex = items.indexOf(active.id as string);
         const newIndex = items.indexOf(over!.id as string);
-        const newItems = Array.from(items);
-        newItems.splice(oldIndex, 1);
-        newItems.splice(newIndex, 0, active.id as string);
-        return newItems;
+        return arrayMove(items, oldIndex, newIndex);
       });
     }
   };
@@ -251,22 +252,18 @@ export function ProposalsDataTable<TData, TValue>({
             <div className="rounded-md border">
             <Table>
                 <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                        return (
-                        <TableHead key={header.id} style={{width: header.getSize()}}>
-                            {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                                )}
-                        </TableHead>
-                        );
-                    })}
-                    </TableRow>
-                ))}
+                    {table.getHeaderGroups().map(headerGroup => (
+                        <TableRow key={headerGroup.id}>
+                             <SortableContext
+                                items={columnOrder}
+                                strategy={horizontalListSortingStrategy}
+                             >
+                                {headerGroup.headers.map(header => (
+                                    <DraggableHeader key={header.id} header={header as Header<ProposalWithCustomer, unknown>} />
+                                ))}
+                            </SortableContext>
+                        </TableRow>
+                    ))}
                 </TableHeader>
                 <TableBody>
                 {table.getRowModel().rows?.length ? (

@@ -40,12 +40,13 @@ interface ActionsCellProps {
 }
 
 export const DraggableHeader = ({ header }: { header: Header<Customer, unknown>}) => {
-    const { attributes, listeners, setNodeRef, transform } = useSortable({
+    const { attributes, listeners, setNodeRef, transform, isDragging } = useSortable({
         id: header.column.id,
       });
     
       const style = {
         transform: CSS.Transform.toString(transform),
+        opacity: isDragging ? 0.5 : 1,
       };
 
     return (
@@ -58,13 +59,13 @@ export const DraggableHeader = ({ header }: { header: Header<Customer, unknown>}
             )}
         >
             <div className="flex items-center gap-1">
-                <div
+                <button
                     {...attributes}
                     {...listeners}
                     className="cursor-grab p-1"
                 >
                     <GripVertical className="h-4 w-4" />
-                </div>
+                </button>
                 {header.isPlaceholder
                 ? null
                 : flexRender(
@@ -246,4 +247,4 @@ export const getColumns = (
     cell: (props) => <ActionsCell {...props} onEdit={onEdit} onDelete={onDelete} />,
     enableColumnOrdering: false,
   },
-];
+].map(column => ({ ...column, id: column.id || column.accessorKey as string}));

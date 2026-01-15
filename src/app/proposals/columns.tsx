@@ -31,6 +31,10 @@ import { type ProposalWithCustomer } from './page';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { TableHead, TableCell } from '@/components/ui/table';
+import { flexRender } from '@tanstack/react-table';
 
 type ActionsCellProps = {
     row: {
@@ -98,20 +102,35 @@ const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit, onView, onDelete
     );
 };
 
-const DraggableHeader = ({ header, children }: { header: Header<ProposalWithCustomer, unknown>, children: React.ReactNode}) => {
-  const { table } = header.getContext()
-  const { getState } = table
-  const { columnOrder } = getState()
-  const { column } = header
+const DraggableHeader = ({ header }: { header: Header<ProposalWithCustomer, unknown>}) => {
+    const { attributes, listeners, setNodeRef, transform, isDragging } = useSortable({
+        id: header.column.id,
+      });
+    
+      const style = {
+        transform: CSS.Transform.toString(transform),
+        opacity: isDragging ? 0.5 : 1,
+      };
 
-  return (
-    <div className="flex items-center gap-2">
-      <div className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), "h-6 w-6 cursor-grab")}>
-        <GripVertical />
-      </div>
-      {children}
-    </div>
-  )
+    return (
+        <TableHead
+            ref={setNodeRef}
+            style={style}
+            className={cn('relative')}
+        >
+            <div className='flex items-center gap-1'>
+                <button {...attributes} {...listeners} className="cursor-grab p-1">
+                    <GripVertical className="h-4 w-4" />
+                </button>
+                {header.isPlaceholder
+                ? null
+                : flexRender(
+                    header.column.columnDef.header,
+                    header.getContext()
+                )}
+            </div>
+      </TableHead>
+    )
 }
 
 export const getColumns = (
@@ -141,19 +160,22 @@ export const getColumns = (
     ),
     enableSorting: false,
     enableHiding: false,
+    enableColumnOrdering: false,
   },
   {
     accessorKey: 'promoter',
-    header: ({ header }) => <DraggableHeader header={header}>Promotora</DraggableHeader>,
+    id: 'promoter',
+    header: 'Promotora',
   },
   {
     accessorKey: 'proposalNumber',
-    header: ({ header }) => <DraggableHeader header={header}>Nº Proposta</DraggableHeader>,
+    id: 'proposalNumber',
+    header: 'Nº Proposta',
   },
   {
     id: 'customerName',
     accessorFn: (row) => row.customer?.name,
-    header: ({ header }) => <DraggableHeader header={header}>Cliente</DraggableHeader>,
+    header: 'Cliente',
     cell: ({ row }) => {
         return row.original.customer?.name || <span className="text-muted-foreground">Cliente não encontrado</span>
     }
@@ -161,31 +183,32 @@ export const getColumns = (
   {
     id: 'customerCpf',
     accessorFn: (row) => row.customer?.cpf,
-    header: ({ header }) => <DraggableHeader header={header}>CPF</DraggableHeader>,
+    header: 'CPF',
     cell: ({ row }) => {
         return row.original.customer?.cpf || <span className="text-muted-foreground">-</span>
     }
   },
   {
     accessorKey: 'product',
-    header: ({ header }) => <DraggableHeader header={header}>Produto</DraggableHeader>,
+    id: 'product',
+    header: 'Produto',
   },
   {
     accessorKey: 'operator',
-    header: ({ header }) => <DraggableHeader header={header}>Operador</DraggableHeader>,
+    id: 'operator',
+    header: 'Operador',
   },
   {
     accessorKey: 'grossAmount',
-    header: ({ column, header }) => {
+    id: 'grossAmount',
+    header: ({ column }) => {
       return (
         <div className="text-right">
             <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
             >
-                <DraggableHeader header={header}>
-                    <span>Valor Bruto</span>
-                </DraggableHeader>
+                <span>Valor Bruto</span>
                 <ArrowUpDown className="ml-2 h-4 w-4" />
             </Button>
         </div>
@@ -198,7 +221,8 @@ export const getColumns = (
   },
   {
     accessorKey: 'status',
-    header: ({ header }) => <DraggableHeader header={header}>Status</DraggableHeader>,
+    id: 'status',
+    header: 'Status',
     cell: ({ row }) => {
       const proposal = row.original;
       return (
@@ -215,7 +239,8 @@ export const getColumns = (
   },
   {
     accessorKey: 'commissionValue',
-    header: ({ header }) => <div className="text-right"><DraggableHeader header={header}>Comissão</DraggableHeader></div>,
+    id: 'commissionValue',
+    header: () => <div className="text-right">Comissão</div>,
     cell: ({ row }) => {
         const amount = parseFloat(row.getValue('commissionValue'));
         return <div className="text-right">{formatCurrency(amount)}</div>;
@@ -223,26 +248,33 @@ export const getColumns = (
   },
   {
     accessorKey: 'dateDigitized',
-    header: ({ header }) => <DraggableHeader header={header}>Data Digitação</DraggableHeader>,
+    id: 'dateDigitized',
+    header: 'Data Digitação',
     cell: ({ row }) => formatDate(row.getValue('dateDigitized'))
   },
   {
     accessorKey: 'dateApproved',
-    header: ({ header }) => <DraggableHeader header={header}>Data Averbação</DraggableHeader>,
+    id: 'dateApproved',
+    header: 'Data Averbação',
     cell: ({ row }) => formatDate(row.getValue('dateApproved'))
   },
   {
     accessorKey: 'datePaidToClient',
-    header: ({ header }) => <DraggableHeader header={header}>Data Pgto. Cliente</DraggableHeader>,
+    id: 'datePaidToClient',
+    header: 'Data Pgto. Cliente',
     cell: ({ row }) => formatDate(row.getValue('datePaidToClient'))
   },
   {
     accessorKey: 'debtBalanceArrivalDate',
-    header: ({ header }) => <DraggableHeader header={header}>Chegada Saldo</DraggableHeader>,
+    id: 'debtBalanceArrivalDate',
+    header: 'Chegada Saldo',
     cell: ({ row }) => formatDate(row.getValue('debtBalanceArrivalDate'))
   },
   {
     id: 'actions',
     cell: (props) => <ActionsCell {...props} onEdit={onEdit} onView={onView} onDelete={onDelete} />,
+    enableColumnOrdering: false,
   },
-];
+].map(column => ({ ...column, id: column.id || column.accessorKey as string}));
+
+export { DraggableHeader };
