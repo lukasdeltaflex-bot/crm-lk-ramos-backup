@@ -43,6 +43,8 @@ import {
 import { CustomerAiForm } from '@/components/customers/customer-ai-form';
 import type { ExtractCustomerDataOutput } from '@/ai/flows/extract-customer-data-flow';
 
+type CustomerFormData = Partial<Omit<Customer, 'id' | 'userId'>> & { birthDate?: Date };
+
 export default function CustomersPage() {
   const { user } = useUser();
   const firestore = useFirestore();
@@ -50,6 +52,7 @@ export default function CustomersPage() {
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
   const [isAiModalOpen, setIsAiModalOpen] = React.useState(false);
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | undefined>(undefined);
+  const [defaultValues, setDefaultValues] = React.useState<CustomerFormData | undefined>(undefined);
   const [sheetMode, setSheetMode] = React.useState<'new' | 'edit'>('new');
   const [rowSelection, setRowSelection] = React.useState({});
 
@@ -113,22 +116,25 @@ export default function CustomersPage() {
 
   const handleNewCustomer = () => {
     setSelectedCustomer(undefined);
+    setDefaultValues(undefined);
     setSheetMode('new');
     setIsSheetOpen(true);
   };
 
   const handleEditCustomer = (customer: Customer) => {
     setSelectedCustomer(customer);
+    setDefaultValues(undefined);
     setSheetMode('edit');
     setIsSheetOpen(true);
   };
 
   const handleAiFormSubmit = (aiData: ExtractCustomerDataOutput) => {
-    const prefilledData = {
+    const prefilledData: CustomerFormData = {
         ...aiData,
         birthDate: aiData.birthDate ? new Date(aiData.birthDate) : undefined,
-    } as any; // Cast to any to match form expectations
-    setSelectedCustomer(prefilledData);
+    };
+    setSelectedCustomer(undefined);
+    setDefaultValues(prefilledData);
     setSheetMode('new');
     setIsAiModalOpen(false);
     setIsSheetOpen(true);
@@ -301,6 +307,7 @@ export default function CustomersPage() {
           <CustomerForm
             onSubmit={handleFormSubmit}
             customer={selectedCustomer}
+            defaultValues={defaultValues}
           />
         </SheetContent>
       </Sheet>

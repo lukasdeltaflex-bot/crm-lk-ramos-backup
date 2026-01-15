@@ -54,12 +54,15 @@ type CustomerFormValues = z.infer<typeof customerSchema>;
 
 type FormCustomer = Omit<Customer, 'id' | 'userId'>;
 
+type CustomerFormData = Partial<Omit<Customer, 'id' | 'userId'>> & { birthDate?: Date };
+
 interface CustomerFormProps {
   customer?: Customer;
+  defaultValues?: CustomerFormData;
   onSubmit: (data: FormCustomer) => void;
 }
 
-export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
+export function CustomerForm({ customer, defaultValues, onSubmit }: CustomerFormProps) {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [age, setAge] = useState<number | null>(null);
@@ -107,24 +110,25 @@ export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
         birthDate: customer.birthDate ? new Date(customer.birthDate) : undefined,
       });
     } else {
-      form.reset({
-        name: '',
-        cpf: '',
-        benefitNumber: '',
-        phone: '',
-        email: '',
-        birthDate: undefined,
-        observations: '',
-        cep: '',
-        street: '',
-        number: '',
-        complement: '',
-        neighborhood: '',
-        city: '',
-        state: '',
-      });
+      const initialData = {
+        name: defaultValues?.name || '',
+        cpf: defaultValues?.cpf || '',
+        benefitNumber: defaultValues?.benefitNumber || '',
+        phone: defaultValues?.phone || '',
+        email: defaultValues?.email || '',
+        birthDate: defaultValues?.birthDate,
+        observations: defaultValues?.observations || '',
+        cep: defaultValues?.cep || '',
+        street: defaultValues?.street || '',
+        number: defaultValues?.number || '',
+        complement: defaultValues?.complement || '',
+        neighborhood: defaultValues?.neighborhood || '',
+        city: defaultValues?.city || '',
+        state: defaultValues?.state || '',
+      };
+      form.reset(initialData);
     }
-  }, [customer, form]);
+  }, [customer, defaultValues, form]);
 
   function handleFormSubmit(data: CustomerFormValues) {
     const newCustomerData: FormCustomer = {
