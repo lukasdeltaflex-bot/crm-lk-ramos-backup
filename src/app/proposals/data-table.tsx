@@ -71,6 +71,7 @@ export function ProposalsDataTable<TData, TValue>({
       debtBalanceArrivalDate: false,
       operator: false,
       commissionValue: false,
+      customerCpf: false,
     });
 
   const table = useReactTable({
@@ -138,7 +139,7 @@ export function ProposalsDataTable<TData, TValue>({
         <div className="flex items-center justify-between py-4">
           <div className="flex items-center gap-2">
             <Input
-              placeholder="Filtrar por cliente, cpf, proposta..."
+              placeholder="Filtrar por cliente, CPF, proposta ou promotora..."
               value={globalFilter ?? ''}
               onChange={(event) => setGlobalFilter(event.target.value)}
               className="max-w-sm"
@@ -280,3 +281,4 @@ export function ProposalsDataTable<TData, TValue>({
     </Card>
   );
 }
+    

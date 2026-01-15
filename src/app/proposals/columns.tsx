@@ -227,3 +227,4 @@ export const getColumns = (
     cell: (props) => <ActionsCell {...props} onEdit={onEdit} onView={onView} onDelete={onDelete} />,
   },
 ];
+    
