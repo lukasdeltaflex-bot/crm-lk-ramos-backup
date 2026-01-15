@@ -66,7 +66,9 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
     []
   );
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
+    React.useState<VisibilityState>({
+      proposalNumber: false,
+    });
   const [rowSelection, setRowSelection] = React.useState({});
   const [statusFilter, setStatusFilter] = React.useState<CommissionStatus | 'Todos'>('Todos');
   const [date, setDate] = React.useState<DateRange | undefined>(undefined);
@@ -130,6 +132,7 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
     amountPaid: 'Valor Pago',
     commissionStatus: 'Status Comissão',
     commissionPaymentDate: 'Data Pagamento',
+    proposalNumber: 'Nº Contrato',
   };
 
 

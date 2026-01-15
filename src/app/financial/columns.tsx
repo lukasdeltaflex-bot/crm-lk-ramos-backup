@@ -90,7 +90,11 @@ export const getColumns = (
     header: 'CPF',
     id: 'customerCpf',
     cell: ({row}) => row.original.customer.cpf,
-    enableHiding: false, // This ensures the column data is available for filtering even if hidden
+  },
+  {
+    accessorKey: 'proposalNumber',
+    header: 'Nº Contrato',
+    id: 'proposalNumber',
   },
   {
     accessorKey: 'product',
