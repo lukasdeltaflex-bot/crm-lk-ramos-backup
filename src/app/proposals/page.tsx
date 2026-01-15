@@ -135,18 +135,23 @@ export default function ProposalsPage() {
   const handleFormSubmit = (data: Omit<Proposal, 'id' | 'userId'>) => {
     if (!firestore || !user) return;
   
-    // Helper to convert date to ISO string if it exists
-    const toISO = (date: any) => (date ? new Date(date).toISOString() : undefined);
+    const toISOString = (dateString?: string) => {
+        if (!dateString) return undefined;
+        try {
+            const parsed = parse(dateString, 'dd/MM/yyyy', new Date());
+            return !isNaN(parsed.getTime()) ? parsed.toISOString() : undefined;
+        } catch {
+            return undefined;
+        }
+    };
     
-    const parsedDateDigitized = parse(data.dateDigitized, 'dd/MM/yyyy', new Date());
-
     if (sheetMode === 'edit' && selectedProposal) {
       const proposalToUpdate: Partial<Proposal> = {
         ...data,
-        dateDigitized: !isNaN(parsedDateDigitized.getTime()) ? parsedDateDigitized.toISOString() : selectedProposal.dateDigitized,
-        dateApproved: toISO(data.dateApproved),
-        datePaidToClient: toISO(data.datePaidToClient),
-        debtBalanceArrivalDate: toISO(data.debtBalanceArrivalDate),
+        dateDigitized: toISOString(data.dateDigitized),
+        dateApproved: toISOString(data.dateApproved),
+        datePaidToClient: toISOString(data.datePaidToClient),
+        debtBalanceArrivalDate: toISOString(data.debtBalanceArrivalDate),
       };
       setDocumentNonBlocking(doc(firestore, 'loanProposals', selectedProposal.id), proposalToUpdate, { merge: true });
       toast({
@@ -158,10 +163,10 @@ export default function ProposalsPage() {
       const newProposal: Omit<Proposal, 'id'> = {
         ...data,
         userId: user.uid,
-        dateDigitized: !isNaN(parsedDateDigitized.getTime()) ? parsedDateDigitized.toISOString() : new Date().toISOString(),
-        dateApproved: toISO(data.dateApproved),
-        datePaidToClient: toISO(data.datePaidToClient),
-        debtBalanceArrivalDate: toISO(data.debtBalanceArrivalDate),
+        dateDigitized: toISOString(data.dateDigitized) || new Date().toISOString(),
+        dateApproved: toISOString(data.dateApproved),
+        datePaidToClient: toISOString(data.datePaidToClient),
+        debtBalanceArrivalDate: toISOString(data.debtBalanceArrivalDate),
       };
       const newProposalWithId = { ...newProposal, id: newDocRef.id };
   

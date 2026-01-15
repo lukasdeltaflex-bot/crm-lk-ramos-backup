@@ -53,6 +53,10 @@ const attachmentSchema = z.object({
   size: z.number(),
 });
 
+const optionalDateString = z.string().optional().refine(val => !val || !isNaN(parse(val, 'dd/MM/yyyy', new Date()).getTime()), {
+    message: "Data inválida. Use o formato dd/mm/aaaa.",
+});
+
 const proposalSchema = z.object({
   proposalNumber: z.string().min(1, "O número da proposta é obrigatório."),
   customerId: z.string({ required_error: 'Selecione um cliente.' }),
@@ -85,9 +89,9 @@ const proposalSchema = z.object({
       return false;
     }
   }, { message: 'Data inválida. Use o formato dd/mm/aaaa.' }),
-  dateApproved: z.date().optional(),
-  datePaidToClient: z.date().optional(),
-  debtBalanceArrivalDate: z.date().optional(),
+  dateApproved: optionalDateString,
+  datePaidToClient: optionalDateString,
+  debtBalanceArrivalDate: optionalDateString,
   
   attachments: z.array(attachmentSchema).optional(),
 });
@@ -101,7 +105,17 @@ interface ProposalFormProps {
   onSubmit: (data: ProposalFormValues) => void;
 }
 
-const DatePickerField = ({ name, label, control, isReadOnly }: { name: any, label: string, control: any, isReadOnly?: boolean }) => (
+const handleDateMask = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, "");
+    if (value.length > 8) value = value.substring(0, 8);
+    value = value.replace(/(\d{2})(\d)/, '$1/$2');
+    value = value.replace(/(\d{2})(\d)/, '$1/$2');
+    e.target.value = value;
+    return value;
+};
+
+
+const MaskedDatePicker = ({ name, label, control, isReadOnly }: { name: any, label: string, control: any, isReadOnly?: boolean }) => (
     <FormField
         control={control}
         name={name}
@@ -109,44 +123,42 @@ const DatePickerField = ({ name, label, control, isReadOnly }: { name: any, labe
         <FormItem className="flex flex-col pt-2">
             <FormLabel>{label}</FormLabel>
             <Popover>
-            <PopoverTrigger asChild>
-                <FormControl>
-                <Button
-                    variant={'outline'}
-                    className={cn(
-                    'w-[240px] pl-3 text-left font-normal',
-                    !field.value && 'text-muted-foreground'
-                    )}
-                    disabled={isReadOnly}
-                >
-                    {field.value ? (
-                    format(field.value, 'dd/MM/yyyy', { locale: ptBR })
-                    ) : (
-                    <span>Escolha uma data</span>
-                    )}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                </Button>
-                </FormControl>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                mode="single"
-                selected={field.value}
-                onSelect={field.onChange}
-                defaultMonth={field.value || new Date()}
-                locale={ptBR}
-                initialFocus
-                fromYear={new Date().getFullYear() - 20}
-                toYear={new Date().getFullYear() + 20}
-                captionLayout="dropdown-buttons"
-                />
-            </PopoverContent>
+                <PopoverTrigger asChild>
+                    <FormControl>
+                            <div className="relative">
+                                <Input
+                                    placeholder="dd/mm/aaaa"
+                                    {...field}
+                                    onChange={(e) => field.onChange(handleDateMask(e))}
+                                    value={field.value || ''}
+                                    maxLength={10}
+                                    className="w-[240px] pr-8"
+                                    readOnly={isReadOnly}
+                                />
+                                <CalendarIcon className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
+                            </div>
+                    </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                        mode="single"
+                        selected={field.value ? parse(field.value, 'dd/MM/yyyy', new Date()) : undefined}
+                        onSelect={(date) => field.onChange(date ? format(date, 'dd/MM/yyyy') : '')}
+                        defaultMonth={field.value ? parse(field.value, 'dd/MM/yyyy', new Date()) : new Date()}
+                        locale={ptBR}
+                        initialFocus
+                        fromYear={new Date().getFullYear() - 20}
+                        toYear={new Date().getFullYear() + 20}
+                        captionLayout="dropdown-buttons"
+                    />
+                </PopoverContent>
             </Popover>
             <FormMessage />
         </FormItem>
         )}
     />
 );
+
 
 export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: ProposalFormProps) {
     const { user } = useUser();
@@ -183,6 +195,17 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
         }
     }
   }, [commissionBase, commissionPercentage, grossAmount, netAmount, setValue, isReadOnly, form]);
+
+  const formatDateForForm = (dateString?: string) => {
+    if (!dateString) return undefined;
+    try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return undefined;
+        return format(date, 'dd/MM/yyyy');
+    } catch {
+        return undefined;
+    }
+  }
 
 
   useEffect(() => {
@@ -225,9 +248,9 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
         commissionPercentage: proposal.commissionPercentage || undefined,
         commissionValue: proposal.commissionValue || undefined,
         bankOrigin: proposal.bankOrigin || '',
-        dateApproved: proposal.dateApproved ? new Date(proposal.dateApproved) : undefined,
-        datePaidToClient: proposal.datePaidToClient ? new Date(proposal.datePaidToClient) : undefined,
-        debtBalanceArrivalDate: proposal.debtBalanceArrivalDate ? new Date(proposal.debtBalanceArrivalDate) : undefined,
+        dateApproved: formatDateForForm(proposal.dateApproved),
+        datePaidToClient: formatDateForForm(proposal.datePaidToClient),
+        debtBalanceArrivalDate: formatDateForForm(proposal.debtBalanceArrivalDate),
         attachments: proposal.attachments || [],
       });
     } else {
@@ -247,11 +270,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
   const isAttachmentSectionDisabled = !user || !selectedCustomerId;
   
   const handleDateDigitizedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, "");
-    if (value.length > 8) value = value.substring(0, 8);
-    value = value.replace(/(\d{2})(\d)/, '$1/$2');
-    value = value.replace(/(\d{2})(\d)/, '$1/$2');
-    e.target.value = value;
+    const value = handleDateMask(e);
     form.setValue('dateDigitized', value, { shouldValidate: true });
   };
 
@@ -271,7 +290,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
                         <FormLabel>Cliente</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly}>
                         <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="line-clamp-1">
                             <SelectValue placeholder="Selecione um cliente" />
                             </SelectTrigger>
                         </FormControl>
@@ -638,50 +657,11 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
                     />
                  </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
-                    <FormField
-                        control={form.control}
-                        name="dateDigitized"
-                        render={({ field }) => (
-                        <FormItem className="flex flex-col pt-2">
-                            <FormLabel>Data de Digitação</FormLabel>
-                             <Popover>
-                                <PopoverTrigger asChild>
-                                    <FormControl>
-                                         <div className="relative">
-                                            <Input
-                                                placeholder="dd/mm/aaaa"
-                                                {...field}
-                                                onChange={handleDateDigitizedChange}
-                                                maxLength={10}
-                                                className="w-[240px] pr-8"
-                                                readOnly={isReadOnly}
-                                            />
-                                            <CalendarIcon className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
-                                        </div>
-                                    </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                    <Calendar
-                                        mode="single"
-                                        selected={field.value ? parse(field.value, 'dd/MM/yyyy', new Date()) : undefined}
-                                        onSelect={(date) => field.onChange(date ? format(date, 'dd/MM/yyyy') : '')}
-                                        defaultMonth={field.value ? parse(field.value, 'dd/MM/yyyy', new Date()) : new Date()}
-                                        locale={ptBR}
-                                        initialFocus
-                                        fromYear={new Date().getFullYear() - 20}
-                                        toYear={new Date().getFullYear() + 20}
-                                        captionLayout="dropdown-buttons"
-                                    />
-                                </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    <DatePickerField name="dateApproved" label="Data de Averbação" control={form.control} isReadOnly={isReadOnly} />
-                    <DatePickerField name="datePaidToClient" label="Data de Pagamento ao Cliente" control={form.control} isReadOnly={isReadOnly} />
+                    <MaskedDatePicker name="dateDigitized" label="Data de Digitação" control={form.control} isReadOnly={isReadOnly} />
+                    <MaskedDatePicker name="dateApproved" label="Data de Averbação" control={form.control} isReadOnly={isReadOnly} />
+                    <MaskedDatePicker name="datePaidToClient" label="Data de Pagamento ao Cliente" control={form.control} isReadOnly={isReadOnly} />
                     {(product === 'Portabilidade' || product === 'Refin Port') && (
-                        <DatePickerField name="debtBalanceArrivalDate" label="Chegada Saldo Devedor" control={form.control} isReadOnly={isReadOnly} />
+                        <MaskedDatePicker name="debtBalanceArrivalDate" label="Chegada Saldo Devedor" control={form.control} isReadOnly={isReadOnly} />
                     )}
                  </div>
             </div>
