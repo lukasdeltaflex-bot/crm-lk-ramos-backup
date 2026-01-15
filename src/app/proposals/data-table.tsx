@@ -59,6 +59,9 @@ import type { ProposalStatus, Proposal } from '@/lib/types';
 import { DraggableHeader } from './columns';
 import type { ProposalWithCustomer } from './page';
 
+const STORAGE_KEY_VISIBILITY = 'lk-ramos-proposal-columns-visibility';
+const STORAGE_KEY_ORDER = 'lk-ramos-proposal-columns-order';
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -80,19 +83,48 @@ export function ProposalsDataTable<TData, TValue>({
     []
   );
   const [globalFilter, setGlobalFilter] = React.useState('');
+  
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({
-      dateApproved: false,
-      datePaidToClient: false,
-      debtBalanceArrivalDate: false,
-      operator: false,
-      commissionValue: false,
-      customerCpf: false,
+    React.useState<VisibilityState>(() => {
+        try {
+            const saved = typeof window !== 'undefined' ? window.localStorage.getItem(STORAGE_KEY_VISIBILITY) : null;
+            return saved ? JSON.parse(saved) : {
+                dateApproved: false,
+                datePaidToClient: false,
+                debtBalanceArrivalDate: false,
+                operator: false,
+                commissionValue: false,
+                customerCpf: false,
+            };
+        } catch {
+            return {
+                dateApproved: false,
+                datePaidToClient: false,
+                debtBalanceArrivalDate: false,
+                operator: false,
+                commissionValue: false,
+                customerCpf: false,
+            };
+        }
     });
   
-  const [columnOrder, setColumnOrder] = React.useState<string[]>(
-    columns.map(c => c.id!).filter(id => id !== 'select' && id !== 'actions')
-  );
+  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(() => {
+    try {
+        const defaultOrder = columns.map(c => c.id!).filter(id => id !== 'select' && id !== 'actions');
+        const saved = typeof window !== 'undefined' ? window.localStorage.getItem(STORAGE_KEY_ORDER) : null;
+        return saved ? JSON.parse(saved) : defaultOrder;
+    } catch {
+        return columns.map(c => c.id!).filter(id => id !== 'select' && id !== 'actions');
+    }
+  });
+
+  React.useEffect(() => {
+    localStorage.setItem(STORAGE_KEY_VISIBILITY, JSON.stringify(columnVisibility));
+  }, [columnVisibility]);
+
+  React.useEffect(() => {
+    localStorage.setItem(STORAGE_KEY_ORDER, JSON.stringify(columnOrder));
+  }, [columnOrder]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),

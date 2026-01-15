@@ -50,6 +50,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { DraggableHeader } from './columns';
 import type { Customer } from '@/lib/types';
 
+const STORAGE_KEY_VISIBILITY = 'lk-ramos-customer-columns-visibility';
+const STORAGE_KEY_ORDER = 'lk-ramos-customer-columns-order';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -68,17 +70,44 @@ export function CustomerDataTable<TData extends {id: string}, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = React.useState('');
+
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({
-        observations: false,
-        city: false,
-        state: false,
-        benefitNumber: false,
+    React.useState<VisibilityState>(() => {
+        try {
+            const saved = typeof window !== 'undefined' ? window.localStorage.getItem(STORAGE_KEY_VISIBILITY) : null;
+            return saved ? JSON.parse(saved) : {
+                observations: false,
+                city: false,
+                state: false,
+                benefitNumber: false,
+            };
+        } catch {
+            return {
+                observations: false,
+                city: false,
+                state: false,
+                benefitNumber: false,
+            };
+        }
     });
     
-  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(
-    columns.map(c => c.id!).filter(id => id !== 'select' && id !== 'actions')
-  );
+  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(() => {
+    try {
+        const defaultOrder = columns.map(c => c.id!).filter(id => id !== 'select' && id !== 'actions');
+        const saved = typeof window !== 'undefined' ? window.localStorage.getItem(STORAGE_KEY_ORDER) : null;
+        return saved ? JSON.parse(saved) : defaultOrder;
+    } catch {
+        return columns.map(c => c.id!).filter(id => id !== 'select' && id !== 'actions');
+    }
+  });
+
+  React.useEffect(() => {
+    localStorage.setItem(STORAGE_KEY_VISIBILITY, JSON.stringify(columnVisibility));
+  }, [columnVisibility]);
+
+  React.useEffect(() => {
+    localStorage.setItem(STORAGE_KEY_ORDER, JSON.stringify(columnOrder));
+  }, [columnOrder]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -137,6 +166,7 @@ export function CustomerDataTable<TData extends {id: string}, TValue>({
   });
 
   const idMap: {[key: string]: string} = {
+    numericId: 'ID',
     name: 'Nome',
     cpf: 'CPF',
     phone: 'Telefone',

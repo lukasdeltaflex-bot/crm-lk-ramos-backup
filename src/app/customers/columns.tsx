@@ -155,6 +155,7 @@ export const getColumns = (
     accessorKey: 'numericId',
     id: 'numericId',
     header: 'ID',
+    enableHiding: false,
   },
   {
     accessorKey: 'name',
@@ -177,7 +178,8 @@ export const getColumns = (
                 {customer.name}
             </Link>
         )
-    }
+    },
+    enableHiding: false,
   },
   {
     accessorKey: 'cpf',
@@ -251,5 +253,6 @@ export const getColumns = (
     id: 'actions',
     cell: (props) => <ActionsCell {...props} onEdit={onEdit} onDelete={onDelete} />,
     enableColumnOrdering: false,
+    enableHiding: false,
   },
 ].map(column => ({ ...column, id: column.id || column.accessorKey as string}));

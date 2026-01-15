@@ -58,6 +58,10 @@ import type { CommissionStatus, Proposal, Customer } from '@/lib/types';
 import { FinancialSummary } from '@/components/financial/financial-summary';
 import { DraggableHeader } from './columns';
 
+const STORAGE_KEY_VISIBILITY = 'lk-ramos-financial-columns-visibility';
+const STORAGE_KEY_ORDER = 'lk-ramos-financial-columns-order';
+
+
 type ProposalWithCustomer = Proposal & { customer: Customer };
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -76,18 +80,41 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [statusFilter, setStatusFilter] = React.useState<CommissionStatus | 'Todos'>('Todos');
   const [globalFilter, setGlobalFilter] = React.useState('');
-  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(
-    columns.map(c => c.id!).filter(id => id !== 'select' && id !== 'actions')
-  );
 
   const [startDateInput, setStartDateInput] = React.useState('');
   const [endDateInput, setEndDateInput] = React.useState('');
   const [appliedDateRange, setAppliedDateRange] = React.useState<DateRange | undefined>(undefined);
+
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>(() => {
+        try {
+            const saved = typeof window !== 'undefined' ? window.localStorage.getItem(STORAGE_KEY_VISIBILITY) : null;
+            return saved ? JSON.parse(saved) : {};
+        } catch {
+            return {};
+        }
+    });
+
+  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(() => {
+    try {
+        const defaultOrder = columns.map(c => c.id!).filter(id => id !== 'select' && id !== 'actions');
+        const saved = typeof window !== 'undefined' ? window.localStorage.getItem(STORAGE_KEY_ORDER) : null;
+        return saved ? JSON.parse(saved) : defaultOrder;
+    } catch {
+        return columns.map(c => c.id!).filter(id => id !== 'select' && id !== 'actions');
+    }
+  });
+
+  React.useEffect(() => {
+    localStorage.setItem(STORAGE_KEY_VISIBILITY, JSON.stringify(columnVisibility));
+  }, [columnVisibility]);
+
+  React.useEffect(() => {
+    localStorage.setItem(STORAGE_KEY_ORDER, JSON.stringify(columnOrder));
+  }, [columnOrder]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
