@@ -59,7 +59,6 @@ export function CustomerDataTable<TData, TValue>({
         city: false,
         state: false,
         benefitNumber: false,
-        phone2: false,
     });
 
   const table = useReactTable({
@@ -206,5 +205,3 @@ export function CustomerDataTable<TData, TValue>({
     </Card>
   );
 }
-
-    
