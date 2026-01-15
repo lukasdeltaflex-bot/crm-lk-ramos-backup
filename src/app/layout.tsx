@@ -7,6 +7,7 @@ import { FirebaseClientProvider } from '@/firebase';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import { setDefaultOptions } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { ThemeProvider } from '@/components/theme-provider';
 
 setDefaultOptions({ locale: ptBR });
 
@@ -33,11 +34,18 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
-        <FirebaseClientProvider>
-          <FirebaseErrorListener />
-          {children}
-        </FirebaseClientProvider>
-        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <FirebaseClientProvider>
+            <FirebaseErrorListener />
+            {children}
+          </FirebaseClientProvider>
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );
