@@ -71,7 +71,7 @@ const LogoSvg = ({ className }: { className?: string }) => (
         />
 
         {/* Text */}
-        <text x="115" y="35" className="logo-text" dominantBaseline="middle" textAnchor="start">LK RAMOS</text>
+        <text x="30" y="70" className="logo-text" dominantBaseline="middle" textAnchor="start">LK RAMOS</text>
     </svg>
 );
 
@@ -116,7 +116,7 @@ export function Logo({ className, forPrinting = false }: { className?: string; f
   return (
     <div
       className={cn(
-        'flex items-center gap-0 group-data-[collapsible=icon]:gap-0',
+        'flex items-center group-data-[collapsible=icon]:gap-0',
         className
       )}
     >
