@@ -289,7 +289,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
                         <FormLabel>Cliente</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly}>
                         <FormControl>
-                            <SelectTrigger className="line-clamp-1">
+                            <SelectTrigger>
                             <SelectValue placeholder="Selecione um cliente" />
                             </SelectTrigger>
                         </FormControl>
@@ -659,7 +659,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
                     <MaskedDatePicker name="dateDigitized" label="Data de Digitação" control={form.control} isReadOnly={isReadOnly} />
                     <MaskedDatePicker name="dateApproved" label="Data de Averbação" control={form.control} isReadOnly={isReadOnly} />
                     <MaskedDatePicker name="datePaidToClient" label="Data de Pagamento ao Cliente" control={form.control} isReadOnly={isReadOnly} />
-                    {(product === 'Portabilidade' || product === 'Refin Port') && (
+                    {product === 'Portabilidade' && (
                         <MaskedDatePicker name="debtBalanceArrivalDate" label="Chegada Saldo Devedor" control={form.control} isReadOnly={isReadOnly} />
                     )}
                  </div>
