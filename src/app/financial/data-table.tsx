@@ -66,9 +66,7 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
     []
   );
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({
-      proposalNumber: false,
-    });
+    React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [statusFilter, setStatusFilter] = React.useState<CommissionStatus | 'Todos'>('Todos');
   const [date, setDate] = React.useState<DateRange | undefined>(undefined);
@@ -132,7 +130,7 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
     amountPaid: 'Valor Pago',
     commissionStatus: 'Status Comissão',
     commissionPaymentDate: 'Data Pagamento',
-    proposalNumber: 'Nº Contrato',
+    proposalNumber: 'Nº Proposta',
   };
 
 
@@ -196,7 +194,7 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
 
         <div className="flex items-center justify-between py-4 print:hidden">
           <Input
-            placeholder="Filtrar por cliente, CPF, produto..."
+            placeholder="Filtrar por cliente, CPF, nº proposta..."
             value={globalFilter ?? ''}
             onChange={(event) =>
                 setGlobalFilter(event.target.value)

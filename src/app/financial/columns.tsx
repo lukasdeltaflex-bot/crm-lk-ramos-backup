@@ -93,7 +93,7 @@ export const getColumns = (
   },
   {
     accessorKey: 'proposalNumber',
-    header: 'Nº Contrato',
+    header: 'Nº Proposta',
     id: 'proposalNumber',
   },
   {
