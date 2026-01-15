@@ -7,7 +7,7 @@ import { doc, collection, query, where } from 'firebase/firestore';
 import type { Customer, Proposal } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Phone, Mail, Calendar, FileText, CircleDollarSign, BadgePercent, MapPin } from 'lucide-react';
+import { User, Phone, Mail, Calendar, FileText, CircleDollarSign, BadgePercent, MapPin, Hash } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
@@ -55,6 +55,10 @@ const CustomerInfoCard = ({ customer }: { customer: Customer }) => {
                 <div>
                     <h4 className="font-semibold mb-4 text-lg">Dados Pessoais</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                            <Hash className="h-4 w-4 text-muted-foreground" />
+                            <strong>ID Cliente:</strong> <span className='truncate'>{customer.id}</span>
+                        </div>
                         <div className="flex items-center gap-2">
                             <FileText className="h-4 w-4 text-muted-foreground" />
                             <strong>CPF:</strong> {customer.cpf}
@@ -150,7 +154,9 @@ const CustomerFinancialSummary = ({ proposals }: { proposals: Proposal[] }) => {
       proposals.forEach((proposal) => {
         if (proposal.status === 'Pago' || proposal.status === 'Saldo Pago') {
           totalContracted += proposal.grossAmount;
-          totalCommission += proposal.commissionValue;
+          if (proposal.commissionValue) {
+            totalCommission += proposal.commissionValue;
+          }
         }
       });
   
@@ -244,5 +250,3 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
     </AppLayout>
   );
 }
-
-    
