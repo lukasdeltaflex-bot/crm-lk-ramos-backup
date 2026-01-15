@@ -70,6 +70,7 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
   const [rowSelection, setRowSelection] = React.useState({});
   const [statusFilter, setStatusFilter] = React.useState<CommissionStatus | 'Todos'>('Todos');
   const [date, setDate] = React.useState<DateRange | undefined>(undefined);
+  const [globalFilter, setGlobalFilter] = React.useState('');
 
   const table = useReactTable({
     data,
@@ -79,6 +80,7 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
+    onGlobalFilterChange: setGlobalFilter,
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
@@ -87,6 +89,7 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
       columnFilters,
       columnVisibility,
       rowSelection,
+      globalFilter,
     },
     meta: {
       isPrivacyMode,
@@ -190,10 +193,10 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
 
         <div className="flex items-center justify-between py-4 print:hidden">
           <Input
-            placeholder="Filtrar por cliente..."
-            value={(table.getColumn('customerName')?.getFilterValue() as string) ?? ''}
+            placeholder="Filtrar por cliente, CPF, produto..."
+            value={globalFilter ?? ''}
             onChange={(event) =>
-              table.getColumn('customerName')?.setFilterValue(event.target.value)
+                setGlobalFilter(event.target.value)
             }
             className="max-w-sm"
           />

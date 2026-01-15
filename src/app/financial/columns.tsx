@@ -86,6 +86,13 @@ export const getColumns = (
     id: 'customerName',
   },
   {
+    accessorKey: 'customer.cpf',
+    header: 'CPF Cliente',
+    id: 'customerCpf',
+    cell: ({row}) => row.original.customer.cpf,
+    enableHiding: false, // This ensures the column data is available for filtering even if hidden
+  },
+  {
     accessorKey: 'product',
     header: 'Produto',
     id: 'produto'
