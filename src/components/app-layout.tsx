@@ -11,11 +11,9 @@ import {
 import { Logo } from '@/components/logo';
 import { SidebarNav } from '@/components/sidebar-nav';
 import { Header } from '@/components/header';
-import { AuthGuard } from '@/components/auth/auth-guard';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AuthGuard>
       <SidebarProvider>
         <Sidebar className="print:hidden" collapsible="icon">
           <SidebarRail />
@@ -31,6 +29,5 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <main className="flex-1 p-4 sm:p-6 print:p-0">{children}</main>
         </SidebarInset>
       </SidebarProvider>
-    </AuthGuard>
   );
 }

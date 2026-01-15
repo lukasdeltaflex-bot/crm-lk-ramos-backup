@@ -27,8 +27,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // If there is no user, and we're not on an auth page, redirect to login.
     const isAuthPage = pathname === '/login' || pathname === '/signup';
+    
+    // If there is no user, and we're not on an auth page, redirect to login.
     if (!user && !isAuthPage) {
       router.replace('/login');
     }
@@ -40,8 +41,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   }, [user, isUserLoading, router, pathname]);
 
-  // While loading, or if redirecting, show a loader.
   const isAuthPage = pathname === '/login' || pathname === '/signup';
+
+  // While loading, or if redirecting, show a loader.
   if (isUserLoading || (!user && !isAuthPage) || (user && isAuthPage)) {
     return <FullPageLoader />;
   }
