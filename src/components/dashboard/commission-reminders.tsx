@@ -36,6 +36,7 @@ export function CommissionReminders({ proposals, customers, isLoading }: Commiss
   const [isGenerating, setIsGenerating] = useState(true);
 
   const pendingCommissions = useMemo(() => {
+    if (!customers || !proposals) return [];
     const customerMap = new Map(customers.map(c => [c.id, c]));
     return proposals
       .filter(p => 
@@ -70,7 +71,10 @@ export function CommissionReminders({ proposals, customers, isLoading }: Commiss
             setReminders(results);
         } catch (error) {
             console.error("Error fetching commission reminders:", error);
+            setReminders([]);
         }
+      } else {
+        setReminders([]);
       }
       setIsGenerating(false);
     }

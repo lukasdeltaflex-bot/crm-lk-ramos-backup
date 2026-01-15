@@ -36,6 +36,7 @@ export function DebtBalanceReminders({ proposals, customers, isLoading }: DebtBa
   const [isGenerating, setIsGenerating] = useState(true);
 
   const proposalsAwaitingBalance = useMemo(() => {
+    if (!customers || !proposals) return [];
     const customerMap = new Map(customers.map(c => [c.id, c]));
     return proposals
       .filter(p => 
@@ -70,9 +71,11 @@ export function DebtBalanceReminders({ proposals, customers, isLoading }: DebtBa
             setReminders(results);
         } catch (error) {
             console.error("Error fetching debt balance reminders:", error);
+            setReminders([]); // Clear on error
         }
+      } else {
+        setReminders([]); // No proposals, so no reminders
       }
-      setReminders([]);
       setIsGenerating(false);
     }
     fetchReminders();

@@ -14,6 +14,7 @@ import {
   getSortedRowModel,
   useReactTable,
   Header,
+  ColumnOrderState,
 } from '@tanstack/react-table';
 import {
   DndContext,
@@ -160,6 +161,21 @@ export function ProposalsDataTable<TData, TValue>({
     table.getColumn('status')?.setFilterValue(newValue);
   };
   
+  const idMap: {[key: string]: string} = {
+    promoter: 'Promotora',
+    proposalNumber: 'Nº Proposta',
+    customerName: 'Cliente',
+    customerCpf: 'CPF',
+    product: 'Produto',
+    operator: 'Operador',
+    grossAmount: 'Valor Bruto',
+    status: 'Status',
+    commissionValue: 'Comissão',
+    dateDigitized: 'Data Digitação',
+    dateApproved: 'Data Averbação',
+    datePaidToClient: 'Data Pgto. Cliente',
+    debtBalanceArrivalDate: 'Chegada Saldo',
+  }
 
   return (
     <DndContext
@@ -222,17 +238,7 @@ export function ProposalsDataTable<TData, TValue>({
                     .getAllColumns()
                     .filter((column) => column.getCanHide())
                     .map((column) => {
-                    const idMap: {[key: string]: string} = {
-                        proposalNumber: 'Nº Proposta',
-                        customerName: 'Cliente',
-                        customerCpf: 'CPF',
-                        grossAmount: 'Valor Bruto',
-                        commissionValue: 'Comissão',
-                        dateDigitized: 'Data Digitação',
-                        dateApproved: 'Data Averbação',
-                        datePaidToClient: 'Data Pgto. Cliente',
-                        debtBalanceArrivalDate: 'Chegada Saldo',
-                    }
+                    
                     return (
                         <DropdownMenuCheckboxItem
                         key={column.id}

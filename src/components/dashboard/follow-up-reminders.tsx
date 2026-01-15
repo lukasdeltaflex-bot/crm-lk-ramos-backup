@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -38,6 +37,7 @@ export function FollowUpReminders({ proposals, customers, isLoading }: FollowUpR
   const [isGenerating, setIsGenerating] = useState(true);
 
   const longRunningProposals = useMemo(() => {
+    if (!customers || !proposals) return [];
     const customerMap = new Map(customers.map(c => [c.id, c]));
     return proposals
       .filter(p => p.status === 'Em Andamento' && differenceInDays(new Date(), new Date(p.dateDigitized)) > 20)
@@ -67,7 +67,10 @@ export function FollowUpReminders({ proposals, customers, isLoading }: FollowUpR
             setReminders(results);
         } catch (error) {
             console.error("Error fetching follow-up reminders:", error);
+            setReminders([]);
         }
+      } else {
+        setReminders([]);
       }
       setIsGenerating(false);
     }

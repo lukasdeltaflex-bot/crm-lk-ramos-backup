@@ -128,7 +128,7 @@ const MaskedDatePicker = ({ name, label, control, isReadOnly }: { name: any, lab
         <FormItem className="flex flex-col pt-2">
             <FormLabel>{label}</FormLabel>
             <Popover>
-                <PopoverTrigger asChild>
+                <PopoverTrigger asChild disabled={isReadOnly}>
                     <FormControl>
                             <div className="relative">
                                 <Input
@@ -171,10 +171,10 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
     const [tempProposalId, setTempProposalId] = useState<string | undefined>(undefined);
 
     useEffect(() => {
-        if (firestore && !tempProposalId) {
+        if (firestore && !proposal?.id) {
             setTempProposalId(doc(collection(firestore, 'proposals')).id);
         }
-    }, [firestore, tempProposalId]);
+    }, [firestore, proposal]);
     
     const proposalId = proposal?.id || tempProposalId;
 

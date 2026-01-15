@@ -1,11 +1,10 @@
-
 'use client';
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { BellRing, UserCheck } from 'lucide-react';
 import { customerBirthdayAlert } from '@/ai/flows/customer-birthday-alert';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import type { Customer } from '@/lib/types';
 
@@ -44,7 +43,10 @@ export function BirthdayAlerts({ customers, isLoading }: BirthdayAlertsProps) {
     return age;
   };
 
-  const upcoming75 = customers.filter(c => getAge(c.birthDate) >= 74);
+  const upcoming75 = useMemo(() => {
+    if (!customers) return [];
+    return customers.filter(c => getAge(c.birthDate) >= 74);
+  }, [customers]);
 
   useEffect(() => {
     async function fetchAlerts() {
@@ -66,12 +68,15 @@ export function BirthdayAlerts({ customers, isLoading }: BirthdayAlertsProps) {
           setAlerts(results);
         } catch (error) {
           console.error("Error fetching birthday alerts:", error);
+          setAlerts([]);
         }
+      } else {
+        setAlerts([]);
       }
       setIsGenerating(false);
     }
     fetchAlerts();
-  }, [isLoading, JSON.stringify(upcoming75)]); // Rerun when isLoading or customers change
+  }, [isLoading, JSON.stringify(upcoming75)]);
 
   const showLoadingState = isLoading || isGenerating;
 
