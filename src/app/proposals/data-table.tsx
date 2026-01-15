@@ -13,7 +13,17 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  Header,
 } from '@tanstack/react-table';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
 
 import {
   Table,
@@ -42,7 +52,7 @@ import {
 import { ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { proposalStatuses } from '@/lib/config-data';
-import type { ProposalStatus } from '@/lib/types';
+import type { ProposalStatus, Proposal } from '@/lib/types';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -51,6 +61,7 @@ interface DataTableProps<TData, TValue> {
   setRowSelection: React.Dispatch<React.SetStateAction<RowSelectionState>>;
   onBulkStatusChange: (newStatus: ProposalStatus) => void;
 }
+
 
 export function ProposalsDataTable<TData, TValue>({
   columns,
@@ -73,6 +84,30 @@ export function ProposalsDataTable<TData, TValue>({
       commissionValue: false,
       customerCpf: false,
     });
+  
+  const [columnOrder, setColumnOrder] = React.useState<string[]>(
+    columns.map(c => c.id!).filter(id => id !== 'select' && id !== 'actions')
+  );
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor)
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (active.id !== over?.id) {
+      setColumnOrder((items) => {
+        const oldIndex = items.indexOf(active.id as string);
+        const newIndex = items.indexOf(over!.id as string);
+        const newItems = Array.from(items);
+        newItems.splice(oldIndex, 1);
+        newItems.splice(newIndex, 0, active.id as string);
+        return newItems;
+      });
+    }
+  };
+
 
   const table = useReactTable({
     data,
@@ -86,12 +121,15 @@ export function ProposalsDataTable<TData, TValue>({
     onGlobalFilterChange: setGlobalFilter,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    onColumnOrderChange: setColumnOrder,
+    enableColumnOrdering: true,
     state: {
       sorting,
       columnFilters,
       globalFilter,
       columnVisibility,
       rowSelection,
+      columnOrder,
     },
     globalFilterFn: (row, columnId, filterValue) => {
         const safeValue = (value: any): string =>
@@ -123,162 +161,168 @@ export function ProposalsDataTable<TData, TValue>({
   
 
   return (
-    <Card>
-      <div className="p-4">
-        <Tabs 
-          value={statusFilter} 
-          onValueChange={setStatusFilter}
-        >
-            <TabsList className="h-auto flex-wrap justify-start">
-                <TabsTrigger value="Todos">Todos</TabsTrigger>
-                {proposalStatuses.map(status => (
-                    <TabsTrigger key={status} value={status}>{status}</TabsTrigger>
-                ))}
-            </TabsList>
-        </Tabs>
-        <div className="flex items-center justify-between py-4">
-          <div className="flex items-center gap-2">
-            <Input
-              placeholder="Filtrar por cliente, CPF, proposta ou promotora..."
-              value={globalFilter ?? ''}
-              onChange={(event) => setGlobalFilter(event.target.value)}
-              className="max-w-sm"
-            />
-             {selectedRowCount > 0 && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
-                    Alterar status ({selectedRowCount})
-                    <ChevronsUpDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  <DropdownMenuLabel>Escolha o novo status</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {proposalStatuses.map(status => (
-                    <DropdownMenuItem
-                      key={status}
-                      onSelect={() => onBulkStatusChange(status as ProposalStatus)}
-                    >
-                      {status}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
-                Colunas <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                  const idMap: {[key: string]: string} = {
-                    proposalNumber: 'Nº Proposta',
-                    customerName: 'Cliente',
-                    customerCpf: 'CPF',
-                    grossAmount: 'Valor Bruto',
-                    commissionValue: 'Comissão',
-                    dateDigitized: 'Data Digitação',
-                    dateApproved: 'Data Averbação',
-                    datePaidToClient: 'Data Pgto. Cliente',
-                    debtBalanceArrivalDate: 'Chegada Saldo',
-                  }
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                    >
-                      {idMap[column.id] || column.id}
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && 'selected'}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
+    <DndContext
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+      sensors={sensors}
+    >
+        <Card>
+        <div className="p-4">
+            <Tabs 
+            value={statusFilter} 
+            onValueChange={setStatusFilter}
+            >
+                <TabsList className="h-auto flex-wrap justify-start">
+                    <TabsTrigger value="Todos">Todos</TabsTrigger>
+                    {proposalStatuses.map(status => (
+                        <TabsTrigger key={status} value={status}>{status}</TabsTrigger>
                     ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    Nenhum resultado.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                </TabsList>
+            </Tabs>
+            <div className="flex items-center justify-between py-4">
+            <div className="flex items-center gap-2">
+                <Input
+                placeholder="Filtrar por cliente, CPF, proposta ou promotora..."
+                value={globalFilter ?? ''}
+                onChange={(event) => setGlobalFilter(event.target.value)}
+                className="max-w-sm"
+                />
+                {selectedRowCount > 0 && (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                    <Button variant="outline">
+                        Alterar status ({selectedRowCount})
+                        <ChevronsUpDown className="ml-2 h-4 w-4" />
+                    </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                    <DropdownMenuLabel>Escolha o novo status</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {proposalStatuses.map(status => (
+                        <DropdownMenuItem
+                        key={status}
+                        onSelect={() => onBulkStatusChange(status as ProposalStatus)}
+                        >
+                        {status}
+                        </DropdownMenuItem>
+                    ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                )}
+            </div>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="ml-auto">
+                    Colunas <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                {table
+                    .getAllColumns()
+                    .filter((column) => column.getCanHide())
+                    .map((column) => {
+                    const idMap: {[key: string]: string} = {
+                        proposalNumber: 'Nº Proposta',
+                        customerName: 'Cliente',
+                        customerCpf: 'CPF',
+                        grossAmount: 'Valor Bruto',
+                        commissionValue: 'Comissão',
+                        dateDigitized: 'Data Digitação',
+                        dateApproved: 'Data Averbação',
+                        datePaidToClient: 'Data Pgto. Cliente',
+                        debtBalanceArrivalDate: 'Chegada Saldo',
+                    }
+                    return (
+                        <DropdownMenuCheckboxItem
+                        key={column.id}
+                        className="capitalize"
+                        checked={column.getIsVisible()}
+                        onCheckedChange={(value) =>
+                            column.toggleVisibility(!!value)
+                        }
+                        >
+                        {idMap[column.id] || column.id}
+                        </DropdownMenuCheckboxItem>
+                    );
+                    })}
+                </DropdownMenuContent>
+            </DropdownMenu>
+            </div>
+            <div className="rounded-md border">
+            <Table>
+                <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => {
+                        return (
+                        <TableHead key={header.id} style={{width: header.getSize()}}>
+                            {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                                )}
+                        </TableHead>
+                        );
+                    })}
+                    </TableRow>
+                ))}
+                </TableHeader>
+                <TableBody>
+                {table.getRowModel().rows?.length ? (
+                    table.getRowModel().rows.map((row) => (
+                    <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && 'selected'}
+                    >
+                        {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                            {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                            )}
+                        </TableCell>
+                        ))}
+                    </TableRow>
+                    ))
+                ) : (
+                    <TableRow>
+                    <TableCell
+                        colSpan={columns.length}
+                        className="h-24 text-center"
+                    >
+                        Nenhum resultado.
+                    </TableCell>
+                    </TableRow>
+                )}
+                </TableBody>
+            </Table>
+            </div>
+            <div className="flex items-center justify-end space-x-2 py-4">
+            <div className="flex-1 text-sm text-muted-foreground">
+                {table.getFilteredSelectedRowModel().rows.length} de{' '}
+                {table.getFilteredRowModel().rows.length} linha(s) selecionadas.
+            </div>
+            <Button
+                variant="outline"
+                size="sm"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+            >
+                Anterior
+            </Button>
+            <Button
+                variant="outline"
+                size="sm"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+            >
+                Próximo
+            </Button>
+            </div>
         </div>
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <div className="flex-1 text-sm text-muted-foreground">
-            {table.getFilteredSelectedRowModel().rows.length} de{' '}
-            {table.getFilteredRowModel().rows.length} linha(s) selecionadas.
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Anterior
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Próximo
-          </Button>
-        </div>
-      </div>
-    </Card>
+        </Card>
+    </DndContext>
   );
 }
     

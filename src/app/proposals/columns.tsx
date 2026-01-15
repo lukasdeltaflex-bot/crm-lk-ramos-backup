@@ -1,6 +1,6 @@
 'use client';
 
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, Header, Table } from '@tanstack/react-table';
 import type { Proposal, ProposalStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,7 +22,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
   } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, ArrowUpDown } from 'lucide-react';
+import { MoreHorizontal, ArrowUpDown, GripVertical } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatCurrency } from '@/lib/utils';
 import React from 'react';
@@ -97,6 +97,22 @@ const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit, onView, onDelete
     );
 };
 
+const DraggableHeader = ({ header, children }: { header: Header<ProposalWithCustomer, unknown>, children: React.ReactNode}) => {
+  const { table } = header.getContext()
+  const { getState } = table
+  const { columnOrder } = getState()
+  const { column } = header
+
+  return (
+    <div className="flex items-center gap-2">
+      <Button variant="ghost" size="icon" className="h-6 w-6 cursor-grab">
+        <GripVertical />
+      </Button>
+      {children}
+    </div>
+  )
+}
+
 export const getColumns = (
     onEdit: (proposal: ProposalWithCustomer) => void,
     onView: (proposal: ProposalWithCustomer) => void,
@@ -127,16 +143,16 @@ export const getColumns = (
   },
   {
     accessorKey: 'promoter',
-    header: 'Promotora',
+    header: ({ header }) => <DraggableHeader header={header}>Promotora</DraggableHeader>,
   },
   {
     accessorKey: 'proposalNumber',
-    header: 'Nº Proposta',
+    header: ({ header }) => <DraggableHeader header={header}>Nº Proposta</DraggableHeader>,
   },
   {
     id: 'customerName',
     accessorFn: (row) => row.customer?.name,
-    header: 'Cliente',
+    header: ({ header }) => <DraggableHeader header={header}>Cliente</DraggableHeader>,
     cell: ({ row }) => {
         return row.original.customer?.name || <span className="text-muted-foreground">Cliente não encontrado</span>
     }
@@ -144,29 +160,29 @@ export const getColumns = (
   {
     id: 'customerCpf',
     accessorFn: (row) => row.customer?.cpf,
-    header: 'CPF',
+    header: ({ header }) => <DraggableHeader header={header}>CPF</DraggableHeader>,
     cell: ({ row }) => {
         return row.original.customer?.cpf || <span className="text-muted-foreground">-</span>
     }
   },
   {
     accessorKey: 'product',
-    header: 'Produto',
+    header: ({ header }) => <DraggableHeader header={header}>Produto</DraggableHeader>,
   },
   {
     accessorKey: 'operator',
-    header: 'Operador',
+    header: ({ header }) => <DraggableHeader header={header}>Operador</DraggableHeader>,
   },
   {
     accessorKey: 'grossAmount',
-    header: ({ column }) => {
+    header: ({ column, header }) => {
       return (
         <div className="text-right">
             <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
             >
-            Valor Bruto
+            <DraggableHeader header={header}>Valor Bruto</DraggableHeader>
             <ArrowUpDown className="ml-2 h-4 w-4" />
             </Button>
         </div>
@@ -179,7 +195,7 @@ export const getColumns = (
   },
   {
     accessorKey: 'status',
-    header: 'Status',
+    header: ({ header }) => <DraggableHeader header={header}>Status</DraggableHeader>,
     cell: ({ row }) => {
       const proposal = row.original;
       return (
@@ -196,7 +212,7 @@ export const getColumns = (
   },
   {
     accessorKey: 'commissionValue',
-    header: () => <div className="text-right">Comissão</div>,
+    header: ({ header }) => <div className="text-right"><DraggableHeader header={header}>Comissão</DraggableHeader></div>,
     cell: ({ row }) => {
         const amount = parseFloat(row.getValue('commissionValue'));
         return <div className="text-right">{formatCurrency(amount)}</div>;
@@ -204,22 +220,22 @@ export const getColumns = (
   },
   {
     accessorKey: 'dateDigitized',
-    header: 'Data Digitação',
+    header: ({ header }) => <DraggableHeader header={header}>Data Digitação</DraggableHeader>,
     cell: ({ row }) => formatDate(row.getValue('dateDigitized'))
   },
   {
     accessorKey: 'dateApproved',
-    header: 'Data Averbação',
+    header: ({ header }) => <DraggableHeader header={header}>Data Averbação</DraggableHeader>,
     cell: ({ row }) => formatDate(row.getValue('dateApproved'))
   },
   {
     accessorKey: 'datePaidToClient',
-    header: 'Data Pgto. Cliente',
+    header: ({ header }) => <DraggableHeader header={header}>Data Pgto. Cliente</DraggableHeader>,
     cell: ({ row }) => formatDate(row.getValue('datePaidToClient'))
   },
   {
     accessorKey: 'debtBalanceArrivalDate',
-    header: 'Chegada Saldo',
+    header: ({ header }) => <DraggableHeader header={header}>Chegada Saldo</DraggableHeader>,
     cell: ({ row }) => formatDate(row.getValue('debtBalanceArrivalDate'))
   },
   {
