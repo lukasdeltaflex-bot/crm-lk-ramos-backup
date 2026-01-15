@@ -211,10 +211,10 @@ export default function DashboardPage() {
 
   return (
     <AppLayout>
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className='flex flex-col'>
-            <PageHeader title="Dashboard" />
-            <p className='text-sm text-muted-foreground -mt-8 mb-8'>{getFilterDescription()}</p>
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
+            <p className='text-sm text-muted-foreground'>{getFilterDescription()}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
             <Input 
