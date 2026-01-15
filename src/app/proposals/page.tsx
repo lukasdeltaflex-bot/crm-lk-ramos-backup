@@ -21,6 +21,7 @@ import {
   setDocumentNonBlocking,
 } from '@/firebase/non-blocking-updates';
 import { Skeleton } from '@/components/ui/skeleton';
+import { parse } from 'date-fns';
 
 export type ProposalWithCustomer = Proposal & { customer: Customer | undefined };
 
@@ -136,11 +137,13 @@ export default function ProposalsPage() {
   
     // Helper to convert date to ISO string if it exists
     const toISO = (date: any) => (date ? new Date(date).toISOString() : undefined);
-  
+    
+    const parsedDateDigitized = parse(data.dateDigitized, 'dd/MM/yyyy', new Date());
+
     if (sheetMode === 'edit' && selectedProposal) {
       const proposalToUpdate: Partial<Proposal> = {
         ...data,
-        dateDigitized: toISO(data.dateDigitized) || selectedProposal.dateDigitized,
+        dateDigitized: !isNaN(parsedDateDigitized.getTime()) ? parsedDateDigitized.toISOString() : selectedProposal.dateDigitized,
         dateApproved: toISO(data.dateApproved),
         datePaidToClient: toISO(data.datePaidToClient),
         debtBalanceArrivalDate: toISO(data.debtBalanceArrivalDate),
@@ -155,7 +158,7 @@ export default function ProposalsPage() {
       const newProposal: Omit<Proposal, 'id'> = {
         ...data,
         userId: user.uid,
-        dateDigitized: toISO(data.dateDigitized)!,
+        dateDigitized: !isNaN(parsedDateDigitized.getTime()) ? parsedDateDigitized.toISOString() : new Date().toISOString(),
         dateApproved: toISO(data.dateApproved),
         datePaidToClient: toISO(data.datePaidToClient),
         debtBalanceArrivalDate: toISO(data.debtBalanceArrivalDate),
@@ -225,5 +228,3 @@ export default function ProposalsPage() {
     </AppLayout>
   );
 }
-
-    

@@ -24,7 +24,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon, Info } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { productTypes, proposalStatuses, approvingBodies, banks } from '@/lib/config-data';
@@ -77,7 +77,14 @@ const proposalSchema = z.object({
   approvingBody: z.string().min(1, 'O órgão aprovador é obrigatório.'),
   operator: z.string().min(1, "O nome do operador é obrigatório."),
 
-  dateDigitized: z.date({ required_error: 'A data de digitação é obrigatória.' }),
+  dateDigitized: z.string().refine((date) => {
+    try {
+      const parsedDate = parse(date, 'dd/MM/yyyy', new Date());
+      return !isNaN(parsedDate.getTime());
+    } catch {
+      return false;
+    }
+  }, { message: 'Data inválida. Use o formato dd/mm/aaaa.' }),
   dateApproved: z.date().optional(),
   datePaidToClient: z.date().optional(),
   debtBalanceArrivalDate: z.date().optional(),
@@ -149,31 +156,6 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
 
     const form = useForm<ProposalFormValues>({
         resolver: zodResolver(proposalSchema),
-        defaultValues: {
-            proposalNumber: proposal?.proposalNumber || '',
-            customerId: proposal?.customerId || '',
-            product: proposal?.product || '',
-            status: proposal?.status || 'Em Andamento',
-            table: proposal?.table || '',
-            term: proposal?.term || undefined,
-            interestRate: proposal?.interestRate || undefined,
-            grossAmount: proposal?.grossAmount || undefined,
-            netAmount: proposal?.netAmount || undefined,
-            installmentAmount: proposal?.installmentAmount || undefined,
-            commissionBase: proposal?.commissionBase || 'gross',
-            commissionPercentage: proposal?.commissionPercentage || undefined,
-            commissionValue: proposal?.commissionValue || undefined,
-            promoter: proposal?.promoter || '',
-            bank: proposal?.bank || '',
-            bankOrigin: proposal?.bankOrigin || '',
-            approvingBody: proposal?.approvingBody || '',
-            operator: proposal?.operator || '',
-            dateDigitized: proposal?.dateDigitized ? new Date(proposal.dateDigitized) : new Date(),
-            dateApproved: proposal?.dateApproved ? new Date(proposal.dateApproved) : undefined,
-            datePaidToClient: proposal?.datePaidToClient ? new Date(proposal.datePaidToClient) : undefined,
-            debtBalanceArrivalDate: proposal?.debtBalanceArrivalDate ? new Date(proposal.debtBalanceArrivalDate) : undefined,
-            attachments: proposal?.attachments || [],
-        },
     });
 
   const { watch, setValue, trigger } = form;
@@ -223,7 +205,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
         bankOrigin: '',
         approvingBody: '',
         operator: '',
-        dateDigitized: new Date(),
+        dateDigitized: format(new Date(), 'dd/MM/yyyy'),
         dateApproved: undefined,
         datePaidToClient: undefined,
         debtBalanceArrivalDate: undefined,
@@ -234,6 +216,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
       form.reset({
         ...defaultValues,
         ...proposal,
+        dateDigitized: proposal.dateDigitized ? format(new Date(proposal.dateDigitized), 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy'),
         term: proposal.term || undefined,
         interestRate: proposal.interestRate || undefined,
         grossAmount: proposal.grossAmount || undefined,
@@ -242,7 +225,6 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
         commissionPercentage: proposal.commissionPercentage || undefined,
         commissionValue: proposal.commissionValue || undefined,
         bankOrigin: proposal.bankOrigin || '',
-        dateDigitized: proposal.dateDigitized ? new Date(proposal.dateDigitized) : new Date(),
         dateApproved: proposal.dateApproved ? new Date(proposal.dateApproved) : undefined,
         datePaidToClient: proposal.datePaidToClient ? new Date(proposal.datePaidToClient) : undefined,
         debtBalanceArrivalDate: proposal.debtBalanceArrivalDate ? new Date(proposal.debtBalanceArrivalDate) : undefined,
@@ -263,6 +245,15 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
   };
 
   const isAttachmentSectionDisabled = !user || !selectedCustomerId;
+  
+  const handleDateDigitizedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, "");
+    if (value.length > 8) value = value.substring(0, 8);
+    value = value.replace(/(\d{2})(\d)/, '$1/$2');
+    value = value.replace(/(\d{2})(\d)/, '$1/$2');
+    e.target.value = value;
+    form.setValue('dateDigitized', value, { shouldValidate: true });
+  };
 
   return (
     <Form {...form}>
@@ -335,7 +326,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
                         <FormItem>
                             <FormLabel>Nº Proposta</FormLabel>
                             <FormControl>
-                            <Input placeholder="Digite o número da proposta" {...field} readOnly={isReadOnly || !!proposal} value={field.value || ''}/>
+                            <Input placeholder="Digite o número da proposta" {...field} readOnly={isReadOnly && !!proposal} value={field.value || ''}/>
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -647,7 +638,46 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
                     />
                  </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
-                    <DatePickerField name="dateDigitized" label="Data de Digitação" control={form.control} isReadOnly={isReadOnly} />
+                    <FormField
+                        control={form.control}
+                        name="dateDigitized"
+                        render={({ field }) => (
+                        <FormItem className="flex flex-col pt-2">
+                            <FormLabel>Data de Digitação</FormLabel>
+                             <Popover>
+                                <PopoverTrigger asChild>
+                                    <FormControl>
+                                         <div className="relative">
+                                            <Input
+                                                placeholder="dd/mm/aaaa"
+                                                {...field}
+                                                onChange={handleDateDigitizedChange}
+                                                maxLength={10}
+                                                className="w-[240px] pr-8"
+                                                readOnly={isReadOnly}
+                                            />
+                                            <CalendarIcon className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
+                                        </div>
+                                    </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                        mode="single"
+                                        selected={field.value ? parse(field.value, 'dd/MM/yyyy', new Date()) : undefined}
+                                        onSelect={(date) => field.onChange(date ? format(date, 'dd/MM/yyyy') : '')}
+                                        defaultMonth={field.value ? parse(field.value, 'dd/MM/yyyy', new Date()) : new Date()}
+                                        locale={ptBR}
+                                        initialFocus
+                                        fromYear={new Date().getFullYear() - 20}
+                                        toYear={new Date().getFullYear() + 20}
+                                        captionLayout="dropdown-buttons"
+                                    />
+                                </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
                     <DatePickerField name="dateApproved" label="Data de Averbação" control={form.control} isReadOnly={isReadOnly} />
                     <DatePickerField name="datePaidToClient" label="Data de Pagamento ao Cliente" control={form.control} isReadOnly={isReadOnly} />
                     {(product === 'Portabilidade' || product === 'Refin Port') && (
@@ -690,5 +720,3 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
     </Form>
   );
 }
-
-    
