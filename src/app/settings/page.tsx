@@ -19,13 +19,17 @@ import {
   banks as initialBanks,
   commissionStatuses as initialCommissionStatuses,
 } from '@/lib/config-data';
-import { ListChecks } from 'lucide-react';
+import { ListChecks, Palette, UserCog } from 'lucide-react';
 import { EditableList } from '@/components/settings/editable-list';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
 import type { UserSettings } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 
 export default function SettingsPage() {
@@ -76,74 +80,105 @@ export default function SettingsPage() {
   return (
     <AppLayout>
       <PageHeader title="Configurações" />
-      <Card>
-        <CardHeader>
-          <div className="flex items-start gap-4">
-            <ListChecks className="h-8 w-8 text-muted-foreground mt-1" />
-            <div>
-              <CardTitle>Gerenciamento de Opções</CardTitle>
-              <CardDescription>
-                Visualize e edite as listas de opções usadas em todo o sistema.
-                As alterações são salvas automaticamente.
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="space-y-4">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-            </div>
-          ) : (
-            <Accordion type="multiple" className="w-full space-y-4">
-              <EditableList 
-                title="Tipos de Produto" 
-                items={productTypes} 
-                setItems={(newItems) => {
-                    setProductTypes(newItems);
-                    updateSettings({ productTypes: newItems });
-                }} 
-              />
-              <EditableList 
-                title="Status da Proposta" 
-                items={proposalStatuses} 
-                setItems={(newItems) => {
-                    setProposalStatuses(newItems);
-                    updateSettings({ proposalStatuses: newItems });
-                }} 
-              />
-              <EditableList 
-                title="Status da Comissão" 
-                items={commissionStatuses} 
-                setItems={(newItems) => {
-                    setCommissionStatuses(newItems);
-                    updateSettings({ commissionStatuses: newItems });
-                }} 
-              />
-              <EditableList 
-                title="Órgãos Aprovadores" 
-                items={approvingBodies} 
-                setItems={(newItems) => {
-                    setApprovingBodies(newItems);
-                    updateSettings({ approvingBodies: newItems });
-                }} 
-              />
-              <EditableList 
-                title="Bancos" 
-                items={banks} 
-                setItems={(newItems) => {
-                    setBanks(newItems);
-                    updateSettings({ banks: newItems });
-                }} 
-              />
-            </Accordion>
-          )}
-        </CardContent>
-      </Card>
+        <Tabs defaultValue="lists">
+            <TabsList className="mb-4">
+                <TabsTrigger value="lists"><ListChecks className="mr-2 h-4 w-4" /> Opções de Listas</TabsTrigger>
+                <TabsTrigger value="appearance"><Palette className="mr-2 h-4 w-4" /> Aparência</TabsTrigger>
+                <TabsTrigger value="account"><UserCog className="mr-2 h-4 w-4" /> Conta</TabsTrigger>
+            </TabsList>
+            <TabsContent value="lists">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Gerenciamento de Opções</CardTitle>
+                        <CardDescription>
+                            Adicione, edite ou remova as opções usadas nos formulários de cadastro do sistema. As alterações são salvas automaticamente.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                    {isLoading ? (
+                        <div className="space-y-4">
+                            <Skeleton className="h-12 w-full" />
+                            <Skeleton className="h-12 w-full" />
+                            <Skeleton className="h-12 w-full" />
+                            <Skeleton className="h-12 w-full" />
+                            <Skeleton className="h-12 w-full" />
+                        </div>
+                    ) : (
+                        <Accordion type="multiple" className="w-full space-y-4">
+                        <EditableList 
+                            title="Tipos de Produto" 
+                            items={productTypes} 
+                            setItems={(newItems) => {
+                                setProductTypes(newItems);
+                                updateSettings({ productTypes: newItems });
+                            }} 
+                        />
+                        <EditableList 
+                            title="Status da Proposta" 
+                            items={proposalStatuses} 
+                            setItems={(newItems) => {
+                                setProposalStatuses(newItems);
+                                updateSettings({ proposalStatuses: newItems });
+                            }} 
+                        />
+                        <EditableList 
+                            title="Status da Comissão" 
+                            items={commissionStatuses} 
+                            setItems={(newItems) => {
+                                setCommissionStatuses(newItems);
+                                updateSettings({ commissionStatuses: newItems });
+                            }} 
+                        />
+                        <EditableList 
+                            title="Órgãos Aprovadores" 
+                            items={approvingBodies} 
+                            setItems={(newItems) => {
+                                setApprovingBodies(newItems);
+                                updateSettings({ approvingBodies: newItems });
+                            }} 
+                        />
+                        <EditableList 
+                            title="Bancos" 
+                            items={banks} 
+                            setItems={(newItems) => {
+                                setBanks(newItems);
+                                updateSettings({ banks: newItems });
+                            }} 
+                        />
+                        </Accordion>
+                    )}
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            <TabsContent value="appearance">
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Aparência</CardTitle>
+                        <CardDescription>
+                           Personalize a aparência do sistema.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <ThemeToggle />
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            <TabsContent value="account">
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Minha Conta</CardTitle>
+                        <CardDescription>
+                           Gerencie suas informações pessoais e de login.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Link href="/profile">
+                            <Button>Ir para Meu Perfil</Button>
+                        </Link>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+        </Tabs>
     </AppLayout>
   );
 }
