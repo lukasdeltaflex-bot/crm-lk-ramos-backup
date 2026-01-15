@@ -23,6 +23,10 @@ const themes = [
   { name: "burnt-orange", color: "hsl(16 84% 44%)" },
   { name: "sky-blue", color: "hsl(199 89% 48%)" },
   { name: "pink", color: "hsl(336 82% 54%)" },
+  { name: "mint", color: "hsl(168, 86%, 44%)" },
+  { name: "lavender", color: "hsl(250, 60%, 60%)" },
+  { name: "peach", color: "hsl(29, 100%, 65%)" },
+  { name: "slate", color: "hsl(215, 25%, 27%)" },
 ]
 
 export function ThemeColors() {

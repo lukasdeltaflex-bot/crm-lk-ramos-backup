@@ -389,6 +389,85 @@
     --sidebar-ring: 336 82% 54%;
   }
 
+  /* Theme: Mint */
+  :root.theme-mint {
+    --primary: 168 86% 44%;
+    --primary-foreground: 168 86% 94%;
+    --accent: 168 86% 54%;
+    --ring: 168 86% 44%;
+    --sidebar-primary: 168 86% 44%;
+    --sidebar-primary-foreground: 168 86% 94%;
+    --sidebar-ring: 168 86% 44%;
+  }
+  .dark.theme-mint {
+    --primary: 168 86% 44%;
+    --primary-foreground: 168 86% 94%;
+    --accent: 168 86% 34%;
+    --ring: 168 86% 44%;
+    --sidebar-primary: 168 86% 44%;
+    --sidebar-primary-foreground: 168 86% 94%;
+    --sidebar-ring: 168 86% 44%;
+  }
+
+  /* Theme: Lavender */
+  :root.theme-lavender {
+    --primary: 250 60% 60%;
+    --primary-foreground: 250 60% 10%;
+    --accent: 250 60% 70%;
+    --ring: 250 60% 60%;
+    --sidebar-primary: 250 60% 60%;
+    --sidebar-primary-foreground: 250 60% 10%;
+    --sidebar-ring: 250 60% 60%;
+  }
+  .dark.theme-lavender {
+    --primary: 250 60% 60%;
+    --primary-foreground: 250 60% 10%;
+    --accent: 250 60% 50%;
+    --ring: 250 60% 60%;
+    --sidebar-primary: 250 60% 60%;
+    --sidebar-primary-foreground: 250 60% 10%;
+    --sidebar-ring: 250 60% 60%;
+  }
+
+  /* Theme: Peach */
+  :root.theme-peach {
+    --primary: 29 100% 65%;
+    --primary-foreground: 29 100% 15%;
+    --accent: 29 100% 75%;
+    --ring: 29 100% 65%;
+    --sidebar-primary: 29 100% 65%;
+    --sidebar-primary-foreground: 29 100% 15%;
+    --sidebar-ring: 29 100% 65%;
+  }
+  .dark.theme-peach {
+    --primary: 29 100% 65%;
+    --primary-foreground: 29 100% 15%;
+    --accent: 29 100% 55%;
+    --ring: 29 100% 65%;
+    --sidebar-primary: 29 100% 65%;
+    --sidebar-primary-foreground: 29 100% 15%;
+    --sidebar-ring: 29 100% 65%;
+  }
+  
+  /* Theme: Slate */
+  :root.theme-slate {
+    --primary: 215 25% 27%;
+    --primary-foreground: 215 25% 97%;
+    --accent: 215 25% 37%;
+    --ring: 215 25% 27%;
+    --sidebar-primary: 215 25% 27%;
+    --sidebar-primary-foreground: 215 25% 97%;
+    --sidebar-ring: 215 25% 27%;
+  }
+  .dark.theme-slate {
+    --primary: 215 25% 67%;
+    --primary-foreground: 215 25% 7%;
+    --accent: 215 25% 37%;
+    --ring: 215 25% 67%;
+    --sidebar-primary: 215 25% 67%;
+    --sidebar-primary-foreground: 215 25% 7%;
+    --sidebar-ring: 215 25% 67%;
+  }
 }
 
 @layer base {
