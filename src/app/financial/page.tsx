@@ -99,10 +99,10 @@ export default function FinancialPage() {
             <Button onClick={handlePrint}><Printer /> Imprimir Relatório</Button>
         </div>
       </div>
-      <div className="print:block hidden mb-4">
+      <div className="print:block hidden mb-8">
         <Logo forPrinting={true} />
-        <p className="text-sm text-muted-foreground mt-1">
-            Gerado em: {format(new Date(), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+        <p className="text-sm text-gray-500 mt-2">
+            Relatório gerado em: {format(new Date(), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
         </p>
       </div>
 

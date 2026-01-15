@@ -149,7 +149,7 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
                         format(date.from, "dd/MM/y", {locale: ptBR})
                         )
                     ) : (
-                        <span>Filtrar por data</span>
+                        <span>Filtrar por data de pagamento</span>
                     )}
                 </Button>
                 </PopoverTrigger>
@@ -217,7 +217,7 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
                     return (
-                      <TableHead key={header.id} className="print:text-xs print:p-2">
+                      <TableHead key={header.id} className="print:text-xs print:p-2 print:text-black">
                         {header.isPlaceholder
                           ? null
                           : flexRender(
@@ -236,6 +236,7 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && 'selected'}
+                    className="print:even:bg-gray-50"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className="print:text-xs print:p-2">

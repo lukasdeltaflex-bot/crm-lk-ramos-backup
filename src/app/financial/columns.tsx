@@ -28,7 +28,7 @@ interface ActionsCellProps {
 const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit }) => {
   const proposal = row.original;
   return (
-    <div className="text-right">
+    <div className="text-right print:hidden">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">
@@ -60,6 +60,7 @@ export const getColumns = (
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Selecionar tudo"
+        className="print:hidden"
       />
     ),
     cell: ({ row }) => (
@@ -67,6 +68,7 @@ export const getColumns = (
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Selecionar linha"
+        className="print:hidden"
       />
     ),
     enableSorting: false,
@@ -92,9 +94,10 @@ export const getColumns = (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          className="print:p-0 print:font-bold print:text-black"
         >
           Valor Bruto
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className="ml-2 h-4 w-4 print:hidden" />
         </Button>
       );
     },
@@ -143,7 +146,7 @@ export const getColumns = (
       return (
         <Badge
           variant="outline"
-          className={cn({
+          className={cn('print:border-gray-400 print:text-black', {
             'border-green-500 text-green-500': status === 'Paga',
             'border-yellow-500 text-yellow-500': status === 'Pendente',
             'border-orange-500 text-orange-500': status === 'Parcial',
@@ -153,6 +156,9 @@ export const getColumns = (
         </Badge>
       );
     },
+    filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id))
+    }
   },
   {
     accessorKey: 'commissionPaymentDate',

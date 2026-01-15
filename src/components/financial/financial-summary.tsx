@@ -39,32 +39,32 @@ export function FinancialSummary({ rows, isPrivacyMode }: FinancialSummaryProps)
   const privacyPlaceholder = '•••••';
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 print:bg-white print:text-black">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 print:gap-2">
       <StatsCard
         title="Total Contratos"
         value={isPrivacyMode ? privacyPlaceholder : formatCurrency(summary.totalGrossAmount)}
         icon={FileText}
-        className="print:shadow-none print:border-gray-300"
+        className="print:shadow-none print:border-gray-300 print:p-2"
       />
       <StatsCard
         title="Comissão Esperada"
         value={isPrivacyMode ? privacyPlaceholder : formatCurrency(summary.totalCommissionValue)}
         icon={CircleDollarSign}
-        className="print:shadow-none print:border-gray-300"
+        className="print:shadow-none print:border-gray-300 print:p-2"
         valueClassName="text-blue-500"
       />
       <StatsCard
         title="Comissão Recebida"
         value={isPrivacyMode ? privacyPlaceholder : formatCurrency(summary.totalAmountPaid)}
         icon={CheckCircle}
-        className="print:shadow-none print:border-gray-300"
+        className="print:shadow-none print:border-gray-300 print:p-2"
         valueClassName="text-green-500"
       />
       <StatsCard
         title="Saldo a Receber"
         value={isPrivacyMode ? privacyPlaceholder : formatCurrency(summary.pendingAmount)}
         icon={Hourglass}
-        className="print:shadow-none print:border-gray-300"
+        className="print:shadow-none print:border-gray-300 print:p-2"
         valueClassName="text-orange-500"
       />
     </div>
