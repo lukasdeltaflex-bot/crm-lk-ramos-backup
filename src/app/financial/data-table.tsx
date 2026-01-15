@@ -177,9 +177,9 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
         <div className="flex items-center justify-between py-4 print:hidden">
           <Input
             placeholder="Filtrar por cliente..."
-            value={(table.getColumn('customer.name')?.getFilterValue() as string) ?? ''}
+            value={(table.getColumn('customerName')?.getFilterValue() as string) ?? ''}
             onChange={(event) =>
-              table.getColumn('customer.name')?.setFilterValue(event.target.value)
+              table.getColumn('customerName')?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
           />
@@ -203,7 +203,7 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
                         column.toggleVisibility(!!value)
                       }
                     >
-                      {column.id === 'customer.name' ? 'Cliente' : column.id}
+                      {column.id === 'customerName' ? 'Cliente' : column.id}
                     </DropdownMenuCheckboxItem>
                   );
                 })}

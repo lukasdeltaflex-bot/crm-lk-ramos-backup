@@ -75,6 +75,7 @@ export const getColumns = (
   {
     accessorKey: 'customer.name',
     header: 'Cliente',
+    id: 'customerName',
   },
   {
     accessorKey: 'promoter',
