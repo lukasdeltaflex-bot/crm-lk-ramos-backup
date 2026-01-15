@@ -117,8 +117,8 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
   }, [date, table]);
 
   return (
-    <Card>
-      <div className="p-4 space-y-4 print:p-0 print:border-none print:shadow-none">
+    <Card className="print:shadow-none print:border-none">
+      <div className="p-4 space-y-4 print:p-0">
         <div className="flex flex-wrap gap-2 items-center print:hidden">
             <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as CommissionStatus | 'Todos')}>
                 <TabsList>
@@ -207,7 +207,7 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="rounded-md border print:border-none">
+        <div className="rounded-md border print:border print:border-gray-300">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
