@@ -1,10 +1,10 @@
 
 'use client';
 
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, flexRender, Header } from '@tanstack/react-table';
 import type { Proposal, Customer } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
+import { ArrowUpDown, MoreHorizontal, GripVertical } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/utils';
@@ -18,6 +18,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { TableHead } from '@/components/ui/table';
+
 
 type ProposalWithCustomer = Proposal & { customer: Customer };
 
@@ -48,6 +52,44 @@ const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit }) => {
   );
 };
 
+export const DraggableHeader = ({ header }: { header: Header<ProposalWithCustomer, unknown>}) => {
+    const { attributes, listeners, setNodeRef, transform, isDragging } = useSortable({
+        id: header.column.id,
+      });
+    
+      const style = {
+        transform: CSS.Transform.toString(transform),
+        opacity: isDragging ? 0.5 : 1,
+      };
+
+    return (
+        <TableHead
+            ref={setNodeRef}
+            style={style}
+            className={cn(
+                'relative',
+                header.column.getCanSort() && 'cursor-pointer select-none'
+            )}
+        >
+            <div className="flex items-center gap-1">
+                <div
+                    {...attributes}
+                    {...listeners}
+                    className="cursor-grab p-1"
+                >
+                    <GripVertical className="h-4 w-4" />
+                </div>
+                {header.isPlaceholder
+                ? null
+                : flexRender(
+                    header.column.columnDef.header,
+                    header.getContext()
+                )}
+            </div>
+      </TableHead>
+    )
+}
+
 export const getColumns = (
   { onEdit }: { onEdit: (proposal: ProposalWithCustomer) => void; }
 ): ColumnDef<ProposalWithCustomer>[] => [
@@ -74,6 +116,7 @@ export const getColumns = (
     ),
     enableSorting: false,
     enableHiding: false,
+    enableColumnOrdering: false,
   },
   {
     accessorKey: 'promoter',
@@ -126,6 +169,7 @@ export const getColumns = (
       const amount = parseFloat(row.getValue('grossAmount'));
       return <div className="text-left font-medium">{formatCurrency(amount)}</div>;
     },
+    id: 'grossAmount',
   },
   {
     accessorKey: 'commissionPercentage',
@@ -135,7 +179,8 @@ export const getColumns = (
       if (isPrivacyMode) return '•••••';
       const percentage = parseFloat(row.getValue('commissionPercentage'));
       return `${percentage.toFixed(2)}%`;
-    }
+    },
+    id: 'commissionPercentage'
   },
   {
     accessorKey: 'commissionValue',
@@ -146,6 +191,7 @@ export const getColumns = (
         const amount = parseFloat(row.getValue('commissionValue'));
         return formatCurrency(amount);
       },
+    id: 'commissionValue',
   },
   {
     accessorKey: 'amountPaid',
@@ -156,6 +202,7 @@ export const getColumns = (
       const amount = parseFloat(row.getValue('amountPaid') || '0');
       return formatCurrency(amount);
     },
+    id: 'amountPaid',
   },
   {
     accessorKey: 'commissionStatus',
@@ -177,7 +224,8 @@ export const getColumns = (
     },
     filterFn: (row, id, value) => {
         return value.includes(row.getValue(id))
-    }
+    },
+    id: 'commissionStatus',
   },
   {
     accessorKey: 'commissionPaymentDate',
@@ -186,11 +234,13 @@ export const getColumns = (
         const date = row.getValue('commissionPaymentDate') as string | undefined;
         if (!date) return '-';
         return format(new Date(date), "dd/MM/yyyy", { locale: ptBR });
-    }
+    },
+    id: 'commissionPaymentDate',
   },
   {
     id: 'actions',
     cell: (props) => <ActionsCell {...props} onEdit={onEdit} />,
     enableHiding: false,
+    enableColumnOrdering: false,
   },
-];
+].map(column => ({ ...column, id: column.id || column.accessorKey as string}));
