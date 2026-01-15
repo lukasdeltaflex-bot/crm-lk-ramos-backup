@@ -35,3 +35,31 @@ export function getWhatsAppUrl(phone: string): string {
     // Assumes country code is Brazil (55)
     return `https://wa.me/55${digitsOnly}`;
 }
+
+/**
+ * Calculates the number of business days (Mon-Fri) between a start date and now.
+ * The count starts from the day after the startDate.
+ * @param startDate The start date of the period.
+ * @returns The total number of business days.
+ */
+export function calculateBusinessDays(startDate: Date): number {
+    let count = 0;
+    const curDate = new Date(startDate);
+    const now = new Date();
+
+    // Start counting from the next day
+    curDate.setDate(curDate.getDate() + 1);
+
+    // Normalize to the start of the day to ensure correct comparison
+    curDate.setHours(0, 0, 0, 0);
+    now.setHours(0, 0, 0, 0);
+
+    while (curDate <= now) {
+        const dayOfWeek = curDate.getDay();
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) { // 0=Sunday, 6=Saturday
+            count++;
+        }
+        curDate.setDate(curDate.getDate() + 1);
+    }
+    return count;
+}
