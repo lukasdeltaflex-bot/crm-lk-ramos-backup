@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ThemeProvider as NextThemesProvider } from "next-themes"
+import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "next-themes"
 import { type ThemeProviderProps } from "next-themes/dist/types"
 
 const COLOR_THEMES = ["zinc", "blue", "green", "violet", "orange", "red", "rose", "gray"];
@@ -63,7 +63,7 @@ export function ThemeProvider({ children, ...props }: CustomThemeProviderProps) 
 
 // Custom hook to manage both mode (light/dark) and color theme
 export function useTheme() {
-    const nextThemeContext = React.useContext(NextThemesProvider.context);
+    const nextThemeContext = useNextTheme();
     const colorThemeContext = React.useContext(ColorThemeContext);
 
     if (nextThemeContext === undefined || colorThemeContext === undefined) {
@@ -71,9 +71,7 @@ export function useTheme() {
     }
 
     return {
-        theme: nextThemeContext.theme,
-        setTheme: nextThemeContext.setTheme,
-        themes: nextThemeContext.themes,
+        ...nextThemeContext,
         colorTheme: colorThemeContext.colorTheme,
         setColorTheme: colorThemeContext.setColorTheme,
     };
