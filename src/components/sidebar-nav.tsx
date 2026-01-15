@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -7,7 +8,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, FileText, Users, CircleDollarSign, Cog } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, CircleDollarSign, Cog, User } from 'lucide-react';
 
 const links = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -17,6 +18,7 @@ const links = [
 ];
 
 const bottomLinks = [
+    { href: '/profile', label: 'Meu Perfil', icon: User },
     { href: '/settings', label: 'Configurações', icon: Cog },
 ]
 

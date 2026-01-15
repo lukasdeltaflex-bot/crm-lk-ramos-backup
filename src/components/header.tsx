@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -13,15 +14,25 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import Link from 'next/link';
-import { useAuth } from '@/firebase';
+import { useAuth, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import type { UserProfile } from '@/lib/types';
+import { doc } from 'firebase/firestore';
 
 export function Header({ className }: { className?: string }) {
   const auth = useAuth();
   const router = useRouter();
+  const firestore = useFirestore();
+
+  const userProfileDocRef = useMemoFirebase(() => {
+    if (!auth.currentUser || !firestore) return null;
+    return doc(firestore, 'users', auth.currentUser.uid);
+  }, [firestore, auth.currentUser]);
+
+  const { data: userProfile } = useDoc<UserProfile>(userProfileDocRef);
 
   const handleSignOut = async () => {
     try {
@@ -40,10 +51,16 @@ export function Header({ className }: { className?: string }) {
     }
   };
 
-  const getInitials = (email?: string | null) => {
-    if (!email) return '..';
-    return email.substring(0, 2).toUpperCase();
+  const getInitials = (name?: string | null) => {
+    if (!name) return '..';
+    const names = name.split(' ');
+    if (names.length > 1) {
+        return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
   };
+
+  const displayName = userProfile?.displayName || userProfile?.fullName || auth.currentUser?.email;
 
   return (
     <header className={cn("flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6", className)}>
@@ -55,8 +72,8 @@ export function Header({ className }: { className?: string }) {
         <DropdownMenuTrigger asChild>
           <Button variant="secondary" size="icon" className="rounded-full">
             <Avatar>
-              <AvatarImage src={auth.currentUser?.photoURL || ''} data-ai-hint="rosto de pessoa" />
-              <AvatarFallback>{getInitials(auth.currentUser?.email)}</AvatarFallback>
+              <AvatarImage src={userProfile?.photoURL || ''} data-ai-hint="rosto de pessoa" />
+              <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
             </Avatar>
             <span className="sr-only">Alternar menu de usuário</span>
           </Button>
@@ -64,6 +81,9 @@ export function Header({ className }: { className?: string }) {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
           <DropdownMenuSeparator />
+           <Link href="/profile" passHref>
+            <DropdownMenuItem>Meu Perfil</DropdownMenuItem>
+          </Link>
           <Link href="/settings" passHref>
             <DropdownMenuItem>Configurações</DropdownMenuItem>
           </Link>

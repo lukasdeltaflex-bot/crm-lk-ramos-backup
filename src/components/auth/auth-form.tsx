@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,13 +25,17 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import Link from 'next/link';
-import { useAuth } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from 'firebase/auth';
+import { doc } from 'firebase/firestore';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useRouter } from 'next/navigation';
 import { Logo } from '../logo';
+import type { UserProfile } from '@/lib/types';
+
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido.'),
@@ -54,6 +59,7 @@ interface AuthFormProps {
 
 export function AuthForm({ type }: AuthFormProps) {
   const auth = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
 
   const formSchema = type === 'login' ? loginSchema : signupSchema;
@@ -77,7 +83,20 @@ export function AuthForm({ type }: AuthFormProps) {
         });
         router.push('/');
       } else {
-        await createUserWithEmailAndPassword(auth, data.email, data.password);
+        const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+        const user = userCredential.user;
+        
+        // Create user profile document
+        if (user && firestore) {
+          const userProfileRef = doc(firestore, 'users', user.uid);
+          const newUserProfile: UserProfile = {
+            uid: user.uid,
+            email: user.email!,
+            displayName: user.email!.split('@')[0], // Default display name
+          };
+          setDocumentNonBlocking(userProfileRef, newUserProfile, {});
+        }
+
         toast({
           title: 'Conta criada com sucesso!',
           description: 'Você já pode fazer o login.',

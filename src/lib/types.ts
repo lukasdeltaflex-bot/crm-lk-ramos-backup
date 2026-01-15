@@ -1,4 +1,5 @@
 
+
 export type Customer = {
   id: string;
   name: string;
@@ -69,3 +70,13 @@ export type UserSettings = {
   approvingBodies: string[];
   banks: string[];
 };
+
+export type UserProfile = {
+  uid: string;
+  email: string;
+  fullName?: string;
+  displayName?: string;
+  photoURL?: string;
+  birthDate?: string; // YYYY-MM-DD
+  phone?: string;
+}
