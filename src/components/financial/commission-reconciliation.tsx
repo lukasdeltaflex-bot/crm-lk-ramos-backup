@@ -162,7 +162,7 @@ export function CommissionReconciliation({ proposals, onFinished }: CommissionRe
         </div>
         <div className="flex flex-col">
             <h3 className="font-medium mb-2">2. Resultados da Conciliação</h3>
-            <ScrollArea className="flex-grow border rounded-md p-4 bg-muted/30">
+            <ScrollArea className="h-96 flex-grow border rounded-md p-4 bg-muted/30">
                 {isLoading && <div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground"/></div>}
                 {!isLoading && results.length === 0 && <p className="text-sm text-muted-foreground text-center pt-10">Aguardando análise do relatório...</p>}
                 <div className="space-y-3">
