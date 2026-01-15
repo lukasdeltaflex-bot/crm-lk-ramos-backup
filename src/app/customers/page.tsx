@@ -121,7 +121,14 @@ export default function CustomersPage() {
       benefitNumber: '0000000000',
       phone: '(00) 00000-0000',
       email: 'removido@removido.com',
-      observations: `Dados do cliente anonimizados em ${new Date().toISOString()}`
+      observations: `Dados do cliente anonimizados em ${new Date().toISOString()}`,
+      cep: '',
+      street: '',
+      number: '',
+      complement: '',
+      neighborhood: '',
+      city: '',
+      state: '',
     };
     // Use non-blocking update here
     updateDocumentNonBlocking(customerRef, anonymizedData);
@@ -145,7 +152,14 @@ export default function CustomersPage() {
         benefitNumber: '0000000000',
         phone: '(00) 00000-0000',
         email: 'removido@removido.com',
-        observations: `Dados do cliente anonimizados em ${new Date().toISOString()}`
+        observations: `Dados do cliente anonimizados em ${new Date().toISOString()}`,
+        cep: '',
+        street: '',
+        number: '',
+        complement: '',
+        neighborhood: '',
+        city: '',
+        state: '',
       };
 
     selectedIds.forEach((id) => {
@@ -244,7 +258,7 @@ export default function CustomersPage() {
         </div>
       </div>
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="w-full max-w-2xl sm:max-w-2xl">
+        <SheetContent className="w-full max-w-3xl sm:max-w-3xl">
           <SheetHeader>
             <SheetTitle>{getSheetTitle()}</SheetTitle>
           </SheetHeader>

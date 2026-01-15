@@ -58,6 +58,8 @@ export function CustomerDataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({
         observations: false,
+        city: false,
+        state: false,
     });
 
   const table = useReactTable({

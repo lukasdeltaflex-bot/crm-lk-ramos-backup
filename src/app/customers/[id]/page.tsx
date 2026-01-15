@@ -7,7 +7,7 @@ import { doc, collection, query, where } from 'firebase/firestore';
 import type { Customer, Proposal } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Phone, Mail, Calendar, FileText, CircleDollarSign, BadgePercent } from 'lucide-react';
+import { User, Phone, Mail, Calendar, FileText, CircleDollarSign, BadgePercent, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import { formatCurrency } from '@/lib/utils';
 import { SimpleProposalsTable } from '@/components/customers/simple-proposals-table';
+import { Separator } from '@/components/ui/separator';
 
 
 const CustomerInfoCard = ({ customer }: { customer: Customer }) => {
@@ -44,34 +45,69 @@ const CustomerInfoCard = ({ customer }: { customer: Customer }) => {
                     </Link>
                 </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <strong>CPF:</strong> {customer.cpf}
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <strong>Benefício:</strong> {customer.benefitNumber || 'N/A'}
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <strong>Nascimento:</strong> {format(new Date(customer.birthDate), 'dd/MM/yyyy', { locale: ptBR })} ({getAge(customer.birthDate)} anos)
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                        <strong>Telefone:</strong> {customer.phone}
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        <strong>Email:</strong> {customer.email}
+            <CardContent className="space-y-6">
+                <div>
+                    <h4 className="font-semibold mb-4 text-lg">Dados Pessoais</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <strong>CPF:</strong> {customer.cpf}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <strong>Benefício:</strong> {customer.benefitNumber || 'N/A'}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <strong>Nascimento:</strong> {format(new Date(customer.birthDate), 'dd/MM/yyyy', { locale: ptBR })} ({getAge(customer.birthDate)} anos)
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <strong>Telefone:</strong> {customer.phone}
+                        </div>
+                        <div className="flex items-center gap-2 col-span-1 md:col-span-2">
+                            <Mail className="h-4 w-4 text-muted-foreground" />
+                            <strong>Email:</strong> {customer.email}
+                        </div>
                     </div>
                 </div>
-                {customer.observations && (
-                    <div className="pt-4">
-                        <h4 className="font-semibold mb-2">Observações</h4>
-                        <p className="text-muted-foreground bg-secondary/30 p-3 rounded-md whitespace-pre-wrap">{customer.observations}</p>
+
+                <Separator />
+
+                <div>
+                    <h4 className="font-semibold mb-4 text-lg">Endereço</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                         <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <strong>CEP:</strong> {customer.cep || 'N/A'}
+                        </div>
+                        <div className="flex items-center gap-2 col-span-1 md:col-span-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <strong>Logradouro:</strong> {customer.street}{customer.number ? `, ${customer.number}` : ''}
+                        </div>
+                         <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <strong>Complemento:</strong> {customer.complement || 'N/A'}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <strong>Bairro:</strong> {customer.neighborhood}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <strong>Cidade/UF:</strong> {customer.city} / {customer.state}
+                        </div>
                     </div>
+                </div>
+
+                {customer.observations && (
+                    <>
+                        <Separator />
+                        <div>
+                            <h4 className="font-semibold mb-2 text-lg">Observações</h4>
+                            <p className="text-muted-foreground bg-secondary/30 p-3 rounded-md whitespace-pre-wrap">{customer.observations}</p>
+                        </div>
+                    </>
                 )}
             </CardContent>
         </Card>

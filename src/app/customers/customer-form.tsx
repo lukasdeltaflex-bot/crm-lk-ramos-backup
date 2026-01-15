@@ -18,7 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { CalendarIcon, Sparkles, AlertCircle } from 'lucide-react';
+import { CalendarIcon, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -30,6 +30,7 @@ import { useEffect, useState } from 'react';
 import { summarizeNotes } from '@/ai/flows/summarize-notes-flow';
 import { toast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 
 const customerSchema = z.object({
   name: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres.'),
@@ -39,12 +40,18 @@ const customerSchema = z.object({
   email: z.string().email('O email é inválido.'),
   birthDate: z.date({ required_error: 'A data de nascimento é obrigatória.' }),
   observations: z.string().optional(),
+  // Address
+  cep: z.string().optional(),
+  street: z.string().optional(),
+  number: z.string().optional(),
+  complement: z.string().optional(),
+  neighborhood: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
 });
 
 type CustomerFormValues = z.infer<typeof customerSchema>;
 
-// The form now only deals with the data it needs to edit.
-// It doesn't need to know about `id` or `userId`.
 type FormCustomer = Omit<Customer, 'id' | 'userId'>;
 
 interface CustomerFormProps {
@@ -54,6 +61,7 @@ interface CustomerFormProps {
 
 export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [age, setAge] = useState<number | null>(null);
 
   const form = useForm<CustomerFormValues>({
@@ -65,6 +73,13 @@ export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
       phone: '',
       email: '',
       observations: '',
+      cep: '',
+      street: '',
+      number: '',
+      complement: '',
+      neighborhood: '',
+      city: '',
+      state: '',
     },
   });
 
@@ -100,13 +115,18 @@ export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
         email: '',
         birthDate: undefined,
         observations: '',
+        cep: '',
+        street: '',
+        number: '',
+        complement: '',
+        neighborhood: '',
+        city: '',
+        state: '',
       });
     }
   }, [customer, form]);
 
   function handleFormSubmit(data: CustomerFormValues) {
-    // We only pass back the data that the parent component needs.
-    // The parent is responsible for adding id/userId.
     const newCustomerData: FormCustomer = {
       ...data,
       birthDate: format(data.birthDate, 'yyyy-MM-dd'),
@@ -124,6 +144,51 @@ export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
     form.setValue('cpf', value, { shouldValidate: true });
   };
   
+  const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, "");
+    if (value.length > 8) value = value.substring(0, 8);
+    value = value.replace(/(\d{5})(\d)/, "$1-$2");
+    e.target.value = value;
+    form.setValue('cep', value, { shouldValidate: true });
+  }
+
+  const handleCepBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+    const cep = e.target.value.replace(/\D/g, '');
+    if (cep.length !== 8) {
+        return;
+    }
+    setIsFetchingCep(true);
+    try {
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await response.json();
+        if (data.erro) {
+            toast({
+                variant: 'destructive',
+                title: 'CEP não encontrado',
+                description: 'Verifique o CEP digitado e tente novamente.',
+            });
+            form.setValue('street', '');
+            form.setValue('neighborhood', '');
+            form.setValue('city', '');
+            form.setValue('state', '');
+        } else {
+            form.setValue('street', data.logradouro);
+            form.setValue('neighborhood', data.bairro);
+            form.setValue('city', data.localidade);
+            form.setValue('state', data.uf);
+            form.setFocus('number'); // Move focus to the number field
+        }
+    } catch (error) {
+        toast({
+            variant: 'destructive',
+            title: 'Erro ao buscar CEP',
+            description: 'Não foi possível buscar o endereço. Verifique sua conexão.',
+        });
+    } finally {
+        setIsFetchingCep(false);
+    }
+  }
+
   const handleSummarize = async () => {
     const currentObservations = form.getValues('observations');
     if (!currentObservations || currentObservations.trim() === '') {
@@ -160,131 +225,250 @@ export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="py-4">
         <ScrollArea className="h-[calc(100vh-12rem)] pr-4">
-          <div className="space-y-6">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome Completo</FormLabel>
-                  <FormControl>
-                    <Input placeholder="João da Silva" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <FormField
-              control={form.control}
-              name="cpf"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>CPF</FormLabel>
-                  <FormControl>
-                    <Input placeholder="000.000.000-00" {...field} onChange={handleCpfChange} maxLength={14}/>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="benefitNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Número do Benefício</FormLabel>
-                  <FormControl>
-                    <Input placeholder="123.456.789-0" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="joao.silva@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Telefone</FormLabel>
-                  <FormControl>
-                    <Input placeholder="(11) 98765-4321" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <div className="flex items-start gap-4">
+          <div className="space-y-8">
+            {/* Dados Pessoais */}
+            <div className='space-y-4'>
+                <h3 className="text-lg font-medium">Dados Pessoais</h3>
                 <FormField
-                        control={form.control}
-                        name="birthDate"
-                        render={({ field }) => (
-                        <FormItem className="flex flex-col pt-2">
-                            <FormLabel>
-                                Data de Nascimento {age !== null && <span className="text-muted-foreground">({age} anos)</span>}
-                            </FormLabel>
-                            <Popover>
-                            <PopoverTrigger asChild>
-                                <FormControl>
-                                <Button
-                                    variant={'outline'}
-                                    className={cn(
-                                    'w-[240px] pl-3 text-left font-normal',
-                                    !field.value && 'text-muted-foreground'
-                                    )}
-                                >
-                                    {field.value ? (
-                                    format(field.value, 'dd/MM/yyyy', { locale: ptBR })
-                                    ) : (
-                                    <span>Escolha uma data</span>
-                                    )}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                                </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                defaultMonth={field.value || new Date(new Date().setFullYear(new Date().getFullYear() - 30))}
-                                locale={ptBR}
-                                disabled={(date) =>
-                                    date > new Date() || date < new Date('1900-01-01')
-                                }
-                                initialFocus
-                                fromYear={1930}
-                                toYear={new Date().getFullYear()}
-                                captionLayout="dropdown-buttons"
-                                />
-                            </PopoverContent>
-                            </Popover>
-                            <FormMessage />
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Nome Completo</FormLabel>
+                    <FormControl>
+                        <Input placeholder="João da Silva" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                    <FormField
+                    control={form.control}
+                    name="cpf"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>CPF</FormLabel>
+                        <FormControl>
+                            <Input placeholder="000.000.000-00" {...field} onChange={handleCpfChange} maxLength={14}/>
+                        </FormControl>
+                        <FormMessage />
                         </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="benefitNumber"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Número do Benefício</FormLabel>
+                        <FormControl>
+                            <Input placeholder="123.456.789-0" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                </div>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                    <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                            <Input placeholder="joao.silva@example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Telefone</FormLabel>
+                        <FormControl>
+                            <Input placeholder="(11) 98765-4321" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                </div>
+                <div className="flex items-start gap-4">
+                    <FormField
+                            control={form.control}
+                            name="birthDate"
+                            render={({ field }) => (
+                            <FormItem className="flex flex-col pt-2">
+                                <FormLabel>
+                                    Data de Nascimento {age !== null && <span className="text-muted-foreground">({age} anos)</span>}
+                                </FormLabel>
+                                <Popover>
+                                <PopoverTrigger asChild>
+                                    <FormControl>
+                                    <Button
+                                        variant={'outline'}
+                                        className={cn(
+                                        'w-[240px] pl-3 text-left font-normal',
+                                        !field.value && 'text-muted-foreground'
+                                        )}
+                                    >
+                                        {field.value ? (
+                                        format(field.value, 'dd/MM/yyyy', { locale: ptBR })
+                                        ) : (
+                                        <span>Escolha uma data</span>
+                                        )}
+                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                    </Button>
+                                    </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                    mode="single"
+                                    selected={field.value}
+                                    onSelect={field.onChange}
+                                    defaultMonth={field.value || new Date(new Date().setFullYear(new Date().getFullYear() - 30))}
+                                    locale={ptBR}
+                                    disabled={(date) =>
+                                        date > new Date() || date < new Date('1900-01-01')
+                                    }
+                                    initialFocus
+                                    fromYear={1930}
+                                    toYear={new Date().getFullYear()}
+                                    captionLayout="dropdown-buttons"
+                                    />
+                                </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                    {age !== null && age >= 74 && (
+                        <Alert variant="destructive" className="mt-2 max-w-xs">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertTitle>Atenção!</AlertTitle>
+                            <AlertDescription>
+                                Cliente com {age} anos. Verifique as restrições de idade para os produtos de empréstimo.
+                            </AlertDescription>
+                        </Alert>
+                    )}
+                </div>
+            </div>
+
+            <Separator />
+            
+            {/* Endereço */}
+            <div className='space-y-4'>
+                <h3 className="text-lg font-medium">Endereço</h3>
+                <FormField
+                    control={form.control}
+                    name="cep"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>CEP</FormLabel>
+                        <FormControl>
+                            <div className='relative'>
+                                <Input placeholder="00000-000" {...field} onChange={handleCepChange} onBlur={handleCepBlur} maxLength={9} className="max-w-xs" />
+                                {isFetchingCep && <Loader2 className="absolute right-3 top-2.5 h-5 w-5 animate-spin text-muted-foreground" />}
+                            </div>
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                    <FormField
+                        control={form.control}
+                        name="street"
+                        render={({ field }) => (
+                            <FormItem className='col-span-2'>
+                            <FormLabel>Logradouro</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Rua das Flores" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
                         )}
                     />
-                {age !== null && age >= 74 && (
-                    <Alert variant="destructive" className="mt-2 max-w-xs">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Atenção!</AlertTitle>
-                        <AlertDescription>
-                            Cliente com {age} anos. Verifique as restrições de idade para os produtos de empréstimo.
-                        </AlertDescription>
-                    </Alert>
-                )}
+                     <FormField
+                        control={form.control}
+                        name="number"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Número</FormLabel>
+                            <FormControl>
+                                <Input placeholder="123" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                    <FormField
+                        control={form.control}
+                        name="complement"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Complemento</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Apto 45" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="neighborhood"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Bairro</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Centro" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                    <FormField
+                        control={form.control}
+                        name="city"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Cidade</FormLabel>
+                            <FormControl>
+                                <Input placeholder="São Paulo" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="state"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Estado</FormLabel>
+                            <FormControl>
+                                <Input placeholder="SP" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
             </div>
+
+            <Separator />
+
+            {/* Observações */}
             <FormField
               control={form.control}
               name="observations"

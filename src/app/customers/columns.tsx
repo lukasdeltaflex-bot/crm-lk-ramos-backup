@@ -132,16 +132,16 @@ export const getColumns = (
     header: 'CPF',
   },
   {
-    accessorKey: 'benefitNumber',
-    header: 'Nº Benefício',
-  },
-  {
     accessorKey: 'phone',
     header: 'Telefone',
   },
   {
-    accessorKey: 'email',
-    header: 'Email',
+    accessorKey: 'city',
+    header: 'Cidade',
+  },
+  {
+    accessorKey: 'state',
+    header: 'Estado',
   },
   {
     accessorKey: 'observations',

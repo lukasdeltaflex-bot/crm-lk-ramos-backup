@@ -81,6 +81,34 @@
         "userId": {
           "type": "string",
           "description": "The ID of the user who owns this customer record."
+        },
+        "cep": {
+          "type": "string",
+          "description": "Postal code (CEP)."
+        },
+        "street": {
+          "type": "string",
+          "description": "Street name."
+        },
+        "number": {
+          "type": "string",
+          "description": "Street number."
+        },
+        "complement": {
+          "type": "string",
+          "description": "Address complement (e.g., apartment number)."
+        },
+        "neighborhood": {
+          "type": "string",
+          "description": "Neighborhood."
+        },
+        "city": {
+          "type": "string",
+          "description": "City."
+        },
+        "state": {
+          "type": "string",
+          "description": "State (e.g., SP, RJ)."
         }
       },
       "required": [
