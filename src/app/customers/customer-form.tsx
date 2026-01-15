@@ -263,7 +263,7 @@ export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
                         <FormItem>
                         <FormLabel>Número do Benefício</FormLabel>
                         <FormControl>
-                            <Input placeholder="123.456.789-0" {...field} />
+                            <Input placeholder="123.456.789-0" {...field} value={field.value || ''} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -372,7 +372,7 @@ export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
                         <FormLabel>CEP</FormLabel>
                         <FormControl>
                             <div className='relative'>
-                                <Input placeholder="00000-000" {...field} onChange={handleCepChange} onBlur={handleCepBlur} maxLength={9} className="max-w-xs" />
+                                <Input placeholder="00000-000" {...field} onChange={handleCepChange} onBlur={handleCepBlur} maxLength={9} className="max-w-xs" value={field.value || ''} />
                                 {isFetchingCep && <Loader2 className="absolute right-3 top-2.5 h-5 w-5 animate-spin text-muted-foreground" />}
                             </div>
                         </FormControl>
@@ -388,7 +388,7 @@ export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
                             <FormItem className='col-span-2'>
                             <FormLabel>Logradouro</FormLabel>
                             <FormControl>
-                                <Input placeholder="Rua das Flores" {...field} />
+                                <Input placeholder="Rua das Flores" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -401,7 +401,7 @@ export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
                             <FormItem>
                             <FormLabel>Número</FormLabel>
                             <FormControl>
-                                <Input placeholder="123" {...field} />
+                                <Input placeholder="123" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -416,7 +416,7 @@ export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
                             <FormItem>
                             <FormLabel>Complemento</FormLabel>
                             <FormControl>
-                                <Input placeholder="Apto 45" {...field} />
+                                <Input placeholder="Apto 45" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -429,7 +429,7 @@ export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
                             <FormItem>
                             <FormLabel>Bairro</FormLabel>
                             <FormControl>
-                                <Input placeholder="Centro" {...field} />
+                                <Input placeholder="Centro" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -444,7 +444,7 @@ export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
                             <FormItem>
                             <FormLabel>Cidade</FormLabel>
                             <FormControl>
-                                <Input placeholder="São Paulo" {...field} />
+                                <Input placeholder="São Paulo" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -457,7 +457,7 @@ export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
                             <FormItem>
                             <FormLabel>Estado</FormLabel>
                             <FormControl>
-                                <Input placeholder="SP" {...field} />
+                                <Input placeholder="SP" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -492,6 +492,7 @@ export function CustomerForm({ customer, onSubmit }: CustomerFormProps) {
                       placeholder="Anotações sobre o cliente..."
                       className="resize-none"
                       {...field}
+                      value={field.value || ''}
                     />
                   </FormControl>
                   <FormMessage />

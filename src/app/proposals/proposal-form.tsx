@@ -129,8 +129,27 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
     const form = useForm<ProposalFormValues>({
         resolver: zodResolver(proposalSchema),
         defaultValues: {
-            // Set sensible defaults for a new proposal
+            customerId: '',
+            product: '',
             status: 'Em Andamento',
+            table: '',
+            term: undefined,
+            interestRate: undefined,
+            grossAmount: undefined,
+            netAmount: undefined,
+            installmentAmount: undefined,
+            commissionBase: undefined,
+            commissionPercentage: undefined,
+            commissionValue: undefined,
+            promoter: '',
+            bank: '',
+            bankOrigin: '',
+            approvingBody: '',
+            operator: '',
+            dateDigitized: new Date(),
+            dateApproved: undefined,
+            datePaidToClient: undefined,
+            debtBalanceArrivalDate: undefined,
         },
     });
 
@@ -471,7 +490,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
                             render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Banco de Origem</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly}>
+                                <Select onValueChange={field.onChange} defaultValue={field.value || ''} value={field.value || ''} disabled={isReadOnly}>
                                 <FormControl>
                                     <SelectTrigger>
                                     <SelectValue placeholder="Selecione um banco" />

@@ -48,6 +48,10 @@ export function ProfileForm({ userProfile, onSubmit }: ProfileFormProps) {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
+      displayName: '',
+      fullName: '',
+      photoURL: '',
+      phone: '',
       email: userProfile?.email || '',
     },
   });
@@ -255,4 +259,3 @@ export function ProfileForm({ userProfile, onSubmit }: ProfileFormProps) {
     </Form>
   );
 }
-
