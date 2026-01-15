@@ -168,7 +168,7 @@ const MaskedDatePicker = ({ name, label, control, isReadOnly }: { name: any, lab
 export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDuplicate, defaultValues, sheetMode }: ProposalFormProps) {
     const { user } = useUser();
     const firestore = useFirestore();
-    const [tempProposalId] = useState(() => doc(collection(firestore, 'proposals')).id);
+    const [tempProposalId] => useState(() => doc(collection(firestore, 'proposals')).id);
     const proposalId = proposal?.id || tempProposalId;
 
     const form = useForm<ProposalFormValues>({
@@ -289,7 +289,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
                         <FormLabel>Cliente</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly}>
                         <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="line-clamp-1">
                             <SelectValue placeholder="Selecione um cliente" />
                             </SelectTrigger>
                         </FormControl>
