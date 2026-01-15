@@ -6,6 +6,7 @@ import {
   SidebarContent,
   SidebarInset,
   SidebarTrigger,
+  SidebarRail
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/logo';
 import { SidebarNav } from '@/components/sidebar-nav';
@@ -16,7 +17,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard>
       <SidebarProvider>
-        <Sidebar className="print:hidden">
+        <Sidebar className="print:hidden" collapsible="icon">
+          <SidebarRail />
           <SidebarHeader>
             <Logo />
           </SidebarHeader>
