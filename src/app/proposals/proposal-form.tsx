@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Info } from 'lucide-react';
+import { CalendarIcon, Info, Copy } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -98,11 +98,16 @@ const proposalSchema = z.object({
 
 type ProposalFormValues = z.infer<typeof proposalSchema>;
 
+type ProposalFormData = Partial<Omit<Proposal, 'id' | 'userId'>>;
+
 interface ProposalFormProps {
   proposal?: Proposal;
   customers: Customer[];
   isReadOnly?: boolean;
   onSubmit: (data: ProposalFormValues) => void;
+  onDuplicate: (proposal: Proposal) => void;
+  defaultValues?: ProposalFormData;
+  sheetMode: 'new' | 'edit' | 'view';
 }
 
 const handleDateMask = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -160,7 +165,7 @@ const MaskedDatePicker = ({ name, label, control, isReadOnly }: { name: any, lab
 );
 
 
-export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: ProposalFormProps) {
+export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDuplicate, defaultValues, sheetMode }: ProposalFormProps) {
     const { user } = useUser();
     const firestore = useFirestore();
     const [tempProposalId] = useState(() => doc(collection(firestore, 'proposals')).id);
@@ -209,7 +214,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
 
 
   useEffect(() => {
-    const defaultValues: Partial<ProposalFormValues> = {
+    const initialValues: Partial<ProposalFormValues> = {
         proposalNumber: '',
         customerId: '',
         product: '',
@@ -234,29 +239,23 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
         debtBalanceArrivalDate: undefined,
         attachments: [],
     };
+    
+    const source = proposal || defaultValues;
 
-    if (proposal) {
-      form.reset({
-        ...defaultValues,
-        ...proposal,
-        dateDigitized: proposal.dateDigitized ? format(new Date(proposal.dateDigitized), 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy'),
-        term: proposal.term || undefined,
-        interestRate: proposal.interestRate || undefined,
-        grossAmount: proposal.grossAmount || undefined,
-        netAmount: proposal.netAmount || undefined,
-        installmentAmount: proposal.installmentAmount || undefined,
-        commissionPercentage: proposal.commissionPercentage || undefined,
-        commissionValue: proposal.commissionValue || undefined,
-        bankOrigin: proposal.bankOrigin || '',
-        dateApproved: formatDateForForm(proposal.dateApproved),
-        datePaidToClient: formatDateForForm(proposal.datePaidToClient),
-        debtBalanceArrivalDate: formatDateForForm(proposal.debtBalanceArrivalDate),
-        attachments: proposal.attachments || [],
-      });
+    if (source) {
+        const sourceData = {
+            ...initialValues,
+            ...source,
+            dateDigitized: source.dateDigitized ? formatDateForForm(source.dateDigitized) : format(new Date(), 'dd/MM/yyyy'),
+            dateApproved: formatDateForForm(source.dateApproved),
+            datePaidToClient: formatDateForForm(source.datePaidToClient),
+            debtBalanceArrivalDate: formatDateForForm(source.debtBalanceArrivalDate),
+        }
+        form.reset(sourceData);
     } else {
-      form.reset(defaultValues);
+      form.reset(initialValues);
     }
-  }, [proposal, form]);
+  }, [proposal, defaultValues, form]);
 
 
   function handleFormSubmit(data: ProposalFormValues) {
@@ -290,7 +289,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
                         <FormLabel>Cliente</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly}>
                         <FormControl>
-                            <SelectTrigger className="line-clamp-1">
+                            <SelectTrigger>
                             <SelectValue placeholder="Selecione um cliente" />
                             </SelectTrigger>
                         </FormControl>
@@ -691,11 +690,20 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
             </div>
           </div>
         </ScrollArea>
-        {!isReadOnly && (
-            <div className="flex justify-end pt-8">
-                <Button type="submit">Salvar Proposta</Button>
+        <div className="flex justify-between items-center pt-8">
+            <div>
+            {sheetMode !== 'new' && proposal && (
+                <Button type="button" variant="outline" onClick={() => onDuplicate(proposal)}>
+                    <Copy />
+                    Duplicar Proposta
+                </Button>
+            )}
             </div>
-        )}
+
+            {!isReadOnly && (
+                <Button type="submit">Salvar Proposta</Button>
+            )}
+        </div>
       </form>
     </Form>
   );

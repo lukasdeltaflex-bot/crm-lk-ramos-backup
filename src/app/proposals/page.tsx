@@ -24,6 +24,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { parse } from 'date-fns';
 
 export type ProposalWithCustomer = Proposal & { customer: Customer | undefined };
+type ProposalFormData = Partial<Omit<Proposal, 'id' | 'userId'>>;
 
 export default function ProposalsPage() {
   const { user, isUserLoading } = useUser();
@@ -33,6 +34,7 @@ export default function ProposalsPage() {
   const [selectedProposal, setSelectedProposal] = React.useState<ProposalWithCustomer | undefined>(undefined);
   const [sheetMode, setSheetMode] = React.useState<'new' | 'edit' | 'view'>('new');
   const [rowSelection, setRowSelection] = React.useState({});
+  const [defaultValues, setDefaultValues] = React.useState<ProposalFormData | undefined>(undefined);
   
   const proposalsQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
@@ -60,21 +62,43 @@ export default function ProposalsPage() {
 
   const handleNewProposal = () => {
     setSelectedProposal(undefined);
+    setDefaultValues(undefined);
     setSheetMode('new');
     setIsSheetOpen(true);
   };
 
   const handleEditProposal = (proposal: ProposalWithCustomer) => {
     setSelectedProposal(proposal);
+    setDefaultValues(undefined);
     setSheetMode('edit');
     setIsSheetOpen(true);
   };
 
   const handleViewProposal = (proposal: ProposalWithCustomer) => {
     setSelectedProposal(proposal);
+    setDefaultValues(undefined);
     setSheetMode('view');
     setIsSheetOpen(true);
   };
+  
+  const handleDuplicateProposal = (proposal: ProposalWithCustomer) => {
+    const { id, proposalNumber, status, ...rest } = proposal;
+    const duplicatedData: ProposalFormData = {
+        ...rest,
+        // Limpe campos que devem ser únicos ou redefinidos
+        proposalNumber: '',
+        status: 'Em Andamento',
+        dateDigitized: new Date().toISOString(),
+        dateApproved: undefined,
+        datePaidToClient: undefined,
+        debtBalanceArrivalDate: undefined,
+        attachments: [],
+    };
+    setSelectedProposal(undefined);
+    setDefaultValues(duplicatedData);
+    setSheetMode('new');
+    setIsSheetOpen(true);
+};
 
   const handleDeleteProposal = async (proposalId: string) => {
     if (!firestore) return;
@@ -208,7 +232,10 @@ export default function ProposalsPage() {
             proposal={selectedProposal} 
             customers={customers || []}
             isReadOnly={sheetMode === 'view'}
-            onSubmit={handleFormSubmit} 
+            onSubmit={handleFormSubmit}
+            onDuplicate={handleDuplicateProposal}
+            defaultValues={defaultValues}
+            sheetMode={sheetMode}
           />
         </SheetContent>
       </Sheet>
