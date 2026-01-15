@@ -1,0 +1,180 @@
+'use client';
+import React, { useMemo } from 'react';
+import { AppLayout } from '@/components/app-layout';
+import { PageHeader } from '@/components/page-header';
+import { useDoc, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { doc, collection, query, where } from 'firebase/firestore';
+import type { Customer, Proposal } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { User, Phone, Mail, Calendar, FileText, CircleDollarSign, BadgePercent } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { StatsCard } from '@/components/dashboard/stats-card';
+import { formatCurrency } from '@/lib/utils';
+import { SimpleProposalsTable } from '@/components/customers/simple-proposals-table';
+
+
+const CustomerInfoCard = ({ customer }: { customer: Customer }) => {
+    const getAge = (birthDate: string) => {
+        const today = new Date();
+        const birth = new Date(birthDate);
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+          age--;
+        }
+        return age;
+    };
+    
+    return (
+        <Card>
+            <CardHeader>
+                <div className='flex items-center justify-between'>
+                    <div className='flex items-center gap-4'>
+                         <User className="h-8 w-8 text-muted-foreground" />
+                        <div>
+                            <CardTitle>{customer.name}</CardTitle>
+                        </div>
+                    </div>
+                    <Link href="/customers">
+                        <Button variant="outline">Voltar para Clientes</Button>
+                    </Link>
+                </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <strong>CPF:</strong> {customer.cpf}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <strong>Benefício:</strong> {customer.benefitNumber || 'N/A'}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <strong>Nascimento:</strong> {format(new Date(customer.birthDate), 'dd/MM/yyyy', { locale: ptBR })} ({getAge(customer.birthDate)} anos)
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <strong>Telefone:</strong> {customer.phone}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <strong>Email:</strong> {customer.email}
+                    </div>
+                </div>
+                {customer.observations && (
+                    <div className="pt-4">
+                        <h4 className="font-semibold mb-2">Observações</h4>
+                        <p className="text-muted-foreground bg-secondary/30 p-3 rounded-md whitespace-pre-wrap">{customer.observations}</p>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    )
+}
+
+const CustomerFinancialSummary = ({ proposals }: { proposals: Proposal[] }) => {
+    const summary = useMemo(() => {
+      let totalContracted = 0;
+      let totalCommission = 0;
+  
+      proposals.forEach((proposal) => {
+        if (proposal.status === 'Pago' || proposal.status === 'Saldo Pago') {
+          totalContracted += proposal.grossAmount;
+          totalCommission += proposal.commissionValue;
+        }
+      });
+  
+      return { totalContracted, totalCommission, proposalCount: proposals.length };
+    }, [proposals]);
+  
+    return (
+      <div className="grid gap-4 md:grid-cols-3">
+        <StatsCard
+          title="Propostas Realizadas"
+          value={String(summary.proposalCount)}
+          icon={FileText}
+        />
+        <StatsCard
+          title="Total Contratado"
+          value={formatCurrency(summary.totalContracted)}
+          icon={CircleDollarSign}
+          valueClassName="text-green-500"
+        />
+        <StatsCard
+          title="Comissão Gerada"
+          value={formatCurrency(summary.totalCommission)}
+          icon={BadgePercent}
+          valueClassName="text-blue-500"
+        />
+      </div>
+    );
+};
+  
+
+export default function CustomerDetailPage({ params }: { params: { id: string } }) {
+  const { id: customerId } = params;
+  const firestore = useFirestore();
+
+  const customerDocRef = useMemoFirebase(() => {
+    if (!firestore || !customerId) return null;
+    return doc(firestore, 'customers', customerId);
+  }, [firestore, customerId]);
+
+  const proposalsQuery = useMemoFirebase(() => {
+    if (!firestore || !customerId) return null;
+    return query(collection(firestore, 'loanProposals'), where('customerId', '==', customerId));
+  }, [firestore, customerId]);
+
+  const { data: customer, isLoading: isCustomerLoading } = useDoc<Customer>(customerDocRef);
+  const { data: proposals, isLoading: areProposalsLoading } = useCollection<Proposal>(proposalsQuery);
+
+  const isLoading = isCustomerLoading || areProposalsLoading;
+
+  if (isLoading) {
+    return (
+        <AppLayout>
+            <div className="space-y-4">
+                <Skeleton className="h-48 w-full" />
+                <div className="grid gap-4 md:grid-cols-3">
+                    <Skeleton className="h-24 w-full" />
+                    <Skeleton className="h-24 w-full" />
+                    <Skeleton className="h-24 w-full" />
+                </div>
+                <Skeleton className="h-96 w-full" />
+            </div>
+        </AppLayout>
+    )
+  }
+
+  if (!customer) {
+    return (
+      <AppLayout>
+        <PageHeader title="Cliente não encontrado" />
+        <p>O cliente que você está procurando não foi encontrado.</p>
+      </AppLayout>
+    );
+  }
+
+  return (
+    <AppLayout>
+      <div className='space-y-8'>
+        <CustomerInfoCard customer={customer} />
+        <CustomerFinancialSummary proposals={proposals || []} />
+        <Card>
+            <CardHeader>
+                <CardTitle>Histórico de Propostas</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <SimpleProposalsTable proposals={proposals || []} />
+            </CardContent>
+        </Card>
+      </div>
+    </AppLayout>
+  );
+}

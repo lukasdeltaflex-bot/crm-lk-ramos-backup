@@ -24,6 +24,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import Link from 'next/link';
 
 interface ActionsCellProps {
   row: { original: Customer };
@@ -117,6 +118,14 @@ export const getColumns = (
           </Button>
         );
       },
+    cell: ({ row }) => {
+        const customer = row.original;
+        return (
+            <Link href={`/customers/${customer.id}`} className="font-medium text-primary hover:underline">
+                {customer.name}
+            </Link>
+        )
+    }
   },
   {
     accessorKey: 'cpf',
