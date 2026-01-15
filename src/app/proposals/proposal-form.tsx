@@ -54,6 +54,7 @@ const attachmentSchema = z.object({
 });
 
 const proposalSchema = z.object({
+  proposalNumber: z.string().optional(),
   customerId: z.string({ required_error: 'Selecione um cliente.' }),
   product: z.string({ required_error: 'Selecione um produto.' }),
   status: z.string({ required_error: 'Selecione um status.' }),
@@ -149,6 +150,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
     const form = useForm<ProposalFormValues>({
         resolver: zodResolver(proposalSchema),
         defaultValues: {
+            proposalNumber: proposal?.proposalNumber || '',
             customerId: proposal?.customerId || '',
             product: proposal?.product || '',
             status: proposal?.status || 'Em Andamento',
@@ -203,6 +205,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
 
   useEffect(() => {
     const defaultValues: Partial<ProposalFormValues> = {
+        proposalNumber: '',
         customerId: '',
         product: '',
         status: 'Em Andamento',
@@ -324,7 +327,22 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
             {/* Proposal Details */}
             <div className="space-y-4">
                 <h3 className="text-lg font-medium">Detalhes da Proposta</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {proposal?.proposalNumber && (
+                        <FormField
+                            control={form.control}
+                            name="proposalNumber"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Nº Proposta</FormLabel>
+                                <FormControl>
+                                <Input {...field} readOnly value={field.value || ''}/>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                    )}
                     <FormField
                         control={form.control}
                         name="table"
@@ -338,6 +356,8 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
                         </FormItem>
                         )}
                     />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
                         name="term"
@@ -366,7 +386,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
                     />
                 </div>
             </div>
-
+            
             <Separator />
             
             {/* Amounts */}
