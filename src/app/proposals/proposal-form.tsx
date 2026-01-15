@@ -28,7 +28,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { productTypes, proposalStatuses, approvingBodies, banks } from '@/lib/config-data';
-import type { Proposal, Customer } from '@/lib/types';
+import type { Proposal, Customer, Attachment } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -39,6 +39,15 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useEffect } from 'react';
+import { ProposalAttachmentUploader } from '@/components/proposals/proposal-attachment-uploader';
+import { useUser } from '@/firebase';
+
+const attachmentSchema = z.object({
+  name: z.string(),
+  url: z.string(),
+  type: z.string(),
+  size: z.number(),
+});
 
 const proposalSchema = z.object({
   customerId: z.string({ required_error: 'Selecione um cliente.' }),
@@ -67,6 +76,8 @@ const proposalSchema = z.object({
   dateApproved: z.date().optional(),
   datePaidToClient: z.date().optional(),
   debtBalanceArrivalDate: z.date().optional(),
+  
+  attachments: z.array(attachmentSchema).optional(),
 });
 
 type ProposalFormValues = z.infer<typeof proposalSchema>;
@@ -126,6 +137,7 @@ const DatePickerField = ({ name, label, control, isReadOnly }: { name: any, labe
 );
 
 export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: ProposalFormProps) {
+    const { user } = useUser();
     const form = useForm<ProposalFormValues>({
         resolver: zodResolver(proposalSchema),
         defaultValues: {
@@ -138,7 +150,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
             grossAmount: undefined,
             netAmount: undefined,
             installmentAmount: undefined,
-            commissionBase: undefined,
+            commissionBase: 'gross',
             commissionPercentage: undefined,
             commissionValue: undefined,
             promoter: '',
@@ -150,6 +162,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
             dateApproved: undefined,
             datePaidToClient: undefined,
             debtBalanceArrivalDate: undefined,
+            attachments: [],
         },
     });
 
@@ -172,7 +185,6 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
 
     if (baseValue > 0 && commissionPercentage >= 0) {
         const calculatedCommission = baseValue * (commissionPercentage / 100);
-        // Check if the new value is different before setting it to avoid infinite loops
         if (form.getValues('commissionValue') !== parseFloat(calculatedCommission.toFixed(2))) {
             setValue('commissionValue', parseFloat(calculatedCommission.toFixed(2)), { shouldValidate: true });
         }
@@ -181,23 +193,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
 
 
   useEffect(() => {
-    if (proposal) {
-      form.reset({
-        ...proposal,
-        term: proposal.term || undefined,
-        interestRate: proposal.interestRate || undefined,
-        grossAmount: proposal.grossAmount || undefined,
-        netAmount: proposal.netAmount || undefined,
-        installmentAmount: proposal.installmentAmount || undefined,
-        commissionPercentage: proposal.commissionPercentage || undefined,
-        commissionValue: proposal.commissionValue || undefined,
-        dateDigitized: proposal.dateDigitized ? new Date(proposal.dateDigitized) : new Date(),
-        dateApproved: proposal.dateApproved ? new Date(proposal.dateApproved) : undefined,
-        datePaidToClient: proposal.datePaidToClient ? new Date(proposal.datePaidToClient) : undefined,
-        debtBalanceArrivalDate: proposal.debtBalanceArrivalDate ? new Date(proposal.debtBalanceArrivalDate) : undefined,
-      });
-    } else {
-      form.reset({
+    const defaultValues: Partial<ProposalFormValues> = {
         customerId: '',
         product: '',
         status: 'Em Andamento',
@@ -207,7 +203,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
         grossAmount: undefined,
         netAmount: undefined,
         installmentAmount: undefined,
-        commissionBase: undefined,
+        commissionBase: 'gross',
         commissionPercentage: undefined,
         commissionValue: undefined,
         promoter: '',
@@ -219,7 +215,29 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
         dateApproved: undefined,
         datePaidToClient: undefined,
         debtBalanceArrivalDate: undefined,
+        attachments: [],
+    };
+
+    if (proposal) {
+      form.reset({
+        ...defaultValues,
+        ...proposal,
+        term: proposal.term || undefined,
+        interestRate: proposal.interestRate || undefined,
+        grossAmount: proposal.grossAmount || undefined,
+        netAmount: proposal.netAmount || undefined,
+        installmentAmount: proposal.installmentAmount || undefined,
+        commissionPercentage: proposal.commissionPercentage || undefined,
+        commissionValue: proposal.commissionValue || undefined,
+        bankOrigin: proposal.bankOrigin || '',
+        dateDigitized: proposal.dateDigitized ? new Date(proposal.dateDigitized) : new Date(),
+        dateApproved: proposal.dateApproved ? new Date(proposal.dateApproved) : undefined,
+        datePaidToClient: proposal.datePaidToClient ? new Date(proposal.datePaidToClient) : undefined,
+        debtBalanceArrivalDate: proposal.debtBalanceArrivalDate ? new Date(proposal.debtBalanceArrivalDate) : undefined,
+        attachments: proposal.attachments || [],
       });
+    } else {
+      form.reset(defaultValues);
     }
   }, [proposal, form]);
 
@@ -227,6 +245,10 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
   function handleFormSubmit(data: ProposalFormValues) {
     onSubmit(data);
   }
+
+  const handleAttachmentsChange = (attachments: Attachment[]) => {
+    setValue('attachments', attachments, { shouldValidate: true });
+  };
 
   return (
     <Form {...form}>
@@ -604,6 +626,22 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit }: Prop
                     )}
                  </div>
             </div>
+
+            <Separator />
+
+            {/* Attachments */}
+            {user && proposal && (
+                 <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Anexos da Proposta</h3>
+                    <ProposalAttachmentUploader
+                        userId={user.uid}
+                        proposalId={proposal.id}
+                        initialAttachments={form.getValues('attachments') || []}
+                        onAttachmentsChange={handleAttachmentsChange}
+                        isReadOnly={isReadOnly}
+                    />
+                 </div>
+            )}
           </div>
         </ScrollArea>
         {!isReadOnly && (

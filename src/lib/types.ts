@@ -1,5 +1,6 @@
 
 
+
 export type Customer = {
   id: string;
   name: string;
@@ -41,6 +42,13 @@ export type ProposalStatus =
 
 export type CommissionStatus = 'Pendente' | 'Paga' | 'Parcial';
 
+export type Attachment = {
+  name: string;
+  url: string;
+  type: string;
+  size: number;
+};
+
 export type Proposal = {
   id: string;
   userId: string;
@@ -69,6 +77,7 @@ export type Proposal = {
   interestRate?: number;
   operator?: string;
   commissionBase?: 'gross' | 'net';
+  attachments?: Attachment[];
 };
 
 export type UserSettings = {

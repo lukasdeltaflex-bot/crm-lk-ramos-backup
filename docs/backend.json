@@ -120,6 +120,35 @@
         "userId"
       ]
     },
+    "Attachment": {
+      "title": "Attachment",
+      "type": "object",
+      "description": "Represents a file attached to a loan proposal.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the uploaded file."
+        },
+        "url": {
+          "type": "string",
+          "description": "The Firebase Storage URL of the uploaded file."
+        },
+        "type": {
+          "type": "string",
+          "description": "The MIME type of the file."
+        },
+        "size": {
+          "type": "number",
+          "description": "The size of the file in bytes."
+        }
+      },
+      "required": [
+        "name",
+        "url",
+        "type",
+        "size"
+      ]
+    },
     "LoanProposal": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "LoanProposal",
@@ -184,6 +213,13 @@
         "status": {
           "type": "string",
           "description": "Status of the proposal (e.g., Averaged, In Progress, Rejected, Awaiting Debt Balance)."
+        },
+        "attachments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/backend/entities/Attachment"
+          },
+          "description": "A list of files attached to this proposal."
         }
       },
       "required": [
