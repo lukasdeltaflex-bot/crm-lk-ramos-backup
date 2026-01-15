@@ -72,7 +72,7 @@ export function FollowUpReminders({ proposals, customers, isLoading }: FollowUpR
       setIsGenerating(false);
     }
     fetchReminders();
-  }, [isLoading, longRunningProposals]);
+  }, [isLoading, JSON.stringify(longRunningProposals)]);
 
   const showLoadingState = isLoading || isGenerating;
 

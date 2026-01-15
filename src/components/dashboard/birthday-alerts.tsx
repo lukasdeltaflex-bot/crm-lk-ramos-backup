@@ -71,7 +71,7 @@ export function BirthdayAlerts({ customers, isLoading }: BirthdayAlertsProps) {
       setIsGenerating(false);
     }
     fetchAlerts();
-  }, [isLoading, customers]); // Rerun when isLoading changes
+  }, [isLoading, JSON.stringify(upcoming75)]); // Rerun when isLoading or customers change
 
   const showLoadingState = isLoading || isGenerating;
 
