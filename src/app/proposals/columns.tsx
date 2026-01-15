@@ -2,7 +2,7 @@
 
 import { ColumnDef, Header, Table } from '@tanstack/react-table';
 import type { Proposal, ProposalStatus } from '@/lib/types';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,6 +30,7 @@ import { StatusCell } from './status-cell';
 import { type ProposalWithCustomer } from './page';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 type ActionsCellProps = {
     row: {
@@ -105,9 +106,9 @@ const DraggableHeader = ({ header, children }: { header: Header<ProposalWithCust
 
   return (
     <div className="flex items-center gap-2">
-      <Button variant="ghost" size="icon" className="h-6 w-6 cursor-grab">
+      <div className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), "h-6 w-6 cursor-grab")}>
         <GripVertical />
-      </Button>
+      </div>
       {children}
     </div>
   )
@@ -182,8 +183,10 @@ export const getColumns = (
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
             >
-            <DraggableHeader header={header}>Valor Bruto</DraggableHeader>
-            <ArrowUpDown className="ml-2 h-4 w-4" />
+                <DraggableHeader header={header}>
+                    <span>Valor Bruto</span>
+                </DraggableHeader>
+                <ArrowUpDown className="ml-2 h-4 w-4" />
             </Button>
         </div>
       );
@@ -243,4 +246,3 @@ export const getColumns = (
     cell: (props) => <ActionsCell {...props} onEdit={onEdit} onView={onView} onDelete={onDelete} />,
   },
 ];
-    
