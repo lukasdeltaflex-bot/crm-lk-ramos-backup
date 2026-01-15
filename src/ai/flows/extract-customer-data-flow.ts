@@ -14,8 +14,9 @@ const ExtractCustomerDataOutputSchema = z.object({
     name: z.string().optional().describe('O nome completo do cliente.'),
     cpf: z.string().optional().describe('O CPF do cliente (formato 000.000.000-00).'),
     benefitNumber: z.string().optional().describe('O número do benefício INSS do cliente.'),
-    phone: z.string().optional().describe('O número de telefone do cliente.'),
-    email: z.string().email().optional().describe('O endereço de e-mail do cliente.'),
+    phone: z.string().optional().describe('O número de telefone principal do cliente.'),
+    phone2: z.string().optional().describe('Um segundo número de telefone do cliente, se houver.'),
+    email: z.string().email('O endereço de e-mail do cliente.').optional(),
     birthDate: z.string().optional().describe('A data de nascimento do cliente no formato YYYY-MM-DD.'),
     cep: z.string().optional().describe('O CEP do endereço do cliente.'),
     street: z.string().optional().describe('O logradouro (rua, avenida) do cliente.'),
@@ -43,7 +44,8 @@ Aqui estão algumas regras importantes:
 2.  **Datas**: Converta qualquer formato de data (ex: 30/11/1970) para o formato 'YYYY-MM-DD'.
 3.  **CEP**: Formate como '00000-000'.
 4.  **Campos Vazios**: Se uma informação não for encontrada no texto, simplesmente omita a chave do objeto JSON de saída. Não invente dados e não use o valor "undefined" como string.
-5.  **Extração**: Extraia o máximo de informações que conseguir do texto.
+5.  **Telefones**: Identifique o telefone principal e um segundo telefone, se houver.
+6.  **Extração**: Extraia o máximo de informações que conseguir do texto.
 
 Texto para análise:
 {{{input}}}
@@ -65,3 +67,5 @@ const extractCustomerDataFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    

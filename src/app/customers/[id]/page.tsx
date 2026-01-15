@@ -33,7 +33,8 @@ const CustomerInfoCard = ({ customer }: { customer: Customer }) => {
         return age;
     };
 
-    const isWhatsAppNumber = isWhatsApp(customer.phone);
+    const isWhatsAppNumber1 = isWhatsApp(customer.phone);
+    const isWhatsAppNumber2 = customer.phone2 ? isWhatsApp(customer.phone2) : false;
     
     return (
         <Card>
@@ -71,16 +72,30 @@ const CustomerInfoCard = ({ customer }: { customer: Customer }) => {
                             <strong>Telefone:</strong>
                             <div className="flex items-center gap-2">
                                 <span>{customer.phone}</span>
-                                {isWhatsAppNumber && (
+                                {isWhatsAppNumber1 && (
                                 <a href={getWhatsAppUrl(customer.phone)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:text-green-600">
                                     <WhatsAppIcon />
                                 </a>
                                 )}
                             </div>
                         </div>
+                         {customer.phone2 && (
+                            <div className="flex items-center gap-2">
+                                <Phone className="h-4 w-4 text-muted-foreground" />
+                                <strong>Telefone 2:</strong>
+                                <div className="flex items-center gap-2">
+                                    <span>{customer.phone2}</span>
+                                    {isWhatsAppNumber2 && (
+                                    <a href={getWhatsAppUrl(customer.phone2)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:text-green-600">
+                                        <WhatsAppIcon />
+                                    </a>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                         <div className="flex items-center gap-2 col-span-1 md:col-span-2">
                             <Mail className="h-4 w-4 text-muted-foreground" />
-                            <strong>Email:</strong> {customer.email}
+                            <strong>Email:</strong> {customer.email || 'N/A'}
                         </div>
                     </div>
                 </div>
@@ -229,3 +244,5 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
     </AppLayout>
   );
 }
+
+    

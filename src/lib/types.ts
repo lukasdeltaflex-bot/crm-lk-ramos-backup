@@ -7,7 +7,8 @@ export type Customer = {
   cpf: string;
   benefitNumber?: string;
   phone: string;
-  email: string;
+  phone2?: string;
+  email?: string;
   birthDate: string; // YYYY-MM-DD
   observations?: string;
   userId: string;
@@ -97,3 +98,5 @@ export type UserProfile = {
   birthDate?: string; // YYYY-MM-DD
   phone?: string;
 }
+
+    

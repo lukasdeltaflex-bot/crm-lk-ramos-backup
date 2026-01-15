@@ -37,6 +37,7 @@ const customerSchema = z.object({
   cpf: z.string().length(14, 'O CPF deve ter 11 dígitos.'),
   benefitNumber: z.string().optional(),
   phone: z.string().min(10, 'O telefone é obrigatório.'),
+  phone2: z.string().optional(),
   email: z.string().email('O email é inválido.').or(z.literal('')).optional(),
   birthDate: z.date({ required_error: 'A data de nascimento é obrigatória.' }),
   observations: z.string().optional(),
@@ -74,6 +75,7 @@ export function CustomerForm({ customer, defaultValues, onSubmit }: CustomerForm
       cpf: '',
       benefitNumber: '',
       phone: '',
+      phone2: '',
       email: '',
       birthDate: undefined,
       observations: '',
@@ -111,6 +113,7 @@ export function CustomerForm({ customer, defaultValues, onSubmit }: CustomerForm
             cpf: '',
             benefitNumber: '',
             phone: '',
+            phone2: '',
             email: '',
             birthDate: undefined,
             observations: '',
@@ -160,7 +163,7 @@ export function CustomerForm({ customer, defaultValues, onSubmit }: CustomerForm
     form.setValue('cpf', value, { shouldValidate: true });
   };
   
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'phone' | 'phone2') => {
     let value = e.target.value.replace(/\D/g, "");
     if (value.length > 11) value = value.substring(0, 11);
     value = value.replace(/^(\d{2})(\d)/, "($1) $2");
@@ -168,7 +171,7 @@ export function CustomerForm({ customer, defaultValues, onSubmit }: CustomerForm
         value = value.replace(/(\d{5})(\d)/, "$1-$2");
     }
     e.target.value = value;
-    form.setValue('phone', value, { shouldValidate: true });
+    form.setValue(fieldName, value, { shouldValidate: true });
   };
 
   const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -311,18 +314,31 @@ export function CustomerForm({ customer, defaultValues, onSubmit }: CustomerForm
                         </FormItem>
                     )}
                     />
+                     <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Telefone</FormLabel>
+                            <FormControl>
+                                <Input placeholder="(11) 98765-4321" {...field} onChange={(e) => handlePhoneChange(e, 'phone')} maxLength={15} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                     <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Telefone</FormLabel>
-                        <FormControl>
-                            <Input placeholder="(11) 98765-4321" {...field} onChange={handlePhoneChange} maxLength={15} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
+                        control={form.control}
+                        name="phone2"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Telefone 2 (Opcional)</FormLabel>
+                            <FormControl>
+                                <Input placeholder="(11) 98765-4321" {...field} onChange={(e) => handlePhoneChange(e, 'phone2')} maxLength={15} value={field.value || ''} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
                     />
                 </div>
                 <div className="flex items-start gap-4">
@@ -535,3 +551,5 @@ export function CustomerForm({ customer, defaultValues, onSubmit }: CustomerForm
     </Form>
   );
 }
+
+    

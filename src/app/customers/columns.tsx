@@ -153,6 +153,25 @@ export const getColumns = (
       },
   },
   {
+    accessorKey: 'phone2',
+    header: 'Telefone 2',
+    cell: ({ row }) => {
+        const phone = row.getValue('phone2') as string;
+        if (!phone) return null;
+        const isWhatsAppNumber = isWhatsApp(phone);
+        return (
+          <div className="flex items-center gap-2">
+            <span>{phone}</span>
+            {isWhatsAppNumber && (
+              <a href={getWhatsAppUrl(phone)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:text-green-600">
+                <WhatsAppIcon />
+              </a>
+            )}
+          </div>
+        );
+      },
+  },
+  {
     accessorKey: 'benefitNumber',
     header: 'Benefício',
   },
@@ -177,3 +196,5 @@ export const getColumns = (
     cell: (props) => <ActionsCell {...props} onEdit={onEdit} onDelete={onDelete} />,
   },
 ];
+
+    
