@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/page-header';
 import { CustomerDataTable } from './data-table';
 import { getColumns } from './columns';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Sparkles, Trash2 } from 'lucide-react';
+import { PlusCircle, Sparkles, Trash2, FileDown } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -38,7 +38,13 @@ import {
 } from '@/components/ui/dialog';
 import { CustomerAiForm } from '@/components/customers/customer-ai-form';
 import type { ExtractCustomerDataOutput } from '@/ai/flows/extract-customer-data-flow';
-import { parse } from 'date-fns';
+import { format, parse } from 'date-fns';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type CustomerFormData = Partial<Omit<Customer, 'id' | 'userId' | 'numericId'>>;
 
@@ -137,6 +143,86 @@ export default function CustomersPage() {
     setIsAiModalOpen(false);
     setIsSheetOpen(true);
   }
+  const nonAnonymizedCustomers = customers?.filter(c => c.name !== 'Cliente Removido') || [];
+
+  const handleExportToExcel = async () => {
+    const { utils, writeFile } = await import('xlsx');
+    const selectedIds = Object.keys(rowSelection);
+    const selectedCustomers = nonAnonymizedCustomers.filter(c => selectedIds.includes(c.id));
+
+    if (selectedCustomers.length === 0) {
+        toast({
+            variant: "destructive",
+            title: "Nenhum cliente selecionado",
+            description: "Selecione os clientes que deseja exportar.",
+        });
+        return;
+    }
+
+    const dataToExport = selectedCustomers.map(c => ({
+        'ID': c.numericId,
+        'Nome': c.name,
+        'CPF': c.cpf,
+        'Telefone': c.phone,
+        'Nascimento': c.birthDate ? format(parse(c.birthDate, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy') : '-',
+        'Cidade': c.city,
+        'Estado': c.state,
+    }));
+
+    const worksheet = utils.json_to_sheet(dataToExport);
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, 'Clientes');
+
+    worksheet['!cols'] = [
+        { wch: 10 }, // ID
+        { wch: 30 }, // Nome
+        { wch: 15 }, // CPF
+        { wch: 15 }, // Telefone
+        { wch: 12 }, // Nascimento
+        { wch: 20 }, // Cidade
+        { wch: 10 }, // Estado
+    ];
+
+    writeFile(workbook, 'clientes.xlsx');
+};
+
+const handleExportToPdf = async () => {
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+
+    const selectedIds = Object.keys(rowSelection);
+    const selectedCustomers = nonAnonymizedCustomers.filter(c => selectedIds.includes(c.id));
+
+    if (selectedCustomers.length === 0) {
+        toast({
+            variant: "destructive",
+            title: "Nenhum cliente selecionado",
+            description: "Selecione os clientes que deseja exportar.",
+        });
+        return;
+    }
+
+    const doc = new jsPDF();
+    const tableColumns = ['ID', 'Nome', 'CPF', 'Telefone', 'Nascimento', 'Cidade'];
+    const tableRows = selectedCustomers.map(c => [
+        c.numericId,
+        c.name,
+        c.cpf,
+        c.phone,
+        c.birthDate ? format(parse(c.birthDate, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy') : '-',
+        c.city,
+    ]);
+
+    doc.text("Relatório de Clientes", 14, 15);
+    autoTable(doc, {
+        head: [tableColumns],
+        body: tableRows,
+        startY: 20,
+    });
+
+    doc.save('clientes.pdf');
+};
+
 
   const handleAnonymizeCustomer = async (customerId: string) => {
     if (!firestore) return;
@@ -177,12 +263,13 @@ export default function CustomersPage() {
     }
   };
 
-  const handleAnonymizeSelected = async () => {
-    if (!firestore) return;
+  const handleAnonymizeSelected = () => {
     const selectedIds = Object.keys(rowSelection);
-    setRowSelection({}); // Immediate UI feedback
-    if (selectedIds.length === 0) return;
+    if (selectedIds.length === 0 || !firestore) return;
 
+    // Clear selection immediately for better UX
+    setRowSelection({});
+    
     const batch = writeBatch(firestore);
     const anonymizedData: Partial<Customer> = {
         name: 'Cliente Removido',
@@ -208,7 +295,7 @@ export default function CustomersPage() {
     });
 
     try {
-      await batch.commit();
+      batch.commit();
       toast({
         title: 'Clientes Removidos',
         description: `${selectedIds.length} cliente(s) foram anonimizados com sucesso.`,
@@ -272,7 +359,6 @@ export default function CustomersPage() {
   };
   
   const selectedCount = Object.keys(rowSelection).length;
-  const nonAnonymizedCustomers = customers?.filter(c => c.name !== 'Cliente Removido') || [];
 
   return (
     <AppLayout>
@@ -280,26 +366,44 @@ export default function CustomersPage() {
         <PageHeader title="Clientes" />
         <div className="flex items-center gap-2">
             {selectedCount > 0 && (
-                 <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button variant="destructive">
-                            <Trash2 />
-                            Remover ({selectedCount})
-                        </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Essa ação não pode ser desfeita. Isso irá anonimizar permanentemente {selectedCount} cliente(s). O histórico de propostas será mantido.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleAnonymizeSelected}>Remover</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                 </AlertDialog>
+                 <>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive">
+                                <Trash2 />
+                                Remover ({selectedCount})
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Essa ação não pode ser desfeita. Isso irá anonimizar permanentemente {selectedCount} cliente(s). O histórico de propostas será mantido.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleAnonymizeSelected}>Remover</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
+                                <FileDown />
+                                Exportar ({selectedCount})
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={handleExportToExcel}>
+                                Exportar para Excel (.xlsx)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleExportToPdf}>
+                                Exportar para PDF (.pdf)
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </>
             )}
             <Dialog open={isAiModalOpen} onOpenChange={setIsAiModalOpen}>
                 <DialogTrigger asChild>
