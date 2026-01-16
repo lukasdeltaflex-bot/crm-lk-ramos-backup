@@ -507,7 +507,7 @@ const handleExportToExcel = async () => {
             </Button>
         </div>
       </div>
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen} modal={false}>
         <SheetContent className="w-full max-w-3xl sm:max-w-3xl">
           <SheetHeader className="print:hidden">
             <SheetTitle>{getSheetTitle()}</SheetTitle>
