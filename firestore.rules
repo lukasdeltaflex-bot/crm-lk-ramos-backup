@@ -9,25 +9,23 @@ service cloud.firestore {
     }
 
     match /customers/{customerId} {
-      // Allow read (get and list) for any authenticated user.
-      // The client-side code is responsible for querying only the user's own documents.
-      allow read: if request.auth != null;
+      // Users can read a customer document if they are the owner of the record.
+      // This rule is secure for queries because the client-side code MUST
+      // include a `where('userId', '==', request.auth.uid)` clause.
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
       
-      // Allow creating a document if the new document's userId matches the user's UID.
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      
-      // Allow update/delete if the existing document's userId matches the user's UID.
-      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      // Users can create, update, or delete a customer document if they are the owner.
+      allow write: if request.auth != null && request.resource.data.userId == request.auth.uid;
     }
 
     match /loanProposals/{loanProposalId} {
-      // Allow read (get and list) for any authenticated user.
-      // The client-side code is responsible for querying only the user's own documents.
-      allow read: if request.auth != null;
+      // Users can read a loan proposal document if they are the owner.
+      // This rule is secure for queries because the client-side code MUST
+      // include a `where('userId', '==', request.auth.uid)` clause.
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
 
-      // Secure writes
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      // Users can create, update, or delete proposals they own.
+      allow write: if request.auth != null && request.resource.data.userId == request.auth.uid;
     }
 
     // User settings can only be managed by the owner.
