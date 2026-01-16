@@ -21,11 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Info, Copy, Printer, ChevronsUpDown, Check } from 'lucide-react';
-import { Calendar } from '@/components/ui/calendar';
+import { Info, Copy, Printer, ChevronsUpDown, Check } from 'lucide-react';
 import { format, parse } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { productTypes, proposalStatuses, approvingBodies, banks } from '@/lib/config-data';
 import type { Proposal, Customer, Attachment } from '@/lib/types';
@@ -46,6 +43,7 @@ import { useFirestore } from '@/firebase';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Logo } from '@/components/logo';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 
 const attachmentSchema = z.object({
@@ -127,39 +125,19 @@ const MaskedDatePicker = ({ name, label, control, isReadOnly }: { name: any, lab
         control={control}
         name={name}
         render={({ field }) => (
-        <FormItem className="flex flex-col pt-2">
+        <FormItem>
             <FormLabel>{label}</FormLabel>
-            <Popover>
-                <PopoverTrigger asChild disabled={isReadOnly}>
-                    <FormControl>
-                            <div className="relative">
-                                <Input
-                                    placeholder="dd/mm/aaaa"
-                                    {...field}
-                                    onChange={(e) => field.onChange(handleDateMask(e))}
-                                    value={field.value || ''}
-                                    maxLength={10}
-                                    className="w-[240px] pr-8"
-                                    readOnly={isReadOnly}
-                                />
-                                <CalendarIcon className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
-                            </div>
-                    </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                        mode="single"
-                        selected={field.value ? parse(field.value, 'dd/MM/yyyy', new Date()) : undefined}
-                        onSelect={(date) => field.onChange(date ? format(date, 'dd/MM/yyyy') : '')}
-                        defaultMonth={field.value ? parse(field.value, 'dd/MM/yyyy', new Date()) : new Date()}
-                        locale={ptBR}
-                        initialFocus
-                        fromYear={new Date().getFullYear() - 20}
-                        toYear={new Date().getFullYear() + 20}
-                        captionLayout="dropdown-buttons"
-                    />
-                </PopoverContent>
-            </Popover>
+            <FormControl>
+                <Input
+                    placeholder="dd/mm/aaaa"
+                    {...field}
+                    onChange={(e) => field.onChange(handleDateMask(e))}
+                    value={field.value || ''}
+                    maxLength={10}
+                    className="w-[240px]"
+                    readOnly={isReadOnly}
+                />
+            </FormControl>
             <FormMessage />
         </FormItem>
         )}
@@ -282,11 +260,6 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
   };
 
   const isAttachmentSectionDisabled = !user || !selectedCustomerId || !proposalId;
-  
-  const handleDateDigitizedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = handleDateMask(e);
-    form.setValue('dateDigitized', value, { shouldValidate: true });
-  };
 
   return (
     <Form {...form}>

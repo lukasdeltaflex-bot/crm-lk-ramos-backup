@@ -13,15 +13,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { CalendarIcon, Upload, User, X } from 'lucide-react';
-import { Calendar } from '@/components/ui/calendar';
+import { Upload, User, X } from 'lucide-react';
 import { format, parse } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import type { UserProfile } from '@/lib/types';
 import { useEffect, useRef, useState } from 'react';
@@ -240,41 +233,18 @@ export function ProfileForm({ userProfile, onSubmit }: ProfileFormProps) {
             control={form.control}
             name="birthDate"
             render={({ field }) => (
-              <FormItem className="flex flex-col pt-2">
+              <FormItem>
                 <FormLabel>Data de Nascimento</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <div className="relative">
-                          <Input
-                              placeholder="dd/mm/aaaa"
-                              {...field}
-                              value={field.value || ''}
-                              onChange={handleBirthDateChange}
-                              maxLength={10}
-                              className="w-[240px] pr-8"
-                          />
-                          <CalendarIcon className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
-                      </div>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value ? parse(field.value, 'dd/MM/yyyy', new Date()) : undefined}
-                      onSelect={(date) => field.onChange(date ? format(date, "dd/MM/yyyy") : '')}
-                      defaultMonth={field.value ? parse(field.value, 'dd/MM/yyyy', new Date()) : new Date(new Date().setFullYear(new Date().getFullYear() - 30))}
-                      locale={ptBR}
-                      disabled={(date) =>
-                        date > new Date()
-                      }
-                      initialFocus
-                      fromYear={1920}
-                      toYear={new Date().getFullYear()}
-                      captionLayout="dropdown-buttons"
-                    />
-                  </PopoverContent>
-                </Popover>
+                <FormControl>
+                  <Input
+                    placeholder="dd/mm/aaaa"
+                    {...field}
+                    value={field.value || ''}
+                    onChange={handleBirthDateChange}
+                    maxLength={10}
+                    className="w-[240px]"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
