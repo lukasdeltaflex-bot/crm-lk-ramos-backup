@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -15,6 +16,7 @@ import {
   useReactTable,
   ColumnOrderState,
   Header,
+  ColumnSizingState,
 } from '@tanstack/react-table';
 import { format, parse, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -77,6 +79,7 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
   isPrivacyMode
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
@@ -193,6 +196,9 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onColumnOrderChange: setColumnOrder,
+    onColumnSizingChange: setColumnSizing,
+    enableColumnResizing: true,
+    columnResizeMode: 'onChange',
     state: {
       sorting,
       columnFilters,
@@ -200,6 +206,7 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
       rowSelection,
       globalFilter,
       columnOrder,
+      columnSizing,
     },
     meta: {
       isPrivacyMode,

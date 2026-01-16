@@ -4,7 +4,7 @@
 import { ColumnDef, flexRender, Header } from '@tanstack/react-table';
 import type { Proposal, Customer } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDown, MoreHorizontal, GripVertical } from 'lucide-react';
+import { ArrowUpDown, MoreHorizontal, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/utils';
@@ -58,32 +58,53 @@ export const DraggableHeader = ({ header }: { header: Header<ProposalWithCustome
       });
     
       const style = {
+        ...header.column.getCanResize() && {
+            width: header.getSize(),
+        },
         transform: CSS.Transform.toString(transform),
         opacity: isDragging ? 0.5 : 1,
-      };
+    };
 
     return (
         <TableHead
             ref={setNodeRef}
+            colSpan={header.colSpan}
             style={style}
-            className={cn('relative')}
+            className={cn('relative p-0 h-12')}
         >
-            <div className="flex items-center gap-1">
+            <div
+                className={cn(
+                    'flex items-center gap-1 h-full px-4',
+                    header.column.getCanSort() && 'cursor-pointer select-none'
+                )}
+                onClick={header.column.getToggleSortingHandler()}
+            >
                 <button
                     {...attributes}
                     {...listeners}
-                    className="cursor-grab p-1"
+                    className="cursor-grab p-1 -ml-2"
+                    onClick={e => e.stopPropagation()}
                 >
                     <GripVertical className="h-4 w-4" />
                 </button>
                 {header.isPlaceholder
-                ? null
-                : flexRender(
-                    header.column.columnDef.header,
-                    header.getContext()
-                )}
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                    )}
             </div>
-      </TableHead>
+            {header.column.getCanResize() && (
+                <div
+                    onMouseDown={header.getResizeHandler()}
+                    onTouchStart={header.getResizeHandler()}
+                    className={cn(
+                        'absolute top-0 right-0 h-full w-1 cursor-col-resize select-none touch-none bg-transparent',
+                        header.column.getIsResizing() && 'bg-primary w-2 opacity-50'
+                    )}
+                />
+            )}
+        </TableHead>
     )
 }
 
@@ -150,21 +171,19 @@ export const getColumns = (
     accessorKey: 'grossAmount',
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="print:p-0 print:font-bold print:text-black"
+        <div
+          className="flex items-center justify-end gap-2 print:p-0 print:font-bold print:text-black"
         >
-          Valor Bruto
-          <ArrowUpDown className="ml-2 h-4 w-4 print:hidden" />
-        </Button>
+          <span>Valor Bruto</span>
+          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4 print:hidden" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4 print:hidden" /> : <ArrowUpDown className="ml-2 h-4 w-4 print:hidden" />}
+        </div>
       );
     },
     cell: ({ row, table }) => {
       const isPrivacyMode = (table.options.meta as {isPrivacyMode?: boolean})?.isPrivacyMode;
       if (isPrivacyMode) return <div className="text-left font-medium">•••••</div>;
       const amount = parseFloat(row.getValue('grossAmount'));
-      return <div className="text-left font-medium">{formatCurrency(amount)}</div>;
+      return <div className="text-right font-medium">{formatCurrency(amount)}</div>;
     },
     id: 'grossAmount',
   },

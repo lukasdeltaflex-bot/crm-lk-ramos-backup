@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -15,6 +16,7 @@ import {
   useReactTable,
   RowSelectionState,
   Header,
+  ColumnSizingState,
 } from '@tanstack/react-table';
 import {
     DndContext,
@@ -68,6 +70,7 @@ export function CustomerDataTable<TData extends {id: string}, TValue>({
   setRowSelection,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
   const [globalFilter, setGlobalFilter] = React.useState('');
   const [isClient, setIsClient] = React.useState(false);
 
@@ -144,12 +147,16 @@ export function CustomerDataTable<TData extends {id: string}, TValue>({
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onColumnOrderChange: setColumnOrder,
+    onColumnSizingChange: setColumnSizing,
+    enableColumnResizing: true,
+    columnResizeMode: 'onChange',
     state: {
       sorting,
       globalFilter,
       columnVisibility,
       rowSelection,
       columnOrder,
+      columnSizing,
     },
     globalFilterFn: (row, columnId, filterValue) => {
       const safeValue = (value: any): string =>

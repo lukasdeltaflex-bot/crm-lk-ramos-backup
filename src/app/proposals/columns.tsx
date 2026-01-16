@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ColumnDef, Header, Table } from '@tanstack/react-table';
@@ -22,7 +23,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
   } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, ArrowUpDown, GripVertical } from 'lucide-react';
+import { MoreHorizontal, ArrowUpDown, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatCurrency } from '@/lib/utils';
 import React from 'react';
@@ -108,28 +109,53 @@ const DraggableHeader = ({ header }: { header: Header<ProposalWithCustomer, unkn
       });
     
       const style = {
+        ...header.column.getCanResize() && {
+            width: header.getSize(),
+        },
         transform: CSS.Transform.toString(transform),
         opacity: isDragging ? 0.5 : 1,
-      };
+    };
 
     return (
         <TableHead
             ref={setNodeRef}
+            colSpan={header.colSpan}
             style={style}
-            className={cn('relative')}
+            className={cn('relative p-0 h-12')}
         >
-            <div className='flex items-center gap-1'>
-                <button {...attributes} {...listeners} className="cursor-grab p-1">
+            <div
+                className={cn(
+                    'flex items-center gap-1 h-full px-4',
+                    header.column.getCanSort() && 'cursor-pointer select-none'
+                )}
+                onClick={header.column.getToggleSortingHandler()}
+            >
+                <button
+                    {...attributes}
+                    {...listeners}
+                    className="cursor-grab p-1 -ml-2"
+                    onClick={e => e.stopPropagation()}
+                >
                     <GripVertical className="h-4 w-4" />
                 </button>
                 {header.isPlaceholder
-                ? null
-                : flexRender(
-                    header.column.columnDef.header,
-                    header.getContext()
-                )}
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                    )}
             </div>
-      </TableHead>
+            {header.column.getCanResize() && (
+                <div
+                    onMouseDown={header.getResizeHandler()}
+                    onTouchStart={header.getResizeHandler()}
+                    className={cn(
+                        'absolute top-0 right-0 h-full w-1 cursor-col-resize select-none touch-none bg-transparent',
+                        header.column.getIsResizing() && 'bg-primary w-2 opacity-50'
+                    )}
+                />
+            )}
+        </TableHead>
     )
 }
 
@@ -203,14 +229,9 @@ export const getColumns = (
     id: 'grossAmount',
     header: ({ column }) => {
       return (
-        <div className="text-right">
-            <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            >
-                <span>Valor Bruto</span>
-                <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
+        <div className="flex justify-end items-center gap-2">
+            <span>Valor Bruto</span>
+            {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
         </div>
       );
     },
@@ -249,25 +270,45 @@ export const getColumns = (
   {
     accessorKey: 'dateDigitized',
     id: 'dateDigitized',
-    header: 'Data Digitação',
+    header: ({ column }) => (
+        <div className="flex items-center gap-2">
+            <span>Data Digitação</span>
+            {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+        </div>
+    ),
     cell: ({ row }) => formatDate(row.getValue('dateDigitized'))
   },
   {
     accessorKey: 'dateApproved',
     id: 'dateApproved',
-    header: 'Data Averbação',
+    header: ({ column }) => (
+        <div className="flex items-center gap-2">
+            <span>Data Averbação</span>
+            {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+        </div>
+    ),
     cell: ({ row }) => formatDate(row.getValue('dateApproved'))
   },
   {
     accessorKey: 'datePaidToClient',
     id: 'datePaidToClient',
-    header: 'Data Pgto. Cliente',
+    header: ({ column }) => (
+        <div className="flex items-center gap-2">
+            <span>Data Pgto. Cliente</span>
+            {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+        </div>
+    ),
     cell: ({ row }) => formatDate(row.getValue('datePaidToClient'))
   },
   {
     accessorKey: 'debtBalanceArrivalDate',
     id: 'debtBalanceArrivalDate',
-    header: 'Chegada Saldo',
+    header: ({ column }) => (
+        <div className="flex items-center gap-2">
+            <span>Chegada Saldo</span>
+            {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+        </div>
+    ),
     cell: ({ row }) => formatDate(row.getValue('debtBalanceArrivalDate'))
   },
   {
