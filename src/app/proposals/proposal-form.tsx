@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Info, Copy, Printer } from 'lucide-react';
+import { CalendarIcon, Info, Copy, Printer, ChevronsUpDown, Check } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -45,6 +45,7 @@ import { doc, collection } from 'firebase/firestore'; // Only for ID generation
 import { useFirestore } from '@/firebase';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Logo } from '@/components/logo';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 
 const attachmentSchema = z.object({
@@ -171,6 +172,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
     const firestore = useFirestore();
     const [tempProposalId, setTempProposalId] = useState<string | undefined>(undefined);
     const [isClient, setIsClient] = useState(false);
+    const [openCustomerCombobox, setOpenCustomerCombobox] = useState(false);
 
     useEffect(() => {
         setIsClient(true);
@@ -303,22 +305,60 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
                     control={form.control}
                     name="customerId"
                     render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="flex flex-col">
                         <FormLabel>Cliente</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly}>
-                        <FormControl>
-                            <SelectTrigger>
-                            <SelectValue placeholder="Selecione um cliente" />
-                            </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                            {customers.map((customer) => (
-                            <SelectItem key={customer.id} value={customer.id}>
-                                {customer.name}
-                            </SelectItem>
-                            ))}
-                        </SelectContent>
-                        </Select>
+                        <Popover open={openCustomerCombobox} onOpenChange={setOpenCustomerCombobox}>
+                        <PopoverTrigger asChild>
+                            <FormControl>
+                            <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn(
+                                "w-full justify-between",
+                                !field.value && "text-muted-foreground"
+                                )}
+                                disabled={isReadOnly}
+                            >
+                                {field.value
+                                ? customers.find(
+                                    (customer) => customer.id === field.value
+                                    )?.name
+                                : "Selecione um cliente"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                            </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                            <Command>
+                            <CommandInput placeholder="Buscar cliente..." />
+                            <CommandList>
+                                <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
+                                <CommandGroup>
+                                {customers.map((customer) => (
+                                    <CommandItem
+                                    value={customer.name}
+                                    key={customer.id}
+                                    onSelect={() => {
+                                        form.setValue("customerId", customer.id)
+                                        setOpenCustomerCombobox(false)
+                                    }}
+                                    >
+                                    <Check
+                                        className={cn(
+                                        "mr-2 h-4 w-4",
+                                        customer.id === field.value
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                    />
+                                    {customer.name}
+                                    </CommandItem>
+                                ))}
+                                </CommandGroup>
+                            </CommandList>
+                            </Command>
+                        </PopoverContent>
+                        </Popover>
                         <FormMessage />
                     </FormItem>
                     )}
