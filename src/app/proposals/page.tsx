@@ -61,11 +61,16 @@ export default function ProposalsPage() {
 
   const customersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    return query(collection(firestore, 'customers'), where('ownerId', '==', user.uid), where('name', '!=', 'Cliente Removido'));
+    return query(collection(firestore, 'customers'), where('ownerId', '==', user.uid));
   }, [firestore, user]);
   
   const { data: proposals, isLoading: proposalsLoading } = useCollection<Proposal>(proposalsQuery);
   const { data: customers, isLoading: customersLoading } = useCollection<Customer>(customersQuery);
+
+  const nonAnonymizedCustomers = React.useMemo(() => {
+    if (!customers) return [];
+    return customers.filter(c => c.name !== 'Cliente Removido');
+  }, [customers]);
 
   const proposalsWithCustomerData: ProposalWithCustomer[] = React.useMemo(() => {
     if (!proposals || !customers) return [];
@@ -467,7 +472,7 @@ const handleExportToExcel = async () => {
           </SheetHeader>
           <ProposalForm 
             proposal={selectedProposal} 
-            customers={customers || []}
+            customers={nonAnonymizedCustomers}
             isReadOnly={sheetMode === 'view'}
             onSubmit={handleFormSubmit}
             onDuplicate={handleDuplicateProposal}
