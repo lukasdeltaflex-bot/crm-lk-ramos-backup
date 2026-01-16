@@ -3,14 +3,35 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
+    // Users can only manage their own profile.
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // LIBERA QUALQUER LEITURA PARA USUÁRIO LOGADO
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+    // Customers can only be managed by the user who created them.
+    match /customers/{customerId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
     }
 
+    // Loan proposals can only be managed by the user who created them.
+    match /loanProposals/{loanProposalId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+
+    // User settings can only be managed by the owner.
+    match /userSettings/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Products and other configuration data could be here.
+    // For now, assume they are read-only for authenticated users.
+    // If there are other collections, they will be blocked by default unless
+    // a rule is added. This is a secure default.
+    match /products/{productId} {
+        allow read: if request.auth != null;
+        allow write: if false; // Disallow client-side writes
+    }
   }
 }

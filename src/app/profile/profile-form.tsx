@@ -43,7 +43,7 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 
 interface ProfileFormProps {
   userProfile?: UserProfile | null;
-  onSubmit: (data: Partial<ProfileFormValues>) => void;
+  onSubmit: (data: Partial<UserProfile>) => void;
 }
 
 export function ProfileForm({ userProfile, onSubmit }: ProfileFormProps) {
@@ -112,13 +112,13 @@ export function ProfileForm({ userProfile, onSubmit }: ProfileFormProps) {
 
   const handleFormSubmit = (data: ProfileFormValues) => {
     const dataToSubmit: Partial<UserProfile> = {
-      // Use || undefined to convert empty strings to undefined for optional fields
-      displayName: data.displayName || undefined,
-      fullName: data.fullName || undefined,
-      photoURL: data.photoURL || undefined,
-      phone: data.phone || undefined,
+      // Use || null to convert empty strings to null for clearing fields in Firestore
+      displayName: data.displayName || null,
+      fullName: data.fullName || null,
+      photoURL: data.photoURL || null,
+      phone: data.phone || null,
       email: data.email, // email is required
-      birthDate: data.birthDate ? format(parse(data.birthDate, 'dd/MM/yyyy', new Date()), 'yyyy-MM-dd') : undefined,
+      birthDate: data.birthDate ? format(parse(data.birthDate, 'dd/MM/yyyy', new Date()), 'yyyy-MM-dd') : null,
     };
     onSubmit(dataToSubmit);
   };
