@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Info, Copy } from 'lucide-react';
+import { CalendarIcon, Info, Copy, Printer } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -44,6 +44,7 @@ import { useUser } from '@/firebase';
 import { doc, collection } from 'firebase/firestore'; // Only for ID generation
 import { useFirestore } from '@/firebase';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Logo } from '@/components/logo';
 
 
 const attachmentSchema = z.object({
@@ -169,6 +170,11 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
     const { user } = useUser();
     const firestore = useFirestore();
     const [tempProposalId, setTempProposalId] = useState<string | undefined>(undefined);
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     useEffect(() => {
         if (firestore && !proposal?.id) {
@@ -240,7 +246,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
         bankOrigin: '',
         approvingBody: '',
         operator: '',
-        dateDigitized: format(new Date(), 'dd/MM/yyyy'),
+        dateDigitized: isClient ? format(new Date(), 'dd/MM/yyyy') : '',
         dateApproved: undefined,
         datePaidToClient: undefined,
         debtBalanceArrivalDate: undefined,
@@ -253,7 +259,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
         const sourceData = {
             ...initialValues,
             ...source,
-            dateDigitized: source.dateDigitized ? formatDateForForm(source.dateDigitized) : format(new Date(), 'dd/MM/yyyy'),
+            dateDigitized: source.dateDigitized ? formatDateForForm(source.dateDigitized) : (isClient ? format(new Date(), 'dd/MM/yyyy') : ''),
             dateApproved: formatDateForForm(source.dateApproved),
             datePaidToClient: formatDateForForm(source.datePaidToClient),
             debtBalanceArrivalDate: formatDateForForm(source.debtBalanceArrivalDate),
@@ -262,7 +268,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
     } else {
       form.reset(initialValues);
     }
-  }, [proposal, defaultValues, form]);
+  }, [proposal, defaultValues, form, isClient]);
 
 
   function handleFormSubmit(data: ProposalFormValues) {
@@ -283,7 +289,12 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="py-4">
-        <ScrollArea className="h-[calc(100vh-12rem)] pr-4">
+        {/* Print Header */}
+        <div className="hidden print:block mb-8">
+          <Logo forPrinting={true} />
+          <h1 className="text-2xl font-bold mt-4">Detalhes da Proposta</h1>
+        </div>
+        <ScrollArea className="h-[calc(100vh-12rem)] pr-4 print:h-auto print:overflow-visible">
           <div className="space-y-6">
             
             {/* Customer and Product */}
@@ -697,12 +708,18 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
             </div>
           </div>
         </ScrollArea>
-        <div className="flex justify-between items-center pt-8">
-            <div>
+        <div className="flex justify-between items-center pt-8 print:hidden">
+            <div className="flex items-center gap-2">
             {sheetMode !== 'new' && proposal && (
                 <Button type="button" variant="outline" onClick={() => onDuplicate(proposal)}>
                     <Copy />
                     Duplicar Proposta
+                </Button>
+            )}
+            {sheetMode !== 'new' && (
+                <Button type="button" variant="outline" onClick={() => window.print()}>
+                    <Printer />
+                    Imprimir
                 </Button>
             )}
             </div>

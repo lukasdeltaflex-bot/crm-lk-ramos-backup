@@ -144,36 +144,37 @@ export default function ProposalsPage() {
     }
   }, [firestore]);
 
-  const handleBulkStatusChange = React.useCallback((newStatus: ProposalStatus) => {
+  const handleBulkStatusChange = React.useCallback(async (newStatus: ProposalStatus) => {
     if (!firestore) return;
     const selectedIds = Object.keys(rowSelection);
     if (selectedIds.length === 0) return;
 
     // Clear selection immediately for instant UI feedback
     setRowSelection({});
-
+    
     const batch = writeBatch(firestore);
     selectedIds.forEach((id) => {
       const docRef = doc(firestore, 'loanProposals', id);
       batch.update(docRef, { status: newStatus });
     });
 
-    batch.commit().then(() => {
+    try {
+      await batch.commit()
       toast({
         title: 'Status Atualizado em Massa!',
         description: `${selectedIds.length} proposta(s) foram atualizadas para "${newStatus}".`,
       });
-    }).catch((error) => {
+    } catch (error) {
       console.error('Error updating statuses in bulk:', error);
       toast({
         variant: 'destructive',
         title: 'Erro ao atualizar',
         description: 'Ocorreu um erro ao atualizar o status das propostas.',
       });
-    });
+    }
   }, [firestore, rowSelection]);
 
-  const handleBulkDelete = () => {
+  const handleBulkDelete = async () => {
     if (!firestore) return;
     const selectedIds = Object.keys(rowSelection);
     if (selectedIds.length === 0) return;
@@ -186,19 +187,20 @@ export default function ProposalsPage() {
         batch.delete(docRef);
     });
     
-    batch.commit().then(() => {
-        toast({
-            title: 'Propostas Canceladas!',
-            description: `${selectedIds.length} proposta(s) foram canceladas com sucesso.`,
-        });
-    }).catch((error) => {
-        console.error('Error deleting proposals in bulk:', error);
-        toast({
-            variant: 'destructive',
-            title: 'Erro ao cancelar',
-            description: 'Ocorreu um erro ao cancelar as propostas selecionadas.',
-        });
-    });
+    try {
+      await batch.commit()
+      toast({
+          title: 'Propostas Canceladas!',
+          description: `${selectedIds.length} proposta(s) foram canceladas com sucesso.`,
+      });
+    } catch (error) {
+      console.error('Error deleting proposals in bulk:', error);
+      toast({
+          variant: 'destructive',
+          title: 'Erro ao cancelar',
+          description: 'Ocorreu um erro ao cancelar as propostas selecionadas.',
+      });
+    }
   };
 
 
@@ -314,7 +316,7 @@ export default function ProposalsPage() {
       </div>
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent className="w-full max-w-3xl sm:max-w-3xl">
-          <SheetHeader>
+          <SheetHeader className="print:hidden">
             <SheetTitle>{getSheetTitle()}</SheetTitle>
           </SheetHeader>
           <ProposalForm 
