@@ -8,28 +8,22 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Customers can only be managed by the user who created them.
     match /customers/{customerId} {
-      // Allow authenticated users to read. Client-side queries MUST filter by userId.
-      allow read: if request.auth != null;
-
-      // Allow creating a document if the new document's userId matches the user.
+      // Allow user to LIST documents. Client query must filter.
+      allow list: if request.auth != null;
+      // Allow user to GET, UPDATE, DELETE their own documents.
+      allow get, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      // Allow user to CREATE documents for themselves.
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-
-      // Allow updates and deletes if the user is the owner of the existing document.
-      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
-    // Loan proposals can only be managed by the user who created them.
     match /loanProposals/{loanProposalId} {
-      // Allow authenticated users to read. Client-side queries MUST filter by userId.
-      allow read: if request.auth != null;
-
-      // Allow creating a document if the new document's userId matches the user.
+      // Allow user to LIST documents. Client query must filter.
+      allow list: if request.auth != null;
+      // Allow user to GET, UPDATE, DELETE their own documents.
+      allow get, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      // Allow user to CREATE documents for themselves.
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-
-      // Allow updates and deletes if the user is the owner of the existing document.
-      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
     // User settings can only be managed by the owner.
@@ -37,13 +31,10 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // Products and other configuration data could be here.
-    // For now, assume they are read-only for authenticated users.
-    // If there are other collections, they will be blocked by default unless
-    // a rule is added. This is a secure default.
+    // Products are read-only for authenticated users.
     match /products/{productId} {
         allow read: if request.auth != null;
-        allow write: if false; // Disallow client-side writes
+        allow write: if false;
     }
   }
 }
