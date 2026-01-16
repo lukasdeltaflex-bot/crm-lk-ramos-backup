@@ -1,0 +1,17 @@
+# Netlify build configuration for a Next.js project
+
+[build]
+  # This command triggers the Next.js build process, which is defined
+  # in the "build" script of your package.json file.
+  command = "npm run build"
+  
+  # The .next directory is the standard output for a Next.js build.
+  # Netlify's Next.js runtime uses this directory to serve the application,
+  # including server-side rendered pages, API routes, and static assets.
+  publish = ".next"
+
+[[plugins]]
+  # The official Netlify plugin for Next.js.
+  # This is essential for enabling full support for features like server-side rendering (SSR),
+  # static site generation (SSG), API routes, and image optimization on Netlify.
+  package = "@netlify/plugin-nextjs"
