@@ -177,12 +177,11 @@ export default function CustomersPage() {
     }
   };
 
-  const handleAnonymizeSelected = () => {
+  const handleAnonymizeSelected = async () => {
     if (!firestore) return;
     const selectedIds = Object.keys(rowSelection);
+    setRowSelection({}); // Immediate UI feedback
     if (selectedIds.length === 0) return;
-
-    setRowSelection({});
 
     const batch = writeBatch(firestore);
     const anonymizedData: Partial<Customer> = {
@@ -208,59 +207,60 @@ export default function CustomersPage() {
       batch.update(docRef, anonymizedData);
     });
 
-    batch.commit().then(() => {
+    try {
+      await batch.commit();
       toast({
         title: 'Clientes Removidos',
         description: `${selectedIds.length} cliente(s) foram anonimizados com sucesso.`,
       });
-    }).catch((error) => {
+    } catch (error) {
       console.error('Error anonymizing customers:', error);
       toast({
         variant: 'destructive',
         title: 'Erro ao remover',
         description: 'Ocorreu um erro ao remover os clientes selecionados.',
       });
-    });
+    }
   };
 
   const handleFormSubmit = async (data: Omit<Customer, 'id' | 'userId' | 'numericId'>) => {
     if (!firestore || !user) return;
 
-    if (sheetMode === 'edit' && selectedCustomer) {
-      const customerToUpdate: Customer = {
-        ...selectedCustomer,
-        ...data,
-      };
-      try {
+    try {
+      if (sheetMode === 'edit' && selectedCustomer) {
+        const customerToUpdate: Customer = {
+          ...selectedCustomer,
+          ...data,
+        };
         await setDoc(doc(firestore, 'customers', selectedCustomer.id), customerToUpdate, { merge: true });
         toast({
           title: 'Cliente Atualizado!',
           description: `O cliente ${data.name} foi atualizado com sucesso.`,
         });
-      } catch (error) {
-        console.error('Error updating customer:', error);
-        toast({ variant: 'destructive', title: 'Erro ao Atualizar', description: 'Não foi possível atualizar o cliente.' });
-      }
-
-    } else {
-      const newDocRef = doc(collection(firestore, 'customers'));
-      const newCustomerWithId: Customer = {
-        ...data,
-        id: newDocRef.id,
-        numericId: Date.now(),
-        userId: user.uid,
-      };
-      try {
+  
+      } else {
+        const newDocRef = doc(collection(firestore, 'customers'));
+        const newCustomerWithId: Customer = {
+          ...data,
+          id: newDocRef.id,
+          numericId: Date.now(),
+          userId: user.uid,
+        };
         await setDoc(newDocRef, newCustomerWithId);
         toast({
           title: 'Cliente Salvo!',
           description: `O cliente ${data.name} foi salvo com sucesso.`,
         });
-      } catch (error) {
-        console.error('Error creating new customer:', error);
-        toast({ variant: 'destructive', title: 'Erro ao Salvar', description: 'Não foi possível salvar o novo cliente.' });
       }
+    } catch (error) {
+      console.error('Error saving customer:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao Salvar',
+        description: 'Não foi possível salvar os dados do cliente.',
+      });
     }
+    
     setIsSheetOpen(false);
   };
 

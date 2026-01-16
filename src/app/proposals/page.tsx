@@ -16,7 +16,7 @@ import { ProposalForm } from './proposal-form';
 import type { Proposal, Customer, ProposalStatus } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, query, where, deleteDoc, writeBatch, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, doc, query, where, writeBatch, setDoc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { parse } from 'date-fns';
 import {
@@ -37,9 +37,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { formatCurrency } from '@/lib/utils';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
 
 
 export type ProposalWithCustomer = Proposal & { customer: Customer | undefined };
@@ -119,7 +116,8 @@ export default function ProposalsPage() {
     setIsSheetOpen(true);
 }, []);
 
-const handleExportToExcel = () => {
+const handleExportToExcel = async () => {
+    const { utils, writeFile } = await import('xlsx');
     const selectedIds = Object.keys(rowSelection);
     const selectedProposals = proposalsWithCustomerData.filter(p => selectedIds.includes(p.id));
 
@@ -142,9 +140,9 @@ const handleExportToExcel = () => {
         'Data Digitação': p.dateDigitized ? new Date(p.dateDigitized).toLocaleDateString('pt-BR') : '-',
     }));
 
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Propostas');
+    const worksheet = utils.json_to_sheet(dataToExport);
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, 'Propostas');
 
     worksheet['!cols'] = [
         { wch: 20 },
@@ -156,10 +154,13 @@ const handleExportToExcel = () => {
         { wch: 15 },
     ];
 
-    XLSX.writeFile(workbook, 'propostas.xlsx');
+    writeFile(workbook, 'propostas.xlsx');
   };
 
-  const handleExportToPdf = () => {
+  const handleExportToPdf = async () => {
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+
     const selectedIds = Object.keys(rowSelection);
     const selectedProposals = proposalsWithCustomerData.filter(p => selectedIds.includes(p.id));
 
@@ -196,6 +197,7 @@ const handleExportToExcel = () => {
   const handleDeleteProposal = React.useCallback(async (proposalId: string) => {
     if (!firestore) return;
     try {
+      const { deleteDoc } = await import('firebase/firestore');
       await deleteDoc(doc(firestore, 'loanProposals', proposalId));
       toast({
         title: 'Proposta Cancelada!',
@@ -214,6 +216,7 @@ const handleExportToExcel = () => {
   const handleStatusChange = React.useCallback(async (proposalId: string, newStatus: ProposalStatus) => {
     if (!firestore) return;
     try {
+      const { updateDoc } = await import('firebase/firestore');
       await updateDoc(doc(firestore, 'loanProposals', proposalId), { status: newStatus });
       toast({
           title: 'Status Atualizado!',
@@ -232,9 +235,8 @@ const handleExportToExcel = () => {
   const handleBulkStatusChange = React.useCallback(async (newStatus: ProposalStatus) => {
     if (!firestore) return;
     const selectedIds = Object.keys(rowSelection);
+    setRowSelection({}); // Immediate UI feedback
     if (selectedIds.length === 0) return;
-
-    setRowSelection({});
     
     const batch = writeBatch(firestore);
     selectedIds.forEach((id) => {
@@ -257,13 +259,12 @@ const handleExportToExcel = () => {
       });
     }
   }, [firestore, rowSelection]);
-
-  const handleBulkDelete = async () => {
+  
+  const handleBulkDelete = React.useCallback(async () => {
     if (!firestore) return;
     const selectedIds = Object.keys(rowSelection);
+    setRowSelection({}); // Immediate UI feedback
     if (selectedIds.length === 0) return;
-
-    setRowSelection({});
 
     const batch = writeBatch(firestore);
     selectedIds.forEach((id) => {
@@ -285,7 +286,7 @@ const handleExportToExcel = () => {
           description: 'Ocorreu um erro ao cancelar as propostas selecionadas.',
       });
     }
-  };
+  }, [firestore, rowSelection]);
 
 
   const handleFormSubmit = async (data: Omit<Proposal, 'id' | 'userId'>) => {
@@ -301,58 +302,50 @@ const handleExportToExcel = () => {
         }
     };
     
-    if (sheetMode === 'edit' && selectedProposal) {
-      const proposalToUpdate: Partial<Proposal> = {
-        ...data,
-        dateDigitized: toISOString(data.dateDigitized),
-        dateApproved: toISOString(data.dateApproved),
-        datePaidToClient: toISOString(data.datePaidToClient),
-        debtBalanceArrivalDate: toISOString(data.debtBalanceArrivalDate),
-      };
-      try {
+    try {
+      if (sheetMode === 'edit' && selectedProposal) {
+        const proposalToUpdate: Partial<Proposal> = {
+          ...data,
+          dateDigitized: toISOString(data.dateDigitized),
+          dateApproved: toISOString(data.dateApproved),
+          datePaidToClient: toISOString(data.datePaidToClient),
+          debtBalanceArrivalDate: toISOString(data.debtBalanceArrivalDate),
+        };
         await setDoc(doc(firestore, 'loanProposals', selectedProposal.id), proposalToUpdate, { merge: true });
         toast({
           title: 'Proposta Atualizada!',
           description: `A proposta foi atualizada com sucesso.`,
         });
-      } catch (error) {
-        console.error('Error updating proposal:', error);
-        toast({
-            variant: 'destructive',
-            title: 'Erro ao Atualizar',
-            description: 'Não foi possível atualizar a proposta.',
-        });
-      }
-    } else {
-      const newDocRef = doc(collection(firestore, 'loanProposals'));
-      const newProposal: Omit<Proposal, 'id'> = {
-        ...data,
-        userId: user.uid,
-        dateDigitized: toISOString(data.dateDigitized) || new Date().toISOString(),
-        dateApproved: toISOString(data.dateApproved),
-        datePaidToClient: toISOString(data.datePaidToClient),
-        debtBalanceArrivalDate: toISOString(data.debtBalanceArrivalDate),
-      };
-      const newProposalWithId = { ...newProposal, id: newDocRef.id };
-  
-      try {
+      } else {
+        const newDocRef = doc(collection(firestore, 'loanProposals'));
+        const newProposal: Omit<Proposal, 'id'> = {
+          ...data,
+          userId: user.uid,
+          dateDigitized: toISOString(data.dateDigitized) || new Date().toISOString(),
+          dateApproved: toISOString(data.dateApproved),
+          datePaidToClient: toISOString(data.datePaidToClient),
+          debtBalanceArrivalDate: toISOString(data.debtBalanceArrivalDate),
+        };
+        const newProposalWithId = { ...newProposal, id: newDocRef.id };
+    
         await setDoc(newDocRef, newProposalWithId);
         toast({
           title: 'Proposta Salva!',
           description: `A nova proposta foi criada com sucesso.`,
         });
-      } catch (error) {
-        console.error('Error creating new proposal:', error);
-        toast({
-            variant: 'destructive',
-            title: 'Erro ao Criar',
-            description: 'Não foi possível criar a nova proposta.',
-        });
       }
+    } catch (error) {
+      console.error('Error saving proposal:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao Salvar',
+        description: 'Não foi possível salvar a proposta. Tente novamente.',
+      });
     }
+
     setIsSheetOpen(false);
   };
-
+  
   const getSheetTitle = () => {
     if (sheetMode === 'new') return 'Nova Proposta';
     if (sheetMode === 'edit') return 'Editar Proposta';
