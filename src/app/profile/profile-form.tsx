@@ -28,9 +28,18 @@ import { useEffect, useRef, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const profileSchema = z.object({
-  displayName: z.string().min(2, 'O apelido deve ter pelo menos 2 caracteres.').optional(),
-  fullName: z.string().min(3, 'O nome completo deve ter pelo menos 3 caracteres.').optional(),
-  photoURL: z.string().url('URL da foto inválida.').optional(),
+  displayName: z.preprocess(
+    (val) => (val === "" ? undefined : val),
+    z.string().min(2, "O apelido deve ter pelo menos 2 caracteres.").optional()
+  ),
+  fullName: z.preprocess(
+    (val) => (val === "" ? undefined : val),
+    z.string().min(3, "O nome completo deve ter pelo menos 3 caracteres.").optional()
+  ),
+  photoURL: z.preprocess(
+    (val) => (val === "" ? undefined : val),
+    z.string().url("URL da foto inválida.").optional()
+  ),
   birthDate: z.string().optional().refine(val => !val || !isNaN(parse(val, 'dd/MM/yyyy', new Date()).getTime()), {
     message: "Data inválida. Use o formato dd/mm/aaaa.",
   }),
