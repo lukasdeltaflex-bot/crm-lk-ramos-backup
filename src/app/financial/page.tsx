@@ -2,14 +2,20 @@
 import React from 'react';
 import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
-import { FinancialDataTable } from './data-table';
+import { FinancialDataTable, type FinancialDataTableHandle } from './data-table';
 import { getColumns } from './columns';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, setDoc } from 'firebase/firestore';
 import type { Proposal, Customer, CommissionStatus } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Eye, EyeOff, Printer, FileCheck2 } from 'lucide-react';
+import { Eye, EyeOff, Printer, FileCheck2, FileDown } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Sheet,
   SheetContent,
@@ -29,6 +35,7 @@ import { format, startOfMonth, endOfMonth, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Logo } from '@/components/logo';
 import { CommissionReconciliation } from '@/components/financial/commission-reconciliation';
+import { formatCurrency } from '@/lib/utils';
 
 export type ProposalWithCustomer = Proposal & { customer: Customer | undefined };
 
@@ -41,6 +48,7 @@ export default function FinancialPage() {
   const [selectedProposal, setSelectedProposal] = React.useState<ProposalWithCustomer | undefined>(undefined);
   const [isClient, setIsClient] = React.useState(false);
   const [rowSelection, setRowSelection] = React.useState({});
+  const tableRef = React.useRef<FinancialDataTableHandle>(null);
 
   React.useEffect(() => {
     setIsClient(true);
@@ -79,17 +87,17 @@ export default function FinancialPage() {
         return proposalDate >= start && proposalDate <= end;
     });
 
-    return { proposalsWithCustomerData: proposalsWithCustomer, currentMonthProposals: currentMonthData };
+    return { proposalsWithCustomerData: proposalsWithCustomer as ProposalWithCustomer[], currentMonthProposals: currentMonthData as ProposalWithCustomer[] };
   }, [proposals, customers, isClient]);
 
   const isLoading = proposalsLoading || customersLoading || isUserLoading;
 
-  const handleEditCommission = (proposal: ProposalWithCustomer) => {
+  const handleEditCommission = React.useCallback((proposal: ProposalWithCustomer) => {
     setSelectedProposal(proposal);
     setIsSheetOpen(true);
-  };
+  }, []);
   
-  const handleCommissionStatusUpdate = async (proposal: ProposalWithCustomer, newStatus: CommissionStatus) => {
+  const handleCommissionStatusUpdate = React.useCallback(async (proposal: ProposalWithCustomer, newStatus: CommissionStatus) => {
     if (!firestore || !proposal.customer) return;
   
     const proposalToUpdate: Partial<Proposal> = {
@@ -118,7 +126,7 @@ export default function FinancialPage() {
         description: 'Não foi possível atualizar o status da comissão.',
       });
     }
-  }
+  }, [firestore])
 
 
   const handleFormSubmit = async (data: CommissionFormValues) => {
@@ -176,13 +184,184 @@ export default function FinancialPage() {
     window.print();
   }
 
-  const columns = React.useMemo(() => getColumns({ onEdit: handleEditCommission, onStatusUpdate: handleCommissionStatusUpdate }), []);
+  const handleExportToExcel = async () => {
+    const table = tableRef.current?.table;
+    if (!table) return;
+
+    const { utils, writeFile } = await import('xlsx');
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+
+    if (selectedRows.length === 0) {
+        toast({
+            variant: "destructive",
+            title: "Nenhuma proposta selecionada",
+            description: "Selecione as propostas que deseja exportar.",
+        });
+        return;
+    }
+    
+    const visibleColumns = table.getVisibleLeafColumns().filter(
+        c => c.id !== 'select' && c.id !== 'actions'
+    );
+
+    const idMap: {[key: string]: string} = {
+        promotora: 'Promotora',
+        customerName: 'Cliente',
+        customerCpf: 'CPF',
+        proposalNumber: 'Nº Proposta',
+        produto: 'Produto',
+        banco: 'Banco',
+        grossAmount: 'Valor Bruto',
+        commissionPercentage: 'Comissão (%)',
+        commissionValue: 'Valor Comissão',
+        amountPaid: 'Valor Pago',
+        commissionStatus: 'Status Comissão',
+        commissionPaymentDate: 'Data Pagamento',
+      };
+
+    const headers = visibleColumns.map(c => idMap[c.id] || c.id);
+
+    const dataForSheet = [headers];
+    selectedRows.forEach(row => {
+        const rowData: any[] = [];
+        const originalRow = row.original;
+        visibleColumns.forEach(col => {
+            let value: any;
+            switch(col.id) {
+                case 'customerName':
+                    value = originalRow.customer?.name;
+                    break;
+                case 'customerCpf':
+                    value = originalRow.customer?.cpf;
+                    break;
+                case 'commissionPaymentDate':
+                    value = originalRow.commissionPaymentDate ? format(new Date(originalRow.commissionPaymentDate), "dd/MM/yyyy", { locale: ptBR }) : '-';
+                    break;
+                default:
+                    value = row.getValue(col.id as any);
+            }
+            
+            rowData.push(value ?? '');
+        });
+        dataForSheet.push(rowData);
+    });
+
+    const worksheet = utils.aoa_to_sheet(dataForSheet);
+
+    worksheet['!cols'] = visibleColumns.map(() => ({ wch: 20 }));
+
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, 'Financeiro');
+
+    writeFile(workbook, 'financeiro.xlsx');
+  };
+
+  const handleExportToPdf = async () => {
+    const table = tableRef.current?.table;
+    if (!table) return;
+
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+
+    if (selectedRows.length === 0) {
+        toast({
+            variant: "destructive",
+            title: "Nenhuma proposta selecionada",
+            description: "Selecione as propostas que deseja exportar.",
+        });
+        return;
+    }
+
+    const visibleColumns = table.getVisibleLeafColumns().filter(
+        c => c.id !== 'select' && c.id !== 'actions'
+    );
+    
+    const idMap: {[key: string]: string} = {
+        promotora: 'Promotora',
+        customerName: 'Cliente',
+        customerCpf: 'CPF',
+        proposalNumber: 'Nº Proposta',
+        produto: 'Produto',
+        banco: 'Banco',
+        grossAmount: 'Valor Bruto',
+        commissionPercentage: 'Comissão (%)',
+        commissionValue: 'Valor Comissão',
+        amountPaid: 'Valor Pago',
+        commissionStatus: 'Status Comissão',
+        commissionPaymentDate: 'Data Pagamento',
+    };
+
+    const head = [visibleColumns.map(c => idMap[c.id] || c.id)];
+
+    const body = selectedRows.map(row => {
+        const rowData: any[] = [];
+        const originalRow = row.original;
+        visibleColumns.forEach(col => {
+            let value: any;
+            switch(col.id) {
+                case 'customerName':
+                    value = originalRow.customer?.name;
+                    break;
+                case 'customerCpf':
+                    value = originalRow.customer?.cpf;
+                    break;
+                case 'commissionPaymentDate':
+                    value = originalRow.commissionPaymentDate ? format(new Date(originalRow.commissionPaymentDate), "dd/MM/yyyy", { locale: ptBR }) : '-';
+                    break;
+                case 'grossAmount':
+                case 'commissionValue':
+                case 'amountPaid':
+                    value = formatCurrency(Number(row.getValue(col.id as any)));
+                    break;
+                default:
+                    value = row.getValue(col.id as any);
+            }
+            rowData.push(value ?? '');
+        });
+        return rowData;
+    });
+
+    const doc = new jsPDF();
+    doc.text("Relatório Financeiro", 14, 15);
+    autoTable(doc, {
+        head: head,
+        body: body,
+        startY: 20,
+    });
+
+    doc.save('financeiro.pdf');
+  };
+
+
+  const columns = React.useMemo(() => getColumns({ onEdit: handleEditCommission, onStatusUpdate: handleCommissionStatusUpdate }), [handleEditCommission, handleCommissionStatusUpdate]);
+
+  const selectedCount = Object.keys(rowSelection).length;
 
   return (
     <AppLayout>
       <div className="flex items-center justify-between print:hidden">
         <PageHeader title="Controle Financeiro" />
         <div className="flex items-center gap-2">
+            {selectedCount > 0 && (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline">
+                            <FileDown />
+                            Exportar ({selectedCount})
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={handleExportToExcel}>
+                            Exportar para Excel (.xlsx)
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleExportToPdf}>
+                            Exportar para PDF (.pdf)
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )}
             <Dialog open={isReconciliationOpen} onOpenChange={setIsReconciliationOpen}>
                 <DialogTrigger asChild>
                     <Button variant="outline">
@@ -237,6 +416,7 @@ export default function FinancialPage() {
         </div>
       ) : (
         <FinancialDataTable 
+            ref={tableRef}
             columns={columns} 
             data={proposalsWithCustomerData}
             currentMonthData={currentMonthProposals}

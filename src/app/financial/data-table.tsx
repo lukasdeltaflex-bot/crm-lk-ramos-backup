@@ -17,6 +17,7 @@ import {
   Header,
   ColumnSizingState,
   RowSelectionState,
+  Table as ReactTable,
 } from '@tanstack/react-table';
 import { format, parse, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -65,23 +66,27 @@ const STORAGE_KEY_ORDER = 'lk-ramos-financial-columns-order';
 
 
 type ProposalWithCustomer = Proposal & { customer: Customer };
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
-  currentMonthData: TData[];
+interface DataTableProps {
+  columns: ColumnDef<ProposalWithCustomer, unknown>[];
+  data: ProposalWithCustomer[];
+  currentMonthData: ProposalWithCustomer[];
   isPrivacyMode: boolean;
   rowSelection: RowSelectionState;
   setRowSelection: React.Dispatch<React.SetStateAction<RowSelectionState>>;
 }
 
-export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
+export interface FinancialDataTableHandle {
+  table: ReactTable<ProposalWithCustomer>;
+}
+
+export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, DataTableProps>(({
   columns,
   data,
   currentMonthData,
   isPrivacyMode,
   rowSelection,
   setRowSelection,
-}: DataTableProps<TData, TValue>) {
+}, ref) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -216,6 +221,10 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
     }
   });
 
+  React.useImperativeHandle(ref, () => ({
+    table,
+  }));
+
   React.useEffect(() => {
     const statusColumn = table.getColumn('commissionStatus');
     if (statusFilter === 'Todos') {
@@ -296,7 +305,7 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
             </div>
 
             <FinancialSummary 
-                rows={isAnyFilterActive ? (table.getFilteredRowModel().rows as Row<ProposalWithCustomer>[]) : (currentMonthData as Row<ProposalWithCustomer>[])}
+                rows={isAnyFilterActive ? (table.getFilteredRowModel().rows as Row<ProposalWithCustomer>[]) : (currentMonthData as ProposalWithCustomer[])}
                 isPrivacyMode={isPrivacyMode}
                 isFiltered={isAnyFilterActive}
             />
@@ -410,4 +419,6 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
         </Card>
     </DndContext>
   );
-}
+});
+
+FinancialDataTable.displayName = 'FinancialDataTable';
