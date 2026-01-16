@@ -134,6 +134,7 @@ export function CustomerDataTable<TData extends {id: string}, TValue>({
   const table = useReactTable({
     data,
     columns,
+    getRowId: (row) => row.id,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,

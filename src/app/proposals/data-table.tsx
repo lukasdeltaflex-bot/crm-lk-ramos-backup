@@ -71,7 +71,7 @@ interface DataTableProps<TData, TValue> {
 }
 
 
-export function ProposalsDataTable<TData, TValue>({
+export function ProposalsDataTable<TData extends { id: string }, TValue>({
   columns,
   data,
   rowSelection,
@@ -151,6 +151,7 @@ export function ProposalsDataTable<TData, TValue>({
   const table = useReactTable({
     data,
     columns,
+    getRowId: (row) => row.id,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
