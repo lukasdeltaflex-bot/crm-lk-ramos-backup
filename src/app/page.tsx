@@ -40,6 +40,7 @@ import { DateRange } from 'react-day-picker';
 import { Input } from '@/components/ui/input';
 import { CommissionReminders } from '@/components/dashboard/commission-reminders';
 import { DebtBalanceReminders } from '@/components/dashboard/debt-balance-reminders';
+import { PartialCommissionReminders } from '@/components/dashboard/partial-commission-reminders';
 
 export default function DashboardPage() {
   const [startDateInput, setStartDateInput] = React.useState('');
@@ -309,6 +310,7 @@ export default function DashboardPage() {
             <BirthdayAlerts customers={customers || []} isLoading={isLoading}/>
             <FollowUpReminders proposals={proposals || []} customers={customers || []} isLoading={isLoading}/>
             <CommissionReminders proposals={proposals || []} customers={customers || []} isLoading={isLoading}/>
+            <PartialCommissionReminders proposals={proposals || []} customers={customers || []} isLoading={isLoading}/>
             <DebtBalanceReminders proposals={proposals || []} customers={customers || []} isLoading={isLoading}/>
           </div>
         </div>

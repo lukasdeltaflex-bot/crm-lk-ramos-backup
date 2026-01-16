@@ -73,8 +73,22 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
             proposalNumber: p.proposalNumber,
             daysWaiting: calculateBusinessDays(new Date(p.dateDigitized)),
         }));
+    
+    const partialCommissionReminders = proposals
+        .filter(p => 
+            p.commissionStatus === 'Parcial' &&
+            p.commissionPaymentDate && 
+            differenceInDays(new Date(), new Date(p.commissionPaymentDate)) > 15
+        )
+        .map(p => ({
+            customerName: customerMap.get(p.customerId)?.name || 'Cliente Desconhecido',
+            proposalNumber: p.proposalNumber,
+            amountPaid: p.amountPaid,
+            totalCommission: p.commissionValue,
+            daysSincePayment: differenceInDays(new Date(), new Date(p.commissionPaymentDate!)),
+        }));
 
-    return { birthdayAlerts, followUpReminders, commissionReminders, debtBalanceReminders };
+    return { birthdayAlerts, followUpReminders, commissionReminders, debtBalanceReminders, partialCommissionReminders };
   }, [proposals, customers]);
 
   useEffect(() => {

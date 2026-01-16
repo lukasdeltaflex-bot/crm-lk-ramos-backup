@@ -12,3 +12,4 @@ import '@/ai/flows/reconcile-commissions-flow.ts';
 import '@/ai/flows/commission-reminder-flow.ts';
 import '@/ai/flows/debt-balance-reminder-flow.ts';
 import '@/ai/flows/generate-daily-summary-flow.ts';
+import '@/ai/flows/partial-commission-reminder-flow.ts';

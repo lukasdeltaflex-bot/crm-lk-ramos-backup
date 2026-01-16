@@ -33,12 +33,21 @@ const DebtBalanceReminderSchema = z.object({
     daysWaiting: z.number(),
 });
 
+const PartialCommissionReminderSchema = z.object({
+    customerName: z.string(),
+    proposalNumber: z.string(),
+    amountPaid: z.number(),
+    totalCommission: z.number(),
+    daysSincePayment: z.number(),
+});
+
 const GenerateDailySummaryInputSchema = z.object({
   userName: z.string().describe('O nome do agente de crédito para quem o resumo é destinado.'),
   birthdayAlerts: z.array(BirthdayAlertSchema).optional().describe('Alertas de aniversário de clientes se aproximando de 75 anos.'),
   followUpReminders: z.array(FollowUpReminderSchema).optional().describe('Lembretes para propostas em andamento por muito tempo.'),
   commissionReminders: z.array(CommissionReminderSchema).optional().describe('Alertas para comissões de propostas pagas que continuam pendentes.'),
   debtBalanceReminders: z.array(DebtBalanceReminderSchema).optional().describe('Alertas para propostas de portabilidade aguardando saldo devedor com prazo próximo do vencimento.'),
+  partialCommissionReminders: z.array(PartialCommissionReminderSchema).optional().describe('Lembretes para cobrar o restante de comissões pagas parcialmente.'),
 });
 
 export type GenerateDailySummaryInput = z.infer<typeof GenerateDailySummaryInputSchema>;
@@ -87,6 +96,15 @@ Use as informações fornecidas para construir o resumo. Se uma seção não tiv
   - Nenhuma pendência.
 {{/if}}
 
+### 💰 Lembretes de Comissão Parcial
+{{#if partialCommissionReminders}}
+    {{#each partialCommissionReminders}}
+    - **{{customerName}} (Prop. nº {{proposalNumber}})**: Recebido R$ {{amountPaid}} de R$ {{totalCommission}} há {{daysSincePayment}} dias. Sugestão: cobrar o valor restante.
+    {{/each}}
+{{else}}
+    - Nenhuma pendência.
+{{/if}}
+
 ### ⏳ Alertas de Saldo Devedor (Portabilidade)
 {{#if debtBalanceReminders}}
   {{#each debtBalanceReminders}}
@@ -112,7 +130,8 @@ const generateDailySummaryFlow = ai.defineFlow(
         (input.birthdayAlerts && input.birthdayAlerts.length > 0) ||
         (input.followUpReminders && input.followUpReminders.length > 0) ||
         (input.commissionReminders && input.commissionReminders.length > 0) ||
-        (input.debtBalanceReminders && input.debtBalanceReminders.length > 0);
+        (input.debtBalanceReminders && input.debtBalanceReminders.length > 0) ||
+        (input.partialCommissionReminders && input.partialCommissionReminders.length > 0);
 
     if (!hasAnyAlert) {
         return `Olá, ${input.userName}! Nenhuma pendência ou alerta importante para hoje. Tenha um ótimo dia!`;
