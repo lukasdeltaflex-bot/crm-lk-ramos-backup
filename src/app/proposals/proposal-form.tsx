@@ -330,28 +330,31 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
                         </PopoverTrigger>
                         <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                             <Command>
-                            <CommandInput placeholder="Buscar cliente..." />
+                            <CommandInput placeholder="Buscar por nome, CPF ou benefício..." />
                             <CommandList>
                                 <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
                                 <CommandGroup>
                                 {customers.map((customer) => (
                                     <CommandItem
-                                    value={customer.name}
-                                    key={customer.id}
-                                    onSelect={() => {
-                                        form.setValue("customerId", customer.id)
-                                        setOpenCustomerCombobox(false)
-                                    }}
+                                        value={`${customer.name} ${customer.cpf} ${customer.benefitNumber || ''}`}
+                                        key={customer.id}
+                                        onSelect={() => {
+                                            form.setValue("customerId", customer.id)
+                                            setOpenCustomerCombobox(false)
+                                        }}
                                     >
-                                    <Check
-                                        className={cn(
-                                        "mr-2 h-4 w-4",
-                                        customer.id === field.value
-                                            ? "opacity-100"
-                                            : "opacity-0"
-                                        )}
-                                    />
-                                    {customer.name}
+                                        <Check
+                                            className={cn(
+                                            "mr-2 h-4 w-4",
+                                            customer.id === field.value
+                                                ? "opacity-100"
+                                                : "opacity-0"
+                                            )}
+                                        />
+                                        <div>
+                                            <p>{customer.name}</p>
+                                            <p className="text-xs text-muted-foreground">{customer.cpf} {customer.benefitNumber ? ` - ${customer.benefitNumber}` : ''}</p>
+                                        </div>
                                     </CommandItem>
                                 ))}
                                 </CommandGroup>
