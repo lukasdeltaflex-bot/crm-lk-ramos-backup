@@ -23,7 +23,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { commissionStatuses } from '@/lib/config-data';
@@ -34,15 +34,27 @@ import { Textarea } from '@/components/ui/textarea';
 const commissionSchema = z.object({
   commissionStatus: z.string({ required_error: 'Selecione um status.' }),
   amountPaid: z.coerce.number().min(0, 'O valor pago é obrigatório.'),
-  commissionPaymentDate: z.date().optional(),
+  commissionPaymentDate: z.string().optional().refine(val => !val || !isNaN(parse(val, 'dd/MM/yyyy', new Date()).getTime()), {
+    message: "Data inválida. Use o formato dd/mm/aaaa.",
+  }),
 });
 
-type CommissionFormValues = z.infer<typeof commissionSchema>;
+export type CommissionFormValues = z.infer<typeof commissionSchema>;
 
 interface CommissionFormProps {
   proposal?: Proposal;
   onSubmit: (data: CommissionFormValues) => void;
 }
+
+const handleDateMask = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, "");
+    if (value.length > 8) value = value.substring(0, 8);
+    value = value.replace(/(\d{2})(\d)/, '$1/$2');
+    value = value.replace(/(\d{2})(\d)/, '$1/$2');
+    e.target.value = value;
+    return value;
+};
+
 
 export function CommissionForm({ proposal, onSubmit }: CommissionFormProps) {
   const form = useForm<CommissionFormValues>({
@@ -55,7 +67,7 @@ export function CommissionForm({ proposal, onSubmit }: CommissionFormProps) {
         commissionStatus: proposal.commissionStatus,
         amountPaid: proposal.amountPaid || 0,
         commissionPaymentDate: proposal.commissionPaymentDate
-          ? new Date(proposal.commissionPaymentDate)
+          ? format(new Date(proposal.commissionPaymentDate), 'dd/MM/yyyy')
           : undefined,
       });
     }
@@ -120,28 +132,25 @@ export function CommissionForm({ proposal, onSubmit }: CommissionFormProps) {
                             <Popover>
                             <PopoverTrigger asChild>
                                 <FormControl>
-                                <Button
-                                    variant={'outline'}
-                                    className={cn(
-                                    'w-[240px] pl-3 text-left font-normal',
-                                    !field.value && 'text-muted-foreground'
-                                    )}
-                                >
-                                    {field.value ? (
-                                    format(field.value, 'dd/MM/yyyy', { locale: ptBR })
-                                    ) : (
-                                    <span>Escolha uma data</span>
-                                    )}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
+                                    <div className="relative">
+                                        <Input
+                                            placeholder="dd/mm/aaaa"
+                                            {...field}
+                                            onChange={(e) => field.onChange(handleDateMask(e))}
+                                            value={field.value || ''}
+                                            maxLength={10}
+                                            className="w-[240px] pr-8"
+                                        />
+                                        <CalendarIcon className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
+                                    </div>
                                 </FormControl>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0" align="start">
                                 <Calendar
                                 mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                defaultMonth={field.value || new Date()}
+                                selected={field.value ? parse(field.value, 'dd/MM/yyyy', new Date()) : undefined}
+                                onSelect={(date) => field.onChange(date ? format(date, "dd/MM/yyyy") : '')}
+                                defaultMonth={field.value ? parse(field.value, 'dd/MM/yyyy', new Date()) : new Date()}
                                 locale={ptBR}
                                 initialFocus
                                 fromYear={new Date().getFullYear() - 20}

@@ -6,7 +6,7 @@ import { FinancialDataTable } from './data-table';
 import { getColumns } from './columns';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, setDoc } from 'firebase/firestore';
-import type { Proposal, Customer } from '@/lib/types';
+import type { Proposal, Customer, CommissionStatus } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Eye, EyeOff, Printer, FileCheck2 } from 'lucide-react';
@@ -23,9 +23,9 @@ import {
     DialogTitle,
     DialogTrigger,
   } from '@/components/ui/dialog';
-import { CommissionForm } from './commission-form';
+import { CommissionForm, type CommissionFormValues } from './commission-form';
 import { toast } from '@/hooks/use-toast';
-import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Logo } from '@/components/logo';
 import { CommissionReconciliation } from '@/components/financial/commission-reconciliation';
@@ -88,13 +88,15 @@ export default function FinancialPage() {
     setIsSheetOpen(true);
   };
   
-  const handleFormSubmit = async (data: Partial<Proposal>) => {
+  const handleFormSubmit = async (data: CommissionFormValues) => {
     if (!firestore || !selectedProposal) return;
   
     const proposalToUpdate: Partial<Proposal> = {
-      commissionStatus: data.commissionStatus,
+      commissionStatus: data.commissionStatus as CommissionStatus,
       amountPaid: data.amountPaid,
-      commissionPaymentDate: data.commissionPaymentDate ? new Date(data.commissionPaymentDate).toISOString() : undefined,
+      commissionPaymentDate: data.commissionPaymentDate
+        ? parse(data.commissionPaymentDate, 'dd/MM/yyyy', new Date()).toISOString()
+        : undefined,
     };
   
     try {

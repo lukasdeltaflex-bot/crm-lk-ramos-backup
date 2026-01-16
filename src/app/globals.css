@@ -481,11 +481,19 @@
 
 @layer utilities {
   @media print {
-    body > *:not([data-radix-portal]) {
+    /* IF a dialog/sheet is open, hide the main app content for printing */
+    body:has([data-radix-dialog-content][data-state="open"]) > :not([data-radix-portal]) {
       display: none !important;
     }
-    body > [data-radix-portal] {
+    
+    /* IF a dialog/sheet is open, ensure the portal is visible */
+    body:has([data-radix-dialog-content][data-state="open"]) > [data-radix-portal] {
       display: block !important;
+    }
+
+    /* IF NO dialog/sheet is open, hide any portals when printing the main page */
+    body:not(:has([data-radix-dialog-content][data-state="open"])) [data-radix-portal] {
+      display: none !important;
     }
 
     html, body {
