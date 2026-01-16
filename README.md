@@ -37,7 +37,7 @@ Este comando "liga" o cérebro de IA do seu sistema. Ele agora observa as mudan�
 2.  Neste segundo terminal, digite o seguinte comando:
 
 ```bash
-npm run genkit:watch
+rch
 ```
 
 3.  Pressione **Enter**. Deixe este segundo terminal rodando também.
