@@ -40,6 +40,7 @@ export default function FinancialPage() {
   const [isReconciliationOpen, setIsReconciliationOpen] = React.useState(false);
   const [selectedProposal, setSelectedProposal] = React.useState<ProposalWithCustomer | undefined>(undefined);
   const [isClient, setIsClient] = React.useState(false);
+  const [rowSelection, setRowSelection] = React.useState({});
 
   React.useEffect(() => {
     setIsClient(true);
@@ -88,6 +89,38 @@ export default function FinancialPage() {
     setIsSheetOpen(true);
   };
   
+  const handleCommissionStatusUpdate = async (proposal: ProposalWithCustomer, newStatus: CommissionStatus) => {
+    if (!firestore || !proposal.customer) return;
+  
+    const proposalToUpdate: Partial<Proposal> = {
+      commissionStatus: newStatus,
+    };
+
+    if (newStatus === 'Paga') {
+        proposalToUpdate.amountPaid = proposal.commissionValue;
+        proposalToUpdate.commissionPaymentDate = new Date().toISOString();
+    } else if (newStatus === 'Pendente') {
+        proposalToUpdate.amountPaid = 0;
+        proposalToUpdate.commissionPaymentDate = undefined;
+    }
+  
+    try {
+      await setDoc(doc(firestore, 'loanProposals', proposal.id), proposalToUpdate, { merge: true });
+      toast({
+        title: 'Status da Comissão Atualizado!',
+        description: `O status da proposta foi alterado para "${newStatus}".`,
+      });
+    } catch (error) {
+      console.error('Error updating commission status:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao Atualizar',
+        description: 'Não foi possível atualizar o status da comissão.',
+      });
+    }
+  }
+
+
   const handleFormSubmit = async (data: CommissionFormValues) => {
     if (!firestore || !selectedProposal) return;
   
@@ -127,10 +160,23 @@ export default function FinancialPage() {
   }
 
   const handlePrint = () => {
+    const hasSelection = Object.keys(rowSelection).length > 0;
+    if (hasSelection) {
+        document.body.classList.add('print-selection');
+    }
+    
+    const handleAfterPrint = () => {
+        if (hasSelection) {
+            document.body.classList.remove('print-selection');
+        }
+        window.removeEventListener('afterprint', handleAfterPrint);
+    };
+
+    window.addEventListener('afterprint', handleAfterPrint);
     window.print();
   }
 
-  const columns = React.useMemo(() => getColumns({ onEdit: handleEditCommission }), []);
+  const columns = React.useMemo(() => getColumns({ onEdit: handleEditCommission, onStatusUpdate: handleCommissionStatusUpdate }), []);
 
   return (
     <AppLayout>
@@ -195,6 +241,8 @@ export default function FinancialPage() {
             data={proposalsWithCustomerData}
             currentMonthData={currentMonthProposals}
             isPrivacyMode={isPrivacyMode} 
+            rowSelection={rowSelection}
+            setRowSelection={setRowSelection}
         />
       )}
     </AppLayout>

@@ -1,12 +1,10 @@
-
 'use client';
 
 import { ColumnDef, flexRender, Header } from '@tanstack/react-table';
-import type { Proposal, Customer } from '@/lib/types';
+import type { Proposal, Customer, CommissionStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { ArrowUpDown, MoreHorizontal, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import {
@@ -21,6 +19,7 @@ import { ptBR } from 'date-fns/locale';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TableHead } from '@/components/ui/table';
+import { CommissionStatusCell } from './commission-status-cell';
 
 
 type ProposalWithCustomer = Proposal & { customer: Customer };
@@ -109,7 +108,10 @@ export const DraggableHeader = ({ header }: { header: Header<ProposalWithCustome
 }
 
 export const getColumns = (
-  { onEdit }: { onEdit: (proposal: ProposalWithCustomer) => void; }
+  { onEdit, onStatusUpdate }: { 
+    onEdit: (proposal: ProposalWithCustomer) => void;
+    onStatusUpdate: (proposal: ProposalWithCustomer, newStatus: CommissionStatus) => void;
+  }
 ): ColumnDef<ProposalWithCustomer>[] => [
   {
     id: 'select',
@@ -224,18 +226,13 @@ export const getColumns = (
     accessorKey: 'commissionStatus',
     header: 'Status Comissão',
     cell: ({ row }) => {
-      const status = row.getValue('commissionStatus') as string;
+      const proposal = row.original;
       return (
-        <Badge
-          variant="outline"
-          className={cn('print:border-gray-400 print:text-black', {
-            'border-green-500 text-green-500': status === 'Paga',
-            'border-yellow-500 text-yellow-500': status === 'Pendente',
-            'border-orange-500 text-orange-500': status === 'Parcial',
-          })}
-        >
-          {status}
-        </Badge>
+        <CommissionStatusCell 
+            proposal={proposal} 
+            onStatusUpdate={onStatusUpdate} 
+            onEdit={onEdit} 
+        />
       );
     },
     filterFn: (row, id, value) => {

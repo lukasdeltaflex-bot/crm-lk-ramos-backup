@@ -127,38 +127,18 @@ export function CommissionForm({ proposal, onSubmit }: CommissionFormProps) {
                         control={form.control}
                         name="commissionPaymentDate"
                         render={({ field }) => (
-                        <FormItem className="flex flex-col pt-2">
+                        <FormItem>
                             <FormLabel>Data de Pagamento</FormLabel>
-                            <Popover>
-                            <PopoverTrigger asChild>
-                                <FormControl>
-                                    <div className="relative">
-                                        <Input
-                                            placeholder="dd/mm/aaaa"
-                                            {...field}
-                                            onChange={(e) => field.onChange(handleDateMask(e))}
-                                            value={field.value || ''}
-                                            maxLength={10}
-                                            className="w-[240px] pr-8"
-                                        />
-                                        <CalendarIcon className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
-                                    </div>
-                                </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                mode="single"
-                                selected={field.value ? parse(field.value, 'dd/MM/yyyy', new Date()) : undefined}
-                                onSelect={(date) => field.onChange(date ? format(date, "dd/MM/yyyy") : '')}
-                                defaultMonth={field.value ? parse(field.value, 'dd/MM/yyyy', new Date()) : new Date()}
-                                locale={ptBR}
-                                initialFocus
-                                fromYear={new Date().getFullYear() - 20}
-                                toYear={new Date().getFullYear() + 20}
-                                captionLayout="dropdown-buttons"
+                            <FormControl>
+                                <Input
+                                    placeholder="dd/mm/aaaa"
+                                    {...field}
+                                    onChange={(e) => field.onChange(handleDateMask(e))}
+                                    value={field.value || ''}
+                                    maxLength={10}
+                                    className="w-[240px]"
                                 />
-                            </PopoverContent>
-                            </Popover>
+                            </FormControl>
                             <FormMessage />
                         </FormItem>
                         )}

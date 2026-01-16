@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -17,6 +16,7 @@ import {
   ColumnOrderState,
   Header,
   ColumnSizingState,
+  RowSelectionState,
 } from '@tanstack/react-table';
 import { format, parse, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -70,20 +70,23 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   currentMonthData: TData[];
   isPrivacyMode: boolean;
+  rowSelection: RowSelectionState;
+  setRowSelection: React.Dispatch<React.SetStateAction<RowSelectionState>>;
 }
 
 export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
   columns,
   data,
   currentMonthData,
-  isPrivacyMode
+  isPrivacyMode,
+  rowSelection,
+  setRowSelection,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [rowSelection, setRowSelection] = React.useState({});
   const [statusFilter, setStatusFilter] = React.useState<CommissionStatus | 'Todos'>('Todos');
   const [globalFilter, setGlobalFilter] = React.useState('');
 
@@ -260,7 +263,7 @@ export function FinancialDataTable<TData extends ProposalWithCustomer, TValue>({
       onDragEnd={handleDragEnd}
       sensors={sensors}
     >
-        <Card className="print:shadow-none print:border-none">
+        <Card className="print:shadow-none print:border-none financial-table">
         <div className="p-4 space-y-4 print:p-0">
             <div className="flex flex-wrap gap-2 items-center print:hidden">
                 <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as CommissionStatus | 'Todos')}>
