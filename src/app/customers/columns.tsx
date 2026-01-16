@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ColumnDef, Header, flexRender } from '@tanstack/react-table';
@@ -86,8 +85,8 @@ export const DraggableHeader = ({ header }: { header: Header<Customer, unknown>}
                     onMouseDown={header.getResizeHandler()}
                     onTouchStart={header.getResizeHandler()}
                     className={cn(
-                        'absolute top-0 right-0 h-full w-1 cursor-col-resize select-none touch-none bg-transparent',
-                        header.column.getIsResizing() && 'bg-primary w-2 opacity-50'
+                        'absolute top-2.5 h-7 w-px cursor-col-resize select-none touch-none bg-border',
+                        header.column.getIsResizing() && 'bg-primary w-0.5'
                     )}
                 />
             )}
