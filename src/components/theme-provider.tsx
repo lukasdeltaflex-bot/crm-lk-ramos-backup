@@ -46,11 +46,6 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
     setColorTheme: setColorThemeState,
   };
 
-  if (!isMounted) {
-    // To prevent hydration mismatch, we can return null or a loader on the server
-    return null;
-  }
-
   return (
     <ColorThemeContext.Provider value={value}>
       {children}
