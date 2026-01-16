@@ -74,7 +74,8 @@ export const columns: ColumnDef<Proposal>[] = [
         const status = row.getValue('status') as ProposalStatus;
         return (
             <Badge variant="outline" className={cn({
-                'border-green-500 text-green-500': status === 'Pago' || status === 'Saldo Pago',
+                'border-green-500 text-green-500': status === 'Pago',
+                'border-orange-500 text-orange-500': status === 'Saldo Pago',
                 'border-yellow-500 text-yellow-500': status === 'Em Andamento',
                 'border-blue-500 text-blue-500': status === 'Aguardando Saldo',
                 'border-red-500 text-red-500': status === 'Reprovado',

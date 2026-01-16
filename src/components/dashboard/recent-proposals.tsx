@@ -72,10 +72,11 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
                     <Badge
                         variant="outline"
                         className={cn({
-                            'border-green-500 text-green-500': proposal.status === 'Pago' || proposal.status === 'Saldo Pago',
+                            'border-green-500 text-green-500': proposal.status === 'Pago',
+                            'border-orange-500 text-orange-500': proposal.status === 'Saldo Pago',
                             'border-yellow-500 text-yellow-500': proposal.status === 'Em Andamento',
                             'border-blue-500 text-blue-500': proposal.status === 'Aguardando Saldo',
-                            'border-red-500 text-red-500': proposal.status === 'Rejeitado',
+                            'border-red-500 text-red-500': proposal.status === 'Reprovado',
                             'border-purple-500 text-purple-500': proposal.status === 'Pendente',
                         })}
                     >

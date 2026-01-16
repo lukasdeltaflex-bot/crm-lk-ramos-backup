@@ -19,23 +19,21 @@ interface FinancialSummaryProps {
 
 export function FinancialSummary({ rows, isPrivacyMode, isFiltered }: FinancialSummaryProps) {
   const summary = React.useMemo(() => {
-    let totalGrossAmount = 0;
     let totalCommissionValue = 0;
     let totalAmountPaid = 0;
 
     if (!rows || rows.length === 0) {
         return {
-          totalGrossAmount,
           totalCommissionValue,
           totalAmountPaid,
           pendingAmount: 0,
+          proposalCount: 0,
         };
     }
     
     const items = 'original' in rows[0] ? (rows as Row<ProposalWithCustomer>[]).map(r => r.original) : rows as ProposalWithCustomer[];
 
     items.forEach((proposal) => {
-      totalGrossAmount += proposal.grossAmount;
       totalCommissionValue += proposal.commissionValue;
       totalAmountPaid += proposal.amountPaid || 0;
     });
@@ -43,10 +41,10 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered }: FinancialS
     const pendingAmount = totalCommissionValue - totalAmountPaid;
 
     return {
-      totalGrossAmount,
       totalCommissionValue,
       totalAmountPaid,
       pendingAmount,
+      proposalCount: items.length,
     };
   }, [rows]);
   
@@ -67,8 +65,8 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered }: FinancialS
         </Alert>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 print:gap-2">
             <StatsCard
-                title="Total Contratos"
-                value={isPrivacyMode ? privacyPlaceholder : formatCurrency(summary.totalGrossAmount)}
+                title="Total de Propostas"
+                value={String(summary.proposalCount)}
                 icon={FileText}
                 className="print:shadow-none print:border-gray-300 print:p-2"
             />

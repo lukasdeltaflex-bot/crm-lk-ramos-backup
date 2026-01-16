@@ -53,10 +53,11 @@ export const statusColumns: ColumnDef<ProposalWithCustomer>[] = [
         <Badge
           variant="outline"
           className={cn('w-24 justify-center', {
-            'border-green-500 text-green-500': status === 'Pago' || status === 'Saldo Pago',
+            'border-green-500 text-green-500': status === 'Pago',
+            'border-orange-500 text-orange-500': status === 'Saldo Pago',
             'border-yellow-500 text-yellow-500': status === 'Em Andamento',
             'border-blue-500 text-blue-500': status === 'Aguardando Saldo',
-            'border-red-500 text-red-500': status === 'Rejeitado',
+            'border-red-500 text-red-500': status === 'Reprovado',
             'border-purple-500 text-purple-500': status === 'Pendente',
           })}
         >
