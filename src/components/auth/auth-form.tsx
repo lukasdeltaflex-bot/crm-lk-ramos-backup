@@ -102,8 +102,6 @@ export function AuthForm({ type }: AuthFormProps) {
             email: user.email!,
             displayName: user.email!.split('@')[0], // Default display name
           };
-          // IMPORTANT: Await the creation of the user profile before signing out.
-          // This ensures the security rules for creating a user document will pass.
           await setDoc(userProfileRef, newUserProfile);
           await sendEmailVerification(user);
         }
@@ -113,8 +111,6 @@ export function AuthForm({ type }: AuthFormProps) {
           description: 'Enviamos um link de verificação para o seu e-mail.',
         });
         
-        // Sign out to force email verification flow
-        await auth.signOut();
         router.push(`/verify-email?email=${data.email}`);
       }
     } catch (error: any) {
