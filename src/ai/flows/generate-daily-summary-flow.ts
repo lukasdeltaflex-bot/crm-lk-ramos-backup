@@ -42,7 +42,9 @@ const GenerateDailySummaryInputSchema = z.object({
 });
 
 export type GenerateDailySummaryInput = z.infer<typeof GenerateDailySummaryInputSchema>;
-export type GenerateDailySummaryOutput = z.string();
+
+export const GenerateDailySummaryOutputSchema = z.string();
+export type GenerateDailySummaryOutput = z.infer<typeof GenerateDailySummaryOutputSchema>;
 
 export async function generateDailySummary(input: GenerateDailySummaryInput): Promise<GenerateDailySummaryOutput> {
   return generateDailySummaryFlow(input);
@@ -51,7 +53,7 @@ export async function generateDailySummary(input: GenerateDailySummaryInput): Pr
 const prompt = ai.definePrompt({
   name: 'generateDailySummaryPrompt',
   input: { schema: GenerateDailySummaryInputSchema },
-  output: { schema: z.string() },
+  output: { schema: GenerateDailySummaryOutputSchema },
   prompt: `Você é um assistente executivo para um agente de crédito. Sua tarefa é criar um resumo diário (um "briefing matinal") claro, conciso e bem formatado, com as pendências e alertas mais importantes do dia para o agente chamado {{{userName}}}.
 
 Use as informações fornecidas para construir o resumo. Se uma seção não tiver alertas, mencione que não há pendências para aquele tópico. Formate a saída usando markdown, com títulos claros para cada seção. O tom deve ser profissional, mas encorajador. A saída deve ser em português do Brasil.
@@ -102,7 +104,7 @@ const generateDailySummaryFlow = ai.defineFlow(
   {
     name: 'generateDailySummaryFlow',
     inputSchema: GenerateDailySummaryInputSchema,
-    outputSchema: z.string(),
+    outputSchema: GenerateDailySummaryOutputSchema,
   },
   async (input) => {
     // Verifica se há pelo menos um alerta para processar
