@@ -82,7 +82,7 @@ export default function CustomersPage() {
             const newCustomer: Customer = {
               ...customerData,
               id: docRef.id,
-              numericId: Date.now() + index,
+              numericId: index + 1,
               userId: user.uid,
             };
             batch.set(docRef, newCustomer);
@@ -185,7 +185,8 @@ export default function CustomersPage() {
         const rowData: any[] = [];
         visibleColumns.forEach(col => {
             let value = row.getValue(col.id as any);
-            if (col.id === 'name' || col.id === 'phone' || col.id === 'phone2') {
+            // For columns with custom renderers, get raw data from `original`
+            if (['name', 'phone', 'phone2'].includes(col.id)) {
                 value = row.original[col.id as keyof Customer];
             }
             rowData.push(value ?? '');
@@ -252,7 +253,8 @@ const handleExportToPdf = async () => {
         const rowData: any[] = [];
         visibleColumns.forEach(col => {
             let value = row.getValue(col.id as any);
-             if (col.id === 'name' || col.id === 'phone' || col.id === 'phone2') {
+            // For columns with custom renderers, get raw data from `original`
+             if (['name', 'phone', 'phone2'].includes(col.id)) {
                 value = row.original[col.id as keyof Customer];
             }
             rowData.push(value ?? '');
@@ -374,10 +376,18 @@ const handleExportToPdf = async () => {
   
       } else {
         const newDocRef = doc(collection(firestore, 'customers'));
+        
+        // Calculate the next available numeric ID
+        let nextNumericId = 1;
+        if (customers && customers.length > 0) {
+            const maxId = Math.max(...customers.map(c => c.numericId || 0));
+            nextNumericId = maxId + 1;
+        }
+
         const newCustomerWithId: Customer = {
           ...data,
           id: newDocRef.id,
-          numericId: Date.now(),
+          numericId: nextNumericId,
           userId: user.uid,
         };
         await setDoc(newDocRef, newCustomerWithId);
@@ -399,7 +409,7 @@ const handleExportToPdf = async () => {
     }
   };
 
-  const columns = React.useMemo(() => getColumns({ onEdit: handleEditCustomer, onDelete: handleAnonymizeCustomer }), [handleEditCustomer, handleAnonymizeCustomer]);
+  const columns = React.useMemo(() => getColumns({ onEdit: handleEditCustomer, onDelete: handleAnonymizeCustomer }), []);
 
   const getSheetTitle = () => {
     if (sheetMode === 'edit') return 'Editar Cliente';
