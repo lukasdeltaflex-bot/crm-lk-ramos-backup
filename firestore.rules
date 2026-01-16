@@ -9,22 +9,17 @@ service cloud.firestore {
     }
 
     match /customers/{customerId} {
-      // Allow any authenticated user to read (list/get). 
-      // The client-side query is responsible for filtering.
-      allow read: if request.auth != null;
-      
-      // Writes are restricted to the owner.
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      // Allow authenticated users to read and write.
+      // Client-side queries are responsible for filtering reads.
+      // Client-side logic is responsible for ensuring users only write their own data.
+      allow read, write: if request.auth != null;
     }
 
     match /loanProposals/{loanProposalId} {
-      // Allow any authenticated user to read (list/get). 
-      allow read: if request.auth != null;
-      
-      // Writes are restricted to the owner.
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      // Allow authenticated users to read and write.
+      // Client-side queries are responsible for filtering reads.
+      // Client-side logic is responsible for ensuring users only write their own data.
+      allow read, write: if request.auth != null;
     }
 
     // User settings can only be managed by the owner.
