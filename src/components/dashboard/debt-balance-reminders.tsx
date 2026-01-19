@@ -10,6 +10,7 @@ import { calculateBusinessDays } from '@/lib/utils';
 import type { Proposal, Customer } from '@/lib/types';
 
 type ReminderMessage = {
+  proposalId: string;
   proposalNumber: string;
   customerName: string;
   reminderMessage: string;
@@ -62,6 +63,7 @@ export function DebtBalanceReminders({ proposals, customers, isLoading }: DebtBa
                 proposalNumber: proposal.proposalNumber,
                 daysWaiting: calculateBusinessDays(new Date(proposal.dateDigitized)),
             }).then(response => ({
+                proposalId: proposal.id,
                 proposalNumber: proposal.proposalNumber,
                 customerName: proposal.customer!.name,
                 reminderMessage: response.reminderMessage,
@@ -98,7 +100,7 @@ export function DebtBalanceReminders({ proposals, customers, isLoading }: DebtBa
           </div>
         ) : reminders.length > 0 ? (
           reminders.map((reminder) => (
-            <DebtBalanceReminderItem key={reminder.proposalNumber} reminder={reminder} />
+            <DebtBalanceReminderItem key={reminder.proposalId} reminder={reminder} />
           ))
         ) : (
           <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-4">

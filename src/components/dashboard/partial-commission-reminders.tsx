@@ -10,6 +10,7 @@ import { differenceInDays } from 'date-fns';
 import type { Proposal, Customer } from '@/lib/types';
 
 type ReminderMessage = {
+  proposalId: string;
   proposalNumber: string;
   customerName: string;
   reminderMessage: string;
@@ -63,6 +64,7 @@ export function PartialCommissionReminders({ proposals, customers, isLoading }: 
                 totalCommission: proposal.commissionValue,
                 daysSincePayment: differenceInDays(new Date(), new Date(proposal.commissionPaymentDate!)),
             }).then(response => ({
+                proposalId: proposal.id,
                 proposalNumber: proposal.proposalNumber,
                 customerName: proposal.customer!.name,
                 reminderMessage: response.reminderMessage,
@@ -99,7 +101,7 @@ export function PartialCommissionReminders({ proposals, customers, isLoading }: 
           </div>
         ) : reminders.length > 0 ? (
           reminders.map((reminder) => (
-            <PartialCommissionReminderItem key={reminder.proposalNumber} reminder={reminder} />
+            <PartialCommissionReminderItem key={reminder.proposalId} reminder={reminder} />
           ))
         ) : (
           <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-4">

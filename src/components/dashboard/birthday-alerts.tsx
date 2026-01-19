@@ -9,6 +9,7 @@ import { Skeleton } from '../ui/skeleton';
 import type { Customer } from '@/lib/types';
 
 type AlertMessage = {
+  customerId: string;
   customerName: string;
   alertMessage: string;
 };
@@ -60,6 +61,7 @@ export function BirthdayAlerts({ customers, isLoading }: BirthdayAlertsProps) {
               customerName: customer.name,
               customerAge: 75,
             }).then(response => ({
+              customerId: customer.id,
               customerName: customer.name,
               alertMessage: response.alertMessage,
             }))
@@ -95,7 +97,7 @@ export function BirthdayAlerts({ customers, isLoading }: BirthdayAlertsProps) {
           </div>
         ) : alerts.length > 0 ? (
           alerts.map((alert) => (
-            <BirthdayAlertItem key={alert.customerName} alert={alert} />
+            <BirthdayAlertItem key={alert.customerId} alert={alert} />
           ))
         ) : (
           <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-4">
