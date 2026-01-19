@@ -386,8 +386,8 @@ const handleExportToExcel = async () => {
   const handleFormSubmit = async (data: Omit<Proposal, 'id' | 'ownerId'>) => {
     if (!firestore || !user) return;
   
-    const toISOString = (dateString?: string) => {
-        if (!dateString) return undefined;
+    const toISOString = (dateString?: string): string | undefined => {
+        if (!dateString || dateString.trim() === '') return undefined;
         try {
             const parsed = parse(dateString, 'dd/MM/yyyy', new Date());
             return !isNaN(parsed.getTime()) ? parsed.toISOString() : undefined;
@@ -397,30 +397,32 @@ const handleExportToExcel = async () => {
     };
     
     try {
-      if (sheetMode === 'edit' && selectedProposal) {
-        const proposalToUpdate: Partial<Proposal> = {
-          ...data,
-          dateDigitized: toISOString(data.dateDigitized),
-          dateApproved: toISOString(data.dateApproved),
-          datePaidToClient: toISOString(data.datePaidToClient),
-          debtBalanceArrivalDate: toISOString(data.debtBalanceArrivalDate),
+        const proposalData = {
+            ...data,
+            dateDigitized: toISOString(data.dateDigitized) || new Date().toISOString(),
+            dateApproved: toISOString(data.dateApproved),
+            datePaidToClient: toISOString(data.datePaidToClient),
+            debtBalanceArrivalDate: toISOString(data.debtBalanceArrivalDate),
         };
-        await setDoc(doc(firestore, 'loanProposals', selectedProposal.id), proposalToUpdate, { merge: true });
+        
+        // Remove any properties that are undefined, as Firestore doesn't support them.
+        const cleanData = Object.fromEntries(
+            Object.entries(proposalData).filter(([, v]) => v !== undefined)
+        );
+
+      if (sheetMode === 'edit' && selectedProposal) {
+        await setDoc(doc(firestore, 'loanProposals', selectedProposal.id), cleanData, { merge: true });
         toast({
           title: 'Proposta Atualizada!',
           description: `A proposta foi atualizada com sucesso.`,
         });
       } else {
         const newDocRef = doc(collection(firestore, 'loanProposals'));
-        const newProposal: Omit<Proposal, 'id'> = {
-          ...data,
+        const newProposalWithId = {
+          ...cleanData,
+          id: newDocRef.id,
           ownerId: user.uid,
-          dateDigitized: toISOString(data.dateDigitized) || new Date().toISOString(),
-          dateApproved: toISOString(data.dateApproved),
-          datePaidToClient: toISOString(data.datePaidToClient),
-          debtBalanceArrivalDate: toISOString(data.debtBalanceArrivalDate),
         };
-        const newProposalWithId = { ...newProposal, id: newDocRef.id };
     
         await setDoc(newDocRef, newProposalWithId);
         toast({
