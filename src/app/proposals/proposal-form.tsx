@@ -391,35 +391,6 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
                 </FormItem>
               )}
             />
-            {selectedCustomer && selectedCustomer.benefits && selectedCustomer.benefits.length > 1 && (
-                <FormField
-                    control={form.control}
-                    name="selectedBenefitNumber"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Benefício da Proposta</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value || ''} disabled={isReadOnly}>
-                        <FormControl>
-                            <SelectTrigger>
-                            <SelectValue placeholder="Selecione o benefício a ser usado" />
-                            </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                            {selectedCustomer.benefits?.map((benefit, index) => (
-                            <SelectItem key={index} value={benefit.number}>
-                                {benefit.number} {benefit.species && ` - ${benefit.species}`}
-                            </SelectItem>
-                            ))}
-                        </SelectContent>
-                        </Select>
-                        <FormDescription>
-                            Este cliente possui múltiplos benefícios. Selecione qual será usado para esta proposta.
-                        </FormDescription>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-            )}
                 <FormField
                     control={form.control}
                     name="product"
@@ -479,6 +450,37 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
                         )}
                     />
                 </div>
+
+                {selectedCustomer && selectedCustomer.benefits && selectedCustomer.benefits.length > 1 && (
+                    <FormField
+                        control={form.control}
+                        name="selectedBenefitNumber"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Benefício da Proposta</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || ''} disabled={isReadOnly}>
+                            <FormControl>
+                                <SelectTrigger>
+                                <SelectValue placeholder="Selecione o benefício a ser usado" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {selectedCustomer.benefits?.map((benefit, index) => (
+                                <SelectItem key={index} value={benefit.number}>
+                                    {benefit.number} {benefit.species && ` - ${benefit.species}`}
+                                </SelectItem>
+                                ))}
+                            </SelectContent>
+                            </Select>
+                            <FormDescription>
+                                Este cliente possui múltiplos benefícios. Selecione qual será usado para esta proposta.
+                            </FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
