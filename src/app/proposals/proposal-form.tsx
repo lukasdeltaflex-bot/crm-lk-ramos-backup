@@ -126,23 +126,48 @@ const MaskedDatePicker = ({ name, label, control, isReadOnly }: { name: any, lab
     <FormField
         control={control}
         name={name}
-        render={({ field }) => (
-        <FormItem>
-            <FormLabel>{label}</FormLabel>
-            <FormControl>
-                <Input
-                    placeholder="dd/mm/aaaa"
-                    {...field}
-                    onChange={(e) => field.onChange(handleDateMask(e))}
-                    value={field.value || ''}
-                    maxLength={10}
-                    className="w-[240px]"
-                    readOnly={isReadOnly}
-                />
-            </FormControl>
-            <FormMessage />
-        </FormItem>
-        )}
+        render={({ field }) => {
+            const parsedDate = field.value ? parse(field.value, 'dd/MM/yyyy', new Date()) : undefined;
+            const isValidDate = parsedDate && !isNaN(parsedDate.getTime());
+
+            return (
+                <FormItem className="flex flex-col pt-2">
+                    <FormLabel>{label}</FormLabel>
+                    <Popover>
+                        <PopoverTrigger asChild disabled={isReadOnly}>
+                            <FormControl>
+                                    <div className="relative">
+                                        <Input
+                                            placeholder="dd/mm/aaaa"
+                                            {...field}
+                                            onChange={(e) => field.onChange(handleDateMask(e))}
+                                            value={field.value || ''}
+                                            maxLength={10}
+                                            className="w-[240px] pr-8"
+                                            readOnly={isReadOnly}
+                                        />
+                                        <CalendarIcon className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
+                                    </div>
+                            </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                                mode="single"
+                                selected={isValidDate ? parsedDate : undefined}
+                                onSelect={(date) => field.onChange(date ? format(date, 'dd/MM/yyyy') : '')}
+                                defaultMonth={isValidDate ? parsedDate : new Date()}
+                                locale={ptBR}
+                                initialFocus
+                                fromYear={new Date().getFullYear() - 20}
+                                toYear={new Date().getFullYear() + 20}
+                                captionLayout="dropdown-buttons"
+                            />
+                        </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                </FormItem>
+            )
+        }}
     />
 );
 
