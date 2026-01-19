@@ -54,6 +54,8 @@ import type { Customer } from '@/lib/types';
 
 const STORAGE_KEY_VISIBILITY = 'lk-ramos-customer-columns-visibility';
 const STORAGE_KEY_ORDER = 'lk-ramos-customer-columns-order';
+const STORAGE_KEY_SIZING = 'lk-ramos-customer-columns-sizing';
+
 
 interface DataTableProps {
   columns: ColumnDef<Customer, unknown>[];
@@ -108,6 +110,14 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             // Use default
         }
     }
+    const savedSizing = localStorage.getItem(STORAGE_KEY_SIZING);
+    if (savedSizing) {
+        try {
+            setColumnSizing(JSON.parse(savedSizing));
+        } catch (e) {
+            // Use default
+        }
+    }
   }, []);
 
   React.useEffect(() => {
@@ -121,6 +131,13 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         localStorage.setItem(STORAGE_KEY_ORDER, JSON.stringify(columnOrder));
     }
   }, [columnOrder, isClient]);
+
+  React.useEffect(() => {
+    if (isClient) {
+        localStorage.setItem(STORAGE_KEY_SIZING, JSON.stringify(columnSizing));
+    }
+  }, [columnSizing, isClient]);
+
 
   const sensors = useSensors(
     useSensor(PointerSensor),

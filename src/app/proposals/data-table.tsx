@@ -64,6 +64,7 @@ import type { ProposalWithCustomer } from './page';
 
 const STORAGE_KEY_VISIBILITY = 'lk-ramos-proposal-columns-visibility';
 const STORAGE_KEY_ORDER = 'lk-ramos-proposal-columns-order';
+const STORAGE_KEY_SIZING = 'lk-ramos-proposal-columns-sizing';
 
 interface DataTableProps {
   columns: ColumnDef<ProposalWithCustomer, unknown>[];
@@ -123,6 +124,14 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
             // Use default
         }
     }
+    const savedSizing = localStorage.getItem(STORAGE_KEY_SIZING);
+    if (savedSizing) {
+        try {
+            setColumnSizing(JSON.parse(savedSizing));
+        } catch (e) {
+            // Use default
+        }
+    }
   }, []);
 
 
@@ -137,6 +146,12 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         localStorage.setItem(STORAGE_KEY_ORDER, JSON.stringify(columnOrder));
     }
   }, [columnOrder, isClient]);
+
+  React.useEffect(() => {
+    if (isClient) {
+        localStorage.setItem(STORAGE_KEY_SIZING, JSON.stringify(columnSizing));
+    }
+  }, [columnSizing, isClient]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),

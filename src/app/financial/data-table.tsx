@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -63,6 +64,7 @@ import { DraggableHeader } from './columns';
 
 const STORAGE_KEY_VISIBILITY = 'lk-ramos-financial-columns-visibility';
 const STORAGE_KEY_ORDER = 'lk-ramos-financial-columns-order';
+const STORAGE_KEY_SIZING = 'lk-ramos-financial-columns-sizing';
 
 
 type ProposalWithCustomer = Proposal & { customer: Customer };
@@ -126,6 +128,14 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             // Use default
         }
     }
+    const savedSizing = localStorage.getItem(STORAGE_KEY_SIZING);
+    if (savedSizing) {
+        try {
+            setColumnSizing(JSON.parse(savedSizing));
+        } catch (e) {
+            // Use default
+        }
+    }
   }, []);
 
   React.useEffect(() => {
@@ -139,6 +149,13 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         localStorage.setItem(STORAGE_KEY_ORDER, JSON.stringify(columnOrder));
     }
   }, [columnOrder, isClient]);
+
+  React.useEffect(() => {
+    if (isClient) {
+        localStorage.setItem(STORAGE_KEY_SIZING, JSON.stringify(columnSizing));
+    }
+  }, [columnSizing, isClient]);
+
 
   const sensors = useSensors(
     useSensor(PointerSensor),
