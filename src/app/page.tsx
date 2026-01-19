@@ -51,6 +51,9 @@ export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
 
+  // State to manage the dialog content
+  const [dialogData, setDialogData] = React.useState<{ title: string; proposals: Proposal[] } | null>(null);
+
   React.useEffect(() => {
     setIsClient(true);
   }, []);
@@ -285,29 +288,33 @@ export default function DashboardPage() {
                 <Skeleton className="h-8 w-32" />
              </Card>
           )) : cardData.map((card) => (
-            <Dialog key={card.title}>
-              <DialogTrigger asChild>
-                <div className="cursor-pointer">
-                  <StatsCard
-                    title={card.title}
-                    value={isPrivacyMode ? '•••••' : formatCurrency(card.value)}
-                    icon={card.icon}
-                    className={card.className}
-                    valueClassName={card.valueClassName}
-                  />
-                </div>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
-                <DialogHeader>
-                  <DialogTitle>Propostas com Status: {card.title}</DialogTitle>
-                </DialogHeader>
-                <div className="flex-1 overflow-y-auto">
-                    <ProposalsStatusTable proposals={card.proposals} customers={customers || []} />
-                </div>
-              </DialogContent>
-            </Dialog>
+            <div 
+                key={card.title} 
+                className="cursor-pointer" 
+                onClick={() => setDialogData({ title: `Propostas com Status: ${card.title}`, proposals: card.proposals})}
+            >
+                <StatsCard
+                title={card.title}
+                value={isPrivacyMode ? '•••••' : formatCurrency(card.value)}
+                icon={card.icon}
+                className={card.className}
+                valueClassName={card.valueClassName}
+                />
+            </div>
           ))}
         </div>
+
+        <Dialog open={!!dialogData} onOpenChange={(isOpen) => !isOpen && setDialogData(null)}>
+            <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+                <DialogHeader>
+                    <DialogTitle>{dialogData?.title}</DialogTitle>
+                </DialogHeader>
+                <div className="flex-1 overflow-y-auto">
+                    <ProposalsStatusTable proposals={dialogData?.proposals || []} customers={customers || []} />
+                </div>
+            </DialogContent>
+        </Dialog>
+
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <CommissionChart 
