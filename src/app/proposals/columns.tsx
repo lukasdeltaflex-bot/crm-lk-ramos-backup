@@ -177,6 +177,11 @@ export const getColumns = (
     onStatusChange: (proposalId: string, newStatus: ProposalStatus) => void
     ): ColumnDef<ProposalWithCustomer>[] => [
   {
+    accessorKey: 'bank',
+    id: 'bank_digitado',
+    header: 'Banco Digitado',
+  },
+  {
     id: 'select',
     header: ({ table }) => (
       <Checkbox
@@ -198,11 +203,6 @@ export const getColumns = (
     enableSorting: false,
     enableHiding: false,
     enableColumnOrdering: false,
-  },
-  {
-    accessorKey: 'bank',
-    id: 'bank_digitado',
-    header: 'Banco Digitado',
   },
   {
     accessorKey: 'promoter',
