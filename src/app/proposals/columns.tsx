@@ -62,7 +62,7 @@ const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit, onView, onDelete
     const proposal = row.original;
     return (
       <div className="text-right">
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">Abrir menu</span>
@@ -129,7 +129,7 @@ const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => {
                 )}
                 onClick={header.column.getToggleSortingHandler()}
             >
-                {header.column.getCanSort() && (
+                {header.column.columnDef.enableColumnOrdering !== false ? (
                     <button
                         {...attributes}
                         {...listeners}
@@ -138,6 +138,8 @@ const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => {
                     >
                         <GripVertical className="h-4 w-4" />
                     </button>
+                ) : (
+                    <div className='w-6 p-1 -ml-2' /> // Placeholder to maintain alignment
                 )}
                 <div className="flex-1">
                     {header.isPlaceholder

@@ -65,7 +65,7 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
                 )}
                 onClick={header.column.getToggleSortingHandler()}
             >
-                {header.column.getCanSort() && (
+                {header.column.columnDef.enableColumnOrdering !== false ? (
                     <button
                         {...attributes}
                         {...listeners}
@@ -74,6 +74,8 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
                     >
                         <GripVertical className="h-4 w-4" />
                     </button>
+                ) : (
+                    <div className='w-6 p-1 -ml-2' /> // Placeholder to maintain alignment
                 )}
                 <div className="flex-1">
                     {header.isPlaceholder
