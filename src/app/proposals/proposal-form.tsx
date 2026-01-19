@@ -210,18 +210,9 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
   }, [customers, selectedCustomerId]);
 
   useEffect(() => {
-    if (selectedCustomer) {
-      if (selectedCustomer.benefits && selectedCustomer.benefits.length === 1) {
-        setValue('selectedBenefitNumber', selectedCustomer.benefits[0].number, { shouldValidate: true });
-      } else {
-        // Clear selection if customer has 0 or >1 benefits
-        setValue('selectedBenefitNumber', '', { shouldValidate: true });
-      }
-    } else {
-        // Clear selection if no customer is selected
-        setValue('selectedBenefitNumber', '', { shouldValidate: true });
-    }
-  }, [selectedCustomer, setValue]);
+    // When customer changes, clear the selected benefit to force a new selection.
+    setValue('selectedBenefitNumber', '', { shouldValidate: false });
+  }, [selectedCustomerId, setValue]);
 
   useEffect(() => {
     if (isReadOnly) return;
@@ -471,7 +462,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
                         <Select 
                             onValueChange={field.onChange} 
                             value={field.value || ''} 
-                            disabled={isReadOnly || !selectedCustomer || !selectedCustomer.benefits || selectedCustomer.benefits.length <= 1}
+                            disabled={isReadOnly || !selectedCustomer || !selectedCustomer.benefits || selectedCustomer.benefits.length === 0}
                         >
                             <FormControl>
                                 <SelectTrigger>
@@ -492,12 +483,6 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
                                 ))}
                             </SelectContent>
                         </Select>
-                        <FormDescription>
-                            {selectedCustomer && selectedCustomer.benefits && selectedCustomer.benefits.length > 1 
-                                ? "Escolha o benefício para esta proposta."
-                                : "O benefício do cliente (se houver) será associado automaticamente."
-                            }
-                        </FormDescription>
                         <FormMessage />
                     </FormItem>
                 )}
