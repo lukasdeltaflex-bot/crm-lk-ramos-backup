@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useFirebase } from '@/firebase';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
+import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
@@ -29,7 +29,7 @@ export function ProposalAttachmentUploader({
 }: ProposalAttachmentUploaderProps) {
   const [attachments, setAttachments] = useState<Attachment[]>(initialAttachments);
   const [uploadingFiles, setUploadingFiles] = useState<Record<string, number>>({});
-  const storage = getStorage();
+  const { storage } = useFirebase();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -53,7 +53,7 @@ export function ProposalAttachmentUploader({
       },
       (error) => {
         console.error('Upload failed:', error);
-        toast({ variant: 'destructive', title: 'Falha no Upload', description: `Não foi possível enviar o arquivo ${file.name}.` });
+        toast({ variant: 'destructive', title: 'Falha no Upload', description: `Não foi possível enviar o arquivo ${file.name}. Verifique as permissões de armazenamento.` });
         setUploadingFiles(prev => {
             const newUploading = { ...prev };
             delete newUploading[file.name];
