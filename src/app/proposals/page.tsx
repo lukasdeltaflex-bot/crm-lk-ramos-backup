@@ -167,7 +167,7 @@ const handleExportToExcel = async () => {
         customerName: 'Cliente',
         customerCpf: 'CPF',
         product: 'Produto',
-        bank_digitado: 'Banco Digitado',
+        banco_digitado_v6: 'Banco Digitado',
         operator: 'Operador',
         grossAmount: 'Valor Bruto',
         status: 'Status',
@@ -231,7 +231,7 @@ const handleExportToExcel = async () => {
         customerName: 'Cliente',
         customerCpf: 'CPF',
         product: 'Produto',
-        bank_digitado: 'Banco Digitado',
+        banco_digitado_v6: 'Banco Digitado',
         operator: 'Operador',
         grossAmount: 'Valor Bruto',
         status: 'Status',
@@ -513,7 +513,10 @@ const handleExportToExcel = async () => {
         </div>
       </div>
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="w-full max-w-3xl sm:max-w-3xl">
+        <SheetContent 
+            className="w-full max-w-3xl sm:max-w-3xl"
+            onCloseAutoFocus={(e) => e.preventDefault()}
+        >
           <SheetHeader className="print:hidden">
             <SheetTitle>{getSheetTitle()}</SheetTitle>
           </SheetHeader>

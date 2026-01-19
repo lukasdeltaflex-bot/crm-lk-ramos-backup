@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -341,7 +342,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
                                 value={`${customer.name} ${customer.cpf}`}
                                 key={customer.id}
                                 onSelect={() => {
-                                  form.setValue("customerId", customer.id);
+                                  field.onChange(customer.id);
                                   setIsCustomerSelectorOpen(false);
                                 }}
                               >
