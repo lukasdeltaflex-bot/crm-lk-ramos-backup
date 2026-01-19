@@ -210,6 +210,19 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
   }, [customers, selectedCustomerId]);
 
   useEffect(() => {
+    if (selectedCustomer) {
+      if (selectedCustomer.benefits && selectedCustomer.benefits.length === 1) {
+        // Auto-select if there is only one benefit
+        setValue('selectedBenefitNumber', selectedCustomer.benefits[0].number, { shouldValidate: true });
+      } else {
+        // Clear the selection if there are multiple benefits or the customer changes
+        // This forces the user to choose from the list for the new customer
+        setValue('selectedBenefitNumber', undefined, { shouldValidate: true });
+      }
+    }
+  }, [selectedCustomer, setValue]);
+
+  useEffect(() => {
     if (isReadOnly) return;
     
     let baseValue = 0;
@@ -378,14 +391,14 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
                 </FormItem>
               )}
             />
-            {selectedCustomer && selectedCustomer.benefits && selectedCustomer.benefits.length > 0 && (
+            {selectedCustomer && selectedCustomer.benefits && selectedCustomer.benefits.length > 1 && (
                 <FormField
                     control={form.control}
                     name="selectedBenefitNumber"
                     render={({ field }) => (
                     <FormItem>
                         <FormLabel>Benefício da Proposta</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly}>
+                        <Select onValueChange={field.onChange} value={field.value || ''} disabled={isReadOnly}>
                         <FormControl>
                             <SelectTrigger>
                             <SelectValue placeholder="Selecione o benefício a ser usado" />
