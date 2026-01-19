@@ -52,8 +52,11 @@ const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit }) => {
 };
 
 export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => {
+    const isDraggable = header.column.columnDef.enableColumnOrdering !== false;
+
     const { attributes, listeners, setNodeRef, transform, isDragging } = useSortable({
         id: header.column.id,
+        disabled: !isDraggable,
     });
     
     const style = {
@@ -68,6 +71,7 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
             colSpan={header.colSpan}
             style={style}
             className={cn('relative p-0 h-12')}
+            {...attributes} // Attributes for the sortable node
         >
             <div
                 className={cn(
@@ -76,18 +80,13 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
                 )}
                 onClick={header.column.getToggleSortingHandler()}
             >
-                {header.column.columnDef.enableColumnOrdering !== false ? (
-                    <button
-                        {...attributes}
-                        {...listeners}
-                        className="cursor-grab p-1 -ml-2"
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <GripVertical className="h-4 w-4" />
-                    </button>
-                ) : (
-                    <div className='w-6 p-1 -ml-2' /> // Placeholder to maintain alignment
-                )}
+                <button
+                    {...(isDraggable ? listeners : {})} // Listeners for the drag handle
+                    className={cn("p-1 -ml-2", isDraggable ? "cursor-grab" : "cursor-default")}
+                    onClick={e => e.stopPropagation()}
+                >
+                    <GripVertical className={cn("h-4 w-4", !isDraggable && "text-muted-foreground/20")} />
+                </button>
                 <div className="flex-1">
                     {header.isPlaceholder
                         ? null
@@ -107,8 +106,8 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
                     onMouseDown={header.getResizeHandler()}
                     onTouchStart={header.getResizeHandler()}
                     className={cn(
-                        'absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none bg-transparent transition-colors hover:bg-primary',
-                        header.column.getIsResizing() && 'bg-primary w-1.5'
+                        'absolute right-0 top-0 h-full w-1.5 cursor-col-resize select-none touch-none bg-transparent transition-colors hover:bg-primary',
+                        header.column.getIsResizing() && 'bg-primary'
                     )}
                 />
             )}

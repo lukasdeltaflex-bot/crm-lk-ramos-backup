@@ -105,7 +105,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   const [isClient, setIsClient] = React.useState(false);
 
   const defaultVisibility: VisibilityState = {};
-  const defaultOrder = React.useMemo(() => columns.map(c => c.id!).filter(id => id !== 'actions'), [columns]);
+  const defaultOrder = React.useMemo(() => columns.map(c => c.id!), [columns]);
 
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(defaultVisibility);
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(defaultOrder);
@@ -201,7 +201,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (active.id !== over?.id) {
+    if (over && active.id !== over?.id) {
       setColumnOrder((items) => {
         const oldIndex = items.indexOf(active.id as string);
         const newIndex = items.indexOf(over!.id as string);

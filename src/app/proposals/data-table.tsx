@@ -62,9 +62,9 @@ import type { ProposalStatus, Proposal } from '@/lib/types';
 import { DraggableHeader } from './columns';
 import type { ProposalWithCustomer } from './page';
 
-const STORAGE_KEY_VISIBILITY = 'lk-ramos-proposal-columns-visibility-v3';
-const STORAGE_KEY_ORDER = 'lk-ramos-proposal-columns-order-v3';
-const STORAGE_KEY_SIZING = 'lk-ramos-proposal-columns-sizing-v3';
+const STORAGE_KEY_VISIBILITY = 'lk-ramos-proposal-columns-visibility-v4';
+const STORAGE_KEY_ORDER = 'lk-ramos-proposal-columns-order-v4';
+const STORAGE_KEY_SIZING = 'lk-ramos-proposal-columns-sizing-v4';
 
 interface DataTableProps {
   columns: ColumnDef<ProposalWithCustomer, unknown>[];
@@ -101,7 +101,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
       commissionValue: false,
       customerCpf: false,
   };
-  const defaultOrder = React.useMemo(() => columns.map(c => c.id!).filter(id => id !== 'actions'), [columns]);
+  const defaultOrder = React.useMemo(() => columns.map(c => c.id!), [columns]);
 
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(defaultVisibility);
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(defaultOrder);
@@ -113,7 +113,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         try {
             setColumnVisibility(JSON.parse(savedVisibility));
         } catch (e) {
-            // Use default
+            localStorage.removeItem(STORAGE_KEY_VISIBILITY);
         }
     }
     const savedOrder = localStorage.getItem(STORAGE_KEY_ORDER);
@@ -121,7 +121,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         try {
             setColumnOrder(JSON.parse(savedOrder));
         } catch (e) {
-            // Use default
+            localStorage.removeItem(STORAGE_KEY_ORDER);
         }
     }
     const savedSizing = localStorage.getItem(STORAGE_KEY_SIZING);
@@ -129,7 +129,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         try {
             setColumnSizing(JSON.parse(savedSizing));
         } catch (e) {
-            // Use default
+            localStorage.removeItem(STORAGE_KEY_SIZING);
         }
     }
   }, []);
@@ -160,7 +160,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (active.id !== over?.id) {
+    if (over && active.id !== over?.id) {
       setColumnOrder((items) => {
         const oldIndex = items.indexOf(active.id as string);
         const newIndex = items.indexOf(over!.id as string);
@@ -235,7 +235,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     customerName: 'Cliente',
     customerCpf: 'CPF',
     product: 'Produto',
-    bank_digitado: 'Banco Digitado',
+    banco_digitado_v4: 'Banco Digitado',
     operator: 'Operador',
     grossAmount: 'Valor Bruto',
     status: 'Status',
