@@ -214,8 +214,12 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
       if (selectedCustomer.benefits && selectedCustomer.benefits.length === 1) {
         setValue('selectedBenefitNumber', selectedCustomer.benefits[0].number, { shouldValidate: true });
       } else {
-        setValue('selectedBenefitNumber', undefined, { shouldValidate: true });
+        // Clear selection if customer has 0 or >1 benefits
+        setValue('selectedBenefitNumber', '', { shouldValidate: true });
       }
+    } else {
+        // Clear selection if no customer is selected
+        setValue('selectedBenefitNumber', '', { shouldValidate: true });
     }
   }, [selectedCustomer, setValue]);
 
@@ -418,116 +422,128 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
 
             {/* Proposal Details */}
             <div className="space-y-4">
-                <h3 className="text-lg font-medium">Detalhes da Proposta</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                        control={form.control}
-                        name="proposalNumber"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Nº Proposta</FormLabel>
-                            <FormControl>
-                            <Input placeholder="Digite o número da proposta" {...field} readOnly={isReadOnly && sheetMode === 'edit'} value={field.value || ''}/>
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="table"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Tabela</FormLabel>
-                            <FormControl>
-                            <Input placeholder="Tabela A" {...field} readOnly={isReadOnly} value={field.value || ''} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                </div>
-                
-                {selectedCustomer ? (
-                    selectedCustomer.benefits && selectedCustomer.benefits.length > 1 ? (
-                        <FormField
-                            control={form.control}
-                            name="selectedBenefitNumber"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Benefício da Proposta</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value || ''} disabled={isReadOnly}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                        <SelectValue placeholder="Selecione o benefício a ser usado" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {selectedCustomer.benefits?.map((benefit, index) => (
-                                        <SelectItem key={index} value={benefit.number}>
-                                            {benefit.number} {benefit.species && ` - ${benefit.species}`}
-                                        </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                    </Select>
-                                    <FormDescription>
-                                        Este cliente possui múltiplos benefícios. Selecione qual será usado para esta proposta.
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
+              <h3 className="text-lg font-medium">Detalhes da Proposta</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="proposalNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nº Proposta</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Digite o número da proposta"
+                          {...field}
+                          readOnly={isReadOnly && sheetMode === 'edit'}
+                          value={field.value || ''}
                         />
-                    ) : (
-                        <Alert variant="default" className="bg-secondary/50">
-                            <Info className="h-4 w-4" />
-                            <AlertTitle>Benefício Único</AlertTitle>
-                            <AlertDescription>
-                                {selectedCustomer.benefits && selectedCustomer.benefits.length === 1
-                                    ? `O benefício nº ${selectedCustomer.benefits[0].number} foi selecionado automaticamente.`
-                                    : `Este cliente não possui benefícios cadastrados. Cadastre-os na tela de clientes.`
-                                }
-                            </AlertDescription>
-                        </Alert>
-                    )
-                ) : (
-                    <Alert variant="default" className="bg-secondary/50">
-                        <Info className="h-4 w-4" />
-                        <AlertTitle>Selecione um Cliente</AlertTitle>
-                        <AlertDescription>
-                            Após selecionar um cliente, os benefícios disponíveis serão exibidos aqui.
-                        </AlertDescription>
-                    </Alert>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="table"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tabela</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Tabela A"
+                          {...field}
+                          readOnly={isReadOnly}
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="selectedBenefitNumber"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Benefício da Proposta</FormLabel>
+                        <Select 
+                            onValueChange={field.onChange} 
+                            value={field.value || ''} 
+                            disabled={isReadOnly || !selectedCustomer || !selectedCustomer.benefits || selectedCustomer.benefits.length <= 1}
+                        >
+                            <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder={
+                                        !selectedCustomer 
+                                            ? "Selecione um cliente primeiro" 
+                                            : (!selectedCustomer.benefits || selectedCustomer.benefits.length === 0) 
+                                                ? "Cliente sem benefícios cadastrados"
+                                                : "Selecione um benefício"
+                                    } />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {selectedCustomer?.benefits?.map((benefit, index) => (
+                                    <SelectItem key={index} value={benefit.number}>
+                                        {benefit.number} {benefit.species && ` - ${benefit.species}`}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <FormDescription>
+                            {selectedCustomer && selectedCustomer.benefits && selectedCustomer.benefits.length > 1 
+                                ? "Escolha o benefício para esta proposta."
+                                : "O benefício do cliente (se houver) será associado automaticamente."
+                            }
+                        </FormDescription>
+                        <FormMessage />
+                    </FormItem>
                 )}
+              />
 
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                        control={form.control}
-                        name="term"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Prazo (meses)</FormLabel>
-                            <FormControl>
-                            <Input type="number" placeholder="84" {...field} readOnly={isReadOnly} value={field.value || ''} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="interestRate"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Taxa de Juros (%)</FormLabel>
-                            <FormControl>
-                            <Input type="number" step="0.01" placeholder="1.8" {...field} readOnly={isReadOnly} value={field.value || ''} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="term"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Prazo (meses)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="84"
+                          {...field}
+                          readOnly={isReadOnly}
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="interestRate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Taxa de Juros (%)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="1.8"
+                          {...field}
+                          readOnly={isReadOnly}
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
             
             <Separator />
