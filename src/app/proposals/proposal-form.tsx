@@ -210,9 +210,19 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
   }, [customers, selectedCustomerId]);
 
   useEffect(() => {
-    // When customer changes, clear the selected benefit to force a new selection.
-    setValue('selectedBenefitNumber', '', { shouldValidate: false });
-  }, [selectedCustomerId, setValue]);
+    if (isReadOnly) return;
+  
+    // When customer changes, we must ensure the selected benefit is still valid.
+    const currentBenefit = form.getValues('selectedBenefitNumber');
+    if (currentBenefit) {
+      const isBenefitValid = selectedCustomer?.benefits?.some(b => b.number === currentBenefit);
+      if (!isBenefitValid) {
+        // If the old benefit is not in the new customer's list, clear it.
+        setValue('selectedBenefitNumber', '', { shouldValidate: true });
+      }
+    }
+  }, [selectedCustomerId, selectedCustomer, isReadOnly, form, setValue]);
+
 
   useEffect(() => {
     if (isReadOnly) return;
@@ -461,7 +471,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
                         <FormLabel>Benefício da Proposta</FormLabel>
                         <Select 
                             onValueChange={field.onChange} 
-                            value={field.value || ''} 
+                            value={field.value || ''}
                             disabled={isReadOnly || !selectedCustomer || !selectedCustomer.benefits || selectedCustomer.benefits.length === 0}
                         >
                             <FormControl>
@@ -477,7 +487,7 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
                             </FormControl>
                             <SelectContent>
                                 {selectedCustomer?.benefits?.map((benefit, index) => (
-                                    <SelectItem key={index} value={benefit.number}>
+                                    <SelectItem key={`${benefit.number}-${index}`} value={benefit.number}>
                                         {benefit.number} {benefit.species && ` - ${benefit.species}`}
                                     </SelectItem>
                                 ))}
