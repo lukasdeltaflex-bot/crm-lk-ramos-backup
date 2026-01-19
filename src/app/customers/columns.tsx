@@ -41,7 +41,6 @@ interface ActionsCellProps {
 export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => {
     const { attributes, listeners, setNodeRef, transform, isDragging } = useSortable({
         id: header.column.id,
-        disabled: header.column.columnDef.enableColumnOrdering === false,
     });
     
     const style = {
@@ -95,8 +94,8 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
                     onMouseDown={header.getResizeHandler()}
                     onTouchStart={header.getResizeHandler()}
                     className={cn(
-                        'absolute right-0 top-0 h-full w-0.5 cursor-col-resize select-none touch-none bg-muted-foreground/20 transition-colors hover:bg-primary/50',
-                        header.column.getIsResizing() && 'bg-primary'
+                        'absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none bg-transparent transition-colors hover:bg-primary',
+                        header.column.getIsResizing() && 'bg-primary w-1.5'
                     )}
                 />
             )}
