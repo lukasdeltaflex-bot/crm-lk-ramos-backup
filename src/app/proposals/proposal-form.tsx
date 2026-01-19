@@ -209,20 +209,6 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
     return customers.find(c => c.id === selectedCustomerId);
   }, [customers, selectedCustomerId]);
 
-  useEffect(() => {
-    if (isReadOnly) return;
-  
-    // When customer changes, we must ensure the selected benefit is still valid.
-    const currentBenefit = form.getValues('selectedBenefitNumber');
-    if (currentBenefit) {
-      const isBenefitValid = selectedCustomer?.benefits?.some(b => b.number === currentBenefit);
-      if (!isBenefitValid) {
-        // If the old benefit is not in the new customer's list, clear it.
-        setValue('selectedBenefitNumber', '', { shouldValidate: true });
-      }
-    }
-  }, [selectedCustomerId, selectedCustomer, isReadOnly, form, setValue]);
-
 
   useEffect(() => {
     if (isReadOnly) return;
@@ -467,34 +453,21 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
                 control={form.control}
                 name="selectedBenefitNumber"
                 render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Benefício da Proposta</FormLabel>
-                        <Select 
-                            onValueChange={field.onChange} 
-                            value={field.value || ''}
-                            disabled={isReadOnly || !selectedCustomer || !selectedCustomer.benefits || selectedCustomer.benefits.length === 0}
-                        >
-                            <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue placeholder={
-                                        !selectedCustomer 
-                                            ? "Selecione um cliente primeiro" 
-                                            : (!selectedCustomer.benefits || selectedCustomer.benefits.length === 0) 
-                                                ? "Cliente sem benefícios cadastrados"
-                                                : "Selecione um benefício"
-                                    } />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                {selectedCustomer?.benefits?.map((benefit, index) => (
-                                    <SelectItem key={`${benefit.number}-${index}`} value={benefit.number}>
-                                        {benefit.number} {benefit.species && ` - ${benefit.species}`}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                    </FormItem>
+                  <FormItem>
+                    <FormLabel>Benefício da Proposta</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Digite o número do benefício"
+                        {...field}
+                        readOnly={isReadOnly}
+                        value={field.value || ''}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Digite o número do benefício a ser usado nesta proposta.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
                 )}
               />
 
