@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ColumnDef, Header, Table } from '@tanstack/react-table';
@@ -103,12 +102,12 @@ const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit, onView, onDelete
     );
 };
 
-const DraggableHeader = ({ header }: { header: Header<ProposalWithCustomer, unknown>}) => {
+const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => {
     const { attributes, listeners, setNodeRef, transform, isDragging } = useSortable({
         id: header.column.id,
-      });
+    });
     
-      const style = {
+    const style = {
         ...header.column.getCanResize() && {
             width: header.getSize(),
         },
@@ -130,27 +129,36 @@ const DraggableHeader = ({ header }: { header: Header<ProposalWithCustomer, unkn
                 )}
                 onClick={header.column.getToggleSortingHandler()}
             >
-                <button
-                    {...attributes}
-                    {...listeners}
-                    className="cursor-grab p-1 -ml-2"
-                    onClick={e => e.stopPropagation()}
-                >
-                    <GripVertical className="h-4 w-4" />
-                </button>
-                {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                    )}
+                {header.column.getCanSort() && (
+                    <button
+                        {...attributes}
+                        {...listeners}
+                        className="cursor-grab p-1 -ml-2"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <GripVertical className="h-4 w-4" />
+                    </button>
+                )}
+                <div className="flex-1">
+                    {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                        )}
+                </div>
+                 {header.column.getCanSort() && (
+                    <div className="ml-1">
+                        {header.column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : header.column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4 text-muted-foreground/50" />}
+                    </div>
+                )}
             </div>
             {header.column.getCanResize() && (
                 <div
                     onMouseDown={header.getResizeHandler()}
                     onTouchStart={header.getResizeHandler()}
                     className={cn(
-                        'absolute top-2.5 h-7 w-px cursor-col-resize select-none touch-none bg-border',
+                        'absolute right-0 top-0 h-full w-px cursor-col-resize select-none touch-none bg-border/50 hover:bg-border',
                         header.column.getIsResizing() && 'bg-primary w-0.5'
                     )}
                 />
@@ -191,32 +199,17 @@ export const getColumns = (
   {
     accessorKey: 'promoter',
     id: 'promoter',
-    header: ({ column }) => (
-      <div className="flex items-center gap-2">
-        <span>Promotora</span>
-        {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-      </div>
-    ),
+    header: 'Promotora',
   },
   {
     accessorKey: 'proposalNumber',
     id: 'proposalNumber',
-    header: ({ column }) => (
-        <div className="flex items-center gap-2">
-          <span>Nº Proposta</span>
-          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-        </div>
-      ),
+    header: 'Nº Proposta',
   },
   {
     id: 'customerName',
     accessorFn: (row) => row.customer?.name,
-    header: ({ column }) => (
-        <div className="flex items-center gap-2">
-          <span>Cliente</span>
-          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-        </div>
-      ),
+    header: 'Cliente',
     cell: ({ row }) => {
         return row.original.customer?.name || <span className="text-muted-foreground">Cliente não encontrado</span>
     }
@@ -224,12 +217,7 @@ export const getColumns = (
   {
     id: 'customerCpf',
     accessorFn: (row) => row.customer?.cpf,
-    header: ({ column }) => (
-        <div className="flex items-center gap-2">
-          <span>CPF</span>
-          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-        </div>
-      ),
+    header: 'CPF',
     cell: ({ row }) => {
         return row.original.customer?.cpf || <span className="text-muted-foreground">-</span>
     }
@@ -237,44 +225,22 @@ export const getColumns = (
   {
     accessorKey: 'product',
     id: 'product',
-    header: ({ column }) => (
-        <div className="flex items-center gap-2">
-          <span>Produto</span>
-          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-        </div>
-      ),
+    header: 'Produto',
   },
     {
     accessorKey: 'bank',
     id: 'bank',
-    header: ({ column }) => (
-        <div className="flex items-center gap-2">
-          <span>Banco</span>
-          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-        </div>
-      ),
+    header: 'Banco',
   },
   {
     accessorKey: 'operator',
     id: 'operator',
-    header: ({ column }) => (
-        <div className="flex items-center gap-2">
-          <span>Operador</span>
-          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-        </div>
-      ),
+    header: 'Operador',
   },
   {
     accessorKey: 'grossAmount',
     id: 'grossAmount',
-    header: ({ column }) => {
-      return (
-        <div className="flex justify-end items-center gap-2">
-            <span>Valor Bruto</span>
-            {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-        </div>
-      );
-    },
+    header: () => <div className="text-right">Valor Bruto</div>,
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue('grossAmount'));
       return <div className="text-right font-medium">{formatCurrency(amount)}</div>;
@@ -283,12 +249,7 @@ export const getColumns = (
   {
     accessorKey: 'status',
     id: 'status',
-    header: ({ column }) => (
-        <div className="flex items-center gap-2">
-          <span>Status</span>
-          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-        </div>
-      ),
+    header: 'Status',
     cell: ({ row }) => {
       const proposal = row.original;
       return (
@@ -306,12 +267,7 @@ export const getColumns = (
   {
     accessorKey: 'commissionValue',
     id: 'commissionValue',
-    header: ({ column }) => (
-      <div className="flex justify-end items-center gap-2">
-          <span>Comissão</span>
-          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-      </div>
-    ),
+    header: () => <div className="text-right">Comissão</div>,
     cell: ({ row }) => {
         const amount = parseFloat(row.getValue('commissionValue'));
         return <div className="text-right">{formatCurrency(amount)}</div>;
@@ -320,51 +276,32 @@ export const getColumns = (
   {
     accessorKey: 'dateDigitized',
     id: 'dateDigitized',
-    header: ({ column }) => (
-        <div className="flex items-center gap-2">
-            <span>Data Digitação</span>
-            {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-        </div>
-    ),
+    header: 'Data Digitação',
     cell: ({ row }) => formatDate(row.getValue('dateDigitized'))
   },
   {
     accessorKey: 'dateApproved',
     id: 'dateApproved',
-    header: ({ column }) => (
-        <div className="flex items-center gap-2">
-            <span>Data Averbação</span>
-            {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-        </div>
-    ),
+    header: 'Data Averbação',
     cell: ({ row }) => formatDate(row.getValue('dateApproved'))
   },
   {
     accessorKey: 'datePaidToClient',
     id: 'datePaidToClient',
-    header: ({ column }) => (
-        <div className="flex items-center gap-2">
-            <span>Data Pgto. Cliente</span>
-            {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-        </div>
-    ),
+    header: 'Data Pgto. Cliente',
     cell: ({ row }) => formatDate(row.getValue('datePaidToClient'))
   },
   {
     accessorKey: 'debtBalanceArrivalDate',
     id: 'debtBalanceArrivalDate',
-    header: ({ column }) => (
-        <div className="flex items-center gap-2">
-            <span>Chegada Saldo</span>
-            {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-        </div>
-    ),
+    header: 'Chegada Saldo',
     cell: ({ row }) => formatDate(row.getValue('debtBalanceArrivalDate'))
   },
   {
     id: 'actions',
     cell: (props) => <ActionsCell {...props} onEdit={onEdit} onView={onView} onDelete={onDelete} />,
     enableColumnOrdering: false,
+    enableSorting: false,
   },
 ].map(column => ({ ...column, id: column.id || column.accessorKey as string}));
 

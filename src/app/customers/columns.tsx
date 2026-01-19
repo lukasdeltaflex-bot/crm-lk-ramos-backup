@@ -1,7 +1,6 @@
-
 'use client';
 
-import { ColumnDef, Header, flexRender } from '@tanstack/react-table';
+import { Column, ColumnDef, Header, flexRender } from '@tanstack/react-table';
 import type { Customer } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -39,7 +38,7 @@ interface ActionsCellProps {
   onDelete: (customerId: string) => void;
 }
 
-export const DraggableHeader = ({ header }: { header: Header<Customer, unknown>}) => {
+export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => {
     const { attributes, listeners, setNodeRef, transform, isDragging } = useSortable({
         id: header.column.id,
     });
@@ -66,27 +65,36 @@ export const DraggableHeader = ({ header }: { header: Header<Customer, unknown>}
                 )}
                 onClick={header.column.getToggleSortingHandler()}
             >
-                <button
-                    {...attributes}
-                    {...listeners}
-                    className="cursor-grab p-1 -ml-2"
-                    onClick={e => e.stopPropagation()}
-                >
-                    <GripVertical className="h-4 w-4" />
-                </button>
-                {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                    )}
+                {header.column.getCanSort() && (
+                    <button
+                        {...attributes}
+                        {...listeners}
+                        className="cursor-grab p-1 -ml-2"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <GripVertical className="h-4 w-4" />
+                    </button>
+                )}
+                <div className="flex-1">
+                    {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                        )}
+                </div>
+                 {header.column.getCanSort() && (
+                    <div className="ml-1">
+                        {header.column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : header.column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4 text-muted-foreground/50" />}
+                    </div>
+                )}
             </div>
             {header.column.getCanResize() && (
                 <div
                     onMouseDown={header.getResizeHandler()}
                     onTouchStart={header.getResizeHandler()}
                     className={cn(
-                        'absolute top-2.5 h-7 w-px cursor-col-resize select-none touch-none bg-border',
+                        'absolute right-0 top-0 h-full w-px cursor-col-resize select-none touch-none bg-border/50 hover:bg-border',
                         header.column.getIsResizing() && 'bg-primary w-0.5'
                     )}
                 />
@@ -172,25 +180,13 @@ export const getColumns = (
   {
     accessorKey: 'numericId',
     id: 'numericId',
-    header: ({ column }) => (
-        <div className="flex items-center gap-2">
-          <span>ID</span>
-          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-        </div>
-      ),
+    header: 'ID',
     enableHiding: false,
   },
   {
     accessorKey: 'name',
     id: 'name',
-    header: ({ column }) => {
-        return (
-          <div className="flex items-center gap-2">
-            <span>Nome</span>
-            {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-          </div>
-        );
-      },
+    header: 'Nome',
     cell: ({ row }) => {
         const customer = row.original;
         return (
@@ -204,22 +200,12 @@ export const getColumns = (
   {
     accessorKey: 'cpf',
     id: 'cpf',
-    header: ({ column }) => (
-        <div className="flex items-center gap-2">
-          <span>CPF</span>
-          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-        </div>
-      ),
+    header: 'CPF',
   },
   {
     accessorKey: 'phone',
     id: 'phone',
-    header: ({ column }) => (
-        <div className="flex items-center gap-2">
-          <span>Telefone</span>
-          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-        </div>
-      ),
+    header: 'Telefone',
     cell: ({ row }) => {
         const phone = row.getValue('phone') as string;
         const isWhatsAppNumber = isWhatsApp(phone);
@@ -238,12 +224,7 @@ export const getColumns = (
   {
     accessorKey: 'phone2',
     id: 'phone2',
-    header: ({ column }) => (
-        <div className="flex items-center gap-2">
-          <span>Telefone 2</span>
-          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-        </div>
-      ),
+    header: 'Telefone 2',
     cell: ({ row }) => {
         const phone = row.getValue('phone2') as string;
         if (!phone) return null;
@@ -263,42 +244,22 @@ export const getColumns = (
   {
     accessorKey: 'benefitNumber',
     id: 'benefitNumber',
-    header: ({ column }) => (
-        <div className="flex items-center gap-2">
-          <span>Benefício</span>
-          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-        </div>
-      ),
+    header: 'Benefício',
   },
   {
     accessorKey: 'city',
     id: 'city',
-    header: ({ column }) => (
-        <div className="flex items-center gap-2">
-          <span>Cidade</span>
-          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-        </div>
-      ),
+    header: 'Cidade',
   },
   {
     accessorKey: 'state',
     id: 'state',
-    header: ({ column }) => (
-        <div className="flex items-center gap-2">
-          <span>Estado</span>
-          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-        </div>
-      ),
+    header: 'Estado',
   },
   {
     accessorKey: 'observations',
     id: 'observations',
-    header: ({ column }) => (
-        <div className="flex items-center gap-2">
-          <span>Observações</span>
-          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
-        </div>
-      ),
+    header: 'Observações',
     cell: ({ row }) => {
         const obs = row.getValue('observations') as string;
         return <div className="truncate max-w-[200px]">{obs}</div>
@@ -309,5 +270,6 @@ export const getColumns = (
     cell: (props) => <ActionsCell {...props} onEdit={onEdit} onDelete={onDelete} />,
     enableColumnOrdering: false,
     enableHiding: false,
+    enableSorting: false,
   },
 ].map(column => ({ ...column, id: column.id || column.accessorKey as string}));
