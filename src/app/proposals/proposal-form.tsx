@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -39,7 +38,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ProposalAttachmentUploader } from '@/components/proposals/proposal-attachment-uploader';
 import { useUser } from '@/firebase';
 import { doc, collection } from 'firebase/firestore'; // Only for ID generation
@@ -47,6 +46,7 @@ import { useFirestore } from '@/firebase';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Logo } from '@/components/logo';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 
 const attachmentSchema = z.object({
@@ -308,8 +308,8 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Cliente</FormLabel>
-                  <Popover open={isCustomerSelectorOpen} onOpenChange={setIsCustomerSelectorOpen}>
-                    <PopoverTrigger asChild>
+                  <Dialog open={isCustomerSelectorOpen} onOpenChange={setIsCustomerSelectorOpen}>
+                    <DialogTrigger asChild>
                       <FormControl>
                         <Button
                           variant="outline"
@@ -328,8 +328,11 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                    </DialogTrigger>
+                    <DialogContent className="max-w-xl p-0">
+                      <DialogHeader className="p-4 pb-0">
+                        <DialogTitle>Selecione um Cliente</DialogTitle>
+                      </DialogHeader>
                       <Command>
                         <CommandInput
                           placeholder="Pesquisar por nome ou CPF..."
@@ -363,8 +366,8 @@ export function ProposalForm({ proposal, customers, isReadOnly, onSubmit, onDupl
                           </ScrollArea>
                         </CommandGroup>
                       </Command>
-                    </PopoverContent>
-                  </Popover>
+                    </DialogContent>
+                  </Dialog>
                   <FormMessage />
                 </FormItem>
               )}
