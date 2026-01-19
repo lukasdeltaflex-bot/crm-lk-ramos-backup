@@ -141,33 +141,63 @@ export const getColumns = (
   },
   {
     accessorKey: 'promoter',
-    header: 'Promotora',
+    header: ({ column }) => (
+      <div className="flex items-center gap-2">
+        <span>Promotora</span>
+        {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+      </div>
+    ),
     id: 'promotora'
   },
   {
     accessorKey: 'customer.name',
-    header: 'Cliente',
+    header: ({ column }) => (
+      <div className="flex items-center gap-2">
+        <span>Cliente</span>
+        {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+      </div>
+    ),
     id: 'customerName',
   },
   {
     accessorKey: 'customer.cpf',
-    header: 'CPF',
+    header: ({ column }) => (
+      <div className="flex items-center gap-2">
+        <span>CPF</span>
+        {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+      </div>
+    ),
     id: 'customerCpf',
     cell: ({row}) => row.original.customer.cpf,
   },
   {
     accessorKey: 'proposalNumber',
-    header: 'Nº Proposta',
+    header: ({ column }) => (
+      <div className="flex items-center gap-2">
+        <span>Nº Proposta</span>
+        {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+      </div>
+    ),
     id: 'proposalNumber',
   },
   {
     accessorKey: 'product',
-    header: 'Produto',
+    header: ({ column }) => (
+      <div className="flex items-center gap-2">
+        <span>Produto</span>
+        {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+      </div>
+    ),
     id: 'produto'
   },
   {
     accessorKey: 'bank',
-    header: 'Banco',
+    header: ({ column }) => (
+      <div className="flex items-center gap-2">
+        <span>Banco</span>
+        {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+      </div>
+    ),
     id: 'banco'
   },
   {
@@ -192,7 +222,12 @@ export const getColumns = (
   },
   {
     accessorKey: 'commissionPercentage',
-    header: 'Comissão (%)',
+    header: ({ column }) => (
+        <div className="flex items-center gap-2">
+          <span>Comissão (%)</span>
+          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+        </div>
+      ),
     cell: ({ row, table }) => {
       const isPrivacyMode = (table.options.meta as {isPrivacyMode?: boolean})?.isPrivacyMode;
       if (isPrivacyMode) return '•••••';
@@ -203,7 +238,12 @@ export const getColumns = (
   },
   {
     accessorKey: 'commissionValue',
-    header: 'Valor Comissão',
+    header: ({ column }) => (
+        <div className="flex items-center gap-2">
+          <span>Valor Comissão</span>
+          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+        </div>
+      ),
     cell: ({ row, table }) => {
         const isPrivacyMode = (table.options.meta as {isPrivacyMode?: boolean})?.isPrivacyMode;
         if (isPrivacyMode) return '•••••';
@@ -214,7 +254,12 @@ export const getColumns = (
   },
   {
     accessorKey: 'amountPaid',
-    header: 'Valor Pago',
+    header: ({ column }) => (
+        <div className="flex items-center gap-2">
+          <span>Valor Pago</span>
+          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+        </div>
+      ),
     cell: ({ row, table }) => {
       const isPrivacyMode = (table.options.meta as {isPrivacyMode?: boolean})?.isPrivacyMode;
       if (isPrivacyMode) return '•••••';
@@ -225,7 +270,12 @@ export const getColumns = (
   },
   {
     accessorKey: 'commissionStatus',
-    header: 'Status Comissão',
+    header: ({ column }) => (
+        <div className="flex items-center gap-2">
+          <span>Status Comissão</span>
+          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+        </div>
+      ),
     cell: ({ row }) => {
       const proposal = row.original;
       return (
@@ -243,7 +293,12 @@ export const getColumns = (
   },
   {
     accessorKey: 'commissionPaymentDate',
-    header: 'Data Pagamento',
+    header: ({ column }) => (
+        <div className="flex items-center gap-2">
+          <span>Data Pagamento</span>
+          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+        </div>
+      ),
     cell: ({ row }) => {
         const date = row.getValue('commissionPaymentDate') as string | undefined;
         if (!date) return '-';

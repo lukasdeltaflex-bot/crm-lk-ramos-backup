@@ -172,7 +172,12 @@ export const getColumns = (
   {
     accessorKey: 'numericId',
     id: 'numericId',
-    header: 'ID',
+    header: ({ column }) => (
+        <div className="flex items-center gap-2">
+          <span>ID</span>
+          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+        </div>
+      ),
     enableHiding: false,
   },
   {
@@ -199,12 +204,22 @@ export const getColumns = (
   {
     accessorKey: 'cpf',
     id: 'cpf',
-    header: 'CPF',
+    header: ({ column }) => (
+        <div className="flex items-center gap-2">
+          <span>CPF</span>
+          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+        </div>
+      ),
   },
   {
     accessorKey: 'phone',
     id: 'phone',
-    header: 'Telefone',
+    header: ({ column }) => (
+        <div className="flex items-center gap-2">
+          <span>Telefone</span>
+          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+        </div>
+      ),
     cell: ({ row }) => {
         const phone = row.getValue('phone') as string;
         const isWhatsAppNumber = isWhatsApp(phone);
@@ -223,7 +238,12 @@ export const getColumns = (
   {
     accessorKey: 'phone2',
     id: 'phone2',
-    header: 'Telefone 2',
+    header: ({ column }) => (
+        <div className="flex items-center gap-2">
+          <span>Telefone 2</span>
+          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+        </div>
+      ),
     cell: ({ row }) => {
         const phone = row.getValue('phone2') as string;
         if (!phone) return null;
@@ -243,22 +263,42 @@ export const getColumns = (
   {
     accessorKey: 'benefitNumber',
     id: 'benefitNumber',
-    header: 'Benefício',
+    header: ({ column }) => (
+        <div className="flex items-center gap-2">
+          <span>Benefício</span>
+          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+        </div>
+      ),
   },
   {
     accessorKey: 'city',
     id: 'city',
-    header: 'Cidade',
+    header: ({ column }) => (
+        <div className="flex items-center gap-2">
+          <span>Cidade</span>
+          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+        </div>
+      ),
   },
   {
     accessorKey: 'state',
     id: 'state',
-    header: 'Estado',
+    header: ({ column }) => (
+        <div className="flex items-center gap-2">
+          <span>Estado</span>
+          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+        </div>
+      ),
   },
   {
     accessorKey: 'observations',
     id: 'observations',
-    header: 'Observações',
+    header: ({ column }) => (
+        <div className="flex items-center gap-2">
+          <span>Observações</span>
+          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-4 w-4" /> : column.getIsSorted() === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+        </div>
+      ),
     cell: ({ row }) => {
         const obs = row.getValue('observations') as string;
         return <div className="truncate max-w-[200px]">{obs}</div>
