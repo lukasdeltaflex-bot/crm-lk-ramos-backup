@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ColumnDef, flexRender, Header } from '@tanstack/react-table';
@@ -42,7 +43,7 @@ const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Ações</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => onEdit(proposal)}>
+          <DropdownMenuItem onSelect={() => onEdit(proposal)}>
             Editar Comissão
           </DropdownMenuItem>
         </DropdownMenuContent>

@@ -72,8 +72,8 @@ const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit, onView, onDelete
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Ações</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => onView(proposal)}>Ver detalhes</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEdit(proposal)}>Editar</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onView(proposal)}>Ver detalhes</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onEdit(proposal)}>Editar</DropdownMenuItem>
             <DropdownMenuSeparator />
             <AlertDialog>
                 <AlertDialogTrigger asChild>
