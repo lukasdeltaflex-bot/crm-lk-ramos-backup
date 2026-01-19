@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -260,7 +259,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         const toDate = appliedDateRange.to ? new Date(appliedDateRange.to) : new Date(appliedDateRange.from);
         toDate.setHours(23, 59, 59, 999);
         dateColumn?.setFilterValue((cellValue: unknown) => {
-            if (typeof cellValue !== 'string') return false;
+            if (typeof cellValue !== 'string' || !cellValue) return false;
             const cellDate = new Date(cellValue);
             return cellDate >= fromDate && cellDate <= toDate;
         });
