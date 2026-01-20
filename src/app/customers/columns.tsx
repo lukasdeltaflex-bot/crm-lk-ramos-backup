@@ -38,18 +38,18 @@ interface ActionsCellProps {
   onDelete: (customerId: string) => void;
 }
 
-export const DraggableHeader = ({ header }: { header: Header<Customer, unknown>}) => {
-    const { attributes, listeners, setNodeRef, transform, isDragging } = useSortable({ 
+export const DraggableHeader = ({ header }: { header: Header<Customer, unknown> }) => {
+    const isDraggable = header.column.getCanSort();
+    const { attributes, listeners, setNodeRef, transform, isDragging } = useSortable({
         id: header.column.id,
+        disabled: !isDraggable,
     });
-    
+
     const style = {
         width: header.getSize(),
         transform: CSS.Transform.toString(transform),
         opacity: isDragging ? 0.5 : 1,
     };
-    
-    const isDraggable = header.column.getCanSort();
 
     return (
         <TableHead
@@ -271,5 +271,3 @@ export const getColumns = (
     enableSorting: false,
   },
 ].map(column => ({ ...column, enableSorting: (column as any).enableSorting !== false, id: column.id || column.accessorKey as string}));
-
-    
