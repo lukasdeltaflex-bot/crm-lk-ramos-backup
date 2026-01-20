@@ -327,7 +327,7 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
                         </Button>
                       </FormControl>
                     </DialogTrigger>
-                    <DialogContent className="max-w-xl p-0">
+                    <DialogContent className="max-w-xl p-0" onCloseAutoFocus={(e) => e.preventDefault()}>
                       <DialogHeader className="p-4 pb-0">
                         <DialogTitle>Selecione um Cliente</DialogTitle>
                       </DialogHeader>

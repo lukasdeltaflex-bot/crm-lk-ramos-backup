@@ -385,7 +385,7 @@ export default function FinancialPage() {
                         Conciliar Relatórios
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-4xl">
+                <DialogContent className="max-w-4xl" onCloseAutoFocus={(e) => e.preventDefault()}>
                     <DialogHeader>
                         <DialogTitle>Conciliação de Comissões com IA</DialogTitle>
                     </DialogHeader>
@@ -422,7 +422,7 @@ export default function FinancialPage() {
       </Sheet>
 
       <Dialog open={!!dialogData} onOpenChange={(isOpen) => !isOpen && setDialogData(null)}>
-        <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col" onCloseAutoFocus={(e) => e.preventDefault()}>
             <DialogHeader>
                 <DialogTitle>{dialogData?.title}</DialogTitle>
             </DialogHeader>

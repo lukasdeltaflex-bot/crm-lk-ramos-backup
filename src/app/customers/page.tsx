@@ -470,7 +470,7 @@ const handleExportToPdf = async () => {
                         Novo Cliente com IA
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-xl">
+                <DialogContent className="max-w-xl" onCloseAutoFocus={(e) => e.preventDefault()}>
                     <DialogHeader>
                         <DialogTitle>Assistente de Cadastro de Cliente</DialogTitle>
                     </DialogHeader>
