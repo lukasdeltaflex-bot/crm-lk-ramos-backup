@@ -201,6 +201,13 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
     }
   }, [selectedCustomerId, form, selectedCustomer]);
 
+  // Auto-select benefit if customer has only one
+  useEffect(() => {
+    if (selectedCustomer && selectedCustomer.benefits && selectedCustomer.benefits.length === 1) {
+        form.setValue('selectedBenefitNumber', selectedCustomer.benefits[0].number);
+    }
+  }, [selectedCustomer, form]);
+
   useEffect(() => {
     if (isReadOnly) return;
     
@@ -327,7 +334,7 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
                         </Button>
                       </FormControl>
                     </DialogTrigger>
-                    <DialogContent className="max-w-xl p-0" onCloseAutoFocus={(e) => e.preventDefault()}>
+                    <DialogContent className="max-w-xl p-0">
                       <DialogHeader className="p-4 pb-0">
                         <DialogTitle>Selecione um Cliente</DialogTitle>
                       </DialogHeader>
