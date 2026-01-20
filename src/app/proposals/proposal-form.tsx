@@ -65,7 +65,7 @@ const proposalSchema = z.object({
   customerId: z.string({ required_error: 'Selecione um cliente.' }),
   product: z.string({ required_error: 'Selecione um produto.' }),
   status: z.string({ required_error: 'Selecione um status.' }),
-  selectedBenefitNumber: z.string().min(1, "O benefício é obrigatório."),
+  selectedBenefitNumber: z.string().optional(),
 
   table: z.string().min(1, 'A tabela é obrigatória.'),
   term: z.coerce.number().min(1, 'O prazo é obrigatório.'),
@@ -129,48 +129,25 @@ const MaskedDatePicker = ({ name, label, control, isReadOnly }: { name: any, lab
     <FormField
         control={control}
         name={name}
-        render={({ field }) => {
-            const parsedDate = field.value ? parse(field.value, 'dd/MM/yyyy', new Date()) : undefined;
-            const isValidDate = parsedDate && !isNaN(parsedDate.getTime());
-
-            return (
-                <FormItem className="flex flex-col pt-2">
-                    <FormLabel>{label}</FormLabel>
-                    <Popover>
-                        <PopoverTrigger asChild disabled={isReadOnly}>
-                            <FormControl>
-                                    <div className="relative">
-                                        <Input
-                                            placeholder="dd/mm/aaaa"
-                                            {...field}
-                                            onChange={(e) => field.onChange(handleDateMask(e))}
-                                            value={field.value || ''}
-                                            maxLength={10}
-                                            className="w-[240px] pr-8"
-                                            readOnly={isReadOnly}
-                                        />
-                                        <CalendarIcon className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
-                                    </div>
-                            </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                                mode="single"
-                                selected={isValidDate ? parsedDate : undefined}
-                                onSelect={(date) => field.onChange(date ? format(date, 'dd/MM/yyyy') : '')}
-                                defaultMonth={isValidDate ? parsedDate : new Date()}
-                                locale={ptBR}
-                                initialFocus
-                                fromYear={new Date().getFullYear() - 20}
-                                toYear={new Date().getFullYear() + 20}
-                                captionLayout="dropdown-buttons"
-                            />
-                        </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                </FormItem>
-            )
-        }}
+        render={({ field }) => (
+            <FormItem className="flex flex-col pt-2">
+                <FormLabel>{label}</FormLabel>
+                <FormControl>
+                    <div className="relative">
+                        <Input
+                            placeholder="dd/mm/aaaa"
+                            {...field}
+                            onChange={(e) => field.onChange(handleDateMask(e))}
+                            value={field.value || ''}
+                            maxLength={10}
+                            className="w-[240px]"
+                            readOnly={isReadOnly}
+                        />
+                    </div>
+                </FormControl>
+                <FormMessage />
+            </FormItem>
+        )}
     />
 );
 
@@ -222,7 +199,7 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
     if (selectedCustomerId && !isBenefitValidForCustomer) {
       form.setValue('selectedBenefitNumber', '');
     }
-  }, [selectedCustomerId, form]);
+  }, [selectedCustomerId, form, selectedCustomer]);
 
   useEffect(() => {
     if (isReadOnly) return;
@@ -463,34 +440,24 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
                 />
               </div>
 
-              <FormField
-                control={form.control}
-                name="selectedBenefitNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Benefício da Proposta</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        value={field.value}
-                        disabled={isReadOnly || !selectedCustomer || !selectedCustomer.benefits || selectedCustomer.benefits.length === 0}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={!selectedCustomer ? "Selecione um cliente primeiro" : "Selecione um benefício"} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {selectedCustomer?.benefits?.map((benefit, index) => (
-                              <SelectItem key={`${benefit.number}-${index}`} value={benefit.number}>
-                                  {benefit.number} {benefit.species && `(${benefit.species})`}
-                              </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+               <FormField
+                  control={form.control}
+                  name="selectedBenefitNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nº do Benefício</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Digite o número do benefício para esta proposta"
+                          {...field}
+                          readOnly={isReadOnly}
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
