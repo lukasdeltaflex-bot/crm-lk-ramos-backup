@@ -520,7 +520,6 @@ const handleExportToExcel = async () => {
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent 
             className="w-full max-w-3xl sm:max-w-3xl"
-            onCloseAutoFocus={(e) => e.preventDefault()}
         >
           <SheetHeader className="print:hidden">
             <SheetTitle>{getSheetTitle()}</SheetTitle>
@@ -559,3 +558,5 @@ const handleExportToExcel = async () => {
     </AppLayout>
   );
 }
+
+    

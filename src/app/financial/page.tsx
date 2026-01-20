@@ -385,7 +385,7 @@ export default function FinancialPage() {
                         Conciliar Relatórios
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-4xl" onCloseAutoFocus={(e) => e.preventDefault()}>
+                <DialogContent className="max-w-4xl">
                     <DialogHeader>
                         <DialogTitle>Conciliação de Comissões com IA</DialogTitle>
                     </DialogHeader>
@@ -410,7 +410,7 @@ export default function FinancialPage() {
       </div>
 
        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="w-full max-w-md" onCloseAutoFocus={(e) => e.preventDefault()}>
+        <SheetContent className="w-full max-w-md">
           <SheetHeader>
             <SheetTitle>Editar Comissão</SheetTitle>
           </SheetHeader>
@@ -422,7 +422,7 @@ export default function FinancialPage() {
       </Sheet>
 
       <Dialog open={!!dialogData} onOpenChange={(isOpen) => !isOpen && setDialogData(null)}>
-        <DialogContent className="max-w-4xl h-[90vh] flex flex-col" onCloseAutoFocus={(e) => e.preventDefault()}>
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
             <DialogHeader>
                 <DialogTitle>{dialogData?.title}</DialogTitle>
             </DialogHeader>
@@ -456,3 +456,5 @@ export default function FinancialPage() {
     </AppLayout>
   );
 }
+
+    
