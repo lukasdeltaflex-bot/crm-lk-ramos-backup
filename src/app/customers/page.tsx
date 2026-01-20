@@ -281,7 +281,7 @@ const handleExportToPdf = async () => {
       name: 'Cliente Removido',
       numericId: 0,
       cpf: '000.000.000-00',
-      benefitNumber: '0000000000',
+      benefits: [],
       phone: '(00) 00000-0000',
       phone2: '',
       email: 'removido@removido.com',
@@ -324,7 +324,7 @@ const handleExportToPdf = async () => {
         name: 'Cliente Removido',
         numericId: 0,
         cpf: '000.000.000-00',
-        benefitNumber: '0000000000',
+        benefits: [],
         phone: '(00) 00000-0000',
         phone2: '',
         email: 'removido@removido.com',
@@ -484,7 +484,7 @@ const handleExportToPdf = async () => {
         </div>
       </div>
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="w-full max-w-4xl sm:max-w-4xl">
+        <SheetContent className="w-full max-w-4xl sm:max-w-4xl" onCloseAutoFocus={(e) => e.preventDefault()}>
           <SheetHeader>
             <SheetTitle>{getSheetTitle()}</SheetTitle>
           </SheetHeader>
