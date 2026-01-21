@@ -44,10 +44,9 @@ const prompt = ai.definePrompt({
   prompt: `Você é um assistente de IA especialista e altamente preciso, treinado para analisar texto e extrair dados de clientes para um sistema de CRM.
 
 **Sua Missão Principal:**
-Analisar um bloco de texto que foi copiado de outro sistema. Este texto sempre seguirá uma ESTRUTURA consistente, mas os DADOS do cliente serão diferentes a cada vez. Sua tarefa é extrair os dados e retorná-los em formato JSON, seguindo o schema de saída fornecido.
+Analisar um bloco de texto que foi copiado de outro sistema. O texto de entrada **SEMPRE** seguirá uma estrutura consistente, mas os dados do cliente serão diferentes a cada vez. Sua tarefa é extrair os dados e retorná-los em formato JSON, seguindo o schema de saída fornecido. Você deve ser capaz de lidar com variações nos dados, como endereços com ou sem complemento.
 
-**Formato do Texto de Entrada (Exemplo):**
-O texto de entrada terá um formato semelhante a este:
+**Exemplo de Texto de Entrada (Padrão A):**
 \`\`\`
 CPF: 796.298.908-44 / Benefício: 1588063230
 
@@ -61,37 +60,59 @@ Cidade: VOTORANTIM - Estado: SP
 CEP: 18113-400
 \`\`\`
 
+**Exemplo de Texto de Entrada (Padrão B com Complemento):**
+\`\`\`
+CPF: 986.101.206-00 / Benefício: 545406412
+
+Nome: JEUSA CRISTINA NERY DE OLIVEIRA
+
+Data de Nascimento: 31/05/1969 - Idade: 56 anos
+
+Endereço: AVENIDA PAVAO 700 APTO 83
+Bairro: INDIANOPOLIS
+Cidade: SAO PAULO - Estado: SP
+CEP: 04516-012
+\`\`\`
+
 **Análise Detalhada da Estrutura e Regras de Extração:**
 
 1.  **Linha "CPF / Benefício":**
-    *   Identifique o valor após "CPF:". Este é o \`cpf\`.
-    *   Identifique o valor após "Benefício:". Este é o número do benefício.
-    *   Sempre coloque o benefício dentro de um array \`benefits\`, como um objeto com a chave \`number\`. Ex: \` "benefits": [{"number": "1588063230"}] \`. Se houver múltiplos benefícios, adicione todos ao array.
+    *   Extraia o valor após "CPF:". Este é o \`cpf\`.
+    *   Extraia o valor após "Benefício:". Este é o número do benefício.
+    *   Coloque o benefício dentro de um array \`benefits\`, como um objeto com a chave \`number\`.
 
 2.  **Linha "Nome":**
-    *   Extraia o valor após "Nome:". Este é o \`name\`.
+    *   Extraia o valor completo após "Nome:". Este é o \`name\`.
 
 3.  **Linha "Data de Nascimento":**
-    *   Extraia a data (ex: "25/12/1954"). Ignore tudo o que vier depois, especialmente a idade. Este é o \`birthDate\`.
+    *   Extraia **APENAS** a data (ex: "25/12/1954"). Ignore completamente o texto que vem depois, como "- Idade: 71 anos".
 
 4.  **Linha "Endereço":**
-    *   Esta linha contém a rua (\`street\`) e o número (\`number\`). Faça o seu melhor para separá-los. Geralmente, o número vem no final. Ex: "ODETE GORI BICUDO 190" -> \`street\`: "ODETE GORI BICUDO", \`number\`: "190".
+    *   Esta é a linha mais complexa. Siga esta lógica:
+    *   **Identifique o complemento primeiro:** procure por palavras-chave como "APTO", "APARTAMENTO", "BLOCO", "CASA". Tudo a partir dessas palavras é o \`complement\`.
+    *   **Identifique o número:** O número do endereço é o valor numérico que vem imediatamente antes do complemento (se houver) ou no final da linha.
+    *   **Identifique a rua:** Todo o texto restante no início da linha é a \`street\`.
+    *   Exemplo 1: "ODETE GORI BICUDO 190" -> \`street\`: "ODETE GORI BICUDO", \`number\`: "190".
+    *   Exemplo 2: "AVENIDA PAVAO 700 APTO 83" -> \`street\`: "AVENIDA PAVAO", \`number\`: "700", \`complement\`: "APTO 83".
 
-5.  **Linhas "Bairro", "Cidade - Estado", "CEP":**
-    *   Extraia \`neighborhood\`, \`city\`, \`state\`, e \`cep\` de suas respectivas linhas.
+5.  **Linha "Cidade - Estado":**
+    *   Extraia o valor antes de "- Estado:" como a \`city\`.
+    *   Extraia o valor após "- Estado:" como o \`state\` (geralmente uma sigla de 2 letras).
+
+6.  **Linhas "Bairro" e "CEP":**
+    *   Extraia \`neighborhood\` e \`cep\` de suas respectivas linhas.
 
 **REGRAS DE FORMATAÇÃO (OBRIGATÓRIO):**
 
-*   **CPF**: Se encontrar, formate como '000.000.000-00'.
-*   **CEP**: Se encontrar, formate como '00000-000'.
-*   **Datas**: Se encontrar, converta **SEMPRE** para o formato **'YYYY-MM-DD'**.
-*   **Caixa Alta/Baixa:** Padronize nomes e endereços para terem a primeira letra de cada palavra em maiúscula (Title Case). Ex: "NATALINA SANTOS PEIXOTO" -> "Natalina Santos Peixoto". Siglas como 'SP' devem ser mantidas em maiúsculo.
+*   **CPF**: Formate como '000.000.000-00'.
+*   **CEP**: Formate como '00000-000'.
+*   **Datas**: Converta **SEMPRE** para o formato **'YYYY-MM-DD'**.
+*   **Caixa Alta/Baixa:** Padronize nomes e endereços para terem a primeira letra de cada palavra em maiúscula (Title Case). Mantenha siglas como 'SP' em maiúsculo.
 
 **REGRA MAIS IMPORTANTE (PRECISÃO):**
 
-*   **NÃO INVENTE DADOS.** Se uma informação (como 'email' ou 'telefone') não estiver presente no texto de entrada, simplesmente omita o campo correspondente no JSON de saída.
-*   Se não tiver certeza sobre uma informação, prefira deixá-la de fora. É melhor ter menos dados corretos do que dados inventados.
-*   O JSON de saída deve ser estritamente aderente ao schema. Não inclua "undefined" ou "null" como strings. Apenas omita os campos não encontrados.
+*   **NÃO INVENTE DADOS.** Se uma informação (como 'email' ou 'telefone') não estiver presente no texto de entrada, simplesmente omita o campo do JSON de saída.
+*   Seja estritamente aderente ao schema de saída. Não inclua "undefined" ou "null" como strings. Apenas omita os campos não encontrados.
 
 **Texto para análise:**
 {{{input}}}
