@@ -42,37 +42,37 @@ const prompt = ai.definePrompt({
   input: { schema: z.string() },
   output: { schema: ExtractCustomerDataOutputSchema },
   prompt: `### TAREFA
-Você é um assistente de extração de dados especialista. Sua tarefa é extrair informações de clientes de um bloco de texto bruto e retorná-las como um objeto JSON estruturado. O texto sempre terá a mesma estrutura de campos (CPF, Nome, etc.), mas os dados de cada cliente serão diferentes.
+Você é um assistente de extração de dados altamente preciso e especialista. Sua tarefa é extrair informações de um cliente de um texto bruto e retorná-las como um objeto JSON estruturado. O texto de entrada sempre segue a mesma ESTRUTURA de campos, mas os DADOS de cada cliente são diferentes.
 
-### REGRAS DE EXTRAÇÃO E FORMATAÇÃO (OBRIGATÓRIO)
+### REGRAS DE EXTRAÇÃO (SEGUIR ESTRITAMENTE)
 
-1.  **Linha \`CPF / Benefício\`**:
-    *   Extraia o CPF do campo \`CPF:\`.
-    *   Extraia o número do benefício do campo \`Benefício:\`. O valor de \`benefits\` DEVE ser um array de objetos. Exemplo: \`[{ "number": "1588063230" }]\`.
+1.  **CPF / Benefício**: A primeira linha sempre contém \`CPF:\` e \`Benefício:\`.
+    *   Extraia o CPF.
+    *   Extraia o número do benefício. O campo \`benefits\` no JSON DEVE ser um array de objetos. Exemplo: \`[{ "number": "1588063230" }]\`.
 
-2.  **Linha \`Nome\`**:
-    *   Extraia o nome completo.
-    *   Converta para Title Case (Ex: "Natalina Santos Peixoto").
+2.  **Nome**: A segunda linha contém o nome completo.
+    *   Extraia e formate para Title Case (Ex: "Natalina Santos Peixoto").
 
-3.  **Linha \`Data de Nascimento\`**:
-    *   Extraia APENAS a data. Ignore o texto sobre a idade (Ex: "- Idade: 71 anos").
-    *   **CRÍTICO**: Converta a data de \`DD/MM/YYYY\` para \`YYYY-MM-DD\`.
+3.  **Data de Nascimento**: A terceira linha contém a data e a idade.
+    *   Extraia APENAS a data (formato \`DD/MM/YYYY\`).
+    *   **CRÍTICO**: Ignore completamente o texto sobre a idade (Ex: "- Idade: 71 anos").
+    *   **CRÍTICO**: Converta a data de \`DD/MM/YYYY\` para o formato \`YYYY-MM-DD\`.
 
-4.  **Linha \`Endereço\`**: Esta é a parte mais complexa.
-    *   A linha contém a rua, o número e, às vezes, um complemento.
-    *   \`street\`: É todo o texto ANTES do número.
-    *   \`number\`: É o número do imóvel.
-    *   \`complement\`: É todo o texto DEPOIS do número. Se não houver, omita este campo.
-    *   **Exemplo A**: "ODETE GORI BICUDO 190" -> \`street\` é "Odete Gori Bicudo", \`number\` é "190".
-    *   **Exemplo B**: "AVENIDA PAVAO 700 APTO 83" -> \`street\` é "Avenida Pavao", \`number\` é "700", \`complement\` é "Apto 83".
-    *   Converta \`street\` e \`complement\` para Title Case.
+4.  **Endereço (Linha 1)**: Esta é a linha mais complexa. Contém rua, número e, opcionalmente, complemento. Siga esta lógica precisa:
+    *   **Número (\`number\`)**: Encontre o primeiro grupo de dígitos na linha. Este é o número do endereço.
+    *   **Rua (\`street\`)**: É todo o texto que vem ANTES do número.
+    *   **Complemento (\`complement\`)**: É todo o texto que vem DEPOIS do número. Se não houver, omita este campo.
+    *   **Exemplo A**: "ODETE GORI BICUDO 190" -> \`street\`: "Odete Gori Bicudo", \`number\`: "190".
+    *   **Exemplo B**: "AVENIDA PAVAO 700 APTO 83" -> \`street\`: "Avenida Pavao", \`number\`: "700", \`complement\`: "Apto 83".
+    *   **Exemplo C**: "SAO PAULO 1240" -> \`street\`: "Sao Paulo", \`number\`: "1240".
+    *   Formate \`street\` e \`complement\` para Title Case.
 
 5.  **Outros Campos de Endereço**:
-    *   Extraia \`Bairro\`, \`Cidade\` e \`CEP\` de seus respectivos campos.
-    *   Converta \`Bairro\` e \`Cidade\` para Title Case.
+    *   Extraia \`Bairro\`, \`Cidade\` e \`CEP\` de suas respectivas linhas.
+    *   Formate \`Bairro\` e \`Cidade\` para Title Case.
     *   Extraia \`Estado\` e mantenha em MAIÚSCULAS (Ex: "SP").
 
-6.  **Dados Não Presentes**: Se o texto não contiver informações como \`phone\` ou \`email\`, omita completamente essas chaves do JSON final. Não use \`null\` ou \`undefined\`.
+6.  **Regra de Ouro (Não Invente Dados)**: Se o texto de entrada não contiver informações como \`phone\` ou \`email\`, simplesmente omita essas chaves do JSON final. Não adicione valores como \`null\`, \`undefined\` ou strings vazias para campos não encontrados.
 
 ### TEXTO PARA PROCESSAR
 {{{input}}}
