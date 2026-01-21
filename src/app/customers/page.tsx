@@ -9,7 +9,7 @@ import { PlusCircle, Sparkles, Trash2, FileDown } from 'lucide-react';
 import { CustomerForm } from './customer-form';
 import type { Customer } from '@/lib/types';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, writeBatch, updateDoc, setDoc, query, where } from 'firebase/firestore';
+import { collection, doc, writeBatch, updateDoc, setDoc, query, where, orderBy } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -20,7 +20,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { customers as sampleCustomers, proposals as sampleProposals } from '@/lib/data';
 import {
@@ -45,7 +44,7 @@ export default function CustomersPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
 
-  const [isSheetOpen, setIsSheetOpen] = React.useState(false);
+  const [isDialog, setIsDialog] = React.useState(false);
   const [isAiModalOpen, setIsAiModalOpen] = React.useState(false);
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | undefined>(undefined);
   const [defaultValues, setDefaultValues] = React.useState<CustomerFormData | undefined>(undefined);
@@ -56,7 +55,7 @@ export default function CustomersPage() {
 
   const customersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    return query(collection(firestore, 'customers'), where('ownerId', '==', user.uid));
+    return query(collection(firestore, 'customers'), where('ownerId', '==', user.uid), orderBy('numericId', 'desc'));
   }, [firestore, user]);
 
   const { data: customers, isLoading, error } = useCollection<Customer>(customersQuery);
@@ -117,14 +116,14 @@ export default function CustomersPage() {
     setSelectedCustomer(undefined);
     setDefaultValues(undefined);
     setSheetMode('new');
-    setIsSheetOpen(true);
+    setIsDialog(true);
   };
 
   const handleEditCustomer = (customer: Customer) => {
     setSelectedCustomer(customer);
     setDefaultValues(undefined);
     setSheetMode('edit');
-    setIsSheetOpen(true);
+    setIsDialog(true);
   };
 
   const handleAiFormSubmit = (aiData: ExtractCustomerDataOutput) => {
@@ -136,7 +135,7 @@ export default function CustomersPage() {
     setDefaultValues(prefilledData);
     setSheetMode('new');
     setIsAiModalOpen(false);
-    setIsSheetOpen(true);
+    setIsDialog(true);
   }
   const nonAnonymizedCustomers = customers?.filter(c => c.name !== 'Cliente Removido') || [];
 
@@ -147,11 +146,16 @@ export default function CustomersPage() {
     const { utils, writeFile } = await import('xlsx');
     const selectedRows = table.getFilteredSelectedRowModel().rows;
 
-    if (selectedRows.length === 0) {
+    let rowsToExport = selectedRows;
+    if (rowsToExport.length === 0) {
+        rowsToExport = table.getFilteredRowModel().rows;
+    }
+
+    if (rowsToExport.length === 0) {
         toast({
             variant: "destructive",
-            title: "Nenhum cliente selecionado",
-            description: "Selecione os clientes que deseja exportar.",
+            title: "Nenhum cliente para exportar",
+            description: "A tabela está vazia ou os filtros não retornaram resultados.",
         });
         return;
     }
@@ -175,7 +179,7 @@ export default function CustomersPage() {
     const headers = visibleColumns.map(c => idMap[c.id] || c.id);
 
     const dataForSheet = [headers];
-    selectedRows.forEach(row => {
+    rowsToExport.forEach(row => {
         const rowData: any[] = [];
         visibleColumns.forEach(col => {
             let value = row.getValue(col.id as any);
@@ -215,12 +219,17 @@ const handleExportToPdf = async () => {
     const { default: autoTable } = await import('jspdf-autotable');
 
     const selectedRows = table.getFilteredSelectedRowModel().rows;
+    
+    let rowsToExport = selectedRows;
+    if (rowsToExport.length === 0) {
+        rowsToExport = table.getFilteredRowModel().rows;
+    }
 
-    if (selectedRows.length === 0) {
+    if (rowsToExport.length === 0) {
         toast({
             variant: "destructive",
-            title: "Nenhum cliente selecionado",
-            description: "Selecione os clientes que deseja exportar.",
+            title: "Nenhum cliente para exportar",
+            description: "A tabela está vazia ou os filtros não retornaram resultados.",
         });
         return;
     }
@@ -243,7 +252,7 @@ const handleExportToPdf = async () => {
 
     const head = [visibleColumns.map(c => idMap[c.id] || c.id)];
 
-    const body = selectedRows.map(row => {
+    const body = rowsToExport.map(row => {
         const rowData: any[] = [];
         visibleColumns.forEach(col => {
             let value = row.getValue(col.id as any);
@@ -355,6 +364,21 @@ const handleExportToPdf = async () => {
 
   const handleFormSubmit = async (data: Omit<Customer, 'id' | 'ownerId' | 'numericId'>) => {
     if (!firestore || !user) return;
+
+    // CPF duplication check
+    const cpfExists = customers?.find(
+      (c) => c.cpf === data.cpf && c.id !== selectedCustomer?.id
+    );
+
+    if (cpfExists) {
+        toast({
+            variant: 'destructive',
+            title: 'CPF já cadastrado',
+            description: `O CPF ${data.cpf} já pertence ao cliente "${cpfExists.name}".`,
+        });
+        return; // Stop submission
+    }
+
     setIsSaving(true);
     try {
       if (sheetMode === 'edit' && selectedCustomer) {
@@ -390,7 +414,7 @@ const handleExportToPdf = async () => {
           description: `O cliente ${data.name} foi salvo com sucesso.`,
         });
       }
-      setIsSheetOpen(false);
+      setIsDialog(false);
     } catch (error) {
       console.error('Error saving customer:', error);
       toast({
@@ -439,24 +463,25 @@ const handleExportToPdf = async () => {
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline">
-                                <FileDown />
-                                Exportar ({selectedCount})
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={handleExportToExcel}>
-                                Exportar para Excel (.xlsx)
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={handleExportToPdf}>
-                                Exportar para PDF (.pdf)
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                 </>
             )}
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline">
+                        <FileDown />
+                        Exportar
+                        {selectedCount > 0 && ` (${selectedCount})`}
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleExportToExcel}>
+                        Exportar para Excel (.xlsx)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportToPdf}>
+                        Exportar para PDF (.pdf)
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
             <Dialog open={isAiModalOpen} onOpenChange={setIsAiModalOpen}>
                 <DialogTrigger asChild>
                     <Button variant="outline">
@@ -477,7 +502,7 @@ const handleExportToPdf = async () => {
             </Button>
         </div>
       </div>
-      <Dialog open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+      <Dialog open={isDialog} onOpenChange={setIsDialog}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>{getSheetTitle()}</DialogTitle>
