@@ -93,7 +93,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   setRowSelection,
   onBulkStatusChange,
 }, ref) => {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'dateDigitized', desc: true }]);
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []

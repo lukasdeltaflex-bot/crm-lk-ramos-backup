@@ -99,7 +99,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   setRowSelection,
   onShowDetails,
 }, ref) => {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'commissionPaymentDate', desc: true }]);
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
