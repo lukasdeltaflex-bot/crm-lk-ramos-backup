@@ -43,34 +43,42 @@ const prompt = ai.definePrompt({
   output: { schema: ExtractCustomerDataOutputSchema },
   prompt: `Você é um assistente de IA especialista em análise e extração de dados para um sistema de CRM de correspondentes bancários. Sua tarefa é analisar o texto fornecido, que pode ser uma transcrição de áudio, uma mensagem de WhatsApp, um e-mail ou qualquer texto não estruturado, e extrair as informações do cliente da forma mais precisa e inteligente possível.
 
-O texto pode vir em formatos estruturados, como cópias de outros sistemas. Seja capaz de interpretar esses formatos.
+**Seja especialista em interpretar formatos estruturados copiados de outros sistemas.**
 
 **Exemplo de formato estruturado comum:**
 \`\`\`
 CPF: 796.298.908-44 / Benefício: 1588063230
+
 Nome: NATALINA SANTOS PEIXOTO
+
 Data de Nascimento: 25/12/1954 - Idade: 71 anos
+
 Endereço: ODETE GORI BICUDO 190
 Bairro: NOVA VOTORANTIM
 Cidade: VOTORANTIM - Estado: SP
 CEP: 18113-400
 \`\`\`
-A partir do exemplo acima, você deve extrair o CPF, o número do benefício, o nome, a data de nascimento, e as informações de endereço (logradouro, número, bairro, cidade, estado, cep). Ignore a idade.
+
+**Análise Detalhada do Exemplo Acima:**
+*   **Linha "CPF / Benefício":** Extraia o \`cpf\` e o número do \`benefício\`. O benefício deve ser um item no array \`benefits\`.
+*   **Linha "Nome":** Extraia o \`name\`.
+*   **Linha "Data de Nascimento":** Extraia a data (25/12/1954) e converta para o formato 'YYYY-MM-DD' para o campo \`birthDate\`. **Sempre ignore a idade**.
+*   **Linha "Endereço":** Extraia o logradouro e o número. "ODETE GORI BICUDO 190" deve ser separado em 'street' ("ODETE GORI BICUDO") e 'number' ("190").
+*   **Linhas "Bairro", "Cidade - Estado", "CEP":** Extraia \`neighborhood\`, \`city\`, \`state\`, e \`cep\` de suas respectivas linhas.
 
 **Inteligência e Regras:**
 
 1.  **Interpretação e Inferência:**
-    *   **Endereço:** Se o texto mencionar um CEP, busque e preencha automaticamente os campos de logradouro, bairro, cidade e estado, mesmo que não estejam explícitos. No exemplo acima, "ODETE GORI BICUDO 190" deve ser separado em 'street' ("ODETE GORI BICUDO") e 'number' ("190").
+    *   **Endereço:** Entenda que os campos de endereço podem vir em múltiplas linhas, como no exemplo. Se o texto mencionar um CEP, busque e preencha automaticamente os campos de logradouro, bairro, cidade e estado, mesmo que não estejam explícitos.
     *   **Benefícios Múltiplos:** O cliente pode ter mais de um benefício. Extraia todos os números e suas respectivas espécies (ex: "aposentadoria por idade", "pensão por morte") que encontrar.
-    *   **Nomes Compostos:** Lide corretamente com nomes completos, incluindo sobrenomes compostos.
-    *   **Dados Implícitos:** Se o texto diz "ele é de São Paulo", infira que o estado é 'SP'.
+    *   **Nomes Compostos:** Lide corretamente com nomes completos.
 
 2.  **Limpeza e Formatação de Dados:**
     *   **CPF**: Formate sempre como '000.000.000-00'. Remova caracteres não numéricos e adicione a pontuação correta.
     *   **Telefones**: Formate como '(00) 90000-0000' ou '(00) 0000-0000'. Identifique o telefone principal e um secundário se houver.
     *   **CEP**: Formate como '00000-000'.
     *   **Datas**: Converta qualquer formato de data (ex: 30/11/1970, 30 de nov de 70, trinta de novembro de mil novecentos e setenta) para o formato padrão **'YYYY-MM-DD'**.
-    *   **Caixa Alta/Baixa:** Padronize nomes e endereços para terem a primeira letra de cada palavra em maiúscula (Title Case), a menos que seja uma sigla como 'SP'.
+    *   **Caixa Alta/Baixa:** Padronize nomes e endereços para terem a primeira letra de cada palavra em maiúscula (Title Case), exceto para siglas como 'SP'.
 
 3.  **Precisão e Campos Vazios:**
     *   Se uma informação não for encontrada no texto, simplesmente omita a chave do objeto JSON de saída.
