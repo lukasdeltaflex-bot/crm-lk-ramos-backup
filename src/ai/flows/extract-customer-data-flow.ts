@@ -8,7 +8,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 
 const BenefitSchema = z.object({
     number: z.string().describe("O número do benefício INSS do cliente."),
@@ -42,37 +42,34 @@ const prompt = ai.definePrompt({
   input: { schema: z.string() },
   output: { schema: ExtractCustomerDataOutputSchema },
   prompt: `### TAREFA
-Você é um assistente de extração de dados altamente preciso e especialista. Sua tarefa é extrair informações de um cliente de um texto bruto e retorná-las como um objeto JSON estruturado. O texto de entrada sempre segue a mesma ESTRUTURA de campos, mas os DADOS de cada cliente são diferentes.
+Você é um assistente de extração de dados especialista e altamente preciso. Sua tarefa é analisar o texto de entrada e extrair as informações para preencher um objeto JSON. O texto de entrada sempre segue a mesma ESTRUTURA de campos, mas os DADOS de cada cliente são diferentes. Siga as regras estritamente.
 
-### REGRAS DE EXTRAÇÃO (SEGUIR ESTRITAMENTE)
+### ESTRUTURA DO TEXTO DE ENTRADA
+O texto sempre seguirá este padrão:
+Linha 1: \`CPF: {cpf} / Benefício: {numero_beneficio}\`
+Linha 2: \`Nome: {nome_completo}\`
+Linha 3: \`Data de Nascimento: {dd/mm/aaaa} - Idade: {idade} anos\`
+Linha 4: \`Endereço: {logradouro} {numero} {complemento_opcional}\`
+Linha 5: \`Bairro: {bairro}\`
+Linha 6: \`Cidade: {cidade} - Estado: {estado}\`
+Linha 7: \`CEP: {cep}\`
 
-1.  **CPF / Benefício**: A primeira linha sempre contém \`CPF:\` e \`Benefício:\`.
-    *   Extraia o CPF.
-    *   Extraia o número do benefício. O campo \`benefits\` no JSON DEVE ser um array de objetos. Exemplo: \`[{ "number": "1588063230" }]\`.
+### REGRAS DE EXTRAÇÃO E FORMATAÇÃO (OBRIGATÓRIO)
 
-2.  **Nome**: A segunda linha contém o nome completo.
-    *   Extraia e formate para Title Case (Ex: "Natalina Santos Peixoto").
-
-3.  **Data de Nascimento**: A terceira linha contém a data e a idade.
-    *   Extraia APENAS a data (formato \`DD/MM/YYYY\`).
-    *   **CRÍTICO**: Ignore completamente o texto sobre a idade (Ex: "- Idade: 71 anos").
-    *   **CRÍTICO**: Converta a data de \`DD/MM/YYYY\` para o formato \`YYYY-MM-DD\`.
-
-4.  **Endereço (Linha 1)**: Esta é a linha mais complexa. Contém rua, número e, opcionalmente, complemento. Siga esta lógica precisa:
-    *   **Número (\`number\`)**: Encontre o primeiro grupo de dígitos na linha. Este é o número do endereço.
-    *   **Rua (\`street\`)**: É todo o texto que vem ANTES do número.
-    *   **Complemento (\`complement\`)**: É todo o texto que vem DEPOIS do número. Se não houver, omita este campo.
-    *   **Exemplo A**: "ODETE GORI BICUDO 190" -> \`street\`: "Odete Gori Bicudo", \`number\`: "190".
-    *   **Exemplo B**: "AVENIDA PAVAO 700 APTO 83" -> \`street\`: "Avenida Pavao", \`number\`: "700", \`complement\`: "Apto 83".
-    *   **Exemplo C**: "SAO PAULO 1240" -> \`street\`: "Sao Paulo", \`number\`: "1240".
-    *   Formate \`street\` e \`complement\` para Title Case.
-
-5.  **Outros Campos de Endereço**:
-    *   Extraia \`Bairro\`, \`Cidade\` e \`CEP\` de suas respectivas linhas.
-    *   Formate \`Bairro\` e \`Cidade\` para Title Case.
-    *   Extraia \`Estado\` e mantenha em MAIÚSCULAS (Ex: "SP").
-
-6.  **Regra de Ouro (Não Invente Dados)**: Se o texto de entrada não contiver informações como \`phone\` ou \`email\`, simplesmente omita essas chaves do JSON final. Não adicione valores como \`null\`, \`undefined\` ou strings vazias para campos não encontrados.
+1.  **CPF**: Extraia o valor do CPF da Linha 1.
+2.  **Benefício**: Extraia o valor do Benefício da Linha 1. O resultado no JSON para o campo \`benefits\` DEVE ser um array de objetos, como neste exemplo: \`[{ "number": "1588063230" }]\`.
+3.  **Nome**: Extraia o nome completo da Linha 2. Formate para Title Case (Ex: "Natalina Santos Peixoto").
+4.  **Data de Nascimento**: Extraia APENAS a data da Linha 3. **CRÍTICO**: Ignore completamente o texto sobre a idade (Ex: "- Idade: 71 anos"). **CRÍTICO**: Converta a data do formato \`DD/MM/YYYY\` para o formato \`YYYY-MM-DD\`.
+5.  **Endereço (Lógica Precisa)**: Esta é a parte mais importante.
+    *   Na linha de Endereço, encontre o **primeiro bloco de dígitos numéricos**. Este será o valor para o campo \`number\` no JSON.
+    *   Todo o texto que vem **ANTES** do \`number\` é o valor do campo \`street\`.
+    *   Todo o texto que vem **DEPOIS** do \`number\` (se houver) é o valor do campo \`complement\`.
+    *   **Exemplo 1**: "ODETE GORI BICUDO 190" -> \`street\`: "Odete Gori Bicudo", \`number\`: "190".
+    *   **Exemplo 2**: "AVENIDA PAVAO 700 APTO 83" -> \`street\`: "Avenida Pavao", \`number\`: "700", \`complement\`: "Apto 83".
+    *   **Exemplo 3**: "SAO PAULO 1240" -> \`street\`: "Sao Paulo", \`number\`: "1240".
+    *   Formate os campos \`street\` e \`complement\` para Title Case.
+6.  **Outros Campos de Endereço**: Extraia Bairro, Cidade, Estado e CEP de suas respectivas linhas. Formate Bairro e Cidade para Title Case. Mantenha Estado em MAIÚSCULAS.
+7.  **Regra de Ouro (Não Invente Dados)**: Se o texto de entrada não contiver informações como \`phone\` ou \`email\`, simplesmente omita essas chaves do JSON final. Não adicione valores como \`null\`, \`undefined\` ou strings vazias para campos não encontrados.
 
 ### TEXTO PARA PROCESSAR
 {{{input}}}
