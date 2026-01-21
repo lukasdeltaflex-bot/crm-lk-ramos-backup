@@ -10,15 +10,20 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
+const BenefitSchema = z.object({
+    number: z.string().describe("O número do benefício INSS do cliente."),
+    species: z.string().optional().describe("A espécie do benefício (ex: Aposentadoria por Idade, Pensão por Morte)."),
+});
+
 const ExtractCustomerDataOutputSchema = z.object({
     name: z.string().optional().describe('O nome completo do cliente.'),
     cpf: z.string().optional().describe('O CPF do cliente (formato 000.000.000-00).'),
-    benefitNumber: z.string().optional().describe('O número do benefício INSS do cliente.'),
-    phone: z.string().optional().describe('O número de telefone principal do cliente.'),
-    phone2: z.string().optional().describe('Um segundo número de telefone do cliente, se houver.'),
+    benefits: z.array(BenefitSchema).optional().describe('Uma lista de benefícios do cliente, cada um com número e espécie.'),
+    phone: z.string().optional().describe('O número de telefone principal do cliente (formato (00) 90000-0000).'),
+    phone2: z.string().optional().describe('Um segundo número de telefone do cliente, se houver (formato (00) 90000-0000).'),
     email: z.string().email('O endereço de e-mail do cliente.').optional(),
     birthDate: z.string().optional().describe('A data de nascimento do cliente no formato YYYY-MM-DD.'),
-    cep: z.string().optional().describe('O CEP do endereço do cliente.'),
+    cep: z.string().optional().describe('O CEP do endereço do cliente (formato 00000-000).'),
     street: z.string().optional().describe('O logradouro (rua, avenida) do cliente.'),
     number: z.string().optional().describe('O número do endereço do cliente.'),
     complement: z.string().optional().describe('O complemento do endereço (apto, bloco).'),
@@ -36,21 +41,32 @@ const prompt = ai.definePrompt({
   name: 'extractCustomerDataPrompt',
   input: { schema: z.string() },
   output: { schema: ExtractCustomerDataOutputSchema },
-  prompt: `Você é um assistente especialista em processar dados de clientes para um sistema de CRM.
-Sua tarefa é analisar o texto fornecido e extrair as informações do cliente da forma mais precisa possível, preenchendo o schema de saída.
+  prompt: `Você é um assistente de IA especialista em análise e extração de dados para um sistema de CRM de correspondentes bancários. Sua tarefa é analisar o texto fornecido, que pode ser uma transcrição de áudio, uma mensagem de WhatsApp, um e-mail ou qualquer texto não estruturado, e extrair as informações do cliente da forma mais precisa e inteligente possível.
 
-Aqui estão algumas regras importantes:
-1.  **CPF**: Formate sempre como '000.000.000-00'. Se o texto tiver apenas os números, adicione a pontuação.
-2.  **Datas**: Converta qualquer formato de data (ex: 30/11/1970) para o formato 'YYYY-MM-DD'.
-3.  **CEP**: Formate como '00000-000'.
-4.  **Campos Vazios**: Se uma informação não for encontrada no texto, simplesmente omita a chave do objeto JSON de saída. Não invente dados e não use o valor "undefined" como string.
-5.  **Telefones**: Identifique o telefone principal e um segundo telefone, se houver.
-6.  **Extração**: Extraia o máximo de informações que conseguir do texto.
+**Inteligência e Regras:**
 
-Texto para análise:
+1.  **Interpretação e Inferência:**
+    *   **Endereço:** Se o texto mencionar um CEP, busque e preencha automaticamente os campos de logradouro, bairro, cidade e estado, mesmo que não estejam explícitos.
+    *   **Benefícios Múltiplos:** O cliente pode ter mais de um benefício. Extraia todos os números e suas respectivas espécies (ex: "aposentadoria por idade", "pensão por morte") que encontrar.
+    *   **Nomes Compostos:** Lide corretamente com nomes completos, incluindo sobrenomes compostos.
+    *   **Dados Implícitos:** Se o texto diz "ele é de São Paulo", infira que o estado é 'SP'.
+
+2.  **Limpeza e Formatação de Dados:**
+    *   **CPF**: Formate sempre como '000.000.000-00'. Remova caracteres não numéricos e adicione a pontuação correta.
+    *   **Telefones**: Formate como '(00) 90000-0000' ou '(00) 0000-0000'. Identifique o telefone principal e um secundário se houver.
+    *   **CEP**: Formate como '00000-000'.
+    *   **Datas**: Converta qualquer formato de data (ex: 30/11/1970, 30 de nov de 70, trinta de novembro de mil novecentos e setenta) para o formato padrão **'YYYY-MM-DD'**.
+    *   **Caixa Alta/Baixa:** Padronize nomes e endereços para terem a primeira letra de cada palavra em maiúscula (Title Case), a menos que seja uma sigla como 'SP'.
+
+3.  **Precisão e Campos Vazios:**
+    *   Se uma informação não for encontrada no texto, simplesmente omita a chave do objeto JSON de saída.
+    *   **NÃO INVENTE DADOS.** Se não tiver certeza sobre uma informação, prefira deixá-la de fora.
+    *   Não inclua o valor "undefined" como uma string.
+
+**Texto para análise:**
 {{{input}}}
 
-Gere a saída JSON estruturada com base no texto.`,
+Analise o texto e gere a saída JSON estruturada com os dados do cliente.`,
 });
 
 const extractCustomerDataFlow = ai.defineFlow(
@@ -67,5 +83,3 @@ const extractCustomerDataFlow = ai.defineFlow(
     return output!;
   }
 );
-
-    
