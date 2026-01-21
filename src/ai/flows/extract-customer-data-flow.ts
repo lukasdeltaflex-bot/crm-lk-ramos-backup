@@ -41,40 +41,98 @@ const prompt = ai.definePrompt({
   name: 'extractCustomerDataPrompt',
   input: { schema: z.string() },
   output: { schema: ExtractCustomerDataOutputSchema },
-  prompt: `### TAREFA
-Você é um assistente de extração de dados especialista e altamente preciso. Sua tarefa é analisar o texto de entrada e extrair as informações para preencher um objeto JSON. O texto de entrada sempre segue a mesma ESTRUTURA de campos, mas os DADOS de cada cliente são diferentes. Siga as regras estritamente.
+  prompt: `Você é um assistente de extração de dados altamente preciso. Sua tarefa é analisar o texto fornecido pelo usuário e convertê-lo em um objeto JSON com base no esquema de saída fornecido. Siga as regras de extração com precisão.
 
-### ESTRUTURA DO TEXTO DE ENTRADA
-O texto sempre seguirá este padrão:
-Linha 1: \`CPF: {cpf} / Benefício: {numero_beneficio}\`
-Linha 2: \`Nome: {nome_completo}\`
-Linha 3: \`Data de Nascimento: {dd/mm/aaaa} - Idade: {idade} anos\`
-Linha 4: \`Endereço: {logradouro} {numero} {complemento_opcional}\`
-Linha 5: \`Bairro: {bairro}\`
-Linha 6: \`Cidade: {cidade} - Estado: {estado}\`
-Linha 7: \`CEP: {cep}\`
+### REGRAS OBRIGATÓRIAS
 
-### REGRAS DE EXTRAÇÃO E FORMATAÇÃO (OBRIGATÓRIO)
+1.  **CPF e Benefício**: Extraia da primeira linha. O número do benefício DEVE estar em um array de objetos: \`[{"number": "..."}]\`.
+2.  **Nome**: Extraia da linha 'Nome:'.
+3.  **Data de Nascimento**: Extraia APENAS a data da linha 'Data de Nascimento:'. Ignore completamente o texto sobre a idade. Converta o formato \`DD/MM/YYYY\` para \`YYYY-MM-DD\`.
+4.  **Endereço**:
+    *   Na linha 'Endereço:', identifique a primeira sequência de números. Este é o \`number\`.
+    *   Tudo ANTES do \`number\` é a \`street\`.
+    *   Tudo DEPOIS do \`number\` (se houver) é o \`complement\`.
+5.  **Outros Campos de Endereço**: Extraia 'Bairro', 'Cidade', 'Estado' e 'CEP' de suas respectivas linhas.
+6.  **Omissões**: Se um campo como \`phone\` ou \`email\` não estiver no texto de entrada, não o inclua no JSON de saída. Não adicione \`null\` ou strings vazias para campos ausentes.
 
-1.  **CPF**: Extraia o valor do CPF da Linha 1.
-2.  **Benefício**: Extraia o valor do Benefício da Linha 1. O resultado no JSON para o campo \`benefits\` DEVE ser um array de objetos, como neste exemplo: \`[{ "number": "1588063230" }]\`.
-3.  **Nome**: Extraia o nome completo da Linha 2. Formate para Title Case (Ex: "Natalina Santos Peixoto").
-4.  **Data de Nascimento**: Extraia APENAS a data da Linha 3. **CRÍTICO**: Ignore completamente o texto sobre a idade (Ex: "- Idade: 71 anos"). **CRÍTICO**: Converta a data do formato \`DD/MM/YYYY\` para o formato \`YYYY-MM-DD\`.
-5.  **Endereço (Lógica Precisa)**: Esta é a parte mais importante.
-    *   Na linha de Endereço, encontre o **primeiro bloco de dígitos numéricos**. Este será o valor para o campo \`number\` no JSON.
-    *   Todo o texto que vem **ANTES** do \`number\` é o valor do campo \`street\`.
-    *   Todo o texto que vem **DEPOIS** do \`number\` (se houver) é o valor do campo \`complement\`.
-    *   **Exemplo 1**: "ODETE GORI BICUDO 190" -> \`street\`: "Odete Gori Bicudo", \`number\`: "190".
-    *   **Exemplo 2**: "AVENIDA PAVAO 700 APTO 83" -> \`street\`: "Avenida Pavao", \`number\`: "700", \`complement\`: "Apto 83".
-    *   **Exemplo 3**: "SAO PAULO 1240" -> \`street\`: "Sao Paulo", \`number\`: "1240".
-    *   Formate os campos \`street\` e \`complement\` para Title Case.
-6.  **Outros Campos de Endereço**: Extraia Bairro, Cidade, Estado e CEP de suas respectivas linhas. Formate Bairro e Cidade para Title Case. Mantenha Estado em MAIÚSCULAS.
-7.  **Regra de Ouro (Não Invente Dados)**: Se o texto de entrada não contiver informações como \`phone\` ou \`email\`, simplesmente omita essas chaves do JSON final. Não adicione valores como \`null\`, \`undefined\` ou strings vazias para campos não encontrados.
+### EXEMPLOS
 
-### TEXTO PARA PROCESSAR
+---
+**Exemplo de Entrada 1:**
+CPF: 796.298.908-44 / Benefício: 1588063230
+Nome: NATALINA SANTOS PEIXOTO
+Data de Nascimento: 25/12/1954 - Idade: 71 anos
+Endereço: ODETE GORI BICUDO 190
+Bairro: NOVA VOTORANTIM
+Cidade: VOTORANTIM - Estado: SP
+CEP: 18113-400
+
+**Saída JSON Esperada 1:**
+{
+  "name": "NATALINA SANTOS PEIXOTO",
+  "cpf": "796.298.908-44",
+  "benefits": [{ "number": "1588063230" }],
+  "birthDate": "1954-12-25",
+  "street": "ODETE GORI BICUDO",
+  "number": "190",
+  "neighborhood": "NOVA VOTORANTIM",
+  "city": "VOTORANTIM",
+  "state": "SP",
+  "cep": "18113-400"
+}
+---
+**Exemplo de Entrada 2:**
+CPF: 986.101.206-00 / Benefício: 545406412
+Nome: JEUSA CRISTINA NERY DE OLIVEIRA
+Data de Nascimento: 31/05/1969 - Idade: 56 anos
+Endereço: AVENIDA PAVAO 700 APTO 83
+Bairro: INDIANOPOLIS
+Cidade: SAO PAULO - Estado: SP
+CEP: 04516-012
+
+**Saída JSON Esperada 2:**
+{
+  "name": "JEUSA CRISTINA NERY DE OLIVEIRA",
+  "cpf": "986.101.206-00",
+  "benefits": [{ "number": "545406412" }],
+  "birthDate": "1969-05-31",
+  "street": "AVENIDA PAVAO",
+  "number": "700",
+  "complement": "APTO 83",
+  "neighborhood": "INDIANOPOLIS",
+  "city": "SAO PAULO",
+  "state": "SP",
+  "cep": "04516-012"
+}
+---
+**Exemplo de Entrada 3:**
+CPF: 240.605.851-49 / Benefício: 1596159011
+Nome: IVAN MENDES DE OLIVEIRA
+Data de Nascimento: 02/12/1959 - Idade: 66 anos
+Endereço: SAO PAULO 1240
+Bairro: JARDIM NOVO HORIZ
+Cidade: CUIABA - Estado: MT
+CEP: 78058-689
+
+**Saída JSON Esperada 3:**
+{
+  "name": "IVAN MENDES DE OLIVEIRA",
+  "cpf": "240.605.851-49",
+  "benefits": [{ "number": "1596159011" }],
+  "birthDate": "1959-12-02",
+  "street": "SAO PAULO",
+  "number": "1240",
+  "neighborhood": "JARDIM NOVO HORIZ",
+  "city": "CUIABA",
+  "state": "MT",
+  "cep": "78058-689"
+}
+---
+
+### TEXTO DO USUÁRIO PARA PROCESSAR:
 {{{input}}}
 
-Agora, analise o texto acima e produza o JSON estruturado seguindo TODAS as regras estritamente.`,
+Agora, analise o texto do usuário acima e produza a saída JSON estruturada seguindo TODAS as regras e exemplos.`,
 });
 
 const extractCustomerDataFlow = ai.defineFlow(

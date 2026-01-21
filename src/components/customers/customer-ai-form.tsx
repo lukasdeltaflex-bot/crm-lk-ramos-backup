@@ -29,6 +29,15 @@ export function CustomerAiForm({ onSubmit }: CustomerAiFormProps) {
     setIsLoading(true);
     try {
       const extractedData = await extractCustomerData(text);
+      if (!extractedData || Object.keys(extractedData).length === 0 || !extractedData.name) {
+          toast({
+            variant: 'destructive',
+            title: 'Falha na Extração',
+            description: 'A IA não conseguiu extrair os dados. Verifique se o texto está no formato esperado e tente novamente.',
+          });
+          setIsLoading(false);
+          return;
+      }
       toast({
         title: 'Dados extraídos com sucesso!',
         description: 'Revise as informações no formulário de cadastro.',
