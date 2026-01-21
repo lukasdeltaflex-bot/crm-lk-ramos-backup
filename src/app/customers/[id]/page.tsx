@@ -1,5 +1,6 @@
 'use client';
 import React, { useMemo } from 'react';
+import { useParams } from 'next/navigation';
 import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
 import { useDoc, useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
@@ -224,7 +225,7 @@ const CustomerFinancialSummary = ({ proposals }: { proposals: Proposal[] }) => {
   
 
 export default function CustomerDetailPage({ params }: { params: { id: string } }) {
-  const { id: customerId } = params;
+  const { id: customerId } = useParams() as { id: string };
   const firestore = useFirestore();
   const { user } = useUser();
 
