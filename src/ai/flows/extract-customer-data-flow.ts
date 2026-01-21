@@ -21,7 +21,7 @@ const ExtractCustomerDataOutputSchema = z.object({
     benefits: z.array(BenefitSchema).optional().describe('Uma lista de benefícios do cliente, cada um com número e espécie.'),
     phone: z.string().optional().describe('O número de telefone principal do cliente (formato (00) 90000-0000).'),
     phone2: z.string().optional().describe('Um segundo número de telefone do cliente, se houver (formato (00) 90000-0000).'),
-    email: z.string().email('O endereço de e-mail do cliente.').optional(),
+    email: z.string().optional().describe('O endereço de e-mail do cliente.'),
     birthDate: z.string().optional().describe('A data de nascimento do cliente no formato YYYY-MM-DD.'),
     cep: z.string().optional().describe('O CEP do endereço do cliente (formato 00000-000).'),
     street: z.string().optional().describe('O logradouro (rua, avenida) do cliente.'),
@@ -60,7 +60,7 @@ CEP: 18113-400
 \`\`\`
 
 **Análise Detalhada do Exemplo Acima:**
-*   **Linha "CPF / Benefício":** Extraia o \`cpf\` e o número do \`benefício\`. O benefício deve ser um item no array \`benefits\`.
+*   **Linha "CPF / Benefício":** Extraia o \`cpf\` e o número do \`benefício\`. O benefício deve ser um item dentro de um array chamado \`benefits\`. O array \`benefits\` deve conter objetos, cada um com a chave \`number\`.
 *   **Linha "Nome":** Extraia o \`name\`.
 *   **Linha "Data de Nascimento":** Extraia a data (25/12/1954) e converta para o formato 'YYYY-MM-DD' para o campo \`birthDate\`. **Sempre ignore a idade**.
 *   **Linha "Endereço":** Extraia o logradouro e o número. "ODETE GORI BICUDO 190" deve ser separado em 'street' ("ODETE GORI BICUDO") e 'number' ("190").
@@ -69,21 +69,21 @@ CEP: 18113-400
 **Inteligência e Regras:**
 
 1.  **Interpretação e Inferência:**
-    *   **Endereço:** Entenda que os campos de endereço podem vir em múltiplas linhas, como no exemplo. Se o texto mencionar um CEP, busque e preencha automaticamente os campos de logradouro, bairro, cidade e estado, mesmo que não estejam explícitos.
-    *   **Benefícios Múltiplos:** O cliente pode ter mais de um benefício. Extraia todos os números e suas respectivas espécies (ex: "aposentadoria por idade", "pensão por morte") que encontrar.
+    *   **Endereço:** Entenda que os campos de endereço podem vir em múltiplas linhas, como no exemplo. Se o texto mencionar um CEP e outros campos de endereço não estiverem explícitos, tente inferi-los.
+    *   **Benefícios Múltiplos:** O cliente pode ter mais de um benefício. Se encontrar múltiplos, extraia todos como objetos individuais dentro do array \`benefits\`.
     *   **Nomes Compostos:** Lide corretamente com nomes completos.
 
 2.  **Limpeza e Formatação de Dados:**
-    *   **CPF**: Formate sempre como '000.000.000-00'. Remova caracteres não numéricos e adicione a pontuação correta.
-    *   **Telefones**: Formate como '(00) 90000-0000' ou '(00) 0000-0000'. Identifique o telefone principal e um secundário se houver.
+    *   **CPF**: Formate sempre como '000.000.000-00'.
+    *   **Telefones**: Formate como '(00) 90000-0000' ou '(00) 0000-0000'.
     *   **CEP**: Formate como '00000-000'.
-    *   **Datas**: Converta qualquer formato de data (ex: 30/11/1970, 30 de nov de 70, trinta de novembro de mil novecentos e setenta) para o formato padrão **'YYYY-MM-DD'**.
+    *   **Datas**: Converta qualquer formato de data (ex: 30/11/1970, 30 de nov de 70) para o formato padrão **'YYYY-MM-DD'**.
     *   **Caixa Alta/Baixa:** Padronize nomes e endereços para terem a primeira letra de cada palavra em maiúscula (Title Case), exceto para siglas como 'SP'.
 
 3.  **Precisão e Campos Vazios:**
     *   Se uma informação não for encontrada no texto, simplesmente omita a chave do objeto JSON de saída.
     *   **NÃO INVENTE DADOS.** Se não tiver certeza sobre uma informação, prefira deixá-la de fora.
-    *   Não inclua o valor "undefined" como uma string.
+    *   Não inclua o valor "undefined" ou "null" como uma string. Apenas omita o campo.
 
 **Texto para análise:**
 {{{input}}}
