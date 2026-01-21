@@ -35,7 +35,7 @@ export async function summarizeCustomerHistory(input: SummarizeCustomerHistoryIn
 const prompt = ai.definePrompt({
   name: 'summarizeCustomerHistoryPrompt',
   input: { schema: SummarizeCustomerHistoryInputSchema },
-  output: { schema: SummarizeCustomerHistoryOutputSchema },
+  output: { schema: z.string().nullable() },
   prompt: `Você é um assistente financeiro especialista em análise de crédito e relacionamento com o cliente.
 Sua tarefa é analisar o histórico de propostas e as anotações sobre um cliente e gerar um resumo estratégico para o agente de crédito.
 
@@ -69,6 +69,6 @@ const summarizeCustomerHistoryFlow = ai.defineFlow(
         return 'Não há dados suficientes para gerar um resumo sobre este cliente. Adicione propostas ou observações para obter uma análise.';
     }
     const { output } = await prompt(input);
-    return output!;
+    return output || 'A IA não retornou um resumo. Por favor, tente novamente.';
   }
 );
