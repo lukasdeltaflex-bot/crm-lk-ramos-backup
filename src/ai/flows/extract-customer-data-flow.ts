@@ -41,83 +41,73 @@ const prompt = ai.definePrompt({
   name: 'extractCustomerDataPrompt',
   input: { schema: z.string() },
   output: { schema: ExtractCustomerDataOutputSchema },
-  prompt: `Você é um assistente de IA especialista e altamente preciso, treinado para analisar texto e extrair dados de clientes para um sistema de CRM.
+  prompt: `
+### TAREFA
+Você é um assistente especialista em extração de dados. Sua tarefa é extrair informações de clientes de um bloco de texto bruto e retorná-las como um objeto JSON estruturado.
 
-**Sua Missão Principal:**
-Analisar um bloco de texto que foi copiado de outro sistema. O texto de entrada **SEMPRE** seguirá uma estrutura consistente, mas os dados do cliente serão diferentes a cada vez. Sua tarefa é extrair os dados e retorná-los em formato JSON, seguindo o schema de saída fornecido. Você deve ser capaz de lidar com variações nos dados, como endereços com ou sem complemento.
+### TEXTO DE ENTRADA
+A entrada é um bloco de texto bruto, geralmente copiado e colado de outro sistema. Geralmente, segue este padrão, mas pode haver pequenas variações.
 
-**Exemplo de Texto de Entrada (Padrão A):**
-\`\`\`
+**Exemplo 1 (Endereço Simples):**
 CPF: 796.298.908-44 / Benefício: 1588063230
-
 Nome: NATALINA SANTOS PEIXOTO
-
 Data de Nascimento: 25/12/1954 - Idade: 71 anos
-
 Endereço: ODETE GORI BICUDO 190
 Bairro: NOVA VOTORANTIM
 Cidade: VOTORANTIM - Estado: SP
 CEP: 18113-400
-\`\`\`
 
-**Exemplo de Texto de Entrada (Padrão B com Complemento):**
-\`\`\`
+**Exemplo 2 (Endereço Complexo):**
 CPF: 986.101.206-00 / Benefício: 545406412
-
 Nome: JEUSA CRISTINA NERY DE OLIVEIRA
-
 Data de Nascimento: 31/05/1969 - Idade: 56 anos
-
 Endereço: AVENIDA PAVAO 700 APTO 83
 Bairro: INDIANOPOLIS
 Cidade: SAO PAULO - Estado: SP
 CEP: 04516-012
-\`\`\`
 
-**Análise Detalhada da Estrutura e Regras de Extração:**
+### REGRAS DE EXTRAÇÃO
 
-1.  **Linha "CPF / Benefício":**
-    *   Extraia o valor após "CPF:". Este é o \`cpf\`.
-    *   Extraia o valor após "Benefício:". Este é o número do benefício.
-    *   Coloque o benefício dentro de um array \`benefits\`, como um objeto com a chave \`number\`.
+1.  **Linha CPF/Benefício**:
+    *   \`cpf\`: Extraia de \`CPF:\`.
+    *   \`benefits\`: Extraia de \`Benefício:\`. O resultado deve ser um array, ex: \`[{ "number": "1588063230" }]\`.
 
-2.  **Linha "Nome":**
-    *   Extraia o valor completo após "Nome:". Este é o \`name\`.
+2.  **Linha Nome**:
+    *   \`name\`: Extraia o nome completo de \`Nome:\`.
 
-3.  **Linha "Data de Nascimento":**
-    *   Extraia **APENAS** a data (ex: "25/12/1954"). Ignore completamente o texto que vem depois, como "- Idade: 71 anos".
+3.  **Linha Data de Nascimento**:
+    *   \`birthDate\`: Extraia APENAS a data (ex: "25/12/1954").
+    *   **CRÍTICO**: IGNORE tudo depois da data, como "- Idade: 71 anos".
 
-4.  **Linha "Endereço":**
-    *   Esta é a linha mais complexa. Siga esta lógica:
-    *   **Identifique o complemento primeiro:** procure por palavras-chave como "APTO", "APARTAMENTO", "BLOCO", "CASA". Tudo a partir dessas palavras é o \`complement\`.
-    *   **Identifique o número:** O número do endereço é o valor numérico que vem imediatamente antes do complemento (se houver) ou no final da linha.
-    *   **Identifique a rua:** Todo o texto restante no início da linha é a \`street\`.
-    *   Exemplo 1: "ODETE GORI BICUDO 190" -> \`street\`: "ODETE GORI BICUDO", \`number\`: "190".
-    *   Exemplo 2: "AVENIDA PAVAO 700 APTO 83" -> \`street\`: "AVENIDA PAVAO", \`number\`: "700", \`complement\`: "APTO 83".
+4.  **Linha Endereço**: Esta é a parte mais importante.
+    *   O formato é \`[NOME DA RUA] [NÚMERO] [COMPLEMENTO]\`.
+    *   \`street\`: O nome da rua/avenida.
+    *   \`number\`: O número do imóvel.
+    *   \`complement\`: Qualquer informação de apartamento/bloco (ex: "APTO 83"). Se não estiver presente, este campo deve ser omitido.
+    *   **Exemplo 1 "ODETE GORI BICUDO 190"**: \`street\` é "ODETE GORI BICUDO", \`number\` é "190".
+    *   **Exemplo 2 "AVENIDA PAVAO 700 APTO 83"**: \`street\` é "AVENIDA PAVAO", \`number\` é "700", \`complement\` é "APTO 83".
+    *   Você deve ser capaz de distinguir o número do nome da rua e do complemento.
 
-5.  **Linha "Cidade - Estado":**
-    *   Extraia o valor antes de "- Estado:" como a \`city\`.
-    *   Extraia o valor após "- Estado:" como o \`state\` (geralmente uma sigla de 2 letras).
+5.  **Linha Bairro**:
+    *   \`neighborhood\`: Extraia de \`Bairro:\`.
 
-6.  **Linhas "Bairro" e "CEP":**
-    *   Extraia \`neighborhood\` e \`cep\` de suas respectivas linhas.
+6.  **Linha Cidade/Estado**:
+    *   \`city\`: Extraia de \`Cidade:\`.
+    *   \`state\`: Extraia de \`Estado:\`.
 
-**REGRAS DE FORMATAÇÃO (OBRIGATÓRIO):**
+7.  **Linha CEP**:
+    *   \`cep\`: Extraia de \`CEP:\`.
 
-*   **CPF**: Formate como '000.000.000-00'.
-*   **CEP**: Formate como '00000-000'.
-*   **Datas**: Converta **SEMPRE** para o formato **'YYYY-MM-DD'**.
-*   **Caixa Alta/Baixa:** Padronize nomes e endereços para terem a primeira letra de cada palavra em maiúscula (Title Case). Mantenha siglas como 'SP' em maiúsculo.
+### REGRAS DE FORMATAÇÃO DE SAÍDA (OBRIGATÓRIO)
 
-**REGRA MAIS IMPORTANTE (PRECISÃO):**
+*   **Datas**: SEMPRE converta \`DD/MM/YYYY\` para \`YYYY-MM-DD\`.
+*   **Capitalização**: Converta \`name\` e todas as partes do endereço para Title Case (ex: "Natalina Santos Peixoto", "Avenida Pavao"). Códigos de estado (ex: "SP") devem permanecer em maiúsculas.
+*   **Dados Ausentes**: Se um campo não estiver no texto (ex: \`email\`, \`phone\`), NÃO o inclua no JSON de saída. Omita a chave completamente. Não use \`null\` ou \`undefined\`.
 
-*   **NÃO INVENTE DADOS.** Se uma informação (como 'email' ou 'telefone') não estiver presente no texto de entrada, simplesmente omita o campo do JSON de saída.
-*   Seja estritamente aderente ao schema de saída. Não inclua "undefined" ou "null" como strings. Apenas omita os campos não encontrados.
-
-**Texto para análise:**
+### TEXTO PARA PROCESSAR
 {{{input}}}
 
-Analise o texto acima seguindo TODAS as regras e gere a saída JSON estruturada.`,
+Agora, analise o bloco de texto acima e produza a saída JSON estruturada de acordo com todas as regras.`,
 });
 
 const extractCustomerDataFlow = ai.defineFlow(
