@@ -55,7 +55,7 @@ export default function CustomersPage() {
 
   const customersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    return query(collection(firestore, 'customers'), where('ownerId', '==', user.uid), orderBy('numericId', 'desc'));
+    return query(collection(firestore, 'customers'), where('ownerId', '==', user.uid));
   }, [firestore, user]);
 
   const { data: customers, isLoading, error } = useCollection<Customer>(customersQuery);
