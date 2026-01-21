@@ -203,6 +203,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
       const safeValue = (value: any): string =>
         String(value ?? '').toLowerCase();
   
+      const numericId = safeValue(row.original.numericId);
       const name = safeValue(row.getValue('name'));
       const cpf = safeValue(row.getValue('cpf'));
       const phone = safeValue(row.getValue('phone'));
@@ -211,6 +212,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
       const filter = filterValue.toLowerCase();
   
       return (
+        numericId.includes(filter) ||
         name.includes(filter) ||
         cpf.includes(filter) ||
         phone.includes(filter) ||
@@ -245,7 +247,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         <div className="p-4">
           <div className="flex items-center justify-between py-4">
             <Input
-              placeholder="Filtrar por nome, CPF, ou telefone..."
+              placeholder="Filtrar por ID, nome, CPF ou telefone..."
               value={globalFilter ?? ''}
               onChange={(event) =>
                 setGlobalFilter(event.target.value)
