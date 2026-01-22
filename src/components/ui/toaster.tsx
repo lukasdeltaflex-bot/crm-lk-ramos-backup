@@ -25,6 +25,7 @@ export function Toaster() {
 
   return (
     <ToastProvider>
+      <div className="space-y-2">
       {toasts.map(function ({ id, title, description, action, ...props }) {
         return (
           <Toast key={id} {...props}>
@@ -39,6 +40,7 @@ export function Toaster() {
           </Toast>
         )
       })}
+      </div>
       <ToastViewport />
     </ToastProvider>
   )
