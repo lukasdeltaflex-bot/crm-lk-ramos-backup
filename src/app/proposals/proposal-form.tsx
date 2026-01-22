@@ -335,37 +335,32 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
                             </FormControl>
                             </PopoverTrigger>
                             <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                            <Command>
-                                <CommandInput placeholder="Pesquisar cliente por nome ou CPF..." />
-                                <CommandList>
-                                <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
-                                <CommandGroup>
-                                    {customers.map((customer) => (
-                                    <CommandItem
-                                        value={customer.id}
-                                        key={customer.id}
-                                        onSelect={(currentValue) => {
-                                            form.setValue("customerId", currentValue === field.value ? "" : currentValue)
-                                            setOpenCustomerSelector(false)
-                                        }}
-                                    >
-                                        <Check
-                                            className={cn(
-                                                "mr-2 h-4 w-4",
-                                                customer.id === field.value
-                                                ? "opacity-100"
-                                                : "opacity-0"
-                                            )}
-                                        />
-                                        <div>
-                                            <p>{customer.name}</p>
-                                            <p className="text-xs text-muted-foreground">{customer.cpf}</p>
-                                        </div>
-                                    </CommandItem>
-                                    ))}
-                                </CommandGroup>
-                                </CommandList>
-                            </Command>
+                                <Command>
+                                    <CommandInput placeholder="Pesquisar cliente por nome ou CPF..." />
+                                    <CommandList>
+                                        <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
+                                        <CommandGroup>
+                                            {customers.map((customer) => (
+                                            <CommandItem
+                                                key={customer.id}
+                                                value={`${customer.name} ${customer.cpf}`}
+                                                onSelect={() => {
+                                                    form.setValue("customerId", customer.id);
+                                                    setOpenCustomerSelector(false);
+                                                }}
+                                            >
+                                                <Check
+                                                    className={cn(
+                                                        "mr-2 h-4 w-4",
+                                                        field.value === customer.id ? "opacity-100" : "opacity-0"
+                                                    )}
+                                                />
+                                                {customer.name}
+                                            </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
                             </PopoverContent>
                         </Popover>
                         <FormMessage />
