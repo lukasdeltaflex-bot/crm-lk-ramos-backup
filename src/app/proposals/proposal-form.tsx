@@ -315,27 +315,39 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
                         <FormLabel>Cliente</FormLabel>
                         <Popover open={openCustomerSelector} onOpenChange={setOpenCustomerSelector}>
                             <PopoverTrigger asChild>
-                            <FormControl>
-                                <Button
-                                variant="outline"
-                                role="combobox"
-                                className={cn(
-                                    "w-full justify-between",
-                                    !field.value && "text-muted-foreground"
-                                )}
-                                disabled={isReadOnly}
-                                >
-                                {field.value
-                                    ? customers.find(
-                                        (customer) => customer.id === field.value
-                                    )?.name
-                                    : "Selecione um cliente"}
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                </Button>
-                            </FormControl>
+                                <FormControl>
+                                    <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        className={cn(
+                                            "w-full justify-between",
+                                            !field.value && "text-muted-foreground"
+                                        )}
+                                        disabled={isReadOnly}
+                                    >
+                                    {field.value
+                                        ? customers.find(
+                                            (customer) => customer.id === field.value
+                                        )?.name
+                                        : "Selecione um cliente"}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                </FormControl>
                             </PopoverTrigger>
                             <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                                <Command>
+                                <Command
+                                  filter={(value, search) => {
+                                    const currentCustomer = customers.find(c => c.id === value)
+                                    if (!currentCustomer) return 0
+                                    
+                                    const searchableText = `${currentCustomer.name.toLowerCase()} ${currentCustomer.cpf.replace(/\D/g, '')}`
+                                    const searchTerm = search.toLowerCase().trim()
+                                    
+                                    if (searchableText.includes(searchTerm)) return 1
+                                    
+                                    return 0
+                                  }}
+                                >
                                     <CommandInput placeholder="Pesquisar cliente por nome ou CPF..." />
                                     <CommandList>
                                         <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
@@ -343,9 +355,9 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
                                             {customers.map((customer) => (
                                             <CommandItem
                                                 key={customer.id}
-                                                value={`${customer.name} ${customer.cpf}`}
-                                                onSelect={() => {
-                                                    form.setValue("customerId", customer.id);
+                                                value={customer.id}
+                                                onSelect={(currentValue) => {
+                                                    form.setValue("customerId", currentValue === field.value ? "" : currentValue);
                                                     setOpenCustomerSelector(false);
                                                 }}
                                             >
