@@ -25,7 +25,7 @@ interface FollowUpRemindersProps {
 
 function FollowUpReminderItem({ reminder }: { reminder: ReminderMessage }) {
   return (
-    <Alert>
+    <Alert variant="warning">
       <Clock className="h-4 w-4" />
       <AlertTitle>{reminder.customerName} (Proposta: {reminder.proposalNumber})</AlertTitle>
       <AlertDescription>{reminder.reminderMessage}</AlertDescription>

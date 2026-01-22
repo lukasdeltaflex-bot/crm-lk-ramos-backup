@@ -22,7 +22,7 @@ interface BirthdayAlertsProps {
 
 function BirthdayAlertItem({ alert }: { alert: AlertMessage }) {
   return (
-    <Alert>
+    <Alert variant="warning">
       <BellRing className="h-4 w-4" />
       <AlertTitle>{alert.customerName}</AlertTitle>
       <AlertDescription>{alert.alertMessage}</AlertDescription>
