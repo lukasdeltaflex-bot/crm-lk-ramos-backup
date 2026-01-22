@@ -94,7 +94,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
   }, [rows]);
   
   const privacyPlaceholder = '•••••';
-  const summaryTitle = isFiltered ? "Resumo do Filtro" : "Resumo do Mês Atual";
+  const summaryTitle = "Resumo do Mês Atual";
 
   const cards = [
     {
@@ -145,10 +145,10 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
             <Info className="h-4 w-4" />
             <AlertTitle>{summaryTitle}</AlertTitle>
             <AlertDescription>
-                {isFiltered 
-                    ? "Os valores abaixo representam os totais para os filtros aplicados. Clique em um card para ver os detalhes."
-                    : "Os valores abaixo representam os totais para o mês vigente. Clique em um card para ver os detalhes."
-                }
+                Os valores nos cards abaixo representam os totais para o mês vigente.
+                {isFiltered && (
+                    <span className="block mt-1">A tabela abaixo está exibindo resultados filtrados.</span>
+                )}
             </AlertDescription>
         </Alert>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 print:gap-2">

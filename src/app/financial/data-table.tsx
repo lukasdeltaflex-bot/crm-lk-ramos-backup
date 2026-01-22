@@ -318,7 +318,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         <Card className="print:shadow-none print:border-none financial-table">
         <div className="p-4 space-y-4 print:p-0">
             <FinancialSummary 
-                rows={isAnyFilterActive ? (table.getFilteredRowModel().rows as Row<ProposalWithCustomer>[]) : (currentMonthData as ProposalWithCustomer[])}
+                rows={currentMonthData}
                 isPrivacyMode={isPrivacyMode}
                 isFiltered={isAnyFilterActive}
                 onShowDetails={onShowDetails}
