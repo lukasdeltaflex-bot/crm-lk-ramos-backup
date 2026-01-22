@@ -352,11 +352,10 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
                                             <CommandGroup>
                                                 {customers.map((customer) => (
                                                     <CommandItem
-                                                        value={customer.id}
                                                         key={customer.id}
-                                                        onSelect={(currentValue) => {
-                                                            form.setValue("customerId", currentValue === field.value ? "" : currentValue)
-                                                            setCustomerSearchOpen(false)
+                                                        onSelect={() => {
+                                                            form.setValue("customerId", customer.id);
+                                                            setCustomerSearchOpen(false);
                                                         }}
                                                     >
                                                         <Check
@@ -367,9 +366,9 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
                                                                     : "opacity-0"
                                                             )}
                                                         />
-                                                        <div>
-                                                            <p className="font-medium">{customer.name}</p>
-                                                            <p className="text-xs text-muted-foreground">{customer.cpf}</p>
+                                                        <div className="flex flex-col">
+                                                            <span>{customer.name}</span>
+                                                            <span className="text-xs text-muted-foreground">{customer.cpf}</span>
                                                         </div>
                                                     </CommandItem>
                                                 ))}
