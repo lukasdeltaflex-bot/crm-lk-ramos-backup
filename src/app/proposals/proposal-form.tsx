@@ -101,7 +101,7 @@ const proposalSchema = z.object({
 
 type ProposalFormValues = z.infer<typeof proposalSchema>;
 
-type ProposalFormData = Partial<Omit<Proposal, 'id' | 'userId'>>;
+type ProposalFormData = Partial<Omit<Proposal, 'id' | 'ownerId'>>;
 
 interface ProposalFormProps {
   proposal?: Proposal;
@@ -342,20 +342,20 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
                                 <CommandGroup>
                                     {customers.map((customer) => (
                                     <CommandItem
-                                        value={`${customer.name} ${customer.cpf}`}
+                                        value={customer.id}
                                         key={customer.id}
-                                        onSelect={() => {
-                                            form.setValue("customerId", customer.id)
+                                        onSelect={(currentValue) => {
+                                            form.setValue("customerId", currentValue)
                                             setOpenCustomerSelector(false)
                                         }}
                                     >
                                         <Check
-                                        className={cn(
-                                            "mr-2 h-4 w-4",
-                                            customer.id === field.value
-                                            ? "opacity-100"
-                                            : "opacity-0"
-                                        )}
+                                            className={cn(
+                                                "mr-2 h-4 w-4",
+                                                customer.id === field.value
+                                                ? "opacity-100"
+                                                : "opacity-0"
+                                            )}
                                         />
                                         <div>
                                             <p>{customer.name}</p>
