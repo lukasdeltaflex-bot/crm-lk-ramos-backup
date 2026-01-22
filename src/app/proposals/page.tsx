@@ -1,5 +1,6 @@
 'use client';
-import React from 'react';
+import React, { Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
 import { ProposalsDataTable, type ProposalsDataTableHandle } from './data-table';
@@ -43,9 +44,33 @@ import { formatCurrency } from '@/lib/utils';
 export type ProposalWithCustomer = Proposal & { customer: Customer | undefined };
 type ProposalFormData = Partial<Omit<Proposal, 'id' | 'ownerId'>>;
 
-export default function ProposalsPage() {
+function ProposalsPageSkeleton() {
+    return (
+        <>
+            <div className="flex items-center justify-between">
+                <PageHeader title="Propostas" />
+                <div className="flex items-center gap-2">
+                    <Skeleton className="h-10 w-32" />
+                    <Skeleton className="h-10 w-32" />
+                </div>
+            </div>
+            <div className="rounded-md border p-4">
+                <div className="space-y-2">
+                    <Skeleton className="h-10 w-full" />
+                    {Array.from({ length: 10 }).map((_, i) => (
+                        <Skeleton key={i} className="h-12 w-full" />
+                    ))}
+                </div>
+            </div>
+        </>
+    )
+}
+
+function ProposalsPageContent() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [selectedProposal, setSelectedProposal] = React.useState<ProposalWithCustomer | undefined>(undefined);
@@ -53,6 +78,7 @@ export default function ProposalsPage() {
   const [rowSelection, setRowSelection] = React.useState({});
   const [defaultValues, setDefaultValues] = React.useState<ProposalFormData | undefined>(undefined);
   const tableRef = React.useRef<ProposalsDataTableHandle>(null);
+  const [hasOpenedFromParam, setHasOpenedFromParam] = React.useState(false);
   
   const proposalsQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
@@ -449,6 +475,22 @@ const handleExportToExcel = async () => {
 
     setIsDialogOpen(false);
   };
+
+  const openProposalId = searchParams.get('open');
+
+  React.useEffect(() => {
+    if (openProposalId && !proposalsLoading && !customersLoading && proposalsWithCustomerData.length > 0 && !hasOpenedFromParam) {
+      const proposalToOpen = proposalsWithCustomerData.find(p => p.id === openProposalId);
+      if (proposalToOpen) {
+        handleEditProposal(proposalToOpen);
+        setHasOpenedFromParam(true);
+        // Use a timeout to prevent router update from interfering with dialog opening animation
+        setTimeout(() => {
+            router.replace('/proposals', { scroll: false });
+        }, 100);
+      }
+    }
+  }, [openProposalId, proposalsLoading, customersLoading, proposalsWithCustomerData, hasOpenedFromParam, handleEditProposal, router]);
   
   const getSheetTitle = () => {
     if (sheetMode === 'new') return 'Nova Proposta';
@@ -463,7 +505,7 @@ const handleExportToExcel = async () => {
   const selectedCount = Object.keys(rowSelection).length;
 
   return (
-    <AppLayout>
+    <>
       <div className="flex items-center justify-between">
         <PageHeader title="Propostas" />
         <div className="flex items-center gap-2">
@@ -517,7 +559,7 @@ const handleExportToExcel = async () => {
             </Button>
         </div>
       </div>
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} onCloseAutoFocus={(e) => e.preventDefault()}>
         <DialogContent 
             className="max-w-3xl"
         >
@@ -555,6 +597,16 @@ const handleExportToExcel = async () => {
             onBulkStatusChange={handleBulkStatusChange}
         />
       )}
-    </AppLayout>
+    </>
   );
+}
+
+export default function ProposalsPage() {
+    return (
+        <AppLayout>
+            <Suspense fallback={<ProposalsPageSkeleton />}>
+                <ProposalsPageContent />
+            </Suspense>
+        </AppLayout>
+    )
 }

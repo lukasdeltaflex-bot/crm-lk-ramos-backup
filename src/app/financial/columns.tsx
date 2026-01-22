@@ -20,6 +20,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TableHead } from '@/components/ui/table';
 import { CommissionStatusCell } from './commission-status-cell';
+import Link from 'next/link';
 
 
 type ProposalWithCustomer = Proposal & { customer: Customer };
@@ -167,6 +168,14 @@ export const getColumns = (
     accessorKey: 'proposalNumber',
     header: 'Nº Proposta',
     id: 'proposalNumber',
+    cell: ({ row }) => {
+        const proposal = row.original;
+        return (
+            <Link href={`/proposals?open=${proposal.id}`} className="text-primary hover:underline font-medium">
+                {proposal.proposalNumber}
+            </Link>
+        )
+    }
   },
   {
     accessorKey: 'product',
