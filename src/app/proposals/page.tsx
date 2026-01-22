@@ -14,7 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ProposalForm } from './proposal-form';
-import type { Proposal, Customer, ProposalStatus, UserSettings } from '@/lib/types';
+import type { Proposal, Customer, ProposalStatus, UserSettings, CommissionStatus } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from '@/firebase';
 import { collection, doc, query, where, writeBatch, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
@@ -431,15 +431,29 @@ const handleExportToExcel = async () => {
     };
     
     try {
+        const typedData = data as Proposal;
+        const dateApproved = toISOString(typedData.dateApproved);
+        let commissionStatus = typedData.commissionStatus;
+
+        const isEligibleForSaldoAReceber = 
+            typedData.status === 'Pago' ||
+            typedData.status === 'Saldo Pago' ||
+            (typedData.status === 'Em Andamento' && !!dateApproved) ||
+            (typedData.status === 'Pendente' && !!dateApproved);
+        
+        if (isEligibleForSaldoAReceber && !commissionStatus) {
+            commissionStatus = 'Pendente';
+        }
+
         const proposalData = {
             ...data,
-            dateDigitized: toISOString(data.dateDigitized) || new Date().toISOString(),
-            dateApproved: toISOString(data.dateApproved),
-            datePaidToClient: toISOString(data.datePaidToClient),
-            debtBalanceArrivalDate: toISOString(data.debtBalanceArrivalDate),
+            dateDigitized: toISOString(typedData.dateDigitized) || new Date().toISOString(),
+            dateApproved: dateApproved,
+            datePaidToClient: toISOString(typedData.datePaidToClient),
+            debtBalanceArrivalDate: toISOString(typedData.debtBalanceArrivalDate),
+            commissionStatus: commissionStatus,
         };
         
-        // Remove any properties that are undefined, as Firestore doesn't support them.
         const cleanData = Object.fromEntries(
             Object.entries(proposalData).filter(([, v]) => v !== undefined)
         );

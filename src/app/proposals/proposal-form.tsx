@@ -63,6 +63,7 @@ const proposalSchema = z.object({
   customerId: z.string({ required_error: 'Selecione um cliente.' }),
   product: z.string({ required_error: 'Selecione um produto.' }),
   status: z.string({ required_error: 'Selecione um status.' }),
+  commissionStatus: z.string().optional(),
   selectedBenefitNumber: z.string().optional(),
 
   table: z.string().min(1, 'A tabela é obrigatória.'),
@@ -242,6 +243,7 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
         customerId: '',
         product: '',
         status: 'Em Andamento',
+        commissionStatus: undefined,
         selectedBenefitNumber: '',
         table: '',
         term: undefined,
