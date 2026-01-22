@@ -8,6 +8,8 @@ import { useMemo, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import { Button } from '../ui/button';
 import { Eye, EyeOff } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import {
   ChartContainer,
   ChartTooltip,
@@ -34,25 +36,20 @@ export function CommissionChart({ proposals }: CommissionChartProps) {
         proposals.forEach(p => {
             if (p.commissionStatus !== 'Pendente' && p.commissionPaymentDate && p.amountPaid) {
                 const date = new Date(p.commissionPaymentDate);
-                const month = date.toLocaleString('default', { month: 'short' });
-                if (!monthlyData[month]) {
-                    monthlyData[month] = 0;
+                const monthKey = format(date, 'MMM', { locale: ptBR }).replace('.', '').toLowerCase(); // e.g., jan, fev, mar
+                if (!monthlyData[monthKey]) {
+                    monthlyData[monthKey] = 0;
                 }
-                monthlyData[month] += p.amountPaid;
+                monthlyData[monthKey] += p.amountPaid;
             }
         });
 
         const monthOrder = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-        const currentYear = new Date().getFullYear();
         
-        return monthOrder.map(month => {
-            const date = new Date(`${month} 1, ${currentYear}`);
-            const monthName = date.toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
-            return {
-                name: monthName.charAt(0).toUpperCase() + monthName.slice(1),
-                total: monthlyData[month] || 0,
-            };
-        });
+        return monthOrder.map(monthName => ({
+            name: monthName,
+            total: monthlyData[monthName.toLowerCase()] || 0,
+        }));
 
     }, [proposals]);
 
