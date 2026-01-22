@@ -56,8 +56,16 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       }
     });
 
-    const expectedCommissionStatuses: ProposalStatus[] = ['Em Andamento', 'Aguardando Saldo', 'Saldo Pago', 'Pendente'];
-    const expectedCommissionProposals = items.filter(p => expectedCommissionStatuses.includes(p.status));
+    const expectedCommissionProposals = items.filter(p => {
+        // Only include proposals that are active and not yet secured for payment
+        if (p.status === 'Aguardando Saldo') {
+            return true;
+        }
+        if ((p.status === 'Em Andamento' || p.status === 'Pendente') && !p.dateApproved) {
+            return true;
+        }
+        return false;
+    });
     const totalCommissionValue = expectedCommissionProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
     
     const commissionReceivedProposals = items.filter(p => p.amountPaid && p.amountPaid > 0);
