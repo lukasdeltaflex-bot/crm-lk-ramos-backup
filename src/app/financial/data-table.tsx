@@ -108,7 +108,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     pageIndex: 0,
     pageSize: 10,
   });
-  const [statusFilter, setStatusFilter] = React.useState<CommissionStatus | 'Todos'>('Pendente');
+  const [statusFilter, setStatusFilter] = React.useState<CommissionStatus | 'Todos'>('Todos');
   const [globalFilter, setGlobalFilter] = React.useState('');
 
   const [startDateInput, setStartDateInput] = React.useState('');
