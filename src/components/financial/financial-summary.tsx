@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import type { Row } from '@tanstack/react-table';
-import type { Proposal, Customer } from '@/lib/types';
+import type { Proposal, Customer, ProposalStatus } from '@/lib/types';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import { formatCurrency } from '@/lib/utils';
 import { FileText, CircleDollarSign, CheckCircle, Hourglass, Info } from 'lucide-react';
@@ -26,6 +26,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
     totalProposals,
     commissionReceivedProposals,
     commissionPendingProposals,
+    expectedCommissionProposals,
   } = React.useMemo(() => {
     if (!rows || rows.length === 0) {
         return {
@@ -36,17 +37,16 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
             totalProposals: [],
             commissionReceivedProposals: [],
             commissionPendingProposals: [],
+            expectedCommissionProposals: [],
         };
     }
     
     const items = 'original' in rows[0] ? (rows as Row<ProposalWithCustomer>[]).map(r => r.original) : rows as ProposalWithCustomer[];
 
     let totalContracted = 0;
-    let totalCommissionValue = 0;
     let totalAmountPaid = 0;
 
     items.forEach((proposal) => {
-      totalCommissionValue += proposal.commissionValue || 0;
       totalAmountPaid += proposal.amountPaid || 0;
 
       if (proposal.commissionBase === 'net') {
@@ -55,6 +55,10 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
         totalContracted += proposal.grossAmount;
       }
     });
+
+    const expectedCommissionStatuses: ProposalStatus[] = ['Em Andamento', 'Aguardando Saldo', 'Saldo Pago', 'Pendente'];
+    const expectedCommissionProposals = items.filter(p => expectedCommissionStatuses.includes(p.status));
+    const totalCommissionValue = expectedCommissionProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
     
     const commissionReceivedProposals = items.filter(p => p.amountPaid && p.amountPaid > 0);
     
@@ -90,6 +94,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       totalProposals: items,
       commissionReceivedProposals,
       commissionPendingProposals,
+      expectedCommissionProposals,
     };
   }, [rows]);
   
@@ -109,7 +114,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       value: formatCurrency(totalCommissionValue),
       icon: CircleDollarSign,
       valueClassName: "text-blue-500",
-      proposals: totalProposals,
+      proposals: expectedCommissionProposals,
     },
     {
       title: "Comissão Recebida",
