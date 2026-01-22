@@ -25,7 +25,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
     pendingAmount,
     totalProposals,
     commissionReceivedProposals,
-    commissionPendingProposals,
+    proposalsForSaldoAReceber,
     expectedCommissionProposals,
   } = React.useMemo(() => {
     // This is the array of proposals for the current month, NOT what's shown in the table
@@ -39,7 +39,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
             pendingAmount: 0,
             totalProposals: [],
             commissionReceivedProposals: [],
-            commissionPendingProposals: [],
+            proposalsForSaldoAReceber: [],
             expectedCommissionProposals: [],
         };
     }
@@ -71,11 +71,16 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
     
     const commissionReceivedProposals = proposalsForMonth.filter(p => p.amountPaid && p.amountPaid > 0);
     
-    const commissionPendingProposals = proposalsForMonth.filter(
-      (p) => p.commissionStatus === 'Pendente' || p.commissionStatus === 'Parcial'
-    );
+    const proposalsForSaldoAReceber = proposalsForMonth.filter(p => {
+        const isPago = p.status === 'Pago';
+        const isEmAndamentoAverbado = p.status === 'Em Andamento' && !!p.dateApproved;
+        const isPendenteAverbado = p.status === 'Pendente' && !!p.dateApproved;
+        const isSaldoPago = p.status === 'Saldo Pago';
+        
+        return isPago || isEmAndamentoAverbado || isPendenteAverbado || isSaldoPago;
+    });
 
-    const pendingAmount = commissionPendingProposals.reduce((sum, p) => {
+    const pendingAmount = proposalsForSaldoAReceber.reduce((sum, p) => {
       return sum + ((p.commissionValue || 0) - (p.amountPaid || 0));
     }, 0);
 
@@ -86,7 +91,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       pendingAmount,
       totalProposals: proposalsForMonth,
       commissionReceivedProposals,
-      commissionPendingProposals,
+      proposalsForSaldoAReceber,
       expectedCommissionProposals,
     };
   }, [rows]);
@@ -121,7 +126,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       value: formatCurrency(pendingAmount),
       icon: Hourglass,
       valueClassName: "text-orange-500",
-      proposals: commissionPendingProposals,
+      proposals: proposalsForSaldoAReceber,
     },
   ];
 
