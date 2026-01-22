@@ -28,7 +28,10 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
     commissionPendingProposals,
     expectedCommissionProposals,
   } = React.useMemo(() => {
-    if (!rows || rows.length === 0) {
+    // This is the array of proposals for the current month, NOT what's shown in the table
+    const proposalsForMonth = 'original' in (rows?.[0] || {}) ? (rows as Row<ProposalWithCustomer>[]).map(r => r.original) : (rows as ProposalWithCustomer[]);
+
+    if (!proposalsForMonth || proposalsForMonth.length === 0) {
         return {
             totalContracted: 0,
             totalCommissionValue: 0,
@@ -40,37 +43,36 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
             expectedCommissionProposals: [],
         };
     }
+
+    const totalContracted = proposalsForMonth.reduce((sum, p) => {
+        if (p.commissionBase === 'net') {
+            return sum + (p.netAmount || 0);
+        }
+        // Default to gross amount if not 'net' or if commissionBase is undefined
+        return sum + (p.grossAmount || 0);
+    }, 0);
     
-    const items = 'original' in rows[0] ? (rows as Row<ProposalWithCustomer>[]).map(r => r.original) : rows as ProposalWithCustomer[];
-
-    let totalContracted = 0;
-    let totalAmountPaid = 0;
-
-    items.forEach((proposal) => {
-      totalAmountPaid += proposal.amountPaid || 0;
-
-      if (proposal.commissionBase === 'net') {
-        totalContracted += proposal.netAmount;
-      } else {
-        totalContracted += proposal.grossAmount;
-      }
-    });
-
-    const expectedCommissionProposals = items.filter(p => {
-        // Only include proposals that are active and not yet secured for payment
-        if (p.status === 'Aguardando Saldo') {
+    const totalAmountPaid = proposalsForMonth.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
+    
+    const expectedCommissionProposals = proposalsForMonth.filter(p => {
+        const hasDateApproved = !!p.dateApproved;
+        if (p.status === 'Em Andamento' && !hasDateApproved) {
             return true;
         }
-        if ((p.status === 'Em Andamento' || p.status === 'Pendente') && !p.dateApproved) {
+        if (p.status === 'Pendente' && !hasDateApproved) {
+            return true;
+        }
+        if (p.status === 'Aguardando Saldo') {
             return true;
         }
         return false;
     });
+
     const totalCommissionValue = expectedCommissionProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
     
-    const commissionReceivedProposals = items.filter(p => p.amountPaid && p.amountPaid > 0);
+    const commissionReceivedProposals = proposalsForMonth.filter(p => p.amountPaid && p.amountPaid > 0);
     
-    const commissionPendingProposals = items.filter(proposal => {
+    const commissionPendingProposals = proposalsForMonth.filter(proposal => {
         const hasUnpaidCommission = (proposal.commissionValue || 0) > (proposal.amountPaid || 0);
         if (!hasUnpaidCommission) {
             return false;
@@ -99,7 +101,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       totalCommissionValue,
       totalAmountPaid,
       pendingAmount,
-      totalProposals: items,
+      totalProposals: proposalsForMonth,
       commissionReceivedProposals,
       commissionPendingProposals,
       expectedCommissionProposals,

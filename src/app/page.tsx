@@ -138,11 +138,14 @@ export default function DashboardPage() {
   }
   
   const totalDigitado = React.useMemo(() => {
-    if (!filteredProposals) return 0;
+    if (!filteredProposals || filteredProposals.length === 0) {
+      return 0;
+    }
     return filteredProposals.reduce((sum, p) => {
         if (p.commissionBase === 'net') {
             return sum + (p.netAmount || 0);
         }
+        // Default to gross amount if not 'net' or if commissionBase is undefined
         return sum + (p.grossAmount || 0);
     }, 0);
   }, [filteredProposals]);
