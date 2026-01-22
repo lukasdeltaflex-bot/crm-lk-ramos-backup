@@ -89,8 +89,8 @@ export default function FinancialPage() {
     const end = endOfMonth(today);
 
     const currentMonthData = validProposals.filter(p => {
-        const proposalDate = p.commissionPaymentDate ? new Date(p.commissionPaymentDate) : (p.dateDigitized ? new Date(p.dateDigitized) : null);
-        if (!proposalDate) return false;
+        if (!p.dateDigitized) return false;
+        const proposalDate = new Date(p.dateDigitized);
         return proposalDate >= start && proposalDate <= end;
     });
 

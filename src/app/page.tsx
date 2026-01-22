@@ -173,7 +173,12 @@ export default function DashboardPage() {
   
   const totalDigitado = React.useMemo(() => {
     if (!filteredProposals) return 0;
-    return filteredProposals.reduce((sum, p) => sum + (p.grossAmount || 0), 0);
+    return filteredProposals.reduce((sum, p) => {
+        if (p.commissionBase === 'net') {
+            return sum + (p.netAmount || 0);
+        }
+        return sum + (p.grossAmount || 0);
+    }, 0);
   }, [filteredProposals]);
 
 
