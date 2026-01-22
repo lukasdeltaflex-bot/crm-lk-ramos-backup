@@ -354,10 +354,7 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
                                                         field.value === customer.id ? "opacity-100" : "opacity-0"
                                                     )}
                                                 />
-                                                <div>
-                                                    <p>{customer.name}</p>
-                                                    <p className="text-xs text-muted-foreground">{customer.cpf}</p>
-                                                </div>
+                                                {customer.name}
                                             </CommandItem>
                                             ))}
                                         </CommandGroup>
