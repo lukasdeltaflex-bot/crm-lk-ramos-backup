@@ -807,18 +807,20 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
         </ScrollArea>
         <div className="flex justify-between items-center pt-8 print:hidden">
             <div className="flex items-center gap-2">
-            {sheetMode !== 'new' && proposal && (
-                <Button type="button" variant="outline" onClick={() => onDuplicate(proposal)}>
-                    <Copy />
-                    Duplicar Proposta
-                </Button>
-            )}
-            {sheetMode !== 'new' && (
-                <Button type="button" variant="outline" onClick={() => window.print()}>
-                    <Printer />
-                    Imprimir
-                </Button>
-            )}
+                {sheetMode !== 'new' && (
+                    <>
+                        {proposal && (
+                            <Button type="button" variant="outline" onClick={() => onDuplicate(proposal)}>
+                                <Copy />
+                                Duplicar Proposta
+                            </Button>
+                        )}
+                        <Button type="button" variant="outline" onClick={() => window.print()}>
+                            <Printer />
+                            Imprimir
+                        </Button>
+                    </>
+                )}
             </div>
 
             {!isReadOnly && (
