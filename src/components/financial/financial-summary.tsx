@@ -72,6 +72,11 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
     const commissionReceivedProposals = proposalsForMonth.filter(p => p.amountPaid && p.amountPaid > 0);
     
     const proposalsForSaldoAReceber = proposalsForMonth.filter(p => {
+        // Propostas com comissão 'Paga' nunca devem entrar no saldo a receber.
+        if (p.commissionStatus === 'Paga') {
+            return false;
+        }
+        
         const isPago = p.status === 'Pago';
         const isEmAndamentoAverbado = p.status === 'Em Andamento' && !!p.dateApproved;
         const isPendenteAverbado = p.status === 'Pendente' && !!p.dateApproved;
@@ -81,7 +86,8 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
     });
 
     const pendingAmount = proposalsForSaldoAReceber.reduce((sum, p) => {
-      return sum + ((p.commissionValue || 0) - (p.amountPaid || 0));
+      const remaining = (p.commissionValue || 0) - (p.amountPaid || 0);
+      return sum + (remaining > 0 ? remaining : 0);
     }, 0);
 
     return {
