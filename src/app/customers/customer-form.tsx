@@ -69,7 +69,7 @@ type CustomerFormValues = z.infer<typeof customerSchema>;
 
 type FormCustomer = Omit<Customer, 'id' | 'ownerId' | 'numericId'>;
 
-type CustomerFormData = Partial<Omit<Customer, 'id' | 'ownerId']>;
+type CustomerFormData = Partial<Omit<Customer, 'id' | 'ownerId'>>;
 
 interface CustomerFormProps {
   customer?: Customer;
