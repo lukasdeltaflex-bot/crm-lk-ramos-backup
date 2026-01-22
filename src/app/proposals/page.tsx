@@ -47,7 +47,7 @@ export default function ProposalsPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
 
-  const [isSheetOpen, setIsSheetOpen] = React.useState(false);
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [selectedProposal, setSelectedProposal] = React.useState<ProposalWithCustomer | undefined>(undefined);
   const [sheetMode, setSheetMode] = React.useState<'new' | 'edit' | 'view'>('new');
   const [rowSelection, setRowSelection] = React.useState({});
@@ -93,21 +93,21 @@ export default function ProposalsPage() {
     setSelectedProposal(undefined);
     setDefaultValues(undefined);
     setSheetMode('new');
-    setIsSheetOpen(true);
+    setIsDialogOpen(true);
   }, []);
 
   const handleEditProposal = React.useCallback((proposal: ProposalWithCustomer) => {
     setSelectedProposal(proposal);
     setDefaultValues(undefined);
     setSheetMode('edit');
-    setIsSheetOpen(true);
+    setIsDialogOpen(true);
   }, []);
 
   const handleViewProposal = React.useCallback((proposal: ProposalWithCustomer) => {
     setSelectedProposal(proposal);
     setDefaultValues(undefined);
     setSheetMode('view');
-    setIsSheetOpen(true);
+    setIsDialogOpen(true);
   }, []);
   
   const handleDuplicateProposal = React.useCallback((proposal: ProposalWithCustomer) => {
@@ -126,7 +126,7 @@ export default function ProposalsPage() {
     setSelectedProposal(undefined);
     setDefaultValues(duplicatedData);
     setSheetMode('new');
-    setIsSheetOpen(true);
+    setIsDialogOpen(true);
 }, []);
 
 const handlePrint = React.useCallback(() => {
@@ -447,7 +447,7 @@ const handleExportToExcel = async () => {
       });
     }
 
-    setIsSheetOpen(false);
+    setIsDialogOpen(false);
   };
   
   const getSheetTitle = () => {
@@ -517,7 +517,7 @@ const handleExportToExcel = async () => {
             </Button>
         </div>
       </div>
-      <Dialog open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent 
             className="max-w-3xl"
         >

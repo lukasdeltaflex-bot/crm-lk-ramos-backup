@@ -21,9 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Info, Copy, Printer, ChevronsUpDown, Check } from 'lucide-react';
-import { Calendar } from '@/components/ui/calendar';
+import { Info, Copy, Printer, ChevronsUpDown, Check } from 'lucide-react';
 import { format, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -807,16 +805,14 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
         </ScrollArea>
         <div className="flex justify-between items-center pt-8 print:hidden">
             <div className="flex items-center gap-2">
-                {sheetMode !== 'new' && (
+                {sheetMode !== 'new' && proposal && (
                     <>
-                        {proposal && (
-                            <Button type="button" variant="outline" onClick={() => onDuplicate(proposal)}>
-                                <Copy />
-                                Duplicar Proposta
-                            </Button>
-                        )}
+                        <Button type="button" variant="outline" onClick={() => onDuplicate(proposal)}>
+                            <Copy className="mr-2 h-4 w-4" />
+                            Duplicar Proposta
+                        </Button>
                         <Button type="button" variant="outline" onClick={() => window.print()}>
-                            <Printer />
+                            <Printer className="mr-2 h-4 w-4" />
                             Imprimir
                         </Button>
                     </>
