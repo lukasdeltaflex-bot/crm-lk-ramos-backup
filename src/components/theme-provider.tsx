@@ -43,7 +43,12 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     colorTheme,
-    setColorTheme: setColorThemeState,
+    setColorTheme: (theme: string) => {
+      document.documentElement.classList.remove(...COLOR_THEMES.map(t => `theme-${t}`));
+      document.documentElement.classList.add(`theme-${theme}`);
+      localStorage.setItem("color-theme", theme);
+      setColorThemeState(theme);
+    },
   };
 
   return (
