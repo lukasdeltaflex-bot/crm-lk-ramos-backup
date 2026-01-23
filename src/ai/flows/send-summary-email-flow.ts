@@ -32,7 +32,7 @@ export async function sendSummaryEmail(input: SendSummaryEmailInput): Promise<Se
 const prompt = ai.definePrompt({
     name: 'sendSummaryEmailPrompt',
     input: { schema: SendSummaryEmailInputSchema },
-    output: { schema: z.string() },
+    output: { schema: z.string().nullable() },
     prompt: `Você é um assistente de envio de e-mails. Formate o seguinte resumo para ser enviado por e-mail para {{{recipientName}}}. O conteúdo é: {{{summaryContent}}}. Adicione uma saudação amigável e uma despedida. Apenas retorne o corpo do e-mail formatado.`,
 });
 
