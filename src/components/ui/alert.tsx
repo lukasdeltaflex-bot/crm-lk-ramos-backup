@@ -1,3 +1,5 @@
+"use client"
+
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
@@ -10,7 +12,7 @@ const alertVariants = cva(
       variant: {
         default: "bg-background text-foreground border-l-primary [&>svg]:text-primary",
         destructive:
-          "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive bg-destructive/10",
+          "border-destructive/50 text-destructive dark:text-destructive-foreground dark:border-destructive [&>svg]:text-destructive dark:[&>svg]:text-destructive-foreground bg-destructive/10",
         warning:
           "border-accent/50 text-accent-foreground dark:text-white [&>svg]:text-accent bg-accent/10",
       },
