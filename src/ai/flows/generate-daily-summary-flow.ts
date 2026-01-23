@@ -62,7 +62,7 @@ export async function generateDailySummary(input: GenerateDailySummaryInput): Pr
 const prompt = ai.definePrompt({
   name: 'generateDailySummaryPrompt',
   input: { schema: GenerateDailySummaryInputSchema },
-  output: { schema: GenerateDailySummaryOutputSchema },
+  output: { schema: z.string().nullable() },
   prompt: `Você é um assistente executivo para um agente de crédito. Sua tarefa é criar um resumo diário (um "briefing matinal") claro, conciso e bem formatado, com as pendências e alertas mais importantes do dia para o agente chamado {{{userName}}}.
 
 Use as informações fornecidas para construir o resumo. Se uma seção não tiver alertas, mencione que não há pendências para aquele tópico. Formate a saída usando markdown, com títulos claros para cada seção. O tom deve ser profissional, mas encorajador. A saída deve ser em português do Brasil.
@@ -138,6 +138,11 @@ const generateDailySummaryFlow = ai.defineFlow(
     }
     
     const { output } = await prompt(input);
+    
+    if (!output) {
+      return `Olá, ${input.userName}! Não foi possível gerar o resumo de pendências.`;
+    }
+
     return `Olá, ${input.userName}! Aqui está o seu resumo de pendências para hoje:\n\n${output}\n\nTenha um dia produtivo!`;
   }
 );
