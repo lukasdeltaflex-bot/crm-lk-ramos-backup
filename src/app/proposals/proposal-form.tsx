@@ -316,96 +316,98 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
             
             {/* Customer and Product */}
             <div className="space-y-4">
-                <FormField
-                    control={form.control}
-                    name="customerId"
-                    render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                        <FormLabel>Cliente</FormLabel>
-                        <Popover open={isCustomerPopoverOpen} onOpenChange={setIsCustomerPopoverOpen}>
-                        <PopoverTrigger asChild>
-                            <FormControl>
-                            <Button
-                                variant="outline"
-                                role="combobox"
-                                aria-expanded={isCustomerPopoverOpen}
-                                className={cn(
-                                "w-full justify-between",
-                                !field.value && "text-muted-foreground"
-                                )}
-                                disabled={isReadOnly}
-                            >
-                                {field.value
-                                ? customers.find(
-                                    (customer) => customer.id === field.value
-                                    )?.name
-                                : "Selecione um cliente"}
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                            </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                            <Command>
-                            <CommandInput placeholder="Pesquisar por nome ou CPF..." />
-                            <CommandList>
-                                <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
-                                <CommandGroup>
-                                {customers.map((customer) => (
-                                    <CommandItem
-                                    value={`${customer.name} ${customer.cpf}`} // Value for searching
-                                    key={customer.id}
-                                    onSelect={() => {
-                                        form.setValue("customerId", customer.id);
-                                        setIsCustomerPopoverOpen(false);
-                                    }}
-                                    >
-                                    <Check
-                                        className={cn(
-                                        "mr-2 h-4 w-4",
-                                        customer.id === field.value
-                                            ? "opacity-100"
-                                            : "opacity-0"
-                                        )}
-                                    />
-                                    <div>
-                                        <p>{customer.name}</p>
-                                        <p className="text-xs text-muted-foreground">{customer.cpf}</p>
-                                    </div>
-                                    </CommandItem>
-                                ))}
-                                </CommandGroup>
-                            </CommandList>
-                            </Command>
-                        </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="product"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Produto</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly}>
+              <FormField
+                control={form.control}
+                name="customerId"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Cliente</FormLabel>
+                    <Popover open={isCustomerPopoverOpen} onOpenChange={setIsCustomerPopoverOpen}>
+                      <PopoverTrigger asChild>
                         <FormControl>
-                            <SelectTrigger>
-                            <SelectValue placeholder="Selecione o produto" />
-                            </SelectTrigger>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={isCustomerPopoverOpen}
+                            className={cn(
+                              "w-full justify-between",
+                              !field.value && "text-muted-foreground"
+                            )}
+                            disabled={isReadOnly}
+                          >
+                            {field.value
+                              ? customers.find(
+                                  (customer) => customer.id === field.value
+                                )?.name
+                              : "Selecione um cliente"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
                         </FormControl>
-                        <SelectContent>
-                            {productTypes.map((type) => (
-                            <SelectItem key={type} value={type}>
-                                {type}
-                            </SelectItem>
-                            ))}
-                        </SelectContent>
-                        </Select>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                        <Command>
+                          <CommandInput placeholder="Pesquisar por nome ou CPF..." />
+                          <CommandList>
+                            <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
+                            <CommandGroup>
+                              {customers.map((customer) => (
+                                <CommandItem
+                                  value={`${customer.name} ${customer.cpf}`}
+                                  key={customer.id}
+                                  onSelect={() => {
+                                    form.setValue("customerId", customer.id);
+                                    setIsCustomerPopoverOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value === customer.id
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  <div>
+                                    <p>{customer.name}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {customer.cpf}
+                                    </p>
+                                  </div>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="product"
+                render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Produto</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly}>
+                    <FormControl>
+                        <SelectTrigger>
+                        <SelectValue placeholder="Selecione o produto" />
+                        </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                        {productTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
+                            {type}
+                        </SelectItem>
+                        ))}
+                    </SelectContent>
+                    </Select>
+                    <FormMessage />
+                </FormItem>
+                )}
+              />
             </div>
             
             <Separator />

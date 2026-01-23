@@ -575,15 +575,14 @@ const handleExportToExcel = async () => {
         </div>
       </div>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent 
-            className="max-w-3xl"
-            onPointerDownOutside={(e) => {
-              // This is the fix: prevent the dialog from closing when interacting with the popover content.
-              const target = e.target as HTMLElement;
-              if (target.closest('[data-radix-popper-content-wrapper]')) {
-                e.preventDefault();
-              }
-            }}
+        <DialogContent
+          className="max-w-3xl"
+          onPointerDownOutside={(e) => {
+            const target = e.target as HTMLElement;
+            if (target.closest('[data-radix-popper-content-wrapper]')) {
+              e.preventDefault();
+            }
+          }}
         >
           <DialogHeader className="print:hidden">
             <DialogTitle>{getSheetTitle()}</DialogTitle>
