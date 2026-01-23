@@ -71,6 +71,24 @@
 }
 
 @layer base {
+  /* Theme Padrão (Default) */
+  .theme-padrão {
+    --primary: 217 33% 25%;
+    --primary-foreground: 210 40% 98%;
+    --accent: 45 83% 50%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --ring: 217 33% 25%;
+    --sidebar-primary: 45 83% 50%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-ring: 45 83% 50%;
+  }
+  .dark.theme-padrão {
+    --primary: 217 33% 30%;
+    --primary-foreground: 210 20% 98%;
+    --accent: 45 83% 50%;
+    --accent-foreground: 210 20% 98%;
+    --ring: 217 33% 30%;
+  }
   /* Theme Zinc */
   .theme-zinc {
     --primary: 240 5.9% 10%;

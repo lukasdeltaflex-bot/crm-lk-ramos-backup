@@ -5,7 +5,7 @@ import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "n
 import { type ThemeProviderProps } from "next-themes/dist/types"
 
 const COLOR_THEMES = [
-  "zinc", "blue", "green", "violet", "orange", "red", "rose", "gray", 
+  "padrão", "zinc", "blue", "green", "violet", "orange", "red", "rose", "gray", 
   "yellow", "cyan", "purple", "magenta", "emerald", "burnt-orange", "sky-blue", "pink",
   "mint", "lavender", "peach", "slate"
 ];
@@ -22,7 +22,7 @@ const ColorThemeContext = React.createContext<{
 
 
 function ColorThemeProvider({ children }: { children: React.ReactNode }) {
-  const [colorTheme, setColorThemeState] = React.useState('zinc');
+  const [colorTheme, setColorThemeState] = React.useState('padrão');
   const [isMounted, setIsMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -44,10 +44,9 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
   const value = {
     colorTheme,
     setColorTheme: (theme: string) => {
-      document.documentElement.classList.remove(...COLOR_THEMES.map(t => `theme-${t}`));
-      document.documentElement.classList.add(`theme-${theme}`);
-      localStorage.setItem("color-theme", theme);
-      setColorThemeState(theme);
+      if (COLOR_THEMES.includes(theme)) {
+        setColorThemeState(theme);
+      }
     },
   };
 
