@@ -579,6 +579,11 @@ const handleExportToExcel = async () => {
           className="max-w-3xl"
           onPointerDownOutside={(e) => {
             const target = e.target as HTMLElement;
+            // Radix-UI's popover/select components render their content in a portal,
+            // which is outside the DOM tree of the dialog. This causes the dialog
+            // to think a click on the popover is a click "outside", thus closing it.
+            // We prevent this default behavior if the click is on any element
+            // that is part of a popover.
             if (target.closest('[data-radix-popper-content-wrapper]')) {
               e.preventDefault();
             }

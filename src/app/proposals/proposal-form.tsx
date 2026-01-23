@@ -164,6 +164,7 @@ const MaskedDatePicker = ({ name, label, control, isReadOnly }: { name: any, lab
 export function ProposalForm({ proposal, customers, userSettings, isReadOnly, onSubmit, onDuplicate, defaultValues, sheetMode }: ProposalFormProps) {
   const { user } = useUser();
   const firestore = useFirestore();
+  const [isCustomerPopoverOpen, setIsCustomerPopoverOpen] = useState(false);
   const [tempProposalId, setTempProposalId] = useState<string | undefined>(undefined);
   const [isClient, setIsClient] = useState(false);
 
@@ -322,7 +323,7 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Cliente</FormLabel>
-                    <Popover>
+                    <Popover open={isCustomerPopoverOpen} onOpenChange={setIsCustomerPopoverOpen}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -334,42 +335,45 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
                             )}
                             disabled={isReadOnly}
                           >
-                            {selectedCustomer?.name ?? "Selecione um cliente"}
+                            {field.value
+                              ? customers.find(
+                                  (customer) => customer.id === field.value
+                                )?.name
+                              : "Selecione um cliente"}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
                         <Command>
-                          <CommandInput placeholder="Pesquisar cliente por nome ou CPF..." />
+                          <CommandInput placeholder="Pesquisar por nome ou CPF..." />
                           <CommandList>
-                            <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
-                            <CommandGroup>
+                              <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
+                              <CommandGroup>
                               {customers.map((customer) => (
-                                <CommandItem
+                                  <CommandItem
                                   value={`${customer.name} ${customer.cpf}`}
                                   key={customer.id}
                                   onSelect={() => {
-                                    form.setValue("customerId", customer.id);
+                                      form.setValue("customerId", customer.id)
+                                      setIsCustomerPopoverOpen(false)
                                   }}
-                                >
+                                  >
                                   <Check
-                                    className={cn(
+                                      className={cn(
                                       "mr-2 h-4 w-4",
                                       customer.id === field.value
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
                                   />
                                   <div>
-                                    <p>{customer.name}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {customer.cpf}
-                                    </p>
+                                      <p>{customer.name}</p>
+                                      <p className="text-xs text-muted-foreground">{customer.cpf}</p>
                                   </div>
-                                </CommandItem>
+                                  </CommandItem>
                               ))}
-                            </CommandGroup>
+                              </CommandGroup>
                           </CommandList>
                         </Command>
                       </PopoverContent>
