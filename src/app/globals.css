@@ -68,9 +68,7 @@
     --chart-4: 215 20.2% 65.1%;
     --chart-5: 222.2 47.4% 11.2%;
   }
-}
 
-@layer base {
   /* Theme Padrão (Default) */
   :root.theme-padrão {
     --primary: 217 33% 25%;
