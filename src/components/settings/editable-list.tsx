@@ -99,7 +99,7 @@ export function EditableList({ title, items, setItems }: EditableListProps) {
                                 <Trash2 className="h-3 w-3" />
                             </button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent>
+                        <AlertDialogContent onCloseAutoFocus={(e) => e.preventDefault()}>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                                 <AlertDialogDescription>

@@ -486,7 +486,7 @@ const handleExportToPdf = async () => {
                                 Remover ({selectedCount})
                             </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent>
+                        <AlertDialogContent onCloseAutoFocus={(e) => e.preventDefault()}>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                                 <AlertDialogDescription>

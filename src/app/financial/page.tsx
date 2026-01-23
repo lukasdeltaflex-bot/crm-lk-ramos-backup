@@ -473,7 +473,7 @@ export default function FinancialPage() {
       </div>
 
        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="w-full max-w-md">
+        <SheetContent className="w-full max-w-md" onCloseAutoFocus={(e) => e.preventDefault()}>
           <SheetHeader>
             <SheetTitle>Editar Comissão</SheetTitle>
           </SheetHeader>
