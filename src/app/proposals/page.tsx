@@ -577,12 +577,6 @@ const handleExportToExcel = async () => {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent
           className="max-w-3xl"
-          onInteractOutside={(e) => {
-            // Prevent closing when interacting with the command popover
-            if ((e.target as HTMLElement).closest('[cmdk-root]')) {
-              e.preventDefault();
-            }
-          }}
         >
           <DialogHeader className="print:hidden">
             <DialogTitle>{getSheetTitle()}</DialogTitle>

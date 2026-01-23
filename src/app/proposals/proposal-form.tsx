@@ -36,7 +36,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { ProposalAttachmentUploader } from '@/components/proposals/proposal-attachment-uploader';
 import { useUser } from '@/firebase';
 import { doc, collection } from 'firebase/firestore'; // Only for ID generation
@@ -167,6 +167,8 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
   const [tempProposalId, setTempProposalId] = useState<string | undefined>(undefined);
   const [isClient, setIsClient] = useState(false);
   const [isCustomerPopoverOpen, setIsCustomerPopoverOpen] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
 
   const productTypes = userSettings?.productTypes || configData.productTypes;
   const proposalStatuses = userSettings?.proposalStatuses || configData.proposalStatuses;
@@ -200,6 +202,18 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
   const selectedCustomer = useMemo(() => {
     return customers.find(c => c.id === selectedCustomerId);
   }, [customers, selectedCustomerId]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setIsCustomerPopoverOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [searchContainerRef]);
 
   useEffect(() => {
     const currentBenefit = form.getValues('selectedBenefitNumber');
@@ -320,7 +334,7 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
                 control={form.control}
                 name="customerId"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
+                  <FormItem className="flex flex-col" ref={searchContainerRef}>
                     <FormLabel>Cliente</FormLabel>
                     <Popover open={isCustomerPopoverOpen} onOpenChange={setIsCustomerPopoverOpen}>
                       <PopoverTrigger asChild>
@@ -328,25 +342,21 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
                           <Button
                             variant="outline"
                             role="combobox"
-                            aria-expanded={isCustomerPopoverOpen}
                             className={cn(
                               "w-full justify-between",
                               !field.value && "text-muted-foreground"
                             )}
+                            onClick={() => setIsCustomerPopoverOpen(prev => !prev)}
                             disabled={isReadOnly}
                           >
-                            {field.value
-                              ? customers.find(
-                                  (customer) => customer.id === field.value
-                                )?.name
-                              : "Selecione um cliente"}
+                            {selectedCustomer?.name ?? "Selecione um cliente"}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
                         <Command>
-                          <CommandInput placeholder="Pesquisar por nome ou CPF..." />
+                          <CommandInput placeholder="Pesquisar cliente por nome ou CPF..." />
                           <CommandList>
                             <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
                             <CommandGroup>
@@ -362,7 +372,7 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
                                   <Check
                                     className={cn(
                                       "mr-2 h-4 w-4",
-                                      field.value === customer.id
+                                      customer.id === field.value
                                         ? "opacity-100"
                                         : "opacity-0"
                                     )}
