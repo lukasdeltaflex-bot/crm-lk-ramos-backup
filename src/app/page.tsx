@@ -137,7 +137,9 @@ export default function DashboardPage() {
         }
         return `Exibindo dados de ${from} a ${to}`;
     }
-    return `Exibindo dados para o mês de ${format(new Date(), 'MMMM', { locale: ptBR })}`;
+    const monthName = format(new Date(), 'MMMM', { locale: ptBR });
+    const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+    return `Exibindo dados para o mês de ${capitalizedMonth}`;
   }
   
   const totalDigitado = React.useMemo(() => {
@@ -237,7 +239,7 @@ export default function DashboardPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex-1 min-w-fit">
                 <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
-                <p className='text-sm text-muted-foreground'>{getFilterDescription()}</p>
+                <p className='text-base text-muted-foreground'>{getFilterDescription()}</p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
                 <Input 
