@@ -578,8 +578,8 @@ const handleExportToExcel = async () => {
         <DialogContent
           className="max-w-3xl"
           onInteractOutside={(e) => {
-            const target = e.target as HTMLElement;
-            if (target.closest('[data-radix-popper-content-wrapper]')) {
+            // Prevent closing when interacting with the command popover
+            if ((e.target as HTMLElement).closest('[cmdk-root]')) {
               e.preventDefault();
             }
           }}
