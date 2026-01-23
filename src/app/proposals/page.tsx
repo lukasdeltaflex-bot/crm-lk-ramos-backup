@@ -575,16 +575,7 @@ const handleExportToExcel = async () => {
         </div>
       </div>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent
-          className="max-w-3xl"
-          onInteractOutside={(e) => {
-            const target = e.target as HTMLElement;
-            // Impede que o Dialog seja fechado quando a interação ocorre dentro de um Popover (como a busca de clientes)
-            if (target.closest('[data-radix-popper-content-wrapper]')) {
-              e.preventDefault();
-            }
-          }}
-        >
+        <DialogContent className="max-w-3xl">
           <DialogHeader className="print:hidden">
             <DialogTitle>{getSheetTitle()}</DialogTitle>
           </DialogHeader>
