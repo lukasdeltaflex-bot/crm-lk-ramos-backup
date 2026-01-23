@@ -100,7 +100,7 @@ const sendSummaryEmailFlow = ai.defineFlow(
     if (!hasAnyAlert) {
         summaryContent = `Nenhuma pendência ou alerta importante para hoje. Tenha um ótimo dia!`;
     } else {
-        let summary = `Aqui está o seu resumo de pendências para hoje:\n\n`;
+        let summary = ``;
 
         if (summaryData.birthdayAlerts && summaryData.birthdayAlerts.length > 0) {
             summary += '### 🎂 Alertas de Aniversário (Clientes Próximos de 75 Anos)\n';
@@ -154,11 +154,18 @@ const sendSummaryEmailFlow = ai.defineFlow(
     });
 
     const emailHtmlBody = `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
         <p>Olá, ${input.recipientName}!</p>
         <p>Aqui está o seu resumo diário de pendências:</p>
-        <div style="background-color: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; white-space: pre-wrap; font-family: monospace;">${summaryContent.replace(/### (.*?)\n/g, '<h3 style="margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">$1</h3>').replace(/\- \*\*(.*?)\*\*: (.*?)\n/g, '<div><strong>$1:</strong> $2</div>')}</div>
-        <p>Atenciosamente,<br>Seu Assistente LK Ramos</p>
+        <div style="background-color: #f7f7f7; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; font-size: 14px;">
+          ${summaryContent
+            .replace(/\n\n/g, '<br>')
+            .replace(/### (.*?)\n/g, '<h3 style="margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px; font-size: 16px;">$1</h3>')
+            .replace(/\- \*\*(.*?)\*\*:/g, '<div style="margin-bottom: 10px;"><strong>$1:</strong>')
+            .replace(/\n/g, '</div>')
+          }
+        </div>
+        <p style="margin-top: 20px;">Atenciosamente,<br>Seu Assistente LK Ramos</p>
       </div>
     `.trim();
 
