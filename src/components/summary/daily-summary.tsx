@@ -3,12 +3,14 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Bot, Send, BellRing, Clock, BadgePercent, Hourglass, Coins, X, Info } from 'lucide-react';
+import { Bot, Send, BellRing, Clock, BadgePercent, Hourglass, Coins, X, Info, Loader2 } from 'lucide-react';
 import type { Customer, Proposal, UserProfile } from '@/lib/types';
 import { Skeleton } from '../ui/skeleton';
 import { differenceInDays } from 'date-fns';
 import { calculateBusinessDays } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { toast } from '@/hooks/use-toast';
+import { sendSummaryEmail } from '@/ai/flows/send-summary-email-flow';
 
 interface DailySummaryProps {
   proposals: Proposal[];
@@ -52,6 +54,7 @@ function SummaryAlertItem({
 export function DailySummary({ proposals, customers, userProfile }: DailySummaryProps) {
   const [dismissedItems, setDismissedItems] = useState<string[]>([]);
   const [isClient, setIsClient] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   // Load dismissed items from localStorage on initial render
   useEffect(() => {
@@ -155,6 +158,97 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
     return { birthdayAlerts, followUpReminders, commissionReminders, debtBalanceReminders, partialCommissionReminders };
   }, [proposals, customers]);
 
+  const handleSendEmail = async () => {
+    if (!userProfile || !userProfile.email) {
+      toast({
+        variant: 'destructive',
+        title: 'E-mail não encontrado',
+        description: 'Não foi possível encontrar o e-mail do seu perfil para enviar o resumo.',
+      });
+      return;
+    }
+
+    setIsSending(true);
+    try {
+        const { birthdayAlerts, followUpReminders, commissionReminders, debtBalanceReminders, partialCommissionReminders } = alertData;
+        
+        const hasAnyAlert = birthdayAlerts.length > 0 || followUpReminders.length > 0 || commissionReminders.length > 0 || debtBalanceReminders.length > 0 || partialCommissionReminders.length > 0;
+
+        let summaryContent = '';
+        if (!hasAnyAlert) {
+            summaryContent = `Nenhuma pendência ou alerta importante para hoje. Tenha um ótimo dia!`;
+        } else {
+            let summary = 'Aqui está o seu resumo de pendências para hoje:\n\n';
+            
+            if (birthdayAlerts.length > 0) {
+                summary += '### 🎂 Alertas de Aniversário (Clientes Próximos de 75 Anos)\n';
+                birthdayAlerts.forEach(alert => {
+                    summary += `- **${alert.customerName}**: Cliente completará ${alert.age} anos em breve. Verifique as políticas de crédito para esta faixa etária.\n`;
+                });
+                summary += '\n';
+            }
+            
+            if (followUpReminders.length > 0) {
+                summary += '### ⏰ Lembretes de Acompanhamento (Follow-up)\n';
+                followUpReminders.forEach(reminder => {
+                    summary += `- **${reminder.customerName} (Prop. nº ${reminder.proposalNumber})**: A proposta está "Em Andamento" há ${reminder.daysOpen} dias. Sugestão: entre em contato para uma atualização.\n`;
+                });
+                summary += '\n';
+            }
+
+            if (commissionReminders.length > 0) {
+                summary += '### 💰 Alertas de Comissão Pendente\n';
+                commissionReminders.forEach(reminder => {
+                    summary += `- **${reminder.customerName} (Prop. nº ${reminder.proposalNumber})**: A comissão está pendente há ${reminder.daysPending} dias. Sugestão: verifique o pagamento com a promotora/banco.\n`;
+                });
+                summary += '\n';
+            }
+
+            if (partialCommissionReminders.length > 0) {
+                summary += '### 💰 Lembretes de Comissão Parcial\n';
+                partialCommissionReminders.forEach(reminder => {
+                    summary += `- **${reminder.customerName} (Prop. nº ${reminder.proposalNumber})**: Recebido R$ ${reminder.amountPaid.toFixed(2)} de R$ ${reminder.totalCommission.toFixed(2)} há ${reminder.daysSincePayment} dias. Sugestão: cobrar o valor restante.\n`;
+                });
+                summary += '\n';
+            }
+            
+            if (debtBalanceReminders.length > 0) {
+                summary += '### ⏳ Alertas de Saldo Devedor (Portabilidade)\n';
+                debtBalanceReminders.forEach(reminder => {
+                    summary += `- **${reminder.customerName} (Prop. nº ${reminder.proposalNumber})**: Aguardando saldo há ${reminder.daysWaiting} dias úteis. O prazo está se esgotando, verifique o status.\n`;
+                });
+                summary += '\n';
+            }
+            summaryContent = summary;
+        }
+
+      const result = await sendSummaryEmail({
+        recipientName: userProfile.displayName || userProfile.fullName || 'Usuário',
+        recipientEmail: userProfile.email,
+        summaryContent: summaryContent,
+      });
+
+      if (result.success) {
+        toast({
+          title: 'E-mail Enviado!',
+          description: `Um resumo das suas pendências foi enviado para ${userProfile.email}.`,
+        });
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+      console.error('Error sending summary email:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Falha no Envio',
+        description: 'Não foi possível enviar o e-mail de resumo. Tente novamente mais tarde.',
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+
   if (!isClient) {
     return (
         <Card>
@@ -203,9 +297,18 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
                 Um resumo de todos os alertas e pendências importantes para o seu dia.
             </CardDescription>
         </div>
-        <Button disabled={true}>
-            <Send className="mr-2 h-4 w-4" />
-            Enviar E-mail de Resumo
+        <Button onClick={handleSendEmail} disabled={isSending}>
+            {isSending ? (
+                <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Enviando...
+                </>
+            ) : (
+                <>
+                    <Send className="mr-2 h-4 w-4" />
+                    Enviar E-mail de Resumo
+                </>
+            )}
         </Button>
       </CardHeader>
       <CardContent>
