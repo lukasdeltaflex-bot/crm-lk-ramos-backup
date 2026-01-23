@@ -323,7 +323,7 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Cliente</FormLabel>
-                    <Popover modal={true} open={isCustomerPopoverOpen} onOpenChange={setIsCustomerPopoverOpen}>
+                    <Popover modal={false} open={isCustomerPopoverOpen} onOpenChange={setIsCustomerPopoverOpen}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
