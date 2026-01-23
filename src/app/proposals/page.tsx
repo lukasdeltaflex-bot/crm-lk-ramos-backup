@@ -187,12 +187,17 @@ const handleExportToExcel = async () => {
 
     const { utils, writeFile } = await import('xlsx');
     const selectedRows = table.getFilteredSelectedRowModel().rows;
+    let rowsToExport = selectedRows;
 
-    if (selectedRows.length === 0) {
+    if (rowsToExport.length === 0) {
+        rowsToExport = table.getFilteredRowModel().rows;
+    }
+
+    if (rowsToExport.length === 0) {
         toast({
             variant: "destructive",
-            title: "Nenhuma proposta selecionada",
-            description: "Selecione as propostas que deseja exportar.",
+            title: "Nenhuma proposta para exportar",
+            description: "A tabela está vazia ou os filtros não retornaram resultados.",
         });
         return;
     }
@@ -221,7 +226,7 @@ const handleExportToExcel = async () => {
     const headers = visibleColumns.map(c => idMap[c.id] || c.id);
 
     const dataForSheet = [headers];
-    selectedRows.forEach(row => {
+    rowsToExport.forEach(row => {
         const rowData: any[] = [];
         visibleColumns.forEach(col => {
             let value = row.getValue(col.id as any);
@@ -251,12 +256,17 @@ const handleExportToExcel = async () => {
     const { default: autoTable } = await import('jspdf-autotable');
 
     const selectedRows = table.getFilteredSelectedRowModel().rows;
+    let rowsToExport = selectedRows;
 
-    if (selectedRows.length === 0) {
+    if (rowsToExport.length === 0) {
+        rowsToExport = table.getFilteredRowModel().rows;
+    }
+
+    if (rowsToExport.length === 0) {
         toast({
             variant: "destructive",
-            title: "Nenhuma proposta selecionada",
-            description: "Selecione as propostas que deseja exportar.",
+            title: "Nenhuma proposta para exportar",
+            description: "A tabela está vazia ou os filtros não retornaram resultados.",
         });
         return;
     }
@@ -284,7 +294,7 @@ const handleExportToExcel = async () => {
 
     const head = [visibleColumns.map(c => idMap[c.id] || c.id)];
 
-    const body = selectedRows.map(row => {
+    const body = rowsToExport.map(row => {
         const rowData: any[] = [];
         visibleColumns.forEach(col => {
             let value = row.getValue(col.id as any);
@@ -534,45 +544,43 @@ const handleExportToExcel = async () => {
         <PageHeader title="Propostas" />
         <div className="flex items-center gap-2">
             {selectedCount > 0 && (
-                <>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button variant="destructive">
-                                <Trash2 />
-                                Cancelar ({selectedCount})
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent onCloseAutoFocus={(e) => e.preventDefault()}>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Essa ação não pode ser desfeita. Isso irá cancelar permanentemente {selectedCount} proposta(s).
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Voltar</AlertDialogCancel>
-                                <AlertDialogAction onClick={handleBulkDelete}>Cancelar Propostas</AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline">
-                                <FileDown />
-                                Exportar ({selectedCount})
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" onCloseAutoFocus={(e) => e.preventDefault()}>
-                            <DropdownMenuItem onSelect={handleExportToExcel}>
-                                Exportar para Excel (.xlsx)
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onSelect={handleExportToPdf}>
-                                Exportar para PDF (.pdf)
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive">
+                            <Trash2 />
+                            Cancelar ({selectedCount})
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent onCloseAutoFocus={(e) => e.preventDefault()}>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Essa ação não pode ser desfeita. Isso irá cancelar permanentemente {selectedCount} proposta(s).
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Voltar</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleBulkDelete}>Cancelar Propostas</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             )}
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline">
+                        <FileDown />
+                        Exportar
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" onCloseAutoFocus={(e) => e.preventDefault()}>
+                    <DropdownMenuItem onSelect={handleExportToExcel}>
+                        Exportar para Excel (.xlsx)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={handleExportToPdf}>
+                        Exportar para PDF (.pdf)
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
             <Button variant="outline" onClick={handlePrint}>
                 <Printer />
                 Imprimir Relatório

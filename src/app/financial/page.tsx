@@ -269,12 +269,17 @@ export default function FinancialPage() {
 
     const { utils, writeFile } = await import('xlsx');
     const selectedRows = table.getFilteredSelectedRowModel().rows;
+    let rowsToExport = selectedRows;
 
-    if (selectedRows.length === 0) {
+    if (rowsToExport.length === 0) {
+        rowsToExport = table.getFilteredRowModel().rows;
+    }
+
+    if (rowsToExport.length === 0) {
         toast({
             variant: "destructive",
-            title: "Nenhuma proposta selecionada",
-            description: "Selecione as propostas que deseja exportar.",
+            title: "Nenhuma proposta para exportar",
+            description: "A tabela está vazia ou os filtros não retornaram resultados.",
         });
         return;
     }
@@ -301,7 +306,7 @@ export default function FinancialPage() {
     const headers = visibleColumns.map(c => idMap[c.id] || c.id);
 
     const dataForSheet = [headers];
-    selectedRows.forEach(row => {
+    rowsToExport.forEach(row => {
         const rowData: any[] = [];
         const originalRow = row.original;
         visibleColumns.forEach(col => {
@@ -343,12 +348,17 @@ export default function FinancialPage() {
     const { default: autoTable } = await import('jspdf-autotable');
 
     const selectedRows = table.getFilteredSelectedRowModel().rows;
+    let rowsToExport = selectedRows;
 
-    if (selectedRows.length === 0) {
+    if (rowsToExport.length === 0) {
+        rowsToExport = table.getFilteredRowModel().rows;
+    }
+
+    if (rowsToExport.length === 0) {
         toast({
             variant: "destructive",
-            title: "Nenhuma proposta selecionada",
-            description: "Selecione as propostas que deseja exportar.",
+            title: "Nenhuma proposta para exportar",
+            description: "A tabela está vazia ou os filtros não retornaram resultados.",
         });
         return;
     }
@@ -374,7 +384,7 @@ export default function FinancialPage() {
 
     const head = [visibleColumns.map(c => idMap[c.id] || c.id)];
 
-    const body = selectedRows.map(row => {
+    const body = rowsToExport.map(row => {
         const rowData: any[] = [];
         const originalRow = row.original;
         visibleColumns.forEach(col => {
@@ -416,31 +426,27 @@ export default function FinancialPage() {
 
   const columns = React.useMemo(() => getColumns({ onEdit: handleEditCommission, onStatusUpdate: handleCommissionStatusUpdate }), [handleEditCommission, handleCommissionStatusUpdate]);
 
-  const selectedCount = Object.keys(rowSelection).length;
-
   return (
     <AppLayout>
       <div className="flex items-center justify-between print:hidden">
         <PageHeader title="Controle Financeiro" />
         <div className="flex items-center gap-2">
-            {selectedCount > 0 && (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline">
-                            <FileDown />
-                            Exportar ({selectedCount})
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem onSelect={handleExportToExcel}>
-                            Exportar para Excel (.xlsx)
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onSelect={handleExportToPdf}>
-                            Exportar para PDF (.pdf)
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            )}
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline">
+                        <FileDown />
+                        Exportar
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={handleExportToExcel}>
+                        Exportar para Excel (.xlsx)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={handleExportToPdf}>
+                        Exportar para PDF (.pdf)
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
             <Dialog open={isReconciliationOpen} onOpenChange={setIsReconciliationOpen}>
                 <DialogTrigger asChild>
                     <Button variant="outline">
@@ -485,7 +491,7 @@ export default function FinancialPage() {
       </Sheet>
 
       <Dialog open={!!dialogData} onOpenChange={(isOpen) => !isOpen && setDialogData(null)}>
-        <DialogContent className="max-w-4xl h-[90vh] flex flex-col" >
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col" onCloseAutoFocus={(e) => e.preventDefault()}>
             <DialogHeader>
                 <DialogTitle>{dialogData?.title}</DialogTitle>
             </DialogHeader>
