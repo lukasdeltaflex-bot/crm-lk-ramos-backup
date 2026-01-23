@@ -28,14 +28,6 @@ export async function sendSummaryEmail(input: SendSummaryEmailInput): Promise<Se
   return sendSummaryEmailFlow(input);
 }
 
-// Este prompt é um placeholder. Em um cenário real, você usaria um serviço de e-mail.
-const prompt = ai.definePrompt({
-    name: 'sendSummaryEmailPrompt',
-    input: { schema: SendSummaryEmailInputSchema },
-    output: { schema: z.string().nullable() },
-    prompt: `Você é um assistente de envio de e-mails. Formate o seguinte resumo para ser enviado por e-mail para {{{recipientName}}}. O conteúdo é: {{{summaryContent}}}. Adicione uma saudação amigável e uma despedida. Apenas retorne o corpo do e-mail formatado.`,
-});
-
 const sendSummaryEmailFlow = ai.defineFlow(
   {
     name: 'sendSummaryEmailFlow',
@@ -43,11 +35,20 @@ const sendSummaryEmailFlow = ai.defineFlow(
     outputSchema: SendSummaryEmailOutputSchema,
   },
   async (input) => {
-    // Simula a formatação do e-mail.
-    const { output: emailBody } = await prompt(input);
+    // Formata o e-mail diretamente no código, sem chamar a IA.
+    const emailBody = `Olá, ${input.recipientName}!
+
+Aqui está o seu resumo diário de pendências:
+
+${input.summaryContent}
+
+Atenciosamente,
+Seu Assistente LK Ramos
+`.trim();
 
     if (!emailBody) {
-        return { success: false, message: 'Falha ao formatar o corpo do e-mail.' };
+      // Este caso é agora virtualmente impossível, mas mantido por segurança.
+      return { success: false, message: 'Falha ao formatar o corpo do e-mail.' };
     }
 
     // Em uma implementação real, aqui você chamaria um serviço de e-mail (ex: SendGrid, Nodemailer)
