@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Info, Copy, Printer, ChevronsUpDown, Check } from 'lucide-react';
+import { Info, Copy, Printer } from 'lucide-react';
 import { format, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -43,9 +43,6 @@ import { doc, collection } from 'firebase/firestore'; // Only for ID generation
 import { useFirestore } from '@/firebase';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Logo } from '@/components/logo';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-
 
 const attachmentSchema = z.object({
   name: z.string(),
@@ -156,7 +153,6 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
   const firestore = useFirestore();
   const [tempProposalId, setTempProposalId] = useState<string | undefined>(undefined);
   const [isClient, setIsClient] = useState(false);
-  const [openCustomerSelector, setOpenCustomerSelector] = useState(false);
 
   const productTypes = userSettings?.productTypes || configData.productTypes;
   const proposalStatuses = userSettings?.proposalStatuses || configData.proposalStatuses;
@@ -310,60 +306,24 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
                     control={form.control}
                     name="customerId"
                     render={({ field }) => (
-                        <FormItem className="flex flex-col">
+                    <FormItem>
                         <FormLabel>Cliente</FormLabel>
-                        <Popover open={openCustomerSelector} onOpenChange={setOpenCustomerSelector} modal={false}>
-                            <PopoverTrigger asChild>
-                                <FormControl>
-                                    <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        className={cn(
-                                            "w-full justify-between",
-                                            !field.value && "text-muted-foreground"
-                                        )}
-                                        disabled={isReadOnly}
-                                    >
-                                    {field.value
-                                        ? customers.find(
-                                            (customer) => customer.id === field.value
-                                        )?.name
-                                        : "Selecione um cliente"}
-                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                    </Button>
-                                </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                                <Command>
-                                    <CommandInput placeholder="Pesquisar cliente por nome ou CPF..." />
-                                    <CommandList>
-                                        <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
-                                        <CommandGroup>
-                                            {customers.map((customer) => (
-                                            <CommandItem
-                                                key={customer.id}
-                                                value={`${customer.name} ${customer.cpf}`}
-                                                onSelect={() => {
-                                                    form.setValue("customerId", customer.id, { shouldValidate: true });
-                                                    setOpenCustomerSelector(false);
-                                                }}
-                                            >
-                                                <Check
-                                                    className={cn(
-                                                        "mr-2 h-4 w-4",
-                                                        field.value === customer.id ? "opacity-100" : "opacity-0"
-                                                    )}
-                                                />
-                                                {customer.name}
-                                            </CommandItem>
-                                            ))}
-                                        </CommandGroup>
-                                    </CommandList>
-                                </Command>
-                            </PopoverContent>
-                        </Popover>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly}>
+                        <FormControl>
+                            <SelectTrigger>
+                            <SelectValue placeholder="Selecione um cliente" />
+                            </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            {customers.map((customer) => (
+                            <SelectItem key={customer.id} value={customer.id}>
+                                {customer.name} ({customer.cpf})
+                            </SelectItem>
+                            ))}
+                        </SelectContent>
+                        </Select>
                         <FormMessage />
-                        </FormItem>
+                    </FormItem>
                     )}
                 />
                 <FormField
