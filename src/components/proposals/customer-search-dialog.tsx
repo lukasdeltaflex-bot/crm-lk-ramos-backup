@@ -27,7 +27,7 @@ export function CustomerSearchDialog({
   onSelectCustomer,
 }: CustomerSearchDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} onCloseAutoFocus={(e) => e.preventDefault()}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Buscar Cliente</DialogTitle>

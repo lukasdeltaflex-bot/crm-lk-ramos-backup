@@ -486,7 +486,7 @@ const handleExportToPdf = async () => {
                                 Remover ({selectedCount})
                             </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent onCloseAutoFocus={(e) => e.preventDefault()}>
+                        <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                                 <AlertDialogDescription>
@@ -517,7 +517,7 @@ const handleExportToPdf = async () => {
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
-            <Dialog open={isAiModalOpen} onOpenChange={setIsAiModalOpen} onCloseAutoFocus={(e) => e.preventDefault()}>
+            <Dialog open={isAiModalOpen} onOpenChange={setIsAiModalOpen}>
                 <DialogTrigger asChild>
                     <Button variant="outline">
                         <Sparkles />
@@ -549,7 +549,7 @@ const handleExportToPdf = async () => {
           </TabsTrigger>
         </TabsList>
       </Tabs>
-      <Dialog open={isDialog} onOpenChange={setIsDialog} onCloseAutoFocus={(e) => e.preventDefault()}>
+      <Dialog open={isDialog} onOpenChange={setIsDialog}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>{getSheetTitle()}</DialogTitle>

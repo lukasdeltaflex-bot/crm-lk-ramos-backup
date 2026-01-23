@@ -83,7 +83,7 @@ const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit, onView, onDelete
                         Cancelar
                     </DropdownMenuItem>
                 </AlertDialogTrigger>
-                <AlertDialogContent onCloseAutoFocus={(e) => e.preventDefault()}>
+                <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                         <AlertDialogDescription>

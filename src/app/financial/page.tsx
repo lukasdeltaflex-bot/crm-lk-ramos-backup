@@ -441,7 +441,7 @@ export default function FinancialPage() {
                     </DropdownMenuContent>
                 </DropdownMenu>
             )}
-            <Dialog open={isReconciliationOpen} onOpenChange={setIsReconciliationOpen} onCloseAutoFocus={(e) => e.preventDefault()}>
+            <Dialog open={isReconciliationOpen} onOpenChange={setIsReconciliationOpen}>
                 <DialogTrigger asChild>
                     <Button variant="outline">
                         <FileCheck2 />
@@ -473,7 +473,7 @@ export default function FinancialPage() {
       </div>
 
        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="w-full max-w-md" onCloseAutoFocus={(e) => e.preventDefault()}>
+        <SheetContent className="w-full max-w-md">
           <SheetHeader>
             <SheetTitle>Editar Comissão</SheetTitle>
           </SheetHeader>
@@ -484,7 +484,7 @@ export default function FinancialPage() {
         </SheetContent>
       </Sheet>
 
-      <Dialog open={!!dialogData} onOpenChange={(isOpen) => !isOpen && setDialogData(null)} onCloseAutoFocus={(e) => e.preventDefault()}>
+      <Dialog open={!!dialogData} onOpenChange={(isOpen) => !isOpen && setDialogData(null)}>
         <DialogContent className="max-w-4xl h-[90vh] flex flex-col" >
             <DialogHeader>
                 <DialogTitle>{dialogData?.title}</DialogTitle>

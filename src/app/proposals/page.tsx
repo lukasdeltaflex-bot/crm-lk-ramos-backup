@@ -583,7 +583,7 @@ const handleExportToExcel = async () => {
             </Button>
         </div>
       </div>
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} onCloseAutoFocus={(e) => e.preventDefault()}>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent
           className="max-w-3xl"
         >
