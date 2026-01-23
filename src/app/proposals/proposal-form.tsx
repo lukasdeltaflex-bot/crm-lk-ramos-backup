@@ -166,9 +166,6 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
   const firestore = useFirestore();
   const [tempProposalId, setTempProposalId] = useState<string | undefined>(undefined);
   const [isClient, setIsClient] = useState(false);
-  const [isCustomerPopoverOpen, setIsCustomerPopoverOpen] = useState(false);
-  const searchContainerRef = useRef<HTMLDivElement>(null);
-
 
   const productTypes = userSettings?.productTypes || configData.productTypes;
   const proposalStatuses = userSettings?.proposalStatuses || configData.proposalStatuses;
@@ -203,17 +200,6 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
     return customers.find(c => c.id === selectedCustomerId);
   }, [customers, selectedCustomerId]);
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
-        setIsCustomerPopoverOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [searchContainerRef]);
 
   useEffect(() => {
     const currentBenefit = form.getValues('selectedBenefitNumber');
@@ -334,9 +320,9 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
                 control={form.control}
                 name="customerId"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col" ref={searchContainerRef}>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Cliente</FormLabel>
-                    <Popover open={isCustomerPopoverOpen} onOpenChange={setIsCustomerPopoverOpen}>
+                    <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -346,7 +332,6 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
                               "w-full justify-between",
                               !field.value && "text-muted-foreground"
                             )}
-                            onClick={() => setIsCustomerPopoverOpen(prev => !prev)}
                             disabled={isReadOnly}
                           >
                             {selectedCustomer?.name ?? "Selecione um cliente"}
@@ -366,7 +351,6 @@ export function ProposalForm({ proposal, customers, userSettings, isReadOnly, on
                                   key={customer.id}
                                   onSelect={() => {
                                     form.setValue("customerId", customer.id);
-                                    setIsCustomerPopoverOpen(false);
                                   }}
                                 >
                                   <Check
