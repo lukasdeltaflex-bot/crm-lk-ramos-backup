@@ -52,7 +52,7 @@ const GenerateDailySummaryInputSchema = z.object({
 
 export type GenerateDailySummaryInput = z.infer<typeof GenerateDailySummaryInputSchema>;
 
-export const GenerateDailySummaryOutputSchema = z.string();
+const GenerateDailySummaryOutputSchema = z.string();
 export type GenerateDailySummaryOutput = z.infer<typeof GenerateDailySummaryOutputSchema>;
 
 export async function generateDailySummary(input: GenerateDailySummaryInput): Promise<GenerateDailySummaryOutput> {

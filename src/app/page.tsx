@@ -1,12 +1,11 @@
 'use client';
 import React from 'react';
 import { AppLayout } from '@/components/app-layout';
-import { BirthdayAlerts } from '@/components/dashboard/birthday-alerts';
 import { CommissionChart } from '@/components/dashboard/commission-chart';
 import { RecentProposals } from '@/components/dashboard/recent-proposals';
 import { StatsCard } from '@/components/dashboard/stats-card';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from '@/firebase';
+import { collection, query, where, doc } from 'firebase/firestore';
 import {
   FileText,
   Clock,
@@ -24,24 +23,20 @@ import {
 import { format, parse, startOfMonth, endOfMonth, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency, cn } from '@/lib/utils';
-import type { Proposal, ProposalStatus, Customer } from '@/lib/types';
+import type { Proposal, ProposalStatus, Customer, UserProfile } from '@/lib/types';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { FollowUpReminders } from '@/components/dashboard/follow-up-reminders';
 import { ProposalsStatusTable } from '@/components/dashboard/proposals-status-table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
 import { DateRange } from 'react-day-picker';
 import { Input } from '@/components/ui/input';
-import { CommissionReminders } from '@/components/dashboard/commission-reminders';
-import { DebtBalanceReminders } from '@/components/dashboard/debt-balance-reminders';
-import { PartialCommissionReminders } from '@/components/dashboard/partial-commission-reminders';
+import { DailySummary } from '@/components/summary/daily-summary';
 
 export default function DashboardPage() {
   const [startDateInput, setStartDateInput] = React.useState('');
@@ -65,13 +60,20 @@ export default function DashboardPage() {
   }, [firestore, user]);
 
   const { data: proposals, isLoading: proposalsLoading } = useCollection<Proposal>(proposalsQuery);
+  
   const customersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return query(collection(firestore, 'customers'), where('ownerId', '==', user.uid));
   }, [firestore, user]);
   const { data: customers, isLoading: customersLoading } = useCollection<Customer>(customersQuery);
 
-  const isLoading = proposalsLoading || customersLoading || isUserLoading;
+  const userProfileDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [firestore, user]);
+  const { data: userProfile, isLoading: profileLoading } = useDoc<UserProfile>(userProfileDocRef);
+
+  const isLoading = proposalsLoading || customersLoading || isUserLoading || profileLoading;
 
   const handleDateInputChange = (value: string, type: 'start' | 'end') => {
     let formattedValue = value.replace(/\D/g, '');
@@ -308,12 +310,21 @@ export default function DashboardPage() {
               proposals={proposals || []} 
             />
           </div>
-          <div className="space-y-8">
-            <BirthdayAlerts customers={customers || []} isLoading={isLoading}/>
-            <FollowUpReminders proposals={proposals || []} customers={customers || []} isLoading={isLoading}/>
-            <CommissionReminders proposals={proposals || []} customers={customers || []} isLoading={isLoading}/>
-            <PartialCommissionReminders proposals={proposals || []} customers={customers || []} isLoading={isLoading}/>
-            <DebtBalanceReminders proposals={proposals || []} customers={customers || []} isLoading={isLoading}/>
+          <div className="lg:col-span-1">
+            {isLoading ? (
+                <div className="space-y-4">
+                    <Skeleton className="h-4 w-1/4" />
+                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-20 w-full" />
+                </div>
+            ) : (
+                <DailySummary
+                    proposals={proposals || []}
+                    customers={customers || []}
+                    userProfile={userProfile}
+                />
+            )}
           </div>
         </div>
         <div>
