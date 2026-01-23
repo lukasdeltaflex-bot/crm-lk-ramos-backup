@@ -37,6 +37,7 @@ import { Card } from '@/components/ui/card';
 import { DateRange } from 'react-day-picker';
 import { Input } from '@/components/ui/input';
 import { DailySummary } from '@/components/summary/daily-summary';
+import { LiveClock } from '@/components/dashboard/live-clock';
 
 export default function DashboardPage() {
   const [startDateInput, setStartDateInput] = React.useState('');
@@ -232,33 +233,36 @@ export default function DashboardPage() {
 
   return (
     <AppLayout>
-       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-        <div className="flex-1 min-w-fit">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
-            <p className='text-sm text-muted-foreground'>{getFilterDescription()}</p>
+       <div className="space-y-4 mb-8">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex-1 min-w-fit">
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
+                <p className='text-sm text-muted-foreground'>{getFilterDescription()}</p>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+                <Input 
+                    placeholder="Data Início" 
+                    value={startDateInput}
+                    onChange={(e) => handleDateInputChange(e.target.value, 'start')}
+                    maxLength={10}
+                    className="h-9 w-32"
+                />
+                <Input 
+                    placeholder="Data Fim" 
+                    value={endDateInput}
+                    onChange={(e) => handleDateInputChange(e.target.value, 'end')}
+                    maxLength={10}
+                    className="h-9 w-32"
+                />
+                <Button size="sm" onClick={handleApplyFilter}><Filter className="h-4 w-4" /> Aplicar</Button>
+                {(startDateInput || endDateInput || appliedDateRange) && <Button variant="ghost" size="icon" className="h-9 w-9" onClick={clearDates}><X className="h-4 w-4" /></Button>}
+                <Button variant="ghost" size="icon" onClick={() => setIsPrivacyMode(!isPrivacyMode)}>
+                {isPrivacyMode ? <EyeOff /> : <Eye />}
+                <span className="sr-only">{isPrivacyMode ? 'Mostrar valores' : 'Ocultar valores'}</span>
+                </Button>
+            </div>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-            <Input 
-                placeholder="Data Início" 
-                value={startDateInput}
-                onChange={(e) => handleDateInputChange(e.target.value, 'start')}
-                maxLength={10}
-                className="h-9 w-32"
-            />
-             <Input 
-                placeholder="Data Fim" 
-                value={endDateInput}
-                onChange={(e) => handleDateInputChange(e.target.value, 'end')}
-                maxLength={10}
-                className="h-9 w-32"
-            />
-            <Button size="sm" onClick={handleApplyFilter}><Filter className="h-4 w-4" /> Aplicar</Button>
-            {(startDateInput || endDateInput || appliedDateRange) && <Button variant="ghost" size="icon" className="h-9 w-9" onClick={clearDates}><X className="h-4 w-4" /></Button>}
-            <Button variant="ghost" size="icon" onClick={() => setIsPrivacyMode(!isPrivacyMode)}>
-              {isPrivacyMode ? <EyeOff /> : <Eye />}
-              <span className="sr-only">{isPrivacyMode ? 'Mostrar valores' : 'Ocultar valores'}</span>
-            </Button>
-        </div>
+        <LiveClock />
       </div>
       <div className="space-y-8">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
