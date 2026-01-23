@@ -184,58 +184,19 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
 
     setIsSending(true);
     try {
-        let summaryContent = '';
-        if (!hasVisibleAlerts) {
-            summaryContent = `Nenhuma pendência ou alerta importante para hoje. Tenha um ótimo dia!`;
-        } else {
-            let summary = 'Aqui está o seu resumo de pendências para hoje:\n\n';
-            
-            if (visibleBirthdayAlerts.length > 0) {
-                summary += '### 🎂 Alertas de Aniversário (Clientes Próximos de 75 Anos)\n';
-                visibleBirthdayAlerts.forEach(alert => {
-                    summary += `- **${alert.customerName}**: Cliente completará ${alert.age} anos em breve. Verifique as políticas de crédito para esta faixa etária.\n`;
-                });
-                summary += '\n';
-            }
-            
-            if (visibleFollowUpReminders.length > 0) {
-                summary += '### ⏰ Lembretes de Acompanhamento (Follow-up)\n';
-                visibleFollowUpReminders.forEach(reminder => {
-                    summary += `- **${reminder.customerName} (Prop. nº ${reminder.proposalNumber})**: A proposta está "Em Andamento" há ${reminder.daysOpen} dias. Sugestão: entre em contato para uma atualização.\n`;
-                });
-                summary += '\n';
-            }
-
-            if (visibleCommissionReminders.length > 0) {
-                summary += '### 💰 Alertas de Comissão Pendente\n';
-                visibleCommissionReminders.forEach(reminder => {
-                    summary += `- **${reminder.customerName} (Prop. nº ${reminder.proposalNumber})**: A comissão está pendente há ${reminder.daysPending} dias. Sugestão: verifique o pagamento com a promotora/banco.\n`;
-                });
-                summary += '\n';
-            }
-
-            if (visiblePartialCommissionReminders.length > 0) {
-                summary += '### 💰 Lembretes de Comissão Parcial\n';
-                visiblePartialCommissionReminders.forEach(reminder => {
-                    summary += `- **${reminder.customerName} (Prop. nº ${reminder.proposalNumber})**: Recebido R$ ${reminder.amountPaid.toFixed(2)} de R$ ${reminder.totalCommission.toFixed(2)} há ${reminder.daysSincePayment} dias. Sugestão: cobrar o valor restante.\n`;
-                });
-                summary += '\n';
-            }
-            
-            if (visibleDebtBalanceReminders.length > 0) {
-                summary += '### ⏳ Alertas de Saldo Devedor (Portabilidade)\n';
-                visibleDebtBalanceReminders.forEach(reminder => {
-                    summary += `- **${reminder.customerName} (Prop. nº ${reminder.proposalNumber})**: Aguardando saldo há ${reminder.daysWaiting} dias úteis. O prazo está se esgotando, verifique o status.\n`;
-                });
-                summary += '\n';
-            }
-            summaryContent = summary;
-        }
+      const summaryDataForFlow = {
+        userName: userProfile.displayName || userProfile.fullName || 'Usuário',
+        birthdayAlerts: visibleBirthdayAlerts.map(a => ({ customerName: a.customerName, age: a.age })),
+        followUpReminders: visibleFollowUpReminders.map(r => ({ customerName: r.customerName, proposalNumber: r.proposalNumber, daysOpen: r.daysOpen })),
+        commissionReminders: visibleCommissionReminders.map(r => ({ customerName: r.customerName, proposalNumber: r.proposalNumber, daysPending: r.daysPending })),
+        debtBalanceReminders: visibleDebtBalanceReminders.map(r => ({ customerName: r.customerName, proposalNumber: r.proposalNumber, daysWaiting: r.daysWaiting })),
+        partialCommissionReminders: visiblePartialCommissionReminders.map(r => ({ customerName: r.customerName, proposalNumber: r.proposalNumber, amountPaid: r.amountPaid, totalCommission: r.totalCommission, daysSincePayment: r.daysSincePayment })),
+      };
 
       const result = await sendSummaryEmail({
         recipientName: userProfile.displayName || userProfile.fullName || 'Usuário',
         recipientEmail: userProfile.email,
-        summaryContent: summaryContent,
+        summaryData: summaryDataForFlow,
       });
 
       if (result.success) {
