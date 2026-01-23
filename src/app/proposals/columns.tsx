@@ -43,6 +43,7 @@ type ActionsCellProps = {
     onEdit: (proposal: ProposalWithCustomer) => void;
     onView: (proposal: ProposalWithCustomer) => void;
     onDelete: (proposalId: string) => void;
+    onDuplicate: (proposal: ProposalWithCustomer) => void;
 };
 
 const formatDate = (dateString?: string) => {
@@ -58,7 +59,7 @@ const formatDate = (dateString?: string) => {
 }
 
 
-const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit, onView, onDelete }) => {
+const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit, onView, onDelete, onDuplicate }) => {
     const proposal = row.original;
     return (
       <div className="text-right">
@@ -69,10 +70,11 @@ const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit, onView, onDelete
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" onCloseAutoFocus={(e) => e.preventDefault()}>
             <DropdownMenuLabel>Ações</DropdownMenuLabel>
             <DropdownMenuItem onSelect={() => onView(proposal)}>Ver detalhes</DropdownMenuItem>
             <DropdownMenuItem onSelect={() => onEdit(proposal)}>Editar</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onDuplicate(proposal)}>Duplicar</DropdownMenuItem>
             <DropdownMenuSeparator />
             <AlertDialog>
                 <AlertDialogTrigger asChild>
@@ -83,7 +85,7 @@ const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit, onView, onDelete
                         Cancelar
                     </DropdownMenuItem>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent onCloseAutoFocus={(e) => e.preventDefault()}>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                         <AlertDialogDescription>
@@ -171,7 +173,8 @@ export const getColumns = (
     onEdit: (proposal: ProposalWithCustomer) => void,
     onView: (proposal: ProposalWithCustomer) => void,
     onDelete: (proposalId: string) => void,
-    onStatusChange: (proposalId: string, newStatus: ProposalStatus) => void
+    onStatusChange: (proposalId: string, newStatus: ProposalStatus) => void,
+    onDuplicate: (proposal: ProposalWithCustomer) => void
     ): ColumnDef<ProposalWithCustomer>[] => [
   {
     id: 'select',
@@ -300,7 +303,7 @@ export const getColumns = (
   },
   {
     id: 'actions',
-    cell: (props) => <ActionsCell {...props} onEdit={onEdit} onView={onView} onDelete={onDelete} />,
+    cell: (props) => <ActionsCell {...props} onEdit={onEdit} onView={onView} onDelete={onDelete} onDuplicate={onDuplicate} />,
     enableColumnOrdering: false,
     enableSorting: false,
   },

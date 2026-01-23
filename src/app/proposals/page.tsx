@@ -524,7 +524,7 @@ const handleExportToExcel = async () => {
 
   const isLoading = proposalsLoading || customersLoading || isUserLoading || settingsLoading;
 
-  const columns = React.useMemo(() => getColumns(handleEditProposal, handleViewProposal, handleDeleteProposal, handleStatusChange), [handleEditProposal, handleViewProposal, handleDeleteProposal, handleStatusChange]);
+  const columns = React.useMemo(() => getColumns(handleEditProposal, handleViewProposal, handleDeleteProposal, handleStatusChange, handleDuplicateProposal), [handleEditProposal, handleViewProposal, handleDeleteProposal, handleStatusChange, handleDuplicateProposal]);
 
   const selectedCount = Object.keys(rowSelection).length;
 
@@ -542,7 +542,7 @@ const handleExportToExcel = async () => {
                                 Cancelar ({selectedCount})
                             </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent>
+                        <AlertDialogContent onCloseAutoFocus={(e) => e.preventDefault()}>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                                 <AlertDialogDescription>
@@ -562,7 +562,7 @@ const handleExportToExcel = async () => {
                                 Exportar ({selectedCount})
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" onCloseAutoFocus={(e) => e.preventDefault()}>
                             <DropdownMenuItem onSelect={handleExportToExcel}>
                                 Exportar para Excel (.xlsx)
                             </DropdownMenuItem>
@@ -586,6 +586,7 @@ const handleExportToExcel = async () => {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent
           className="max-w-3xl"
+          onCloseAutoFocus={(e) => e.preventDefault()}
         >
           <DialogHeader className="print:hidden">
             <DialogTitle>{getSheetTitle()}</DialogTitle>
