@@ -208,6 +208,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     onColumnOrderChange: setColumnOrder,
     onColumnSizingChange: setColumnSizing,
     onPaginationChange: setPagination,
+    autoResetPageIndex: false,
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
     enableColumnOrdering: true,

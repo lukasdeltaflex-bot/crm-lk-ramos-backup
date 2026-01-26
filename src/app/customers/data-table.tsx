@@ -188,6 +188,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
     onColumnOrderChange: setColumnOrder,
     onColumnSizingChange: setColumnSizing,
     onPaginationChange: setPagination,
+    autoResetPageIndex: false,
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
     state: {

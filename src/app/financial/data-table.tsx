@@ -247,6 +247,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     onColumnOrderChange: setColumnOrder,
     onColumnSizingChange: setColumnSizing,
     onPaginationChange: setPagination,
+    autoResetPageIndex: false,
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
     state: {
