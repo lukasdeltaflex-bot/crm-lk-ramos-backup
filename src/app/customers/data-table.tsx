@@ -201,11 +201,11 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
       pagination,
     },
     globalFilterFn: (row, columnId, filterValue) => {
-        const safeValue = (value: unknown): string =>
-          String(value ?? '').toLowerCase();
-        
-        const filter = safeValue(filterValue);
+        const filter = String(filterValue ?? '').toLowerCase().trim();
         if (!filter) return true;
+
+        const safeValue = (value: unknown): string =>
+          String(value ?? '').toLowerCase().trim();
 
         const customer = row.original;
 
