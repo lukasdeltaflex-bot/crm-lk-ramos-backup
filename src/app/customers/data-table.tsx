@@ -201,51 +201,42 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
       pagination,
     },
     globalFilterFn: (row, columnId, filterValue) => {
-        const search = String(filterValue ?? '').toLowerCase().trim();
-        if (!search) {
-          return true; // Show all rows if search is empty
+        const searchTerm = String(filterValue ?? '').toLowerCase().trim();
+        if (!searchTerm) {
+          return true;
         }
-  
+    
         const customer = row.original;
-  
-        // 1. Search by Customer ID (as string)
-        if (String(customer.numericId ?? '').includes(search)) {
-          return true;
-        }
-  
-        // 2. Search by Name
-        if ((customer.name ?? '').toLowerCase().includes(search)) {
-          return true;
-        }
-  
-        // 3. Search by CPF, Phones, and Benefits (flexible search)
-        const searchDigits = search.replace(/\D/g, '');
         
+        // Check for exact ID match first.
+        if (String(customer.numericId) === searchTerm) {
+            return true;
+        }
+    
+        // Check if name contains the search term
+        if (customer.name.toLowerCase().includes(searchTerm)) {
+          return true;
+        }
+        
+        // Flexible search for digits in CPF and phones
+        const searchDigits = searchTerm.replace(/\D/g, '');
         if (searchDigits) {
-          // Search CPF
-          if ((customer.cpf ?? '').replace(/\D/g, '').includes(searchDigits)) {
-            return true;
-          }
-          // Search Phone 1
-          if ((customer.phone ?? '').replace(/\D/g, '').includes(searchDigits)) {
-            return true;
-          }
-          // Search Phone 2
-          if (customer.phone2 && (customer.phone2 ?? '').replace(/\D/g, '').includes(searchDigits)) {
-            return true;
-          }
-        }
-  
-        // 4. Search by Benefit numbers
-        if (customer.benefits && customer.benefits.length > 0) {
-          for (const benefit of customer.benefits) {
-            if ((benefit.number ?? '').toLowerCase().includes(search)) {
-              return true;
+            if (customer.cpf?.replace(/\D/g, '').includes(searchDigits)) {
+                return true;
             }
-          }
+            if (customer.phone?.replace(/\D/g, '').includes(searchDigits)) {
+                return true;
+            }
+            if (customer.phone2 && customer.phone2.replace(/\D/g, '').includes(searchDigits)) {
+                return true;
+            }
         }
-  
-        // If no match is found
+        
+        // Check if any benefit number contains the search term
+        if (customer.benefits?.some(benefit => benefit.number.toLowerCase().includes(searchTerm))) {
+            return true;
+        }
+    
         return false;
       },
   });

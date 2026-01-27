@@ -224,41 +224,39 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
       pagination,
     },
     globalFilterFn: (row, columnId, filterValue) => {
-        const search = String(filterValue ?? '').toLowerCase().trim();
-        if (!search) {
+        const searchTerm = String(filterValue ?? '').toLowerCase().trim();
+        if (!searchTerm) {
           return true;
         }
-  
+    
         const proposal = row.original;
         const customer = proposal.customer;
-  
-        // Search proposal fields
-        if ((proposal.proposalNumber ?? '').toLowerCase().includes(search)) {
-          return true;
-        }
-        if ((proposal.promoter ?? '').toLowerCase().includes(search)) {
-          return true;
-        }
-  
-        // Search customer fields
+    
+        // Search customer fields first
         if (customer) {
-          // Search by Customer ID
-          if (String(customer.numericId ?? '').includes(search)) {
-            return true;
-          }
-          // Search by Customer Name
-          if ((customer.name ?? '').toLowerCase().includes(search)) {
-            return true;
-          }
-          // Search by Customer CPF (digits only)
-          const searchDigits = search.replace(/\D/g, '');
-          if (searchDigits) {
-            if ((customer.cpf ?? '').replace(/\D/g, '').includes(searchDigits)) {
-              return true;
+            // Exact match for Customer ID
+            if (String(customer.numericId) === searchTerm) {
+                return true;
             }
-          }
+            // Name contains search term
+            if (customer.name.toLowerCase().includes(searchTerm)) {
+                return true;
+            }
+            // CPF contains search digits
+            const searchDigits = searchTerm.replace(/\D/g, '');
+            if (searchDigits && customer.cpf?.replace(/\D/g, '').includes(searchDigits)) {
+                return true;
+            }
         }
-  
+    
+        // Search proposal fields
+        if (proposal.proposalNumber?.toLowerCase().includes(searchTerm)) {
+          return true;
+        }
+        if (proposal.promoter?.toLowerCase().includes(searchTerm)) {
+          return true;
+        }
+    
         return false;
       },
   });
