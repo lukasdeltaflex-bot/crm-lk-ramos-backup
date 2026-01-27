@@ -11,11 +11,12 @@ interface StatsCardProps {
   title: string;
   value: string;
   icon: LucideIcon;
+  description?: string;
   className?: string;
   valueClassName?: string;
 }
 
-export function StatsCard({ title, value, icon: Icon, className, valueClassName }: StatsCardProps) {
+export function StatsCard({ title, value, icon: Icon, description, className, valueClassName }: StatsCardProps) {
   return (
     <Card className={cn('hover:border-primary/50 transition-colors', className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 print:pb-1">
@@ -24,6 +25,7 @@ export function StatsCard({ title, value, icon: Icon, className, valueClassName 
       </CardHeader>
       <CardContent className="print:pt-1">
         <div className={cn("text-2xl font-bold print:text-lg", valueClassName)}>{value}</div>
+        {description && <p className="text-xs text-muted-foreground pt-1">{description}</p>}
       </CardContent>
     </Card>
   );
