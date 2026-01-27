@@ -201,32 +201,33 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
       pagination,
     },
     globalFilterFn: (row, columnId, filterValue) => {
-        const searchTerm = String(filterValue ?? '').toLowerCase().trim();
+        const searchTerm = String(filterValue ?? '').trim();
+
         if (!searchTerm) {
           return true;
         }
     
         const customer = row.original;
         
-        // Check if the search term is purely numeric
         const isNumericSearch = /^\d+$/.test(searchTerm);
-
-        if (isNumericSearch) {
-            // For the Customers table, if the search is numeric, we ONLY match against the ID.
-            return String(customer.numericId) === searchTerm;
-        }
     
-        // If not a numeric search, check other text-based fields.
-        if (customer.name.toLowerCase().includes(searchTerm)) {
-          return true;
-        }
+        if (isNumericSearch) {
+            // If the search is numeric, it's an ID search.
+            // Compare it EXCLUSIVELY and EXACTLY with the customer's numericId.
+            return String(customer.numericId) === searchTerm;
+        } 
         
-        // Check if any benefit number contains the search term
-        if (customer.benefits?.some(benefit => benefit.number.toLowerCase().includes(searchTerm))) {
+        // If it's NOT a numeric search, it's a text search.
+        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    
+        if (customer.name.toLowerCase().includes(lowerCaseSearchTerm)) {
             return true;
         }
-
-        // Check CPF and phones (allowing for partial number search)
+        
+        if (customer.benefits?.some(benefit => benefit.number.toLowerCase().includes(lowerCaseSearchTerm))) {
+            return true;
+        }
+    
         const searchDigits = searchTerm.replace(/\D/g, '');
         if (searchDigits) {
             if (customer.cpf?.replace(/\D/g, '').includes(searchDigits)) {

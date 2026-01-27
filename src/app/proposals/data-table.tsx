@@ -224,45 +224,40 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
       pagination,
     },
     globalFilterFn: (row, columnId, filterValue) => {
-        const searchTerm = String(filterValue ?? '').toLowerCase().trim();
+        const searchTerm = String(filterValue ?? '').trim();
+    
         if (!searchTerm) {
           return true;
         }
     
         const proposal = row.original;
         const customer = proposal.customer;
-    
-        // Check if the search term is a candidate for an exact ID match
+        
         const isNumericSearch = /^\d+$/.test(searchTerm);
     
-        if (isNumericSearch && customer && String(customer.numericId) === searchTerm) {
-            // If it's a numeric search and it matches the customer ID exactly, we have a definite match.
+        if (isNumericSearch) {
+            return customer ? String(customer.numericId) === searchTerm : false;
+        }
+    
+        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    
+        if (proposal.proposalNumber?.toLowerCase().includes(lowerCaseSearchTerm)) {
             return true;
         }
-
-        // If it's not an exact ID match, continue to check other fields with the original search term.
-        
-        // Check proposal number
-        if (proposal.proposalNumber?.toLowerCase().includes(searchTerm)) {
+    
+        if (customer && customer.name.toLowerCase().includes(lowerCaseSearchTerm)) {
             return true;
         }
-
-        // Check customer name
-        if (customer && customer.name.toLowerCase().includes(searchTerm)) {
-            return true;
-        }
-
-        // Check promoter
-        if (proposal.promoter?.toLowerCase().includes(searchTerm)) {
+    
+        if (proposal.promoter?.toLowerCase().includes(lowerCaseSearchTerm)) {
           return true;
         }
-
-        // Check CPF (allowing for partial number search)
+    
         const searchDigits = searchTerm.replace(/\D/g, '');
         if (searchDigits && customer && customer.cpf?.replace(/\D/g, '').includes(searchDigits)) {
             return true;
         }
-
+    
         return false;
       },
   });
