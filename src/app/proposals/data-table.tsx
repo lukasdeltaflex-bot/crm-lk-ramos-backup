@@ -227,21 +227,36 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         const filter = String(filterValue ?? '').toLowerCase().trim();
         if (!filter) return true;
         
-        const safeValue = (value: unknown): string =>
-          String(value ?? '').toLowerCase().trim();
-
         const proposal = row.original;
         const customer = proposal.customer;
-
-        const valuesToSearch = [
-          customer?.name,
-          customer?.cpf,
-          customer?.numericId,
-          proposal.proposalNumber,
-          proposal.promoter,
-        ];
-
-        return valuesToSearch.some(value => safeValue(value).includes(filter));
+    
+        // Check proposal fields
+        const proposalNumber = proposal.proposalNumber ?? '';
+        if (proposalNumber.toLowerCase().includes(filter)) {
+            return true;
+        }
+        const promoter = proposal.promoter ?? '';
+        if (promoter.toLowerCase().includes(filter)) {
+            return true;
+        }
+    
+        // Check customer fields
+        if (customer) {
+            const customerName = customer.name ?? '';
+            if (customerName.toLowerCase().includes(filter)) {
+                return true;
+            }
+            const customerCpf = customer.cpf ?? '';
+            if (customerCpf.toLowerCase().includes(filter)) {
+                return true;
+            }
+            const customerId = String(customer.numericId);
+            if (customerId.toLowerCase().includes(filter)) {
+                return true;
+            }
+        }
+    
+        return false;
     },
   });
   

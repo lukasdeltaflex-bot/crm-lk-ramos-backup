@@ -204,24 +204,48 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         const filter = String(filterValue ?? '').toLowerCase().trim();
         if (!filter) return true;
 
-        const safeValue = (value: unknown): string =>
-          String(value ?? '').toLowerCase().trim();
-
         const customer = row.original;
-
-        const valuesToSearch = [
-            customer.numericId,
-            customer.name,
-            customer.cpf,
-            customer.phone,
-            customer.phone2,
-        ];
+    
+        // Check name
+        const name = customer.name ?? '';
+        if (name.toLowerCase().includes(filter)) {
+            return true;
+        }
+    
+        // Check CPF
+        const cpf = customer.cpf ?? '';
+        if (cpf.toLowerCase().includes(filter)) {
+            return true;
+        }
         
-        const benefitNumbers = customer.benefits?.map(b => b.number) || [];
+        // Check ID
+        const numericId = String(customer.numericId);
+        if (numericId.toLowerCase().includes(filter)) {
+            return true;
+        }
+    
+        // Check Phone 1
+        const phone = customer.phone ?? '';
+        if (phone.toLowerCase().includes(filter)) {
+            return true;
+        }
+    
+        // Check Phone 2
+        const phone2 = customer.phone2 ?? '';
+        if (phone2.toLowerCase().includes(filter)) {
+            return true;
+        }
         
-        const allValues = [...valuesToSearch, ...benefitNumbers];
-
-        return allValues.some(value => safeValue(value).includes(filter));
+        // Check Benefits
+        const benefits = customer.benefits ?? [];
+        for (const benefit of benefits) {
+            const benefitNumber = benefit.number ?? '';
+            if (benefitNumber.toLowerCase().includes(filter)) {
+                return true;
+            }
+        }
+    
+        return false;
     },
   });
 
