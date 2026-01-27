@@ -27,9 +27,13 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
     commissionReceivedProposals,
     proposalsForSaldoAReceber,
     expectedCommissionProposals,
+    expectedCommissionPercentage,
+    amountPaidPercentage,
+    pendingAmountPercentage
   } = React.useMemo(() => {
-    // This is the array of proposals for the current month, NOT what's shown in the table
-    const proposalsForMonth = 'original' in (rows?.[0] || {}) ? (rows as Row<ProposalWithCustomer>[]).map(r => r.original) : (rows as ProposalWithCustomer[]);
+    const allProposalsInPeriod = 'original' in (rows?.[0] || {}) ? (rows as Row<ProposalWithCustomer>[]).map(r => r.original) : (rows as ProposalWithCustomer[]);
+    
+    const proposalsForMonth = allProposalsInPeriod.filter(p => p.status !== 'Reprovado');
 
     if (!proposalsForMonth || proposalsForMonth.length === 0) {
         return {
@@ -41,6 +45,9 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
             commissionReceivedProposals: [],
             proposalsForSaldoAReceber: [],
             expectedCommissionProposals: [],
+            expectedCommissionPercentage: 0,
+            amountPaidPercentage: 0,
+            pendingAmountPercentage: 0,
         };
     }
 
@@ -50,6 +57,8 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       }
       return sum + (p.grossAmount || 0);
     }, 0);
+    
+    const totalPotentialCommission = proposalsForMonth.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
     
     const totalAmountPaid = proposalsForMonth.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
     
@@ -72,7 +81,6 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
     const commissionReceivedProposals = proposalsForMonth.filter(p => p.amountPaid && p.amountPaid > 0);
     
     const proposalsForSaldoAReceber = proposalsForMonth.filter(p => {
-        // Propostas com comissão 'Paga' nunca devem entrar no saldo a receber.
         if (p.commissionStatus === 'Paga') {
             return false;
         }
@@ -89,6 +97,10 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       const remaining = (p.commissionValue || 0) - (p.amountPaid || 0);
       return sum + (remaining > 0 ? remaining : 0);
     }, 0);
+    
+    const expectedCommissionPercentage = totalPotentialCommission > 0 ? (totalCommissionValue / totalPotentialCommission) * 100 : 0;
+    const amountPaidPercentage = totalPotentialCommission > 0 ? (totalAmountPaid / totalPotentialCommission) * 100 : 0;
+    const pendingAmountPercentage = totalPotentialCommission > 0 ? (pendingAmount / totalPotentialCommission) * 100 : 0;
 
     return {
       totalContracted,
@@ -99,6 +111,9 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       commissionReceivedProposals,
       proposalsForSaldoAReceber,
       expectedCommissionProposals,
+      expectedCommissionPercentage,
+      amountPaidPercentage,
+      pendingAmountPercentage,
     };
   }, [rows]);
   
@@ -112,6 +127,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       icon: FileText,
       valueClassName: "text-purple-500",
       proposals: totalProposals,
+      description: undefined,
     },
     {
       title: "Comissão Esperada",
@@ -119,6 +135,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       icon: CircleDollarSign,
       valueClassName: "text-blue-500",
       proposals: expectedCommissionProposals,
+      description: expectedCommissionPercentage > 0 ? `${expectedCommissionPercentage.toFixed(1).replace('.', ',')}% do total` : undefined,
     },
     {
       title: "Comissão Recebida",
@@ -126,6 +143,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       icon: CheckCircle,
       valueClassName: "text-green-500",
       proposals: commissionReceivedProposals,
+      description: amountPaidPercentage > 0 ? `${amountPaidPercentage.toFixed(1).replace('.', ',')}% do total` : undefined,
     },
     {
       title: "Saldo a Receber",
@@ -133,6 +151,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       icon: Hourglass,
       valueClassName: "text-orange-500",
       proposals: proposalsForSaldoAReceber,
+      description: pendingAmountPercentage > 0 ? `${pendingAmountPercentage.toFixed(1).replace('.', ',')}% do total` : undefined,
     },
   ];
 
@@ -167,6 +186,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
                         title={card.title}
                         value={isPrivacyMode ? privacyPlaceholder : card.value}
                         icon={card.icon}
+                        description={!isPrivacyMode ? card.description : undefined}
                         className="print:shadow-none print:border-gray-300 print:p-2"
                         valueClassName={card.valueClassName}
                     />
