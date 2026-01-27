@@ -64,10 +64,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ChevronDown, X, Filter, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import type { CommissionStatus, Proposal, Customer } from '@/lib/types';
 import { FinancialSummary } from '@/components/financial/financial-summary';
 import { DraggableHeader } from './columns';
+import { Separator } from '../ui/separator';
 
 const STORAGE_KEY_VISIBILITY = 'lk-ramos-financial-columns-visibility-v2';
 const STORAGE_KEY_ORDER = 'lk-ramos-financial-columns-order-v2';
@@ -262,8 +263,50 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     },
     meta: {
       isPrivacyMode,
-    }
+    },
+    globalFilterFn: (row, columnId, filterValue) => {
+        const searchTerm = String(filterValue ?? '').trim();
+    
+        if (!searchTerm) {
+          return true;
+        }
+    
+        const proposal = row.original;
+        const customer = proposal.customer;
+        
+        const isNumericSearch = /^\d+$/.test(searchTerm);
+    
+        if (isNumericSearch) {
+            return customer ? String(customer.numericId) === searchTerm : false;
+        }
+    
+        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    
+        if (proposal.proposalNumber?.toLowerCase().includes(lowerCaseSearchTerm)) {
+            return true;
+        }
+    
+        if (customer && customer.name.toLowerCase().includes(lowerCaseSearchTerm)) {
+            return true;
+        }
+    
+        if (proposal.promoter?.toLowerCase().includes(lowerCaseSearchTerm)) {
+          return true;
+        }
+    
+        const searchDigits = searchTerm.replace(/\D/g, '');
+        if (searchDigits && customer && customer.cpf?.replace(/\D/g, '').includes(searchDigits)) {
+            return true;
+        }
+    
+        return false;
+    },
   });
+
+  const selectedRows = table.getFilteredSelectedRowModel().rows;
+  const totalSelectedCommission = React.useMemo(() => {
+    return selectedRows.reduce((total, row) => total + (row.original.commissionValue || 0), 0);
+  }, [selectedRows]);
 
   React.useImperativeHandle(ref, () => ({
     table,
@@ -429,9 +472,20 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             </Table>
             </div>
             <div className="flex items-center justify-between py-4 print:hidden">
-                <div className="flex-1 text-sm text-muted-foreground">
-                    {table.getFilteredSelectedRowModel().rows.length} de{' '}
-                    {table.getFilteredRowModel().rows.length} linha(s) selecionadas.
+                <div className="flex items-center gap-4 text-sm">
+                    <div className="text-muted-foreground">
+                        {table.getFilteredSelectedRowModel().rows.length} de{' '}
+                        {table.getFilteredRowModel().rows.length} linha(s) selecionadas.
+                    </div>
+                    {selectedRows.length > 0 && !isPrivacyMode && (
+                        <>
+                            <Separator orientation="vertical" className="h-4" />
+                            <div className="font-medium text-muted-foreground">
+                                Comissão Selecionada:{" "}
+                                <span className="font-bold text-foreground">{formatCurrency(totalSelectedCommission)}</span>
+                            </div>
+                        </>
+                    )}
                 </div>
                 <div className="flex items-center space-x-6 lg:space-x-8">
                     <div className="flex items-center space-x-2">
