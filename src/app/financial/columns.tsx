@@ -14,13 +14,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TableHead } from '@/components/ui/table';
 import { CommissionStatusCell } from './commission-status-cell';
 import Link from 'next/link';
+import type { DateRange } from 'react-day-picker';
 
 
 type ProposalWithCustomer = Proposal & { customer: Customer };
@@ -256,6 +257,27 @@ export const getColumns = (
         const date = row.getValue('commissionPaymentDate') as string | undefined;
         if (!date) return '-';
         return format(new Date(date), "dd/MM/yyyy", { locale: ptBR });
+    },
+    filterFn: (row, id, filterValue: DateRange) => {
+      if (!filterValue || !filterValue.from) {
+        return true;
+      }
+      
+      const cellValue = row.getValue(id) as string;
+      if (!cellValue) {
+        return false;
+      }
+
+      const cellDate = new Date(cellValue);
+      if (!isValid(cellDate)) {
+        return false;
+      }
+
+      const fromDate = filterValue.from;
+      const toDate = filterValue.to ? new Date(filterValue.to) : new Date(filterValue.from);
+      toDate.setHours(23, 59, 59, 999);
+
+      return cellDate >= fromDate && cellDate <= toDate;
     },
     id: 'commissionPaymentDate',
   },

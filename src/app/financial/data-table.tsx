@@ -280,18 +280,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
 
   React.useEffect(() => {
     const dateColumn = table.getColumn('commissionPaymentDate');
-    if (appliedDateRange?.from) {
-        const fromDate = appliedDateRange.from;
-        const toDate = appliedDateRange.to ? new Date(appliedDateRange.to) : new Date(appliedDateRange.from);
-        toDate.setHours(23, 59, 59, 999);
-        dateColumn?.setFilterValue((cellValue: unknown) => {
-            if (typeof cellValue !== 'string' || !cellValue) return false;
-            const cellDate = new Date(cellValue);
-            return cellDate >= fromDate && cellDate <= toDate;
-        });
-    } else {
-        dateColumn?.setFilterValue(undefined);
-    }
+    dateColumn?.setFilterValue(appliedDateRange);
   }, [appliedDateRange, table]);
 
   const idToLabelMap: { [key: string]: string } = {
