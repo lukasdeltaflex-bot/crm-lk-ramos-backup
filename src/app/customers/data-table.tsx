@@ -201,24 +201,25 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
       pagination,
     },
     globalFilterFn: (row, columnId, filterValue) => {
-        const safeValue = (value: any): string =>
+        const safeValue = (value: unknown): string =>
           String(value ?? '').toLowerCase();
-        const filter = filterValue.toLowerCase();
-  
-        // Get all benefit numbers
-        const benefitNumbers = row.original.benefits?.map(b => safeValue(b.number)) || [];
-  
-        // Fields to search
-        const searchFields = [
-          safeValue(row.original.numericId),
-          safeValue(row.original.name),
-          safeValue(row.original.cpf),
-          safeValue(row.original.phone),
-          safeValue(row.original.phone2),
-          ...benefitNumbers
+        
+        const filter = safeValue(filterValue);
+        if (!filter) return true;
+
+        const valuesToSearch = [
+            row.getValue('numericId'),
+            row.getValue('name'),
+            row.getValue('cpf'),
+            row.getValue('phone'),
+            row.getValue('phone2'),
         ];
         
-        return searchFields.some(field => field?.includes(filter));
+        const benefitNumbers = row.original.benefits?.map(b => b.number) || [];
+        
+        const allValues = [...valuesToSearch, ...benefitNumbers];
+
+        return allValues.some(value => safeValue(value).includes(filter));
       },
   });
 

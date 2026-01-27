@@ -224,23 +224,21 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
       pagination,
     },
     globalFilterFn: (row, columnId, filterValue) => {
-        const safeValue = (value: any): string =>
+        const safeValue = (value: unknown): string =>
           String(value ?? '').toLowerCase();
-    
-        const customerName = safeValue(row.getValue('customerName'));
-        const customerCpf = safeValue(row.getValue('customerCpf'));
-        const proposalNumber = safeValue(row.getValue('proposalNumber'));
-        const promoter = safeValue(row.getValue('promoter'));
-    
-        const filter = filterValue.toLowerCase();
-    
-        return (
-          customerName.includes(filter) ||
-          customerCpf.includes(filter) ||
-          proposalNumber.includes(filter) ||
-          promoter.includes(filter)
-        );
-      },
+
+        const filter = safeValue(filterValue);
+        if (!filter) return true;
+
+        const valuesToSearch = [
+          row.getValue('customerName'),
+          row.getValue('customerCpf'),
+          row.getValue('proposalNumber'),
+          row.getValue('promoter'),
+        ];
+
+        return valuesToSearch.some(value => safeValue(value).includes(filter));
+    },
   });
   
   React.useEffect(() => {
