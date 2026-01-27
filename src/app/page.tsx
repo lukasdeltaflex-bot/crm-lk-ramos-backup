@@ -146,7 +146,8 @@ export default function DashboardPage() {
     if (!filteredProposals || filteredProposals.length === 0) {
       return 0;
     }
-    return filteredProposals.reduce((sum, p) => {
+    const proposalsToSum = filteredProposals.filter(p => p.status !== 'Reprovado');
+    return proposalsToSum.reduce((sum, p) => {
         if (p.commissionBase === 'net') {
             return sum + (p.netAmount || 0);
         }
@@ -267,7 +268,7 @@ export default function DashboardPage() {
       </div>
       <div className="space-y-8">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          <div className="md:col-span-2 lg:col-span-3 xl:col-span-6 cursor-pointer" onClick={() => setDialogData({ title: 'Total Digitado no Mês', proposals: filteredProposals })}>
+          <div className="md:col-span-2 lg:col-span-3 xl:col-span-6 cursor-pointer" onClick={() => setDialogData({ title: 'Total Digitado no Mês', proposals: filteredProposals.filter(p => p.status !== 'Reprovado') })}>
              <StatsCard
                 title="Total Digitado no Mês"
                 value={isPrivacyMode ? '•••••' : formatCurrency(totalDigitado)}
