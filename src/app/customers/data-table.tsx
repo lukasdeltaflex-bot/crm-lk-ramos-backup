@@ -201,26 +201,25 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
       pagination,
     },
     globalFilterFn: (row, columnId, filterValue) => {
-      const safeValue = (value: any): string =>
-        String(value ?? '').toLowerCase();
+        const safeValue = (value: any): string =>
+          String(value ?? '').toLowerCase();
+        const filter = filterValue.toLowerCase();
   
-      const numericId = safeValue(row.original.numericId);
-      const name = safeValue(row.getValue('name'));
-      const cpf = safeValue(row.getValue('cpf'));
-      const phone = safeValue(row.getValue('phone'));
-      const benefitNumber = safeValue(row.original.benefits?.[0]?.number);
+        // Get all benefit numbers
+        const benefitNumbers = row.original.benefits?.map(b => safeValue(b.number)) || [];
   
-      const filter = filterValue.toLowerCase();
-  
-      return (
-        numericId.includes(filter) ||
-        name.includes(filter) ||
-        cpf.includes(filter) ||
-        phone.includes(filter) ||
-        (benefitNumber && benefitNumber.includes(filter)) ||
-        false
-      );
-    },
+        // Fields to search
+        const searchFields = [
+          safeValue(row.original.numericId),
+          safeValue(row.original.name),
+          safeValue(row.original.cpf),
+          safeValue(row.original.phone),
+          safeValue(row.original.phone2),
+          ...benefitNumbers
+        ];
+        
+        return searchFields.some(field => field?.includes(filter));
+      },
   });
 
   React.useImperativeHandle(ref, () => ({
@@ -248,7 +247,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         <div className="p-4">
           <div className="flex items-center justify-between py-4">
             <Input
-              placeholder="Filtrar por ID, nome, CPF ou telefone..."
+              placeholder="Filtrar por ID, nome, CPF, telefone ou benefício..."
               value={globalFilter ?? ''}
               onChange={(event) =>
                 setGlobalFilter(event.target.value)
