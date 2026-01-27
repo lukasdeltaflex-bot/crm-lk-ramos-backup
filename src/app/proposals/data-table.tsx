@@ -224,39 +224,43 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
       pagination,
     },
     globalFilterFn: (row, columnId, filterValue) => {
-      const filter = String(filterValue ?? '').trim();
-      if (!filter) return true;
-      
-      const lowerCaseFilter = filter.toLowerCase();
-      const proposal = row.original;
-      const customer = proposal.customer;
-  
-      // Check proposal fields
-      if ((proposal.proposalNumber ?? '').toLowerCase().includes(lowerCaseFilter)) return true;
-      if ((proposal.promoter ?? '').toLowerCase().includes(lowerCaseFilter)) return true;
-  
-      // Check customer fields
-      if (customer) {
-        // 1. Check Customer ID directly
-        const numericId = String(customer.numericId);
-        if (numericId.includes(filter)) {
-            return true;
+        const search = String(filterValue ?? '').toLowerCase().trim();
+        if (!search) {
+          return true;
         }
-
-        // 2. Check Customer Name
-        if ((customer.name ?? '').toLowerCase().includes(lowerCaseFilter)) return true;
-
-        // 3. Check Customer CPF (digits only)
-        const filterAsDigits = filter.replace(/\D/g, '');
-        if (filterAsDigits) {
-          if ((customer.cpf ?? '').replace(/\D/g, '').includes(filterAsDigits)) {
+  
+        const proposal = row.original;
+        const customer = proposal.customer;
+  
+        // Search proposal fields
+        if ((proposal.proposalNumber ?? '').toLowerCase().includes(search)) {
+          return true;
+        }
+        if ((proposal.promoter ?? '').toLowerCase().includes(search)) {
+          return true;
+        }
+  
+        // Search customer fields
+        if (customer) {
+          // Search by Customer ID
+          if (String(customer.numericId ?? '').includes(search)) {
+            return true;
+          }
+          // Search by Customer Name
+          if ((customer.name ?? '').toLowerCase().includes(search)) {
+            return true;
+          }
+          // Search by Customer CPF (digits only)
+          const searchDigits = search.replace(/\D/g, '');
+          if (searchDigits) {
+            if ((customer.cpf ?? '').replace(/\D/g, '').includes(searchDigits)) {
               return true;
+            }
           }
         }
-      }
   
-      return false;
-    },
+        return false;
+      },
   });
   
   React.useEffect(() => {

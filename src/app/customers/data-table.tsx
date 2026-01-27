@@ -201,55 +201,53 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
       pagination,
     },
     globalFilterFn: (row, columnId, filterValue) => {
-      const filter = String(filterValue ?? '').trim();
-      if (!filter) return true;
-
-      const customer = row.original;
-  
-      // 1. Check ID directly
-      const numericId = String(customer.numericId);
-      if (numericId.includes(filter)) {
-          return true;
-      }
-
-      const lowerCaseFilter = filter.toLowerCase();
-  
-      // 2. Check name
-      const name = customer.name ?? '';
-      if (name.toLowerCase().includes(lowerCaseFilter)) {
-          return true;
-      }
-  
-      // 3. Check CPF and Phones (digits only for flexible search)
-      const filterAsDigits = filter.replace(/\D/g, '');
-      if (filterAsDigits) {
-        const cpf = (customer.cpf ?? '').replace(/\D/g, '');
-        if (cpf.includes(filterAsDigits)) {
-            return true;
+        const search = String(filterValue ?? '').toLowerCase().trim();
+        if (!search) {
+          return true; // Show all rows if search is empty
         }
-
-        const phone = (customer.phone ?? '').replace(/\D/g, '');
-        if (phone.includes(filterAsDigits)) {
-            return true;
+  
+        const customer = row.original;
+  
+        // 1. Search by Customer ID (as string)
+        if (String(customer.numericId ?? '').includes(search)) {
+          return true;
         }
+  
+        // 2. Search by Name
+        if ((customer.name ?? '').toLowerCase().includes(search)) {
+          return true;
+        }
+  
+        // 3. Search by CPF, Phones, and Benefits (flexible search)
+        const searchDigits = search.replace(/\D/g, '');
         
-        const phone2 = (customer.phone2 ?? '').replace(/\D/g, '');
-        if (phone2.includes(filterAsDigits)) {
+        if (searchDigits) {
+          // Search CPF
+          if ((customer.cpf ?? '').replace(/\D/g, '').includes(searchDigits)) {
             return true;
-        }
-      }
-      
-      // 4. Check Benefits
-      const benefits = customer.benefits ?? [];
-      for (const benefit of benefits) {
-          const benefitNumber = benefit.number ?? '';
-          if (benefitNumber.toLowerCase().includes(lowerCaseFilter)) {
-              return true;
           }
-      }
+          // Search Phone 1
+          if ((customer.phone ?? '').replace(/\D/g, '').includes(searchDigits)) {
+            return true;
+          }
+          // Search Phone 2
+          if (customer.phone2 && (customer.phone2 ?? '').replace(/\D/g, '').includes(searchDigits)) {
+            return true;
+          }
+        }
   
-      return false;
-    },
+        // 4. Search by Benefit numbers
+        if (customer.benefits && customer.benefits.length > 0) {
+          for (const benefit of customer.benefits) {
+            if ((benefit.number ?? '').toLowerCase().includes(search)) {
+              return true;
+            }
+          }
+        }
+  
+        // If no match is found
+        return false;
+      },
   });
 
   React.useImperativeHandle(ref, () => ({
