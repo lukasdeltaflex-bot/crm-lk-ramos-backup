@@ -64,6 +64,9 @@ export default function CustomersPage() {
 
   const { data: customers, isLoading, error } = useCollection<Customer>(customersQuery);
 
+  const [activeCustomers, setActiveCustomers] = React.useState<Customer[]>([]);
+  const [inactiveCustomers, setInactiveCustomers] = React.useState<Customer[]>([]);
+
   React.useEffect(() => {
     const seedData = async () => {
       if (!firestore || !user || isLoading || customers === null) return;
@@ -141,11 +144,9 @@ export default function CustomersPage() {
     setIsAiModalOpen(false);
     setIsDialog(true);
   }
-  const nonAnonymizedCustomers = customers?.filter(c => c.name !== 'Cliente Removido') || [];
+  const nonAnonymizedCustomers = React.useMemo(() => customers?.filter(c => c.name !== 'Cliente Removido') || [], [customers]);
 
-  const { activeCustomers, inactiveCustomers } = React.useMemo(() => {
-    if (!nonAnonymizedCustomers) return { activeCustomers: [], inactiveCustomers: [] };
-
+  React.useEffect(() => {
     const active: Customer[] = [];
     const inactive: Customer[] = [];
 
@@ -157,7 +158,8 @@ export default function CustomersPage() {
       }
     });
 
-    return { activeCustomers: active, inactiveCustomers: inactive };
+    setActiveCustomers(active);
+    setInactiveCustomers(inactive);
   }, [nonAnonymizedCustomers]);
 
   const displayedCustomers = filter === 'active' ? activeCustomers : inactiveCustomers;
