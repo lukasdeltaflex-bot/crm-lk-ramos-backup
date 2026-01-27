@@ -434,14 +434,38 @@ export function ProposalForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Nº do Benefício</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Digite o número do benefício para esta proposta"
-                          {...field}
-                          readOnly={isReadOnly}
-                          value={field.value || ''}
-                        />
-                      </FormControl>
+                      {selectedCustomer && selectedCustomer.benefits && selectedCustomer.benefits.length > 0 ? (
+                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value || ''} disabled={isReadOnly}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione um benefício..." />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {selectedCustomer.benefits.map((benefit, index) => (
+                              <SelectItem key={index} value={benefit.number}>
+                                <span className="font-medium">{benefit.number}</span>
+                                {benefit.species && <span className="text-muted-foreground ml-2">{benefit.species}</span>}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <FormControl>
+                          <Input
+                            placeholder={selectedCustomerId ? "Benefício não cadastrado (digitação manual)" : "Selecione um cliente"}
+                            {...field}
+                            readOnly={isReadOnly}
+                            value={field.value || ''}
+                            disabled={isReadOnly || !selectedCustomerId}
+                          />
+                        </FormControl>
+                      )}
+                       <FormDescription>
+                        {selectedCustomer && (!selectedCustomer.benefits || selectedCustomer.benefits.length === 0)
+                          ? "Este cliente não tem benefícios cadastrados. Você pode digitá-lo manualmente ou adicioná-lo na tela de Clientes."
+                          : "Selecione o benefício que será usado para esta proposta."}
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
