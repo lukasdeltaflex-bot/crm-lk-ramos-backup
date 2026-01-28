@@ -62,12 +62,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, X } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { proposalStatuses } from '@/lib/config-data';
 import type { ProposalStatus, Proposal } from '@/lib/types';
 import { DraggableHeader } from './columns';
 import type { ProposalWithCustomer } from './page';
+import { Separator } from '@/components/ui/separator';
+import { formatCurrency } from '@/lib/utils';
+import { parse, isValid } from 'date-fns';
+import type { DateRange } from 'react-day-picker';
 
 const STORAGE_KEY_VISIBILITY = 'lk-ramos-proposal-columns-visibility-v5';
 const STORAGE_KEY_ORDER = 'lk-ramos-proposal-columns-order-v5';
@@ -105,6 +109,9 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     pageSize: 10,
   });
   const [statusFilter, setStatusFilter] = React.useState('Todos');
+  const [startDateInput, setStartDateInput] = React.useState('');
+  const [endDateInput, setEndDateInput] = React.useState('');
+  const [appliedDateRange, setAppliedDateRange] = React.useState<DateRange | undefined>(undefined);
   
   const defaultVisibility: VisibilityState = {
       dateApproved: false,
@@ -175,6 +182,41 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         localStorage.setItem(STORAGE_KEY_PAGESIZE, String(pagination.pageSize));
     }
   }, [pagination.pageSize, isClient]);
+
+  const handleDateInputChange = (value: string, type: 'start' | 'end') => {
+    let formattedValue = value.replace(/\D/g, '');
+    if (formattedValue.length > 8) formattedValue = formattedValue.substring(0, 8);
+    formattedValue = formattedValue.replace(/(\d{2})(\d)/, '$1/$2');
+    formattedValue = formattedValue.replace(/(\d{2})(\d)/, '$1/$2');
+    
+    if (type === 'start') {
+      setStartDateInput(formattedValue);
+    } else {
+      setEndDateInput(formattedValue);
+    }
+  };
+
+  const handleApplyFilter = () => {
+    const startDate = parse(startDateInput, 'dd/MM/yyyy', new Date());
+    const endDate = parse(endDateInput, 'dd/MM/yyyy', new Date());
+
+    const isValidStart = isValid(startDate) && startDateInput.length === 10;
+    const isValidEnd = isValid(endDate) && endDateInput.length === 10;
+
+    if (isValidStart && isValidEnd) {
+        setAppliedDateRange({ from: startDate, to: endDate });
+    } else if (isValidStart) {
+        setAppliedDateRange({ from: startDate, to: startDate });
+    } else {
+        setAppliedDateRange(undefined);
+    }
+  };
+
+  const clearDates = () => {
+    setStartDateInput('');
+    setEndDateInput('');
+    setAppliedDateRange(undefined);
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -273,12 +315,23 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     }
   }, [statusFilter, table]);
 
+  React.useEffect(() => {
+    const dateColumn = table.getColumn('dateDigitized');
+    dateColumn?.setFilterValue(appliedDateRange);
+  }, [appliedDateRange, table]);
+
 
   React.useImperativeHandle(ref, () => ({
     table,
   }));
   
   const selectedRowCount = Object.keys(rowSelection).length;
+
+  const totalSelectedGrossAmount = React.useMemo(() => {
+    return table.getSelectedRowModel().rows.reduce((total, row) => {
+        return total + (row.original.grossAmount || 0);
+    }, 0);
+  }, [rowSelection, table.getSelectedRowModel().rows]);
   
   const idMap: {[key: string]: string} = {
     promoter: 'Promotora',
@@ -305,17 +358,37 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     >
         <Card className="proposals-table">
         <div className="p-4">
-            <Tabs 
-            value={statusFilter} 
-            onValueChange={setStatusFilter}
-            >
-                <TabsList className="h-auto flex-wrap justify-start">
-                    <TabsTrigger value="Todos">Todos</TabsTrigger>
-                    {proposalStatuses.map(status => (
-                        <TabsTrigger key={status} value={status}>{status}</TabsTrigger>
-                    ))}
-                </TabsList>
-            </Tabs>
+            <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+                <Tabs 
+                value={statusFilter} 
+                onValueChange={setStatusFilter}
+                >
+                    <TabsList className="h-auto flex-wrap justify-start">
+                        <TabsTrigger value="Todos">Todos</TabsTrigger>
+                        {proposalStatuses.map(status => (
+                            <TabsTrigger key={status} value={status}>{status}</TabsTrigger>
+                        ))}
+                    </TabsList>
+                </Tabs>
+                <div className="flex items-center gap-2 flex-wrap">
+                    <Input 
+                        placeholder="Data Início" 
+                        value={startDateInput}
+                        onChange={(e) => handleDateInputChange(e.target.value, 'start')}
+                        maxLength={10}
+                        className="h-9 w-32"
+                    />
+                    <Input 
+                        placeholder="Data Fim" 
+                        value={endDateInput}
+                        onChange={(e) => handleDateInputChange(e.target.value, 'end')}
+                        maxLength={10}
+                        className="h-9 w-32"
+                    />
+                    <Button size="sm" onClick={handleApplyFilter}><Filter className="h-4 w-4" /> Aplicar</Button>
+                    {(startDateInput || endDateInput || appliedDateRange) && <Button variant="ghost" size="icon" className="h-9 w-9" onClick={clearDates}><X className="h-4 w-4" /></Button>}
+                </div>
+            </div>
             <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-2 flex-grow">
                 <Input
@@ -422,9 +495,20 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
             </Table>
             </div>
             <div className="flex items-center justify-between py-4">
-                <div className="flex-1 text-sm text-muted-foreground">
-                {table.getFilteredSelectedRowModel().rows.length} de{' '}
-                {table.getFilteredRowModel().rows.length} linha(s) selecionadas.
+                <div className="flex-1 text-sm text-muted-foreground flex items-center gap-4">
+                    <span>
+                        {selectedRowCount} de{' '}
+                        {table.getFilteredRowModel().rows.length} linha(s) selecionadas.
+                    </span>
+                    {selectedRowCount > 0 && (
+                        <>
+                            <Separator orientation="vertical" className="h-4" />
+                            <div className="font-medium">
+                                Valor Bruto Selecionado:{" "}
+                                <span className="font-bold text-foreground">{formatCurrency(totalSelectedGrossAmount)}</span>
+                            </div>
+                        </>
+                    )}
                 </div>
                 <div className="flex items-center space-x-6 lg:space-x-8">
                     <div className="flex items-center space-x-2">

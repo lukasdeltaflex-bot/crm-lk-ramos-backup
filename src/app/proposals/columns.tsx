@@ -28,7 +28,7 @@ import { formatCurrency } from '@/lib/utils';
 import React from 'react';
 import { StatusCell } from './status-cell';
 import { type ProposalWithCustomer } from './page';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useSortable } from '@dnd-kit/sortable';
@@ -36,6 +36,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { TableHead, TableCell } from '@/components/ui/table';
 import { flexRender } from '@tanstack/react-table';
 import { toast } from '@/hooks/use-toast';
+import type { DateRange } from 'react-day-picker';
 
 type ActionsCellProps = {
     row: {
@@ -316,7 +317,28 @@ export const getColumns = (
     accessorKey: 'dateDigitized',
     id: 'dateDigitized',
     header: 'Data Digitação',
-    cell: ({ row }) => formatDate(row.getValue('dateDigitized'))
+    cell: ({ row }) => formatDate(row.getValue('dateDigitized')),
+    filterFn: (row, id, filterValue: DateRange) => {
+        if (!filterValue || !filterValue.from) {
+          return true;
+        }
+        
+        const cellValue = row.getValue(id) as string;
+        if (!cellValue) {
+          return false;
+        }
+  
+        const cellDate = new Date(cellValue);
+        if (!isValid(cellDate)) {
+          return false;
+        }
+  
+        const fromDate = filterValue.from;
+        const toDate = filterValue.to ? new Date(filterValue.to) : new Date(filterValue.from);
+        toDate.setHours(23, 59, 59, 999);
+  
+        return cellDate >= fromDate && cellDate <= toDate;
+      },
   },
   {
     accessorKey: 'dateApproved',
