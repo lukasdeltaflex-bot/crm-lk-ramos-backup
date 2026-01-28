@@ -169,12 +169,7 @@ export default function FinancialPage() {
     const customersMap = new Map(customers.map(c => [c.id, c]));
     
     const isCommissionEligible = (p: Proposal) => {
-        const isPaidToClient = p.status === 'Pago' || p.status === 'Saldo Pago';
-        // A proposal is relevant for commission tracking if it's approved.
-        const isApproved = !!p.dateApproved;
-        const isPendingOrInProgressAndApproved = (p.status === 'Em Andamento' || p.status === 'Pendente') && isApproved;
-        
-        return isPaidToClient || isPendingOrInProgressAndApproved;
+        return p.status !== 'Reprovado';
     }
 
     const tableData = proposals
