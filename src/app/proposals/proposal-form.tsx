@@ -442,8 +442,8 @@ export function ProposalForm({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {selectedCustomer.benefits.map((benefit, index) => (
-                              <SelectItem key={index} value={benefit.number}>
+                            {selectedCustomer.benefits.map((benefit) => (
+                              <SelectItem key={benefit.number} value={benefit.number}>
                                 <span className="font-medium">{benefit.number}</span>
                                 {benefit.species && <span className="text-muted-foreground ml-2">{benefit.species}</span>}
                               </SelectItem>
@@ -781,6 +781,11 @@ export function ProposalForm({
                         <>
                             <MaskedDatePicker name="debtBalanceArrivalDate" label="Chegada Saldo Devedor" control={form.control} isReadOnly={isReadOnly} />
                             <MaskedDatePicker name="dateApproved" label="Data de Averbação" control={form.control} isReadOnly={isReadOnly} />
+                        </>
+                    ) : (product === 'Refin Port') ? (
+                        <>
+                            <MaskedDatePicker name="dateApproved" label="Data de Averbação" control={form.control} isReadOnly={isReadOnly} />
+                            <MaskedDatePicker name="datePaidToClient" label="Data de Pagamento ao Cliente" control={form.control} isReadOnly={isReadOnly} />
                         </>
                     ) : (
                         <>
