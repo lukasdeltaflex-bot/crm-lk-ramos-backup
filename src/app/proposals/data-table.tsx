@@ -333,6 +333,14 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     }, 0);
   }, [rowSelection, table.getSelectedRowModel().rows]);
   
+  const totalSelectedCommissionValue = React.useMemo(() => {
+    return table.getSelectedRowModel().rows.reduce((total, row) => {
+        return total + (row.original.commissionValue || 0);
+    }, 0);
+  }, [rowSelection, table.getSelectedRowModel().rows]);
+
+  const isCommissionColumnVisible = table.getColumn('commissionValue')?.getIsVisible();
+
   const idMap: {[key: string]: string} = {
     promoter: 'Promotora',
     proposalNumber: 'Nº Proposta',
@@ -507,6 +515,15 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                 Valor Bruto Selecionado:{" "}
                                 <span className="font-bold text-foreground">{formatCurrency(totalSelectedGrossAmount)}</span>
                             </div>
+                            {isCommissionColumnVisible && (
+                                <>
+                                    <Separator orientation="vertical" className="h-4" />
+                                    <div className="font-medium">
+                                        Comissão Selecionada:{" "}
+                                        <span className="font-bold text-foreground">{formatCurrency(totalSelectedCommissionValue)}</span>
+                                    </div>
+                                </>
+                            )}
                         </>
                     )}
                 </div>
