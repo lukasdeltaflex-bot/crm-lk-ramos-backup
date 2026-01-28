@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/page-header';
 import { FinancialDataTable, type FinancialDataTableHandle } from './data-table';
 import { getColumns } from './columns';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, doc, setDoc, writeBatch } from 'firebase/firestore';
+import { collection, query, where, doc, setDoc, writeBatch, deleteField } from 'firebase/firestore';
 import type { Proposal, Customer, CommissionStatus } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -54,6 +54,7 @@ export default function FinancialPage() {
   const tableRef = React.useRef<FinancialDataTableHandle>(null);
   const [dialogData, setDialogData] = React.useState<{ title: string; proposals: ProposalWithCustomer[] } | null>(null);
   const [migrationCompleted, setMigrationCompleted] = React.useState(false);
+  const [migrationFixCommissionStatusCompleted, setMigrationFixCommissionStatusCompleted] = React.useState(false);
 
   React.useEffect(() => {
     setIsClient(true);
@@ -120,6 +121,47 @@ export default function FinancialPage() {
 
     runMigration();
   }, [firestore, proposals, proposalsLoading, migrationCompleted]);
+  
+  React.useEffect(() => {
+    if (!firestore || !proposals || proposals.length === 0 || migrationFixCommissionStatusCompleted || proposalsLoading) {
+      return;
+    }
+
+    const runCommissionFixMigration = async () => {
+      const batch = writeBatch(firestore);
+      let updatesMade = 0;
+
+      proposals.forEach(p => {
+        const isCommissionPaidOrPartial = p.commissionStatus === 'Paga' || p.commissionStatus === 'Parcial';
+        const isNotApproved = !p.dateApproved;
+
+        if (isCommissionPaidOrPartial && isNotApproved) {
+            const proposalRef = doc(firestore, 'loanProposals', p.id);
+            batch.update(proposalRef, {
+                commissionStatus: 'Pendente',
+                amountPaid: 0,
+                commissionPaymentDate: deleteField(),
+            });
+            updatesMade++;
+        }
+      });
+
+      if (updatesMade > 0) {
+        try {
+          await batch.commit();
+          toast({
+            title: "Correção de Dados Aplicada",
+            description: `${updatesMade} proposta(s) com status de comissão inconsistente foram corrigidas para "Pendente".`
+          });
+        } catch (error) {
+          console.error("Erro ao corrigir status de comissão:", error);
+        }
+      }
+      setMigrationFixCommissionStatusCompleted(true);
+    };
+
+    runCommissionFixMigration();
+  }, [firestore, proposals, proposalsLoading, migrationFixCommissionStatusCompleted]);
 
   const { proposalsWithCustomerData, currentMonthProposals } = React.useMemo(() => {
     if (!proposals || !customers || !isClient) return { proposalsWithCustomerData: [], currentMonthProposals: [] };
@@ -181,12 +223,31 @@ export default function FinancialPage() {
 
 
   const handleEditCommission = React.useCallback((proposal: ProposalWithCustomer) => {
+    if (!proposal.dateApproved) {
+      toast({
+        variant: 'destructive',
+        title: 'Ação não permitida',
+        description: 'Não é possível editar a comissão (marcar como Parcial) pois a proposta ainda não foi averbada.',
+      });
+      return;
+    }
     setSelectedProposal(proposal);
     setIsSheetOpen(true);
   }, []);
   
   const handleCommissionStatusUpdate = React.useCallback(async (proposal: ProposalWithCustomer, newStatus: CommissionStatus) => {
     if (!firestore || !proposal.customer) return;
+  
+    if (newStatus === 'Paga') {
+        if (!proposal.dateApproved) {
+            toast({
+                variant: 'destructive',
+                title: 'Ação não permitida',
+                description: 'Não é possível marcar a comissão como "Paga" pois a proposta ainda não foi averbada.',
+            });
+            return;
+        }
+    }
   
     const proposalToUpdate: Partial<Proposal> = {
       commissionStatus: newStatus,
@@ -197,7 +258,7 @@ export default function FinancialPage() {
         proposalToUpdate.commissionPaymentDate = new Date().toISOString();
     } else if (newStatus === 'Pendente') {
         proposalToUpdate.amountPaid = 0;
-        proposalToUpdate.commissionPaymentDate = undefined;
+        proposalToUpdate.commissionPaymentDate = deleteField() as any;
     }
   
     try {
