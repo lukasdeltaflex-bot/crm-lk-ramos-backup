@@ -307,7 +307,7 @@ export default function DashboardPage() {
         </div>
 
         <Dialog open={!!dialogData} onOpenChange={(isOpen) => !isOpen && setDialogData(null)}>
-            <DialogContent className="max-w-4xl h-[90vh] flex flex-col" onCloseAutoFocus={(e) => e.preventDefault()}>
+            <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle>{dialogData?.title}</DialogTitle>
                 </DialogHeader>
