@@ -249,8 +249,8 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
   }
   
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="h-full flex flex-col">
+      <CardHeader className="flex flex-row items-start justify-between">
         <div className='space-y-1.5'>
             <CardTitle className="flex items-center gap-2">
                 <Bot />
@@ -260,7 +260,7 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
                 Um resumo de todos os alertas e pendências importantes para o seu dia.
             </CardDescription>
         </div>
-        <Button onClick={handleSendEmail} disabled={isSending}>
+        <Button onClick={handleSendEmail} disabled={isSending} size="sm">
             {isSending ? (
                 <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -269,20 +269,20 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
             ) : (
                 <>
                     <Send className="mr-2 h-4 w-4" />
-                    Enviar E-mail de Resumo
+                    Enviar Resumo
                 </>
             )}
         </Button>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 overflow-hidden">
         {!hasVisibleAlerts ? (
-            <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8 border-2 border-dashed rounded-lg">
+            <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground p-8 border-2 border-dashed rounded-lg">
                 <Info className="h-10 w-10 mb-4" />
                 <p className="font-semibold">Nenhuma pendência ou alerta para hoje.</p>
                 <p className="text-sm">Tenha um ótimo dia!</p>
             </div>
         ) : (
-            <ScrollArea className="max-h-72 w-full">
+            <ScrollArea className="h-full w-full">
                 <div className="space-y-6 pr-4">
                     {visibleBirthdayAlerts.length > 0 && (
                         <div>
