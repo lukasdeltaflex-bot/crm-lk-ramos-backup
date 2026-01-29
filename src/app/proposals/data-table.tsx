@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -19,15 +20,6 @@ import {
   Table as ReactTable,
   PaginationState,
 } from '@tanstack/react-table';
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from '@radix-ui/react-dom-interactions'; // This might be wrong in previous context, let's keep it consistent with dnd-kit
 import {
     DndContext as DndContextKit,
     closestCenter as closestCenterKit,
@@ -370,12 +362,12 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 
   const getRowStatusClass = (status: string) => {
     switch (status) {
-      case 'Pago': return 'bg-green-50/50 dark:bg-green-900/20 hover:bg-green-100/50 dark:hover:bg-green-900/30';
-      case 'Saldo Pago': return 'bg-orange-50/50 dark:bg-orange-900/20 hover:bg-orange-100/50 dark:hover:bg-orange-900/30';
-      case 'Reprovado': return 'bg-red-50/50 dark:bg-red-900/20 hover:bg-red-100/50 dark:hover:bg-red-900/30';
-      case 'Em Andamento': return 'bg-yellow-50/50 dark:bg-yellow-900/20 hover:bg-yellow-100/50 dark:hover:bg-yellow-900/30';
-      case 'Aguardando Saldo': return 'bg-blue-50/50 dark:bg-blue-900/20 hover:bg-blue-100/50 dark:hover:bg-blue-900/30';
-      case 'Pendente': return 'bg-purple-50/50 dark:bg-purple-900/20 hover:bg-purple-100/50 dark:hover:bg-purple-900/30';
+      case 'Pago': return 'bg-green-100/40 dark:bg-green-900/20 hover:bg-green-200/40 dark:hover:bg-green-900/30';
+      case 'Saldo Pago': return 'bg-orange-100/40 dark:bg-orange-900/20 hover:bg-orange-200/40 dark:hover:bg-orange-900/30';
+      case 'Reprovado': return 'bg-red-100/40 dark:bg-red-900/20 hover:bg-red-200/40 dark:hover:bg-red-900/30';
+      case 'Em Andamento': return 'bg-yellow-100/40 dark:bg-yellow-900/20 hover:bg-yellow-200/40 dark:hover:bg-yellow-900/30';
+      case 'Aguardando Saldo': return 'bg-blue-100/40 dark:bg-blue-900/20 hover:bg-blue-200/40 dark:hover:bg-blue-900/30';
+      case 'Pendente': return 'bg-purple-100/40 dark:bg-purple-900/20 hover:bg-purple-200/40 dark:hover:bg-purple-900/30';
       default: return '';
     }
   };
