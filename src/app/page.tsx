@@ -9,15 +9,15 @@ import { collection, query, where, doc } from 'firebase/firestore';
 import {
   FileText,
   Clock,
-  CircleDollarSign,
   Hourglass,
   BadgePercent,
   Eye,
   EyeOff,
   X,
   Filter,
+  UsersRound,
 } from 'lucide-react';
-import { format, parse, startOfMonth, endOfMonth, isValid } from 'date-fns';
+import { format, parse, startOfMonth, endOfMonth, isValid, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency, cn } from '@/lib/utils';
 import type { Proposal, ProposalStatus, Customer, UserProfile } from '@/lib/types';
@@ -35,6 +35,7 @@ import { DateRange } from 'react-day-picker';
 import { Input } from '@/components/ui/input';
 import { DailySummary } from '@/components/summary/daily-summary';
 import { GoalCard } from '@/components/dashboard/goal-card';
+import { OperatorPerformanceChart } from '@/components/dashboard/operator-performance-chart';
 
 export default function DashboardPage() {
   const [startDateInput, setStartDateInput] = React.useState('');
@@ -109,7 +110,6 @@ export default function DashboardPage() {
 
   const filteredProposals = React.useMemo(() => {
     if (!proposals || !isClient) return [];
-  
     const today = new Date();
     const fromDate = appliedDateRange?.from || startOfMonth(today);
     const toDate = appliedDateRange?.to || endOfMonth(today);
@@ -122,67 +122,77 @@ export default function DashboardPage() {
     });
   }, [proposals, appliedDateRange, isClient]);
 
+  const prevMonthProposals = React.useMemo(() => {
+    if (!proposals || !isClient) return [];
+    const today = new Date();
+    const startOfPrev = startOfMonth(subMonths(today, 1));
+    const endOfPrev = endOfMonth(subMonths(today, 1));
+    
+    return proposals.filter(p => {
+      if (!p.dateDigitized) return false;
+      const proposalDate = new Date(p.dateDigitized);
+      return proposalDate >= startOfPrev && proposalDate <= endOfPrev;
+    });
+  }, [proposals, isClient]);
+
+  const getProposalsSum = (proposalsList: Proposal[]): number => {
+    return proposalsList.reduce((sum, p) => {
+        if (p.commissionBase === 'net') return sum + (p.netAmount || 0);
+        return sum + (p.grossAmount || 0);
+    }, 0);
+  };
+
+  const calculateTrend = (current: number, previous: number) => {
+    if (previous === 0) return { value: 0, isPositive: true, label: 'vs mês ant.' };
+    const diff = ((current - previous) / previous) * 100;
+    return {
+      value: Math.abs(Math.round(diff)),
+      isPositive: diff >= 0,
+      label: 'vs mês ant.'
+    };
+  };
+
   const getFilterDescription = () => {
     if (!isClient) return "Carregando...";
     if (appliedDateRange?.from) {
         const from = format(appliedDateRange.from, 'dd/MM/yyyy', { locale: ptBR });
         const to = appliedDateRange.to ? format(appliedDateRange.to, 'dd/MM/yyyy', { locale: ptBR }) : from;
-        if (from === to) {
-            return `Exibindo dados para: ${from}`;
-        }
-        return `Exibindo dados de ${from} a ${to}`;
+        return from === to ? `Exibindo: ${from}` : `De ${from} a ${to}`;
     }
     const monthName = format(new Date(), 'MMMM', { locale: ptBR });
-    const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
-    return `Exibindo dados para o mês de ${capitalizedMonth}`;
+    return `Exibindo dados para o mês de ${monthName.charAt(0).toUpperCase() + monthName.slice(1)}`;
   }
   
-  const totalDigitado = React.useMemo(() => {
-    if (!filteredProposals || filteredProposals.length === 0) {
-      return 0;
-    }
-    return filteredProposals.reduce((sum, p) => {
-        if (p.commissionBase === 'net') {
-            return sum + (p.netAmount || 0);
-        }
-        return sum + (p.grossAmount || 0);
-    }, 0);
-  }, [filteredProposals]);
+  const currentTotalDigitado = getProposalsSum(filteredProposals);
+  const prevTotalDigitado = getProposalsSum(prevMonthProposals);
 
+  const getProposalsByStatus = (list: Proposal[], statuses: ProposalStatus[]) => 
+    list.filter((p) => statuses.includes(p.status));
 
-  const getProposalsByStatus = (
-    proposalsList: Proposal[],
-    statuses: ProposalStatus[]
-  ): Proposal[] => {
-    if (!proposalsList) return [];
-    return proposalsList.filter((p) => statuses.includes(p.status));
-  };
+  const pagoProposals = getProposalsByStatus(filteredProposals, ['Pago', 'Saldo Pago']);
+  const prevPagoProposals = getProposalsByStatus(prevMonthProposals, ['Pago', 'Saldo Pago']);
   
-  const getProposalsSum = (proposalsList: Proposal[]): number => {
-    return proposalsList.reduce((sum, p) => {
-        if (p.commissionBase === 'net') {
-            return sum + (p.netAmount || 0);
-        }
-        return sum + (p.grossAmount || 0);
-    }, 0);
-  };
+  const currentTotalPago = getProposalsSum(pagoProposals);
+  const prevTotalPago = getProposalsSum(prevPagoProposals);
+
+  const pendenteProposals = getProposalsByStatus(filteredProposals, ['Pendente']);
+  const prevPendenteProposals = getProposalsByStatus(prevMonthProposals, ['Pendente']);
 
   const emAndamentoProposals = getProposalsByStatus(filteredProposals, ['Em Andamento']);
-  const aguardandoSaldoProposals = getProposalsByStatus(filteredProposals, ['Aguardando Saldo']);
-  const saldoPagoProposals = getProposalsByStatus(filteredProposals, ['Saldo Pago']);
-  const pendenteProposals = getProposalsByStatus(filteredProposals, ['Pendente']);
-  const pagoProposals = getProposalsByStatus(filteredProposals, ['Pago']);
+  const prevEmAndamentoProposals = getProposalsByStatus(prevMonthProposals, ['Em Andamento']);
 
-  const totalPagoValue = React.useMemo(() => getProposalsSum(pagoProposals), [pagoProposals]);
+  const aguardandoSaldoProposals = getProposalsByStatus(filteredProposals, ['Aguardando Saldo']);
+  const prevAguardandoSaldoProposals = getProposalsByStatus(prevMonthProposals, ['Aguardando Saldo']);
 
   const cardData = [
     {
       title: 'Total Digitado',
-      value: totalDigitado,
+      value: currentTotalDigitado,
       icon: FileText,
       className: 'border-muted',
       valueClassName: 'text-foreground',
       proposals: filteredProposals,
+      trend: calculateTrend(currentTotalDigitado, prevTotalDigitado),
     },
     {
       title: 'Pendente',
@@ -191,6 +201,7 @@ export default function DashboardPage() {
       className: 'border-purple-500/50',
       valueClassName: 'text-purple-500',
       proposals: pendenteProposals,
+      trend: calculateTrend(getProposalsSum(pendenteProposals), getProposalsSum(prevPendenteProposals)),
     },
     {
       title: 'Em Andamento',
@@ -199,6 +210,7 @@ export default function DashboardPage() {
       className: 'border-yellow-500/50',
       valueClassName: 'text-yellow-500',
       proposals: emAndamentoProposals,
+      trend: calculateTrend(getProposalsSum(emAndamentoProposals), getProposalsSum(prevEmAndamentoProposals)),
     },
     {
       title: 'Aguardando Saldo',
@@ -207,14 +219,7 @@ export default function DashboardPage() {
       className: 'border-blue-500/50',
       valueClassName: 'text-blue-500',
       proposals: aguardandoSaldoProposals,
-    },
-     {
-      title: 'Saldo Pago',
-      value: getProposalsSum(saldoPagoProposals),
-      icon: CircleDollarSign,
-      className: 'border-orange-500/50',
-      valueClassName: 'text-orange-500',
-      proposals: saldoPagoProposals,
+      trend: calculateTrend(getProposalsSum(aguardandoSaldoProposals), getProposalsSum(prevAguardandoSaldoProposals)),
     },
   ];
 
@@ -245,14 +250,13 @@ export default function DashboardPage() {
                 {(startDateInput || endDateInput || appliedDateRange) && <Button variant="ghost" size="icon" className="h-9 w-9" onClick={clearDates}><X className="h-4 w-4" /></Button>}
                 <Button variant="ghost" size="icon" onClick={() => setIsPrivacyMode(!isPrivacyMode)}>
                 {isPrivacyMode ? <EyeOff /> : <Eye />}
-                <span className="sr-only">{isPrivacyMode ? 'Mostrar valores' : 'Ocultar valores'}</span>
                 </Button>
             </div>
         </div>
       </div>
       <div className="space-y-8">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-          <div className="md:col-span-2 lg:col-span-5">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="md:col-span-2 lg:col-span-4">
             {isLoading ? (
               <Card className="p-6">
                 <Skeleton className="h-5 w-48 mb-4" />
@@ -260,38 +264,33 @@ export default function DashboardPage() {
               </Card>
             ) : (
               <GoalCard 
-                currentProduction={totalPagoValue} 
-                totalDigitized={totalDigitado}
+                currentProduction={currentTotalPago} 
+                totalDigitized={currentTotalDigitado}
                 isPrivacyMode={isPrivacyMode}
-                onValueClick={() => setDialogData({ title: 'Contratos Pagos no Mês', proposals: pagoProposals })}
+                onValueClick={() => setDialogData({ title: 'Contratos Pagos no Período', proposals: pagoProposals })}
               />
             )}
           </div>
           
-          {isLoading ? Array.from({length: 5}).map((_, i) => (
-             <Card key={i} className="md:col-span-1 lg:col-span-1 p-6">
+          {isLoading ? Array.from({length: 4}).map((_, i) => (
+             <Card key={i} className="p-6">
                 <Skeleton className="h-5 w-24 mb-4" />
                 <Skeleton className="h-8 w-32" />
              </Card>
           )) : cardData.map((card) => {
-                const percentage = totalDigitado > 0 ? (card.value / totalDigitado) * 100 : 0;
-                const description = !isPrivacyMode
-                  ? `${percentage.toFixed(1).replace('.', ',')}% do total digitado`
-                  : undefined;
-
                 return (
                   <div 
                       key={card.title} 
-                      className="md:col-span-1 lg:col-span-1 cursor-pointer" 
+                      className="cursor-pointer" 
                       onClick={() => setDialogData({ title: `Propostas: ${card.title}`, proposals: card.proposals})}
                   >
                       <StatsCard
-                      title={card.title}
-                      value={isPrivacyMode ? '•••••' : formatCurrency(card.value)}
-                      description={description}
-                      icon={card.icon}
-                      className={cn("h-full", card.className)}
-                      valueClassName={card.valueClassName}
+                        title={card.title}
+                        value={isPrivacyMode ? '•••••' : formatCurrency(card.value)}
+                        icon={card.icon}
+                        className={cn("h-full", card.className)}
+                        valueClassName={card.valueClassName}
+                        trend={isPrivacyMode ? undefined : card.trend}
                       />
                   </div>
                 )
@@ -310,16 +309,14 @@ export default function DashboardPage() {
         </Dialog>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <CommissionChart 
-              proposals={proposals || []} 
-            />
+          <div className="lg:col-span-2 space-y-8">
+            <CommissionChart proposals={proposals || []} />
+            <OperatorPerformanceChart proposals={proposals || []} />
           </div>
           <div className="lg:col-span-1">
             {isLoading ? (
                 <div className="space-y-4">
                     <Skeleton className="h-4 w-1/4" />
-                    <Skeleton className="h-20 w-full" />
                     <Skeleton className="h-20 w-full" />
                     <Skeleton className="h-20 w-full" />
                 </div>

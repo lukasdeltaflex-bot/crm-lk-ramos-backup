@@ -22,7 +22,7 @@ import { CalendarIcon, Sparkles, AlertCircle, Loader2, PlusCircle, Trash2 } from
 import { Calendar } from '@/components/ui/calendar';
 import { format, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn, getAge } from '@/lib/utils';
+import { cn, getAge, validateCPF } from '@/lib/utils';
 import type { Customer, Benefit } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
@@ -41,7 +41,9 @@ const benefitSchema = z.object({
 
 const customerSchema = z.object({
   name: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres.'),
-  cpf: z.string().length(14, 'O CPF deve ter 11 dígitos.'),
+  cpf: z.string().refine((val) => validateCPF(val), {
+    message: 'CPF inválido ou inexistente.',
+  }),
   benefits: z.array(benefitSchema).optional(),
   phone: z.string().min(10, 'O telefone é obrigatório.'),
   phone2: z.string().optional(),
@@ -157,14 +159,11 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
           let formattedBirthDate = '';
           if (source.birthDate) {
               try {
-                  // The date from DB is YYYY-MM-DD, need to parse it correctly
                   const date = parse(source.birthDate, 'yyyy-MM-dd', new Date());
                   if (!isNaN(date.getTime())) {
                       formattedBirthDate = format(date, 'dd/MM/yyyy');
                   }
-              } catch (e) {
-                // If parsing fails, leave it blank
-              }
+              } catch (e) {}
           }
           return {
             ...initial,
@@ -229,9 +228,7 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
 
   const handleCepBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
     const cep = e.target.value.replace(/\D/g, '');
-    if (cep.length !== 8) {
-        return;
-    }
+    if (cep.length !== 8) return;
     setIsFetchingCep(true);
     try {
         const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
@@ -251,13 +248,13 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
             form.setValue('neighborhood', data.bairro);
             form.setValue('city', data.localidade);
             form.setValue('state', data.uf);
-            form.setFocus('number'); // Move focus to the number field
+            form.setFocus('number');
         }
     } catch (error) {
         toast({
             variant: 'destructive',
             title: 'Erro ao buscar CEP',
-            description: 'Não foi possível buscar o endereço. Verifique sua conexão.',
+            description: 'Não foi possível buscar o endereço.',
         });
     } finally {
         setIsFetchingCep(false);
@@ -267,29 +264,16 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
   const handleSummarize = async () => {
     const currentObservations = form.getValues('observations');
     if (!currentObservations || currentObservations.trim() === '') {
-      toast({
-        variant: 'destructive',
-        title: 'Campo vazio',
-        description: 'Não há observações para resumir.',
-      });
+      toast({ variant: 'destructive', title: 'Campo vazio', description: 'Não há observações para resumir.' });
       return;
     }
-
     setIsSummarizing(true);
     try {
       const summary = await summarizeNotes(currentObservations);
       form.setValue('observations', summary, { shouldValidate: true });
-      toast({
-        title: 'Observações Resumidas!',
-        description: 'As anotações foram resumidas com sucesso pela IA.',
-      });
+      toast({ title: 'Observações Resumidas!', description: 'As anotações foram resumidas com sucesso pela IA.' });
     } catch (error) {
-      console.error('Error summarizing notes:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao resumir',
-        description: 'Não foi possível gerar o resumo. Tente novamente.',
-      });
+      toast({ variant: 'destructive', title: 'Erro ao resumir', description: 'Não foi possível gerar o resumo.' });
     } finally {
       setIsSummarizing(false);
     }
@@ -301,7 +285,6 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="py-4">
         <ScrollArea className="h-[70vh] pr-4">
           <div className="space-y-8">
-            {/* Dados Pessoais */}
             <div className='space-y-4'>
                 <h3 className="text-lg font-medium">Dados Pessoais</h3>
                 <FormField
@@ -425,7 +408,7 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
                             <AlertCircle className="h-4 w-4" />
                             <AlertTitle>Atenção!</AlertTitle>
                             <AlertDescription>
-                                Cliente com {age} anos. Verifique as restrições de idade para os produtos de empréstimo.
+                                Cliente com {age} anos. Verifique as restrições de idade.
                             </AlertDescription>
                         </Alert>
                     )}
@@ -434,7 +417,6 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
 
             <Separator />
             
-            {/* Benefícios */}
             <div>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-medium">Benefícios INSS</h3>
@@ -498,7 +480,6 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
 
             <Separator />
 
-            {/* Endereço */}
             <div className='space-y-4'>
                 <h3 className="text-lg font-medium">Endereço</h3>
                 <FormField
@@ -605,7 +586,6 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
 
             <Separator />
 
-            {/* Observações */}
             <FormField
               control={form.control}
               name="observations"
@@ -641,10 +621,7 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
         <div className="flex justify-end pt-8">
             <Button type="submit" disabled={isSaving}>
                 {isSaving ? (
-                    <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        <span>Salvando...</span>
-                    </>
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Salvando...</span></>
                 ) : (
                     <span>Salvar Cliente</span>
                 )}

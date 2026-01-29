@@ -33,12 +33,6 @@
     --sidebar-accent-foreground: 222.2 47.4% 11.2%;
     --sidebar-border: 214.3 31.8% 91.4%;
     --sidebar-ring: 217 33% 25%;
-
-    --chart-1: 217 33% 25%;
-    --chart-2: 45 83% 50%;
-    --chart-3: 210 40% 98%;
-    --chart-4: 215 20.2% 65.1%;
-    --chart-5: 222.2 47.4% 11.2%;
   }
  
   .dark {
@@ -70,136 +64,39 @@
     --sidebar-accent-foreground: 210 20% 98%;
     --sidebar-border: 215 27.9% 16.9%;
     --sidebar-ring: 45 83% 50%;
-
-    --chart-1: 217 33% 30%;
-    --chart-2: 45 83% 50%;
-    --chart-3: 210 40% 98%;
-    --chart-4: 215 20.2% 65.1%;
-    --chart-5: 222.2 47.4% 11.2%;
   }
 }
 
-/* Temas Globais - Forçados para garantir vigência no modo claro e escuro */
-html.theme-padrão {
-  --primary: 217 33% 25%;
-  --ring: 217 33% 25%;
-}
-.dark html.theme-padrão {
-  --primary: 217 33% 30%;
-  --ring: 217 33% 30%;
-}
+/* Forçagem de Temas Customizados para vigência total */
+:root .theme-padrão { --primary: 217 33% 25%; --ring: 217 33% 25%; }
+.dark .theme-padrão { --primary: 217 33% 30%; --ring: 217 33% 30%; }
 
-html.theme-zinc {
-  --primary: 240 5.9% 10%;
-  --ring: 240 5.9% 10%;
-}
-.dark html.theme-zinc {
-  --primary: 240 5.9% 90%;
-  --ring: 240 5.9% 90%;
-}
+:root .theme-zinc { --primary: 240 5.9% 10%; --ring: 240 5.9% 10%; }
+.dark .theme-zinc { --primary: 240 5.9% 90%; --ring: 240 5.9% 90%; }
 
-html.theme-blue {
-  --primary: 217.2 91.2% 59.8%;
-  --ring: 217.2 91.2% 59.8%;
-}
-
-html.theme-green {
-  --primary: 142.1 76.2% 36.3%;
-  --ring: 142.1 76.2% 36.3%;
-}
-
-html.theme-violet {
-  --primary: 262.1 83.3% 57.8%;
-  --ring: 262.1 83.3% 57.8%;
-}
-
-html.theme-orange {
-  --primary: 24.6 95% 53.1%;
-  --ring: 24.6 95% 53.1%;
-}
-
-html.theme-red {
-  --primary: 0 72.2% 50.6%;
-  --ring: 0 72.2% 50.6%;
-}
-
-html.theme-rose {
-  --primary: 346.8 77.2% 49.8%;
-  --ring: 346.8 77.2% 49.8%;
-}
-
-html.theme-gray {
-  --primary: 220 9% 46%;
-  --ring: 220 9% 46%;
-}
-
-html.theme-yellow {
-  --primary: 45 93% 47%;
-  --ring: 45 93% 47%;
-}
-
-html.theme-cyan {
-  --primary: 184 90% 41%;
-  --ring: 184 90% 41%;
-}
-
-html.theme-purple {
-  --primary: 282 78% 51%;
-  --ring: 282 78% 51%;
-}
-
-html.theme-magenta {
-  --primary: 322 84% 50%;
-  --ring: 322 84% 50%;
-}
-
-html.theme-emerald {
-  --primary: 158 78% 41%;
-  --ring: 158 78% 41%;
-}
-
-html.theme-burnt-orange {
-  --primary: 16 84% 44%;
-  --ring: 16 84% 44%;
-}
-
-html.theme-sky-blue {
-  --primary: 199 89% 48%;
-  --ring: 199 89% 48%;
-}
-
-html.theme-pink {
-  --primary: 336 82% 54%;
-  --ring: 336 82% 54%;
-}
-
-html.theme-mint {
-  --primary: 168 86% 44%;
-  --ring: 168 86% 44%;
-}
-
-html.theme-lavender {
-  --primary: 250 60% 60%;
-  --ring: 250 60% 60%;
-}
-
-html.theme-peach {
-  --primary: 29 100% 65%;
-  --ring: 29 100% 65%;
-}
-
-html.theme-slate {
-  --primary: 215 25% 27%;
-  --ring: 215 25% 27%;
-}
+:root .theme-blue { --primary: 217.2 91.2% 59.8%; --ring: 217.2 91.2% 59.8%; }
+:root .theme-green { --primary: 142.1 76.2% 36.3%; --ring: 142.1 76.2% 36.3%; }
+:root .theme-violet { --primary: 262.1 83.3% 57.8%; --ring: 262.1 83.3% 57.8%; }
+:root .theme-orange { --primary: 24.6 95% 53.1%; --ring: 24.6 95% 53.1%; }
+:root .theme-red { --primary: 0 72.2% 50.6%; --ring: 0 72.2% 50.6%; }
+:root .theme-rose { --primary: 346.8 77.2% 49.8%; --ring: 346.8 77.2% 49.8%; }
+:root .theme-gray { --primary: 220 9% 46%; --ring: 220 9% 46%; }
+:root .theme-yellow { --primary: 45 93% 47%; --ring: 45 93% 47%; }
+:root .theme-cyan { --primary: 184 90% 41%; --ring: 184 90% 41%; }
+:root .theme-purple { --primary: 282 78% 51%; --ring: 282 78% 51%; }
+:root .theme-magenta { --primary: 322 84% 50%; --ring: 322 84% 50%; }
+:root .theme-emerald { --primary: 158 78% 41%; --ring: 158 78% 41%; }
+:root .theme-burnt-orange { --primary: 16 84% 44%; --ring: 16 84% 44%; }
+:root .theme-sky-blue { --primary: 199 89% 48%; --ring: 199 89% 48%; }
+:root .theme-pink { --primary: 336 82% 54%; --ring: 336 82% 54%; }
+:root .theme-mint { --primary: 168 86% 44%; --ring: 168 86% 44%; }
+:root .theme-lavender { --primary: 250 60% 60%; --ring: 250 60% 60%; }
+:root .theme-peach { --primary: 29 100% 65%; --ring: 29 100% 65%; }
+:root .theme-slate { --primary: 215 25% 27%; --ring: 215 25% 27%; }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground; }
 }
 
 @layer utilities {
@@ -216,104 +113,11 @@ html.theme-slate {
       color: black !important;
       -webkit-print-color-adjust: exact;
     }
-    .print\:hidden {
-      display: none !important;
-    }
-    .print\:block {
-      display: block !important;
-    }
-    .print\:p-0 {
-      padding: 0 !important;
-    }
-    .print\:p-1 {
-      padding: 0.25rem !important;
-    }
-    .print\:p-2 {
-      padding: 0.5rem !important;
-    }
-    .print\:pb-1 {
-        padding-bottom: 0.25rem !important;
-    }
-    .print\:pt-1 {
-        padding-top: 0.25rem !important;
-    }
-    .print\:m-0 {
-      margin: 0 !important;
-    }
-    .print\:mb-8 {
-      margin-bottom: 2rem !important;
-    }
-    .print\:mt-2 {
-      margin-top: 0.5rem !important;
-    }
-    .print\:border-none {
-      border: none !important;
-    }
-    .print\:shadow-none {
-      box-shadow: none !important;
-    }
-    .print\:text-xs {
-      font-size: 0.75rem !important;
-      line-height: 1rem !important;
-    }
-    .print\:text-sm {
-        font-size: 0.875rem !important;
-        line-height: 1.25rem !important;
-    }
-    .print\:text-lg {
-        font-size: 1.125rem !important;
-        line-height: 1.75rem !important;
-    }
-    .print\:font-bold {
-        font-weight: 700 !important;
-    }
-    .print\:text-black {
-        color: black !important;
-    }
-    .print\:text-gray-500 {
-        color: #6b7280 !important;
-    }
-    .print\:grid-cols-4 {
-      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-    }
-    .print\:gap-2 {
-        gap: 0.5rem !important;
-    }
-    .print\:border {
-      border-width: 1px !important;
-    }
-    .print\:border-gray-300 {
-      border-color: #d1d5db !important;
-    }
-    .print\:border-gray-400 {
-        border-color: #9ca3af !important;
-    }
-    .print\:even\:bg-gray-50:nth-child(even) {
-        background-color: #f9fafb !important;
-    }
-    .print\:h-auto {
-        height: auto !important;
-    }
-    .print\:overflow-visible {
-        overflow: visible !important;
-    }
-
-    [data-radix-dialog-overlay] {
-        display: none !important;
-    }
-
-    [data-radix-dialog-content] {
-        position: static !important;
-        transform: none !important;
-        inset: auto !important;
-        box-shadow: none !important;
-        border: none !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        height: auto !important;
-        padding: 0 !important;
-        margin: 0 !important;
-    }
+    .print\:hidden { display: none !important; }
+    .print\:block { display: block !important; }
+    .print\:p-0 { padding: 0 !important; }
+    .print\:text-xs { font-size: 0.75rem !important; }
+    .print\:font-bold { font-weight: 700 !important; }
 
     @page {
       size: A4;
