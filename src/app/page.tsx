@@ -34,7 +34,6 @@ import { DateRange } from 'react-day-picker';
 import { Input } from '@/components/ui/input';
 import { DailySummary } from '@/components/summary/daily-summary';
 import { GoalCard } from '@/components/dashboard/goal-card';
-import { OperatorPerformanceChart } from '@/components/dashboard/operator-performance-chart';
 
 export default function DashboardPage() {
   const [startDateInput, setStartDateInput] = React.useState('');
@@ -271,9 +270,8 @@ export default function DashboardPage() {
         </Dialog>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2">
             <CommissionChart proposals={proposals || []} />
-            <OperatorPerformanceChart proposals={proposals || []} />
           </div>
           <div className="lg:col-span-1">
             {isLoading ? (
@@ -283,7 +281,7 @@ export default function DashboardPage() {
                     <Skeleton className="h-20 w-full" />
                 </div>
             ) : (
-                <DailySummary
+                <DailySummary 
                     proposals={proposals || []}
                     customers={customers || []}
                     userProfile={userProfile}

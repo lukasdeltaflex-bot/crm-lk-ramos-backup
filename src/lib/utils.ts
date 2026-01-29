@@ -43,29 +43,6 @@ export function getWhatsAppUrl(phone: string): string {
 }
 
 /**
- * Validates a Brazilian CPF mathematically.
- */
-export function validateCPF(cpf: string): boolean {
-  const digits = cpf.replace(/\D/g, '');
-  if (digits.length !== 11) return false;
-  if (/^(\d)\1{10}$/.test(digits)) return false; // Block same digits sequences like 111...
-
-  let sum = 0;
-  for (let i = 0; i < 9; i++) sum += parseInt(digits.charAt(i)) * (10 - i);
-  let rev = 11 - (sum % 11);
-  if (rev === 10 || rev === 11) rev = 0;
-  if (rev !== parseInt(digits.charAt(9))) return false;
-
-  sum = 0;
-  for (let i = 0; i < 10; i++) sum += parseInt(digits.charAt(i)) * (11 - i);
-  rev = 11 - (sum % 11);
-  if (rev === 10 || rev === 11) rev = 0;
-  if (rev !== parseInt(digits.charAt(10))) return false;
-
-  return true;
-}
-
-/**
  * Calculates the number of business days (Mon-Fri) between a start date and now.
  */
 export function calculateBusinessDays(startDate: Date): number {
