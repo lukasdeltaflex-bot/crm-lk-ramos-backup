@@ -49,7 +49,6 @@ export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
 
-  // State to manage the dialog content
   const [dialogData, setDialogData] = React.useState<{ title: string; proposals: Proposal[] } | null>(null);
 
   React.useEffect(() => {
@@ -100,7 +99,7 @@ export default function DashboardPage() {
     if (isValidStart && isValidEnd) {
         setAppliedDateRange({ from: startDate, to: endDate });
     } else if (isValidStart) {
-        setAppliedDateRange({ from: startDate, to: startDate }); // Filtra por um único dia
+        setAppliedDateRange({ from: startDate, to: startDate });
     } else {
         setAppliedDateRange(undefined);
     }
@@ -116,10 +115,9 @@ export default function DashboardPage() {
     if (!proposals || !isClient) return [];
   
     const today = new Date();
-    // Default to current month if no range is applied
     const fromDate = appliedDateRange?.from || startOfMonth(today);
     const toDate = appliedDateRange?.to || endOfMonth(today);
-    toDate.setHours(23, 59, 59, 999); // Ensure end of day is included
+    toDate.setHours(23, 59, 59, 999);
   
     return proposals.filter(p => {
       if (!p.dateDigitized) return false;
@@ -151,7 +149,6 @@ export default function DashboardPage() {
         if (p.commissionBase === 'net') {
             return sum + (p.netAmount || 0);
         }
-        // Default to gross amount if not 'net' or if commissionBase is undefined
         return sum + (p.grossAmount || 0);
     }, 0);
   }, [filteredProposals]);
@@ -168,10 +165,9 @@ export default function DashboardPage() {
   const getProposalsSum = (proposalsList: Proposal[]): number => {
     return proposalsList.reduce((sum, p) => {
         if (p.commissionBase === 'net') {
-            return sum + p.netAmount;
+            return sum + (p.netAmount || 0);
         }
-        // Default to gross if 'gross' or undefined
-        return sum + p.grossAmount;
+        return sum + (p.grossAmount || 0);
     }, 0);
   };
 
@@ -182,8 +178,17 @@ export default function DashboardPage() {
   const pagoProposals = getProposalsByStatus(filteredProposals, ['Pago']);
   const rejeitadoProposals = getProposalsByStatus(filteredProposals, ['Reprovado']);
 
+  const totalPagoValue = React.useMemo(() => getProposalsSum(pagoProposals), [pagoProposals]);
 
   const cardData = [
+    {
+      title: 'Total Digitado',
+      value: totalDigitado,
+      icon: FileText,
+      className: 'border-muted',
+      valueClassName: 'text-foreground',
+      proposals: filteredProposals,
+    },
     {
       title: 'Pendente',
       value: getProposalsSum(pendenteProposals),
@@ -218,19 +223,11 @@ export default function DashboardPage() {
     },
     {
       title: 'Pago',
-      value: getProposalsSum(pagoProposals),
+      value: totalPagoValue,
       icon: CheckCircle,
       className: 'border-green-500/50',
       valueClassName: 'text-green-500',
       proposals: pagoProposals,
-    },
-    {
-      title: 'Reprovado',
-      value: getProposalsSum(rejeitadoProposals),
-      icon: XCircle,
-      className: 'border-red-500/50',
-      valueClassName: 'text-red-500',
-      proposals: rejeitadoProposals,
     },
   ];
 
@@ -276,9 +273,9 @@ export default function DashboardPage() {
               </Card>
             ) : (
               <GoalCard 
-                currentProduction={totalDigitado} 
+                currentProduction={totalPagoValue} 
                 isPrivacyMode={isPrivacyMode}
-                onValueClick={() => setDialogData({ title: 'Total Digitado no Mês', proposals: filteredProposals })}
+                onValueClick={() => setDialogData({ title: 'Contratos Pagos no Mês', proposals: pagoProposals })}
               />
             )}
           </div>
@@ -291,14 +288,14 @@ export default function DashboardPage() {
           )) : cardData.map((card) => {
                 const percentage = totalDigitado > 0 ? (card.value / totalDigitado) * 100 : 0;
                 const description = !isPrivacyMode
-                  ? `${percentage.toFixed(1).replace('.', ',')}% do total`
+                  ? `${percentage.toFixed(1).replace('.', ',')}% do total digitado`
                   : undefined;
 
                 return (
                   <div 
                       key={card.title} 
                       className="md:col-span-1 lg:col-span-1 cursor-pointer" 
-                      onClick={() => setDialogData({ title: `Propostas com Status: ${card.title}`, proposals: card.proposals})}
+                      onClick={() => setDialogData({ title: `Propostas: ${card.title}`, proposals: card.proposals})}
                   >
                       <StatsCard
                       title={card.title}

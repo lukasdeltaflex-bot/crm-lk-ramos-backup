@@ -77,198 +77,200 @@
     --chart-4: 215 20.2% 65.1%;
     --chart-5: 222.2 47.4% 11.2%;
   }
+}
 
-  /* Temas Globais - Ajustados para funcionar em Modo Claro */
-  .theme-padrão {
-    --primary: 217 33% 25%;
-    --ring: 217 33% 25%;
-    --sidebar-primary: 45 83% 50%;
-  }
-  .dark.theme-padrão {
-    --primary: 217 33% 30%;
-    --ring: 217 33% 30%;
-  }
+/* Temas Globais - Fora do layer base para garantir especificidade no modo claro */
+:root.theme-padrão {
+  --primary: 217 33% 25%;
+  --ring: 217 33% 25%;
+  --sidebar-primary: 45 83% 50%;
+}
+.dark:root.theme-padrão {
+  --primary: 217 33% 30%;
+  --ring: 217 33% 30%;
+}
 
-  .theme-zinc {
-    --primary: 240 5.9% 10%;
-    --ring: 240 5.9% 10%;
-  }
-  .dark.theme-zinc {
-    --primary: 240 5.9% 90%;
-    --ring: 240 5.9% 90%;
-  }
+:root.theme-zinc {
+  --primary: 240 5.9% 10%;
+  --ring: 240 5.9% 10%;
+}
+.dark:root.theme-zinc {
+  --primary: 240 5.9% 90%;
+  --ring: 240 5.9% 90%;
+}
 
-  .theme-blue {
-    --primary: 217.2 91.2% 59.8%;
-    --ring: 217.2 91.2% 59.8%;
-  }
-  .dark.theme-blue {
-    --primary: 217.2 91.2% 59.8%;
-    --ring: 217.2 91.2% 59.8%;
-  }
+:root.theme-blue {
+  --primary: 217.2 91.2% 59.8%;
+  --ring: 217.2 91.2% 59.8%;
+}
+.dark:root.theme-blue {
+  --primary: 217.2 91.2% 59.8%;
+  --ring: 217.2 91.2% 59.8%;
+}
 
-  .theme-green {
-    --primary: 142.1 76.2% 36.3%;
-    --ring: 142.1 76.2% 36.3%;
-  }
-  .dark.theme-green {
-    --primary: 142.1 76.2% 41.3%;
-    --ring: 142.1 76.2% 41.3%;
-  }
+:root.theme-green {
+  --primary: 142.1 76.2% 36.3%;
+  --ring: 142.1 76.2% 36.3%;
+}
+.dark:root.theme-green {
+  --primary: 142.1 76.2% 41.3%;
+  --ring: 142.1 76.2% 41.3%;
+}
 
-  .theme-violet {
-    --primary: 262.1 83.3% 57.8%;
-    --ring: 262.1 83.3% 57.8%;
-  }
-  .dark.theme-violet {
-    --primary: 262.1 83.3% 62.8%;
-    --ring: 262.1 83.3% 62.8%;
-  }
+:root.theme-violet {
+  --primary: 262.1 83.3% 57.8%;
+  --ring: 262.1 83.3% 57.8%;
+}
+.dark:root.theme-violet {
+  --primary: 262.1 83.3% 62.8%;
+  --ring: 262.1 83.3% 62.8%;
+}
 
-  .theme-orange {
-    --primary: 24.6 95% 53.1%;
-    --ring: 24.6 95% 53.1%;
-  }
-  .dark.theme-orange {
-    --primary: 24.6 95% 58.1%;
-    --ring: 24.6 95% 58.1%;
-  }
+:root.theme-orange {
+  --primary: 24.6 95% 53.1%;
+  --ring: 24.6 95% 53.1%;
+}
+.dark:root.theme-orange {
+  --primary: 24.6 95% 58.1%;
+  --ring: 24.6 95% 58.1%;
+}
 
-  .theme-red {
-    --primary: 0 72.2% 50.6%;
-    --ring: 0 72.2% 50.6%;
-  }
-  .dark.theme-red {
-    --primary: 0 72.2% 55.6%;
-    --ring: 0 72.2% 55.6%;
-  }
+:root.theme-red {
+  --primary: 0 72.2% 50.6%;
+  --ring: 0 72.2% 50.6%;
+}
+.dark:root.theme-red {
+  --primary: 0 72.2% 55.6%;
+  --ring: 0 72.2% 55.6%;
+}
 
-  .theme-rose {
-    --primary: 346.8 77.2% 49.8%;
-    --ring: 346.8 77.2% 49.8%;
-  }
-  .dark.theme-rose {
-    --primary: 346.8 77.2% 54.8%;
-    --ring: 346.8 77.2% 54.8%;
-  }
+:root.theme-rose {
+  --primary: 346.8 77.2% 49.8%;
+  --ring: 346.8 77.2% 49.8%;
+}
+.dark:root.theme-rose {
+  --primary: 346.8 77.2% 54.8%;
+  --ring: 346.8 77.2% 54.8%;
+}
 
-  .theme-gray {
-    --primary: 220 9% 46%;
-    --ring: 220 9% 46%;
-  }
-  .dark.theme-gray {
-    --primary: 220 9% 51%;
-    --ring: 220 9% 51%;
-  }
+:root.theme-gray {
+  --primary: 220 9% 46%;
+  --ring: 220 9% 46%;
+}
+.dark:root.theme-gray {
+  --primary: 220 9% 51%;
+  --ring: 220 9% 51%;
+}
 
-  .theme-yellow {
-    --primary: 45 93% 47%;
-    --ring: 45 93% 47%;
-  }
-  .dark.theme-yellow {
-    --primary: 45 93% 52%;
-    --ring: 45 93% 52%;
-  }
+:root.theme-yellow {
+  --primary: 45 93% 47%;
+  --ring: 45 93% 47%;
+}
+.dark:root.theme-yellow {
+  --primary: 45 93% 52%;
+  --ring: 45 93% 52%;
+}
 
-  .theme-cyan {
-    --primary: 184 90% 41%;
-    --ring: 184 90% 41%;
-  }
-  .dark.theme-cyan {
-    --primary: 184 90% 46%;
-    --ring: 184 90% 46%;
-  }
+:root.theme-cyan {
+  --primary: 184 90% 41%;
+  --ring: 184 90% 41%;
+}
+.dark:root.theme-cyan {
+  --primary: 184 90% 46%;
+  --ring: 184 90% 46%;
+}
 
-  .theme-purple {
-    --primary: 282 78% 51%;
-    --ring: 282 78% 51%;
-  }
-  .dark.theme-purple {
-    --primary: 282 78% 56%;
-    --ring: 282 78% 56%;
-  }
+:root.theme-purple {
+  --primary: 282 78% 51%;
+  --ring: 282 78% 51%;
+}
+.dark:root.theme-purple {
+  --primary: 282 78% 56%;
+  --ring: 282 78% 56%;
+}
 
-  .theme-magenta {
-    --primary: 322 84% 50%;
-    --ring: 322 84% 50%;
-  }
-  .dark.theme-magenta {
-    --primary: 322 84% 55%;
-    --ring: 322 84% 55%;
-  }
+:root.theme-magenta {
+  --primary: 322 84% 50%;
+  --ring: 322 84% 50%;
+}
+.dark:root.theme-magenta {
+  --primary: 322 84% 55%;
+  --ring: 322 84% 55%;
+}
 
-  .theme-emerald {
-    --primary: 158 78% 41%;
-    --ring: 158 78% 41%;
-  }
-  .dark.theme-emerald {
-    --primary: 158 78% 46%;
-    --ring: 158 78% 46%;
-  }
+:root.theme-emerald {
+  --primary: 158 78% 41%;
+  --ring: 158 78% 41%;
+}
+.dark:root.theme-emerald {
+  --primary: 158 78% 46%;
+  --ring: 158 78% 46%;
+}
 
-  .theme-burnt-orange {
-    --primary: 16 84% 44%;
-    --ring: 16 84% 44%;
-  }
-  .dark.theme-burnt-orange {
-    --primary: 16 84% 49%;
-    --ring: 16 84% 49%;
-  }
+:root.theme-burnt-orange {
+  --primary: 16 84% 44%;
+  --ring: 16 84% 44%;
+}
+.dark:root.theme-burnt-orange {
+  --primary: 16 84% 49%;
+  --ring: 16 84% 49%;
+}
 
-  .theme-sky-blue {
-    --primary: 199 89% 48%;
-    --ring: 199 89% 48%;
-  }
-  .dark.theme-sky-blue {
-    --primary: 199 89% 53%;
-    --ring: 199 89% 53%;
-  }
+:root.theme-sky-blue {
+  --primary: 199 89% 48%;
+  --ring: 199 89% 48%;
+}
+.dark:root.theme-sky-blue {
+  --primary: 199 89% 53%;
+  --ring: 199 89% 53%;
+}
 
-  .theme-pink {
-    --primary: 336 82% 54%;
-    --ring: 336 82% 54%;
-  }
-  .dark.theme-pink {
-    --primary: 336 82% 59%;
-    --ring: 336 82% 59%;
-  }
+:root.theme-pink {
+  --primary: 336 82% 54%;
+  --ring: 336 82% 54%;
+}
+.dark:root.theme-pink {
+  --primary: 336 82% 59%;
+  --ring: 336 82% 59%;
+}
 
-  .theme-mint {
-    --primary: 168 86% 44%;
-    --ring: 168 86% 44%;
-  }
-  .dark.theme-mint {
-    --primary: 168 86% 49%;
-    --ring: 168 86% 49%;
-  }
+:root.theme-mint {
+  --primary: 168 86% 44%;
+  --ring: 168 86% 44%;
+}
+.dark:root.theme-mint {
+  --primary: 168 86% 49%;
+  --ring: 168 86% 49%;
+}
 
-  .theme-lavender {
-    --primary: 250 60% 60%;
-    --ring: 250 60% 60%;
-  }
-  .dark.theme-lavender {
-    --primary: 250 60% 65%;
-    --ring: 250 60% 65%;
-  }
+:root.theme-lavender {
+  --primary: 250 60% 60%;
+  --ring: 250 60% 60%;
+}
+.dark:root.theme-lavender {
+  --primary: 250 60% 65%;
+  --ring: 250 60% 65%;
+}
 
-  .theme-peach {
-    --primary: 29 100% 65%;
-    --ring: 29 100% 65%;
-  }
-  .dark.theme-peach {
-    --primary: 29 100% 70%;
-    --ring: 29 100% 70%;
-  }
+:root.theme-peach {
+  --primary: 29 100% 65%;
+  --ring: 29 100% 65%;
+}
+.dark:root.theme-peach {
+  --primary: 29 100% 70%;
+  --ring: 29 100% 70%;
+}
 
-  .theme-slate {
-    --primary: 215 25% 27%;
-    --ring: 215 25% 27%;
-  }
-  .dark.theme-slate {
-    --primary: 215 25% 67%;
-    --ring: 215 25% 67%;
-  }
+:root.theme-slate {
+  --primary: 215 25% 27%;
+  --ring: 215 25% 27%;
+}
+.dark:root.theme-slate {
+  --primary: 215 25% 67%;
+  --ring: 215 25% 67%;
+}
 
+@layer base {
   * {
     @apply border-border;
   }
@@ -373,7 +375,6 @@
         overflow: visible !important;
     }
 
-    /* Styles for printing Radix Dialog/Sheet component */
     [data-radix-dialog-overlay] {
         display: none !important;
     }

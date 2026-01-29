@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Target, TrendingUp, Pencil, Check, X, Banknote } from 'lucide-react';
+import { Target, TrendingUp, Pencil, Check, X, Banknote, ShieldCheck } from 'lucide-react';
 import { formatCurrency, cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,8 +54,8 @@ export function GoalCard({ currentProduction, isPrivacyMode, onValueClick, class
     <Card className={cn('hover:border-primary/50 transition-colors group relative overflow-hidden', className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div className="flex items-center gap-2">
-          <CardTitle className="text-sm font-medium">Produção e Meta Mensal</CardTitle>
-          <Banknote className="h-4 w-4 text-primary" />
+          <CardTitle className="text-sm font-medium">Meta de Contratos Pagos</CardTitle>
+          <ShieldCheck className={cn("h-4 w-4", isGoalReached ? "text-green-500" : "text-primary")} />
         </div>
         <div className="flex items-center gap-2">
           {isEditing ? (
@@ -76,7 +76,7 @@ export function GoalCard({ currentProduction, isPrivacyMode, onValueClick, class
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <CardDescription className="text-xs font-semibold">Meta: {isPrivacyMode ? '•••••' : formatCurrency(monthlyGoal)}</CardDescription>
+              <CardDescription className="text-xs font-semibold">Objetivo: {isPrivacyMode ? '•••••' : formatCurrency(monthlyGoal)}</CardDescription>
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -100,7 +100,7 @@ export function GoalCard({ currentProduction, isPrivacyMode, onValueClick, class
         <div className="flex flex-col gap-6">
           <div className="flex items-end justify-between">
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Total Digitado no Mês</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Total Pago no Mês</p>
               <div className="text-4xl font-bold text-primary">
                 {isPrivacyMode ? '•••••' : formatCurrency(currentProduction)}
               </div>
@@ -110,7 +110,7 @@ export function GoalCard({ currentProduction, isPrivacyMode, onValueClick, class
                 <TrendingUp className="h-5 w-5" />
                 {percentage.toFixed(1)}%
               </div>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-tighter">Concluído</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-tighter">da meta</p>
             </div>
           </div>
           
@@ -119,7 +119,7 @@ export function GoalCard({ currentProduction, isPrivacyMode, onValueClick, class
             <div className="flex justify-between items-center text-[11px] font-medium">
               {isGoalReached ? (
                 <p className="text-green-500 animate-pulse flex items-center gap-1 font-bold">
-                  🎉 META ATINGIDA! VOCÊ É INCRÍVEL!
+                  🎉 META ATINGIDA! EXCELENTE RESULTADO!
                 </p>
               ) : (
                 <p className="text-muted-foreground">
@@ -127,7 +127,7 @@ export function GoalCard({ currentProduction, isPrivacyMode, onValueClick, class
                 </p>
               )}
               <p className="text-muted-foreground">
-                Baseado em Valor {currentProduction > 0 ? 'Digitado' : 'Bruto'}
+                Cálculo baseado em status: <strong>Pago</strong>
               </p>
             </div>
           </div>
