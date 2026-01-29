@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import type { Row } from '@tanstack/react-table';
-import type { Proposal, Customer, ProposalStatus } from '@/lib/types';
+import type { Proposal, Customer } from '@/lib/types';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import { formatCurrency, cn } from '@/lib/utils';
 import { FileText, CircleDollarSign, CheckCircle, Hourglass, Info } from 'lucide-react';
@@ -91,7 +91,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       return sum + (remaining > 0 ? remaining : 0);
     }, 0);
     
-    // Calculate percentages relative to total volume digitado
+    // Calculate percentages relative to total volume digitado (following Dashboard reasoning)
     const getPercentage = (value: number) => {
         if (totalDigitadoNoPeriodo === 0) return 0;
         return (value / totalDigitadoNoPeriodo) * 100;
@@ -113,7 +113,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
   }, [rows]);
   
   const privacyPlaceholder = '•••••';
-  const summaryTitle = "Resumo do Mês Atual";
+  const summaryTitle = "Resumo do Período Selecionado";
 
   const cards = [
     {
