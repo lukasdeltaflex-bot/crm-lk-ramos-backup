@@ -282,12 +282,12 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
                 <p className="text-sm">Tenha um ótimo dia!</p>
             </div>
         ) : (
-            <div className="space-y-6">
-                {visibleBirthdayAlerts.length > 0 && (
-                    <div>
-                        <h3 className="font-semibold mb-2">🎂 Alertas de Aniversário (Clientes Próximos de 75 Anos)</h3>
-                        <ScrollArea className="max-h-48 w-full">
-                            <div className="space-y-2 pr-4">
+            <ScrollArea className="max-h-96 w-full">
+                <div className="space-y-6 pr-4">
+                    {visibleBirthdayAlerts.length > 0 && (
+                        <div>
+                            <h3 className="font-semibold mb-2">🎂 Alertas de Aniversário (Clientes Próximos de 75 Anos)</h3>
+                            <div className="space-y-2">
                                 {visibleBirthdayAlerts.map(alert => (
                                     <SummaryAlertItem 
                                         key={alert.id}
@@ -299,14 +299,12 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
                                     />
                                 ))}
                             </div>
-                        </ScrollArea>
-                    </div>
-                )}
-                 {visibleFollowUpReminders.length > 0 && (
-                    <div>
-                        <h3 className="font-semibold mb-2">⏰ Lembretes de Acompanhamento (Follow-up)</h3>
-                        <ScrollArea className="max-h-48 w-full">
-                            <div className="space-y-2 pr-4">
+                        </div>
+                    )}
+                    {visibleFollowUpReminders.length > 0 && (
+                        <div>
+                            <h3 className="font-semibold mb-2">⏰ Lembretes de Acompanhamento (Follow-up)</h3>
+                            <div className="space-y-2">
                                 {visibleFollowUpReminders.map(reminder => (
                                     <SummaryAlertItem 
                                         key={reminder.id}
@@ -318,14 +316,12 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
                                     />
                                 ))}
                             </div>
-                        </ScrollArea>
-                    </div>
-                )}
-                 {visibleCommissionReminders.length > 0 && (
-                    <div>
-                        <h3 className="font-semibold mb-2">💰 Alertas de Comissão Pendente</h3>
-                        <ScrollArea className="max-h-48 w-full">
-                            <div className="space-y-2 pr-4">
+                        </div>
+                    )}
+                    {visibleCommissionReminders.length > 0 && (
+                        <div>
+                            <h3 className="font-semibold mb-2">💰 Alertas de Comissão Pendente</h3>
+                            <div className="space-y-2">
                                 {visibleCommissionReminders.map(reminder => (
                                     <SummaryAlertItem 
                                         key={reminder.id}
@@ -337,14 +333,12 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
                                     />
                                 ))}
                             </div>
-                        </ScrollArea>
-                    </div>
-                )}
-                 {visiblePartialCommissionReminders.length > 0 && (
-                    <div>
-                        <h3 className="font-semibold mb-2">💰 Lembretes de Comissão Parcial</h3>
-                        <ScrollArea className="max-h-48 w-full">
-                            <div className="space-y-2 pr-4">
+                        </div>
+                    )}
+                    {visiblePartialCommissionReminders.length > 0 && (
+                        <div>
+                            <h3 className="font-semibold mb-2">💰 Lembretes de Comissão Parcial</h3>
+                            <div className="space-y-2">
                                 {visiblePartialCommissionReminders.map(reminder => (
                                     <SummaryAlertItem 
                                         key={reminder.id}
@@ -356,14 +350,12 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
                                     />
                                 ))}
                             </div>
-                        </ScrollArea>
-                    </div>
-                )}
-                 {visibleDebtBalanceReminders.length > 0 && (
-                    <div>
-                        <h3 className="font-semibold mb-2">⏳ Alertas de Saldo Devedor (Portabilidade)</h3>
-                        <ScrollArea className="max-h-48 w-full">
-                            <div className="space-y-2 pr-4">
+                        </div>
+                    )}
+                    {visibleDebtBalanceReminders.length > 0 && (
+                        <div>
+                            <h3 className="font-semibold mb-2">⏳ Alertas de Saldo Devedor (Portabilidade)</h3>
+                            <div className="space-y-2">
                                 {visibleDebtBalanceReminders.map(reminder => (
                                     <SummaryAlertItem 
                                         key={reminder.id}
@@ -375,10 +367,10 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
                                     />
                                 ))}
                             </div>
-                        </ScrollArea>
-                    </div>
-                )}
-            </div>
+                        </div>
+                    )}
+                </div>
+            </ScrollArea>
         )}
       </CardContent>
     </Card>
