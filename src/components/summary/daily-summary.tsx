@@ -282,7 +282,7 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
                 <p className="text-sm">Tenha um ótimo dia!</p>
             </div>
         ) : (
-            <ScrollArea className="max-h-96 w-full">
+            <ScrollArea className="max-h-72 w-full">
                 <div className="space-y-6 pr-4">
                     {visibleBirthdayAlerts.length > 0 && (
                         <div>
