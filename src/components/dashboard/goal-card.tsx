@@ -49,7 +49,7 @@ export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onV
   };
 
   const percentageOfGoal = Math.min((currentProduction / monthlyGoal) * 100, 100);
-  const percentageOfTotal = totalDigitized > 0 ? (currentProduction / totalDigitized) * 100 : 0;
+  const conversionRate = totalDigitized > 0 ? (currentProduction / totalDigitized) * 100 : 0;
   const isGoalReached = currentProduction >= monthlyGoal;
 
   return (
@@ -96,21 +96,19 @@ export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onV
         </div>
       </CardHeader>
       <CardContent 
-        className={cn("pt-4 cursor-pointer", isPrivacyMode && "blur-sm select-none")}
+        className={cn("pt-4 cursor-pointer")}
         onClick={onValueClick}
       >
         <div className="flex flex-col gap-6">
           <div className="flex items-end justify-between">
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Total Pago no Mês</p>
-              <div className="text-4xl font-bold text-primary">
+              <div className={cn("text-4xl font-bold text-primary", isPrivacyMode && "blur-sm")}>
                 {isPrivacyMode ? '•••••' : formatCurrency(currentProduction)}
               </div>
-              {!isPrivacyMode && (
-                <p className="text-[11px] text-muted-foreground font-medium">
-                  Representa <span className="text-foreground font-bold">{percentageOfTotal.toFixed(1).replace('.', ',')}%</span> de tudo o que foi digitado.
-                </p>
-              )}
+              <p className="text-[11px] text-muted-foreground font-medium">
+                Representa <span className="text-foreground font-bold">{conversionRate.toFixed(1).replace('.', ',')}%</span> de tudo o que foi digitado.
+              </p>
             </div>
             <div className={cn("flex flex-col items-end gap-1 font-bold", isGoalReached ? "text-green-500" : "text-primary")}>
               <div className="flex items-center gap-1 text-lg">
@@ -130,7 +128,9 @@ export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onV
                 </p>
               ) : (
                 <p className="text-muted-foreground">
-                  Faltam <span className="text-foreground font-bold">{formatCurrency(monthlyGoal - currentProduction)}</span> para atingir o objetivo.
+                  Faltam <span className={cn("text-foreground font-bold", isPrivacyMode && "blur-sm")}>
+                    {isPrivacyMode ? '•••••' : formatCurrency(monthlyGoal - currentProduction)}
+                  </span> para atingir o objetivo.
                 </p>
               )}
               <p className="text-muted-foreground">

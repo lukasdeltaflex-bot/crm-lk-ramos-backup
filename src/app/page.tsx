@@ -15,6 +15,8 @@ import {
   EyeOff,
   X,
   Filter,
+  XCircle,
+  CheckCircle2,
 } from 'lucide-react';
 import { format, parse, startOfMonth, endOfMonth, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -149,6 +151,8 @@ export default function DashboardPage() {
   const pendenteProposals = getProposalsByStatus(filteredProposals, ['Pendente']);
   const emAndamentoProposals = getProposalsByStatus(filteredProposals, ['Em Andamento']);
   const aguardandoSaldoProposals = getProposalsByStatus(filteredProposals, ['Aguardando Saldo']);
+  const saldoPagoProposals = getProposalsByStatus(filteredProposals, ['Saldo Pago']);
+  const reprovadoProposals = getProposalsByStatus(filteredProposals, ['Reprovado']);
 
   const cardData = [
     {
@@ -182,6 +186,22 @@ export default function DashboardPage() {
       className: 'border-blue-500/50',
       valueClassName: 'text-blue-500',
       proposals: aguardandoSaldoProposals,
+    },
+    {
+      title: 'Saldo Pago',
+      value: getProposalsSum(saldoPagoProposals),
+      icon: CheckCircle2,
+      className: 'border-orange-500/50',
+      valueClassName: 'text-orange-500',
+      proposals: saldoPagoProposals,
+    },
+    {
+      title: 'Reprovado',
+      value: getProposalsSum(reprovadoProposals),
+      icon: XCircle,
+      className: 'border-red-500/50',
+      valueClassName: 'text-red-500',
+      proposals: reprovadoProposals,
     },
   ];
 
@@ -217,8 +237,8 @@ export default function DashboardPage() {
         </div>
       </div>
       <div className="space-y-8">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <div className="md:col-span-2 lg:col-span-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="md:col-span-2 lg:col-span-3">
             {isLoading ? (
               <Card className="p-6">
                 <Skeleton className="h-5 w-48 mb-4" />
@@ -234,7 +254,7 @@ export default function DashboardPage() {
             )}
           </div>
           
-          {isLoading ? Array.from({length: 4}).map((_, i) => (
+          {isLoading ? Array.from({length: 6}).map((_, i) => (
              <Card key={i} className="p-6">
                 <Skeleton className="h-5 w-24 mb-4" />
                 <Skeleton className="h-8 w-32" />
