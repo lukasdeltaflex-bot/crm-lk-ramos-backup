@@ -4,7 +4,7 @@ import * as React from 'react';
 import type { Row } from '@tanstack/react-table';
 import type { Proposal, Customer, ProposalStatus } from '@/lib/types';
 import { StatsCard } from '@/components/dashboard/stats-card';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, cn } from '@/lib/utils';
 import { FileText, CircleDollarSign, CheckCircle, Hourglass, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
@@ -27,6 +27,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
     commissionReceivedProposals,
     proposalsForSaldoAReceber,
     expectedCommissionProposals,
+    // Porcentagens
     expectedCommissionPercentage,
     amountPaidPercentage,
     pendingAmountPercentage
@@ -58,32 +59,24 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
 
     const validProposals = allProposalsInPeriod.filter(p => p.status !== 'Reprovado');
 
-    const totalPotentialCommission = validProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
-    
-    const totalAmountPaid = validProposals.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
-    
+    // Expected: Proposals not approved yet or in progress
     const expectedCommissionProposals = validProposals.filter(p => {
         const hasDateApproved = !!p.dateApproved;
-        if (p.status === 'Em Andamento' && !hasDateApproved) {
-            return true;
-        }
-        if (p.status === 'Pendente' && !hasDateApproved) {
-            return true;
-        }
-        if (p.status === 'Aguardando Saldo') {
-            return true;
-        }
+        if (p.status === 'Em Andamento' && !hasDateApproved) return true;
+        if (p.status === 'Pendente' && !hasDateApproved) return true;
+        if (p.status === 'Aguardando Saldo') return true;
         return false;
     });
 
     const totalCommissionValue = expectedCommissionProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
     
+    // Received: Actually paid commissions
     const commissionReceivedProposals = validProposals.filter(p => p.amountPaid && p.amountPaid > 0);
+    const totalAmountPaid = validProposals.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
     
+    // To Receive: Paid/Approved proposals with commission pending
     const proposalsForSaldoAReceber = validProposals.filter(p => {
-        if (p.commissionStatus === 'Paga') {
-            return false;
-        }
+        if (p.commissionStatus === 'Paga') return false;
         
         const isPago = p.status === 'Pago';
         const isEmAndamentoAverbado = p.status === 'Em Andamento' && !!p.dateApproved;
@@ -98,9 +91,11 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       return sum + (remaining > 0 ? remaining : 0);
     }, 0);
     
-    const expectedCommissionPercentage = totalPotentialCommission > 0 ? (totalCommissionValue / totalPotentialCommission) * 100 : 0;
-    const amountPaidPercentage = totalPotentialCommission > 0 ? (totalAmountPaid / totalPotentialCommission) * 100 : 0;
-    const pendingAmountPercentage = totalPotentialCommission > 0 ? (pendingAmount / totalPotentialCommission) * 100 : 0;
+    // Calculate percentages relative to total volume digitado
+    const getPercentage = (value: number) => {
+        if (totalDigitadoNoPeriodo === 0) return 0;
+        return (value / totalDigitadoNoPeriodo) * 100;
+    };
 
     return {
       totalDigitadoNoPeriodo,
@@ -111,9 +106,9 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       commissionReceivedProposals,
       proposalsForSaldoAReceber,
       expectedCommissionProposals,
-      expectedCommissionPercentage,
-      amountPaidPercentage,
-      pendingAmountPercentage,
+      expectedCommissionPercentage: getPercentage(totalCommissionValue),
+      amountPaidPercentage: getPercentage(totalAmountPaid),
+      pendingAmountPercentage: getPercentage(pendingAmount),
     };
   }, [rows]);
   
@@ -122,36 +117,40 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
 
   const cards = [
     {
-      title: "Total Digitado no Período",
+      title: "Total Digitado",
       value: formatCurrency(totalDigitadoNoPeriodo),
       icon: FileText,
-      valueClassName: "text-purple-500",
+      className: "border-muted bg-muted/10",
+      valueClassName: "text-foreground",
       proposals: allProposalsInPeriod,
-      description: undefined,
+      percentage: 100,
     },
     {
       title: "Comissão Esperada",
       value: formatCurrency(totalCommissionValue),
       icon: CircleDollarSign,
+      className: "border-blue-500/30 bg-blue-500/5 dark:bg-blue-500/10",
       valueClassName: "text-blue-500",
       proposals: expectedCommissionProposals,
-      description: expectedCommissionPercentage > 0 ? `${expectedCommissionPercentage.toFixed(1).replace('.', ',')}% do total` : undefined,
+      percentage: expectedCommissionPercentage,
     },
     {
       title: "Comissão Recebida",
       value: formatCurrency(totalAmountPaid),
       icon: CheckCircle,
+      className: "border-green-500/30 bg-green-500/5 dark:bg-green-500/10",
       valueClassName: "text-green-500",
       proposals: commissionReceivedProposals,
-      description: amountPaidPercentage > 0 ? `${amountPaidPercentage.toFixed(1).replace('.', ',')}% do total` : undefined,
+      percentage: amountPaidPercentage,
     },
     {
       title: "Saldo a Receber",
       value: formatCurrency(pendingAmount),
       icon: Hourglass,
+      className: "border-orange-500/30 bg-orange-500/5 dark:bg-orange-500/10",
       valueClassName: "text-orange-500",
       proposals: proposalsForSaldoAReceber,
-      description: pendingAmountPercentage > 0 ? `${pendingAmountPercentage.toFixed(1).replace('.', ',')}% do total` : undefined,
+      percentage: pendingAmountPercentage,
     },
   ];
 
@@ -169,11 +168,11 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
 
   return (
     <div className='space-y-4'>
-        <Alert variant="default" className="bg-secondary/50">
+        <Alert variant="default" className="bg-secondary/50 print:hidden">
             <Info className="h-4 w-4" />
             <AlertTitle>{summaryTitle}</AlertTitle>
             <AlertDescription>
-                Os valores nos cards abaixo representam os totais para o mês vigente.
+                Os valores abaixo representam os totais consolidados para o período selecionado.
                 {isFiltered && (
                     <span className="block mt-1">A tabela abaixo está exibindo resultados filtrados.</span>
                 )}
@@ -186,8 +185,8 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
                         title={card.title}
                         value={isPrivacyMode ? privacyPlaceholder : card.value}
                         icon={card.icon}
-                        description={!isPrivacyMode ? card.description : undefined}
-                        className="print:shadow-none print:border-gray-300 print:p-2"
+                        percentage={card.percentage}
+                        className={cn("h-full", card.className)}
                         valueClassName={card.valueClassName}
                     />
                 </div>

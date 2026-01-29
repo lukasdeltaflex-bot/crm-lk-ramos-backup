@@ -22,7 +22,7 @@ import { CalendarIcon, Sparkles, AlertCircle, Loader2, PlusCircle, Trash2 } from
 import { Calendar } from '@/components/ui/calendar';
 import { format, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn, getAge } from '@/lib/utils';
+import { cn, getAge, validateCPF } from '@/lib/utils';
 import type { Customer, Benefit } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
@@ -41,7 +41,9 @@ const benefitSchema = z.object({
 
 const customerSchema = z.object({
   name: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres.'),
-  cpf: z.string().min(11, 'CPF inválido.'),
+  cpf: z.string().min(11, 'CPF incompleto.').refine((val) => validateCPF(val), {
+    message: "CPF inválido (erro no cálculo do dígito).",
+  }),
   benefits: z.array(benefitSchema).optional(),
   phone: z.string().min(10, 'O telefone é obrigatório.'),
   phone2: z.string().optional(),
