@@ -551,7 +551,7 @@ const handleExportToExcel = async () => {
                             Cancelar ({selectedCount})
                         </Button>
                     </AlertDialogTrigger>
-                    <AlertDialogContent onCloseAutoFocus={(e) => e.preventDefault()}>
+                    <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                             <AlertDialogDescription>
@@ -572,7 +572,7 @@ const handleExportToExcel = async () => {
                         Exportar
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" onCloseAutoFocus={(e) => e.preventDefault()}>
+                <DropdownMenuContent align="end">
                     <DropdownMenuItem onSelect={handleExportToExcel}>
                         Exportar para Excel (.xlsx)
                     </DropdownMenuItem>
@@ -594,7 +594,6 @@ const handleExportToExcel = async () => {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent
           className="max-w-3xl"
-          onCloseAutoFocus={(e) => e.preventDefault()}
         >
           <DialogHeader className="print:hidden">
             <DialogTitle>{getSheetTitle()}</DialogTitle>
