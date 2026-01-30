@@ -9,7 +9,7 @@ import { collection, query, where, doc, setDoc, writeBatch, deleteField } from '
 import type { Proposal, Customer, CommissionStatus } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Eye, EyeOff, Printer, FileCheck2, FileDown } from 'lucide-react';
+import { Eye, EyeOff, Printer, FileCheck2, FileDown, FileBadge } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,7 +27,6 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
   } from '@/components/ui/dialog';
 import { CommissionForm, type CommissionFormValues } from './commission-form';
 import { toast } from '@/hooks/use-toast';
@@ -36,7 +35,6 @@ import { ptBR } from 'date-fns/locale';
 import { Logo } from '@/components/logo';
 import { CommissionReconciliation } from '@/components/financial/commission-reconciliation';
 import { formatCurrency } from '@/lib/utils';
-import { FinancialSummary } from '@/components/financial/financial-summary';
 import { ProposalsStatusTable } from '@/components/dashboard/proposals-status-table';
 
 
@@ -54,7 +52,6 @@ export default function FinancialPage() {
   const tableRef = React.useRef<FinancialDataTableHandle>(null);
   const [dialogData, setDialogData] = React.useState<{ title: string; proposals: ProposalWithCustomer[] } | null>(null);
   const [migrationCompleted, setMigrationCompleted] = React.useState(false);
-  const [migrationFixCommissionStatusCompleted, setMigrationFixCommissionStatusCompleted] = React.useState(false);
 
   React.useEffect(() => {
     setIsClient(true);
@@ -73,107 +70,13 @@ export default function FinancialPage() {
   const { data: proposals, isLoading: proposalsLoading } = useCollection<Proposal>(proposalsQuery);
   const { data: customers, isLoading: customersLoading } = useCollection<Customer>(customersQuery);
 
-  React.useEffect(() => {
-    if (!firestore || !proposals || proposals.length === 0 || migrationCompleted || proposalsLoading) {
-      return;
-    }
-
-    const runMigration = async () => {
-      const batch = writeBatch(firestore);
-      let updatesMade = 0;
-
-      proposals.forEach(p => {
-        // Only update if commissionStatus is not set (it's null, undefined, or empty string)
-        if (!p.commissionStatus) {
-          const isPago = p.status === 'Pago';
-          const isEmAndamentoAverbado = p.status === 'Em Andamento' && !!p.dateApproved;
-          const isPendenteAverbado = p.status === 'Pendente' && !!p.dateApproved;
-          const isSaldoPago = p.status === 'Saldo Pago';
-
-          const isEligible = isPago || isEmAndamentoAverbado || isPendenteAverbado || isSaldoPago;
-
-          if (isEligible) {
-            const proposalRef = doc(firestore, 'loanProposals', p.id);
-            batch.update(proposalRef, { commissionStatus: 'Pendente' });
-            updatesMade++;
-          }
-        }
-      });
-
-      if (updatesMade > 0) {
-        try {
-          await batch.commit();
-          toast({
-            title: "Sistema Atualizado",
-            description: `${updatesMade} proposta(s) foram atualizadas para ter o status de comissão "Pendente".`
-          });
-        } catch (error) {
-          console.error("Erro ao atualizar propostas existentes:", error);
-          toast({
-            variant: "destructive",
-            title: "Erro na atualização",
-            description: "Não foi possível atualizar os status de comissão das propostas existentes."
-          });
-        }
-      }
-      setMigrationCompleted(true); // Mark migration as done to prevent re-running
-    };
-
-    runMigration();
-  }, [firestore, proposals, proposalsLoading, migrationCompleted]);
-  
-  React.useEffect(() => {
-    if (!firestore || !proposals || proposals.length === 0 || migrationFixCommissionStatusCompleted || proposalsLoading) {
-      return;
-    }
-
-    const runCommissionFixMigration = async () => {
-      const batch = writeBatch(firestore);
-      let updatesMade = 0;
-
-      proposals.forEach(p => {
-        const isCommissionPaidOrPartial = p.commissionStatus === 'Paga' || p.commissionStatus === 'Parcial';
-        const isNotApproved = !p.dateApproved;
-
-        if (isCommissionPaidOrPartial && isNotApproved) {
-            const proposalRef = doc(firestore, 'loanProposals', p.id);
-            batch.update(proposalRef, {
-                commissionStatus: 'Pendente',
-                amountPaid: 0,
-                commissionPaymentDate: deleteField(),
-            });
-            updatesMade++;
-        }
-      });
-
-      if (updatesMade > 0) {
-        try {
-          await batch.commit();
-          toast({
-            title: "Correção de Dados Aplicada",
-            description: `${updatesMade} proposta(s) com status de comissão inconsistente foram corrigidas para "Pendente".`
-          });
-        } catch (error) {
-          console.error("Erro ao corrigir status de comissão:", error);
-        }
-      }
-      setMigrationFixCommissionStatusCompleted(true);
-    };
-
-    runCommissionFixMigration();
-  }, [firestore, proposals, proposalsLoading, migrationFixCommissionStatusCompleted]);
-
   const { proposalsWithCustomerData, currentMonthProposals } = React.useMemo(() => {
     if (!proposals || !customers || !isClient) return { proposalsWithCustomerData: [], currentMonthProposals: [] };
     
     const customersMap = new Map(customers.map(c => [c.id, c]));
     
-    const isCommissionEligible = (p: Proposal) => {
-        return p.status !== 'Reprovado';
-    }
-
     const tableData = proposals
-      .filter(isCommissionEligible)
+      .filter(p => p.status !== 'Reprovado')
       .map(p => ({
         ...p,
         customer: customersMap.get(p.customerId),
@@ -203,6 +106,77 @@ export default function FinancialPage() {
     };
   }, [proposals, customers, isClient]);
 
+  const handleGenerateMonthlyReport = async () => {
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+
+    const doc = new jsPDF();
+    const monthYear = format(new Date(), "MMMM 'de' yyyy", { locale: ptBR });
+
+    // Header
+    doc.setFontSize(20);
+    doc.setTextColor(40, 74, 127); // Blue LK Ramos
+    doc.text("Relatório de Fechamento Mensal", 14, 20);
+    doc.setFontSize(12);
+    doc.setTextColor(100);
+    doc.text(`Período: ${monthYear}`, 14, 28);
+    doc.text(`Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 34);
+
+    // Summary logic
+    const totalDigitado = currentMonthProposals.reduce((sum, p) => sum + (p.grossAmount || 0), 0);
+    const totalComissao = currentMonthProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
+    const recebido = currentMonthProposals.filter(p => p.commissionStatus === 'Paga').reduce((sum, p) => sum + (p.amountPaid || 0), 0);
+    const pendente = totalComissao - recebido;
+
+    doc.setDrawColor(200);
+    doc.line(14, 40, 196, 40);
+
+    // Executive Summary Boxes
+    doc.setFontSize(14);
+    doc.setTextColor(0);
+    doc.text("Resumo Executivo", 14, 50);
+    
+    autoTable(doc, {
+        startY: 55,
+        head: [['Métrica', 'Valor']],
+        body: [
+            ['Volume Total Digitado', formatCurrency(totalDigitado)],
+            ['Comissão Total Potencial', formatCurrency(totalComissao)],
+            ['Comissão Recebida', formatCurrency(recebido)],
+            ['Saldo a Receber', formatCurrency(pendente)],
+        ],
+        theme: 'striped',
+        headStyles: { fillColor: [40, 74, 127] },
+    });
+
+    // Detailed Table
+    doc.text("Detalhamento das Propostas", 14, (doc as any).lastAutoTable.finalY + 15);
+
+    const tableData = currentMonthProposals.map(p => [
+        p.customer?.name || '-',
+        p.proposalNumber,
+        p.product,
+        formatCurrency(p.grossAmount),
+        formatCurrency(p.commissionValue),
+        p.commissionStatus
+    ]);
+
+    autoTable(doc, {
+        startY: (doc as any).lastAutoTable.finalY + 20,
+        head: [['Cliente', 'Nº Proposta', 'Produto', 'Vlr. Bruto', 'Comissão', 'Status']],
+        body: tableData,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [40, 74, 127] },
+    });
+
+    doc.save(`Fechamento_Mensal_${format(new Date(), 'MM_yyyy')}.pdf`);
+    
+    toast({
+        title: "Relatório Gerado!",
+        description: "O PDF do fechamento mensal foi baixado com sucesso."
+    });
+  };
+
   const isLoading = proposalsLoading || customersLoading || isUserLoading;
 
   const handleShowDetails = (title: string, proposals: ProposalWithCustomer[]) => {
@@ -216,33 +190,13 @@ export default function FinancialPage() {
     setDialogData({ title, proposals });
   };
 
-
   const handleEditCommission = React.useCallback((proposal: ProposalWithCustomer) => {
-    if (!proposal.dateApproved) {
-      toast({
-        variant: 'destructive',
-        title: 'Ação não permitida',
-        description: 'Não é possível editar a comissão (marcar como Parcial) pois a proposta ainda não foi averbada.',
-      });
-      return;
-    }
     setSelectedProposal(proposal);
     setIsSheetOpen(true);
   }, []);
   
   const handleCommissionStatusUpdate = React.useCallback(async (proposal: ProposalWithCustomer, newStatus: CommissionStatus) => {
     if (!firestore || !proposal.customer) return;
-  
-    if (newStatus === 'Paga') {
-        if (!proposal.dateApproved) {
-            toast({
-                variant: 'destructive',
-                title: 'Ação não permitida',
-                description: 'Não é possível marcar a comissão como "Paga" pois a proposta ainda não foi averbada.',
-            });
-            return;
-        }
-    }
   
     const proposalToUpdate: Partial<Proposal> = {
       commissionStatus: newStatus,
@@ -259,19 +213,14 @@ export default function FinancialPage() {
     try {
       await setDoc(doc(firestore, 'loanProposals', proposal.id), proposalToUpdate, { merge: true });
       toast({
-        title: 'Status da Comissão Atualizado!',
-        description: `O status da proposta foi alterado para "${newStatus}".`,
+        title: 'Status Atualizado!',
+        description: `O status da comissão foi alterado para "${newStatus}".`,
       });
     } catch (error) {
       console.error('Error updating commission status:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao Atualizar',
-        description: 'Não foi possível atualizar o status da comissão.',
-      });
+      toast({ variant: 'destructive', title: 'Erro ao Atualizar', description: 'Não foi possível atualizar o status da comissão.' });
     }
   }, [firestore])
-
 
   const handleFormSubmit = async (data: CommissionFormValues) => {
     if (!firestore || !selectedProposal) return;
@@ -286,208 +235,14 @@ export default function FinancialPage() {
   
     try {
       await setDoc(doc(firestore, 'loanProposals', selectedProposal.id), proposalToUpdate, { merge: true });
-      toast({
-        title: 'Comissão Atualizada!',
-        description: `Os dados financeiros da proposta foram atualizados.`,
-      });
+      toast({ title: 'Comissão Atualizada!', description: `Os dados financeiros foram salvos.` });
     } catch (error) {
       console.error('Error updating commission:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao Atualizar',
-        description: 'Não foi possível atualizar os dados da comissão.',
-      });
+      toast({ variant: 'destructive', title: 'Erro ao Atualizar', description: 'Falha ao salvar os dados.' });
     }
   
     setIsSheetOpen(false);
   };
-
-  const handleReconciliationComplete = () => {
-    setIsReconciliationOpen(false);
-    // Here you could trigger a re-fetch of the data or rely on the real-time updates
-    toast({
-      title: "Conciliação Finalizada",
-      description: "O processo de conciliação foi concluído."
-    })
-  }
-
-  const handlePrint = () => {
-    const hasSelection = Object.keys(rowSelection).length > 0;
-    if (hasSelection) {
-        document.body.classList.add('print-selection');
-    }
-    
-    const handleAfterPrint = () => {
-        if (hasSelection) {
-            document.body.classList.remove('print-selection');
-        }
-        window.removeEventListener('afterprint', handleAfterPrint);
-    };
-
-    window.addEventListener('afterprint', handleAfterPrint);
-    window.print();
-  }
-
-  const handleExportToExcel = async () => {
-    const table = tableRef.current?.table;
-    if (!table) return;
-
-    const { utils, writeFile } = await import('xlsx');
-    const selectedRows = table.getFilteredSelectedRowModel().rows;
-    let rowsToExport = selectedRows;
-
-    if (rowsToExport.length === 0) {
-        rowsToExport = table.getFilteredRowModel().rows;
-    }
-
-    if (rowsToExport.length === 0) {
-        toast({
-            variant: "destructive",
-            title: "Nenhuma proposta para exportar",
-            description: "A tabela está vazia ou os filtros não retornaram resultados.",
-        });
-        return;
-    }
-    
-    const visibleColumns = table.getVisibleLeafColumns().filter(
-        c => c.id !== 'select' && c.id !== 'actions'
-    );
-
-    const idMap: {[key: string]: string} = {
-        promotora: 'Promotora',
-        customerName: 'Cliente',
-        customerCpf: 'CPF',
-        proposalNumber: 'Nº Proposta',
-        produto: 'Produto',
-        banco: 'Banco',
-        grossAmount: 'Valor Bruto',
-        commissionPercentage: 'Comissão (%)',
-        commissionValue: 'Valor Comissão',
-        amountPaid: 'Valor Pago',
-        commissionStatus: 'Status Comissão',
-        commissionPaymentDate: 'Data Pagamento',
-      };
-
-    const headers = visibleColumns.map(c => idMap[c.id] || c.id);
-
-    const dataForSheet = [headers];
-    rowsToExport.forEach(row => {
-        const rowData: any[] = [];
-        const originalRow = row.original;
-        visibleColumns.forEach(col => {
-            let value: any;
-            switch(col.id) {
-                case 'customerName':
-                    value = originalRow.customer?.name;
-                    break;
-                case 'customerCpf':
-                    value = originalRow.customer?.cpf;
-                    break;
-                case 'commissionPaymentDate':
-                    value = originalRow.commissionPaymentDate ? format(new Date(originalRow.commissionPaymentDate), "dd/MM/yyyy", { locale: ptBR }) : '-';
-                    break;
-                default:
-                    value = row.getValue(col.id as any);
-            }
-            
-            rowData.push(value ?? '');
-        });
-        dataForSheet.push(rowData);
-    });
-
-    const worksheet = utils.aoa_to_sheet(dataForSheet);
-
-    worksheet['!cols'] = visibleColumns.map(() => ({ wch: 20 }));
-
-    const workbook = utils.book_new();
-    utils.book_append_sheet(workbook, worksheet, 'Financeiro');
-
-    writeFile(workbook, 'financeiro.xlsx');
-  };
-
-  const handleExportToPdf = async () => {
-    const table = tableRef.current?.table;
-    if (!table) return;
-
-    const { default: jsPDF } = await import('jspdf');
-    const { default: autoTable } = await import('jspdf-autotable');
-
-    const selectedRows = table.getFilteredSelectedRowModel().rows;
-    let rowsToExport = selectedRows;
-
-    if (rowsToExport.length === 0) {
-        rowsToExport = table.getFilteredRowModel().rows;
-    }
-
-    if (rowsToExport.length === 0) {
-        toast({
-            variant: "destructive",
-            title: "Nenhuma proposta para exportar",
-            description: "A tabela está vazia ou os filtros não retornaram resultados.",
-        });
-        return;
-    }
-
-    const visibleColumns = table.getVisibleLeafColumns().filter(
-        c => c.id !== 'select' && c.id !== 'actions'
-    );
-    
-    const idMap: {[key: string]: string} = {
-        promotora: 'Promotora',
-        customerName: 'Cliente',
-        customerCpf: 'CPF',
-        proposalNumber: 'Nº Proposta',
-        produto: 'Produto',
-        banco: 'Banco',
-        grossAmount: 'Valor Bruto',
-        commissionPercentage: 'Comissão (%)',
-        commissionValue: 'Valor Comissão',
-        amountPaid: 'Valor Pago',
-        commissionStatus: 'Status Comissão',
-        commissionPaymentDate: 'Data Pagamento',
-    };
-
-    const head = [visibleColumns.map(c => idMap[c.id] || c.id)];
-
-    const body = rowsToExport.map(row => {
-        const rowData: any[] = [];
-        const originalRow = row.original;
-        visibleColumns.forEach(col => {
-            let value: any;
-            switch(col.id) {
-                case 'customerName':
-                    value = originalRow.customer?.name;
-                    break;
-                case 'customerCpf':
-                    value = originalRow.customer?.cpf;
-                    break;
-                case 'commissionPaymentDate':
-                    value = originalRow.commissionPaymentDate ? format(new Date(originalRow.commissionPaymentDate), "dd/MM/yyyy", { locale: ptBR }) : '-';
-                    break;
-                case 'grossAmount':
-                case 'commissionValue':
-                case 'amountPaid':
-                    value = formatCurrency(Number(row.getValue(col.id as any)));
-                    break;
-                default:
-                    value = row.getValue(col.id as any);
-            }
-            rowData.push(value ?? '');
-        });
-        return rowData;
-    });
-
-    const doc = new jsPDF();
-    doc.text("Relatório Financeiro", 14, 15);
-    autoTable(doc, {
-        head: head,
-        body: body,
-        startY: 20,
-    });
-
-    doc.save('financeiro.pdf');
-  };
-
 
   const columns = React.useMemo(() => getColumns({ onEdit: handleEditCommission, onStatusUpdate: handleCommissionStatusUpdate }), [handleEditCommission, handleCommissionStatusUpdate]);
 
@@ -496,6 +251,10 @@ export default function FinancialPage() {
       <div className="flex items-center justify-between print:hidden">
         <PageHeader title="Controle Financeiro" />
         <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={handleGenerateMonthlyReport}>
+                <FileBadge className="mr-2 h-4 w-4" />
+                Fechamento Mensal (PDF)
+            </Button>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline">
@@ -504,11 +263,20 @@ export default function FinancialPage() {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={handleExportToExcel}>
+                    <DropdownMenuItem onSelect={() => tableRef.current?.table && import('xlsx').then(xlsx => {
+                        const ws = xlsx.utils.json_to_sheet(proposalsWithCustomerData.map(p => ({
+                            Cliente: p.customer?.name,
+                            CPF: p.customer?.cpf,
+                            Proposta: p.proposalNumber,
+                            Valor: p.grossAmount,
+                            Comissao: p.commissionValue,
+                            Status: p.commissionStatus
+                        })));
+                        const wb = xlsx.utils.book_new();
+                        xlsx.utils.book_append_sheet(wb, ws, 'Financeiro');
+                        xlsx.writeFile(wb, 'financeiro.xlsx');
+                    })}>
                         Exportar para Excel (.xlsx)
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={handleExportToPdf}>
-                        Exportar para PDF (.pdf)
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
@@ -525,22 +293,15 @@ export default function FinancialPage() {
                     </DialogHeader>
                     <CommissionReconciliation 
                         proposals={proposalsWithCustomerData} 
-                        onFinished={handleReconciliationComplete}
+                        onFinished={() => setIsReconciliationOpen(false)}
                     />
                 </DialogContent>
             </Dialog>
             <Button variant="ghost" size="icon" onClick={() => setIsPrivacyMode(!isPrivacyMode)}>
-            {isPrivacyMode ? <EyeOff /> : <Eye />}
-            <span className="sr-only">{isPrivacyMode ? 'Mostrar valores' : 'Ocultar valores'}</span>
+                {isPrivacyMode ? <EyeOff /> : <Eye />}
             </Button>
-            <Button onClick={handlePrint}><Printer /> Imprimir Relatório</Button>
+            <Button onClick={() => window.print()}><Printer /> Imprimir</Button>
         </div>
-      </div>
-      <div className="print:block hidden mb-8">
-        <Logo forPrinting={true} />
-        <p className="text-sm text-gray-500 mt-2">
-            Relatório gerado em: {format(new Date(), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
-        </p>
       </div>
 
        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -567,13 +328,9 @@ export default function FinancialPage() {
       </Dialog>
 
       {isLoading ? (
-        <div className="rounded-md border p-4">
-            <div className="space-y-2">
-              <Skeleton className="h-10 w-full" />
-              {Array.from({ length: 10 }).map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full" />
-              ))}
-            </div>
+        <div className="space-y-4">
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-[400px] w-full" />
         </div>
       ) : (
         <FinancialDataTable 

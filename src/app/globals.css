@@ -103,6 +103,13 @@
   }
 }
 
+/* RESET DE SEGURANÇA PARA ACESSO WEB */
+html, body {
+    pointer-events: auto !important;
+    overflow: auto !important;
+    user-select: auto !important;
+}
+
 @layer utilities {
   @media print {
     body.print-selection .financial-table tbody tr:not([data-state='selected']) {
