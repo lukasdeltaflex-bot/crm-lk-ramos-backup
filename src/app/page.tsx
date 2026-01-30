@@ -261,7 +261,7 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.totalDigitado)} 
                     icon={FileText} 
                     percentage={100}
-                    className="bg-slate-100 border-slate-200"
+                    className="bg-slate-100 border-slate-200 dark:bg-slate-900/50 dark:border-slate-800"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Pendentes', stats.proposals.pendente)}>
@@ -270,8 +270,8 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.pendente)} 
                     icon={BadgePercent} 
                     percentage={stats.percPendente}
-                    valueClassName="text-purple-700"
-                    className="bg-purple-100 border-purple-200"
+                    valueClassName="text-purple-700 dark:text-purple-400"
+                    className="bg-purple-100 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Em Andamento', stats.proposals.emAndamento)}>
@@ -280,8 +280,8 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.emAndamento)} 
                     icon={Hourglass} 
                     percentage={stats.percEmAndamento}
-                    valueClassName="text-yellow-700"
-                    className="bg-yellow-100 border-yellow-200"
+                    valueClassName="text-yellow-700 dark:text-yellow-400"
+                    className="bg-yellow-100 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800"
                 />
             </div>
         </div>
@@ -293,8 +293,8 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.aguardandoSaldo)} 
                     icon={Clock} 
                     percentage={stats.percAguardandoSaldo}
-                    valueClassName="text-blue-700"
-                    className="bg-blue-100 border-blue-200"
+                    valueClassName="text-blue-700 dark:text-blue-400"
+                    className="bg-blue-100 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Saldo Pago', stats.proposals.saldoPago)}>
@@ -303,8 +303,8 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.saldoPago)} 
                     icon={CheckCircle2} 
                     percentage={stats.percSaldoPago}
-                    valueClassName="text-orange-700"
-                    className="bg-orange-100 border-orange-200"
+                    valueClassName="text-orange-700 dark:text-orange-400"
+                    className="bg-orange-100 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Reprovado', stats.proposals.reprovado)}>
@@ -313,8 +313,8 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.reprovado)} 
                     icon={XCircle} 
                     percentage={stats.percReprovado}
-                    valueClassName="text-red-700"
-                    className="bg-red-100 border-red-200"
+                    valueClassName="text-red-700 dark:text-red-400"
+                    className="bg-red-100 border-red-200 dark:bg-red-900/20 dark:border-red-800"
                 />
             </div>
         </div>

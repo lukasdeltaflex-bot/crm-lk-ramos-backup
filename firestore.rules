@@ -20,10 +20,8 @@ service cloud.firestore {
     }
 
     match /reminders/{reminderId} {
-      allow read, write: if signedIn() && (
-        (resource == null && request.resource.data.ownerId == request.auth.uid) ||
-        (resource != null && resource.data.ownerId == request.auth.uid)
-      );
+      allow create: if signedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow read, update, delete: if signedIn() && resource.data.ownerId == request.auth.uid;
     }
 
     match /userSettings/{userId} {

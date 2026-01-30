@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -103,7 +104,7 @@ export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onV
           <div className="flex items-end justify-between">
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Total Pago no Mês</p>
-              <div className={cn("text-4xl font-bold text-primary", isPrivacyMode && "blur-sm")}>
+              <div className={cn("text-4xl font-normal text-primary", isPrivacyMode && "blur-sm")}>
                 {isPrivacyMode ? '•••••' : formatCurrency(currentProduction)}
               </div>
               <p className="text-[11px] text-muted-foreground font-medium">

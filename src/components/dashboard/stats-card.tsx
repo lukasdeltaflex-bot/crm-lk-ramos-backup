@@ -27,9 +27,9 @@ export function StatsCard({ title, value, icon: Icon, description, percentage, c
       </CardHeader>
       <CardContent className="print:pt-1">
         <div className="flex items-baseline justify-between gap-2">
-            <div className={cn("text-2xl font-semibold tracking-tight print:text-lg", valueClassName)}>{value}</div>
+            <div className={cn("text-2xl font-normal tracking-tight print:text-lg", valueClassName)}>{value}</div>
             {percentage !== undefined && (
-                <div className="text-[10px] font-bold bg-white/50 backdrop-blur-sm px-1.5 py-0.5 rounded border border-black/5">
+                <div className="text-[10px] font-bold bg-white/50 dark:bg-black/20 backdrop-blur-sm px-1.5 py-0.5 rounded border border-black/5 dark:border-white/5">
                     {percentage.toFixed(1).replace('.', ',')}%
                 </div>
             )}
