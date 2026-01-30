@@ -32,6 +32,7 @@ export default function AgendaPage() {
 
   const remindersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
+    // Query filtered exactly by userId to satisfy Firestore Security Rules
     return query(
       collection(firestore, 'reminders'),
       where('userId', '==', user.uid)
@@ -108,7 +109,7 @@ export default function AgendaPage() {
   };
 
   const getStatusBadge = (dueDate: string, status: string) => {
-    if (!hasMounted) return null; // Prevenção de Hydration Mismatch
+    if (!hasMounted) return null; 
     
     if (status === 'completed') return <Badge variant="outline" className="border-green-500 text-green-500">Concluído</Badge>;
     
