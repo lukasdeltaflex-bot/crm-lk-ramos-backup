@@ -30,7 +30,6 @@ export default function AgendaPage() {
     setHasMounted(true);
   }, []);
 
-  // Consulta ajustada para usar 'userId' em vez de 'ownerId'
   const remindersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return query(
@@ -50,7 +49,6 @@ export default function AgendaPage() {
   const { data: rawReminders, isLoading } = useCollection<Reminder>(remindersQuery);
   const { data: customers } = useCollection<Customer>(customersQuery);
 
-  // Ordenação manual no cliente
   const reminders = React.useMemo(() => {
     if (!rawReminders) return null;
     return [...rawReminders].sort((a, b) => a.dueDate.localeCompare(b.dueDate));
@@ -96,7 +94,7 @@ export default function AgendaPage() {
     const reminderData: Reminder = {
       ...data,
       id: reminderId,
-      userId: user.uid, // Alterado de ownerId para userId
+      userId: user.uid,
       createdAt: selectedReminder?.createdAt || new Date().toISOString(),
     };
 
@@ -110,6 +108,8 @@ export default function AgendaPage() {
   };
 
   const getStatusBadge = (dueDate: string, status: string) => {
+    if (!hasMounted) return null; // Prevenção de Hydration Mismatch
+    
     if (status === 'completed') return <Badge variant="outline" className="border-green-500 text-green-500">Concluído</Badge>;
     
     const date = parseISO(dueDate);
@@ -122,22 +122,6 @@ export default function AgendaPage() {
   };
 
   const customerMap = React.useMemo(() => new Map(customers?.map(c => [c.id, c])), [customers]);
-
-  if (!hasMounted) {
-    return (
-        <AppLayout>
-            <div className="flex items-center justify-between mb-8">
-                <PageHeader title="Agenda LK (CRM)" />
-                <Skeleton className="h-10 w-32" />
-            </div>
-            <div className="grid gap-4">
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-24 w-full" />
-            </div>
-        </AppLayout>
-    )
-  }
 
   return (
     <AppLayout>

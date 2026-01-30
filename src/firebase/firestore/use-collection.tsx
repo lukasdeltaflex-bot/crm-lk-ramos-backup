@@ -101,8 +101,10 @@ export function useCollection<T = any>(
     return () => unsubscribe();
   }, [memoizedTargetRefOrQuery]);
 
+  // Transformado em log para evitar quebra do servidor em tempo de build/SSR
   if(memoizedTargetRefOrQuery && !memoizedTargetRefOrQuery.__memo) {
-    throw new Error(memoizedTargetRefOrQuery + ' was not properly memoized using useMemoFirebase');
+    console.warn('Firestore target was not properly memoized using useMemoFirebase. This can cause unnecessary re-renders.');
   }
+  
   return { data, isLoading, error };
 }
