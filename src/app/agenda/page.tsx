@@ -32,7 +32,6 @@ export default function AgendaPage() {
 
   const remindersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    // CRÍTICO: O filtro 'where' deve bater exatamente com a regra de segurança para permitir a listagem
     return query(
       collection(firestore, 'reminders'),
       where('userId', '==', user.uid)
@@ -103,8 +102,13 @@ export default function AgendaPage() {
       await setDoc(doc(firestore, 'reminders', reminderId), reminderData);
       setIsDialogOpen(false);
       toast({ title: 'Lembrete salvo com sucesso!' });
-    } catch (e) {
-      toast({ variant: 'destructive', title: 'Erro ao salvar lembrete' });
+    } catch (e: any) {
+      console.error("Erro técnico ao salvar lembrete:", e);
+      toast({ 
+        variant: 'destructive', 
+        title: 'Erro ao salvar lembrete',
+        description: e.message || 'Verifique sua conexão ou permissões.'
+      });
     }
   };
 
