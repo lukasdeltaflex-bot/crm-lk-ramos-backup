@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -12,7 +11,7 @@ import { Badge } from '../ui/badge';
 import { Skeleton } from '../ui/skeleton';
 import { formatCurrency, cn, calculateBusinessDays } from '@/lib/utils';
 import type { Proposal, Customer } from '@/lib/types';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { AlertCircle } from 'lucide-react';
 import {
   Tooltip,
@@ -28,6 +27,12 @@ interface RecentProposalsProps {
 }
 
 export function RecentProposals({ proposals, customers, isLoading }: RecentProposalsProps) {
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
   const recentProposals = useMemo(() => {
     const customerMap = new Map(customers.map(c => [c.id, c]));
     return proposals
@@ -68,7 +73,7 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
             ) : (
                 recentProposals.map((proposal) => {
                     const isPortAwaitingBalance = proposal.product === 'Portabilidade' && proposal.status === 'Aguardando Saldo';
-                    const businessDays = proposal.dateDigitized ? calculateBusinessDays(new Date(proposal.dateDigitized)) : 0;
+                    const businessDays = hasMounted && proposal.dateDigitized ? calculateBusinessDays(new Date(proposal.dateDigitized)) : 0;
 
                     return (
                         <TableRow key={proposal.id}>
@@ -94,7 +99,7 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
                                     >
                                         {proposal.status}
                                     </Badge>
-                                    {isPortAwaitingBalance && (
+                                    {isPortAwaitingBalance && hasMounted && (
                                         <TooltipProvider>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>

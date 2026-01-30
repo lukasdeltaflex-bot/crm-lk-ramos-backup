@@ -1,7 +1,6 @@
-
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -11,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle, Calendar as CalendarIcon, CheckCircle2, Circle, Trash2, User } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ReminderForm } from './reminder-form';
-import { format, isBefore, isToday, parseISO } from 'date-fns';
+import { format, isBefore, isToday, parseISO, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +23,11 @@ export default function AgendaPage() {
   const firestore = useFirestore();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [selectedReminder, setSelectedReminder] = React.useState<Reminder | undefined>(undefined);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   const remindersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
@@ -99,8 +103,11 @@ export default function AgendaPage() {
     if (status === 'completed') return <Badge variant="outline" className="border-green-500 text-green-500">Concluído</Badge>;
     
     const date = parseISO(dueDate);
-    if (isBefore(date, new Date()) && !isToday(date)) return <Badge variant="destructive">Atrasado</Badge>;
+    const now = new Date();
+    
     if (isToday(date)) return <Badge variant="default" className="bg-yellow-500 text-black hover:bg-yellow-600">Para Hoje</Badge>;
+    if (isBefore(date, startOfDay(now))) return <Badge variant="destructive">Atrasado</Badge>;
+    
     return <Badge variant="secondary">Futuro</Badge>;
   };
 
@@ -156,7 +163,7 @@ export default function AgendaPage() {
                         <h3 className={cn("font-semibold", reminder.status === 'completed' && "line-through")}>
                           {reminder.title}
                         </h3>
-                        {getStatusBadge(reminder.dueDate, reminder.status)}
+                        {hasMounted && getStatusBadge(reminder.dueDate, reminder.status)}
                       </div>
                       {reminder.description && (
                         <p className="text-sm text-muted-foreground">{reminder.description}</p>
