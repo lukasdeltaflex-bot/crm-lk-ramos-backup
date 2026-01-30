@@ -447,24 +447,6 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
             </div>
 
             <Separator />
-
-            <div>
-                <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                    <FileIcon className="h-5 w-5 text-primary" />
-                    Central de Documentos Fixos
-                </h3>
-                <CustomerAttachmentUploader
-                    userId={user?.uid || ''}
-                    customerId={currentCustomerId || ''}
-                    initialAttachments={form.getValues('documents') || []}
-                    onAttachmentsChange={handleDocumentsChange}
-                />
-                <p className="text-xs text-muted-foreground mt-2">
-                    Arquivos como RG, CPF e Comprovante de Residência salvos aqui estarão disponíveis em todas as futuras propostas deste cliente.
-                </p>
-            </div>
-
-            <Separator />
             
             <div>
                 <div className="flex justify-between items-center mb-4">
@@ -665,6 +647,24 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
                 </FormItem>
               )}
             />
+
+            <Separator />
+
+            <div>
+                <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+                    <FileIcon className="h-5 w-5 text-primary" />
+                    Central de Documentos Fixos
+                </h3>
+                <CustomerAttachmentUploader
+                    userId={user?.uid || ''}
+                    customerId={currentCustomerId || ''}
+                    initialAttachments={form.getValues('documents') || []}
+                    onAttachmentsChange={handleDocumentsChange}
+                />
+                <p className="text-xs text-muted-foreground mt-2">
+                    Arquivos como RG, CPF e Comprovante de Residência salvos aqui estarão disponíveis em todas as futuras propostas deste cliente.
+                </p>
+            </div>
           </div>
         </ScrollArea>
         <div className="flex justify-end pt-8">
