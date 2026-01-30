@@ -44,7 +44,8 @@ export function ProductBreakdownChart({ proposals }: ProductBreakdownChartProps)
   const chartData = React.useMemo(() => {
     const data: Record<string, number> = {}
     proposals.forEach((p) => {
-      const amount = p.grossAmount || 0
+      // Sincroniza com a lógica do Dashboard: Bruto ou Líquido dependendo da base configurada
+      const amount = p.commissionBase === 'net' ? (p.netAmount || 0) : (p.grossAmount || 0)
       data[p.product] = (data[p.product] || 0) + amount
     })
 
@@ -133,7 +134,7 @@ export function ProductBreakdownChart({ proposals }: ProductBreakdownChartProps)
       </CardContent>
       <div className="p-6 pt-0 border-t bg-muted/5 flex items-center justify-between rounded-b-lg">
         <div className="flex flex-col">
-            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-tighter">Produção Total</span>
+            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-tighter">Volume Digitado</span>
             <span className="text-lg font-bold text-primary">{formatCurrency(totalVolume)}</span>
         </div>
         <div className="flex -space-x-2">
