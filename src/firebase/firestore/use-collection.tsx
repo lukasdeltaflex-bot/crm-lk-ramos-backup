@@ -88,7 +88,6 @@ export function useCollection<T = any>(
             setError(contextualError);
             errorEmitter.emit('permission-error', contextualError);
         } else {
-            console.error(`Firestore query error [${err.code}] at ${path}:`, err.message);
             setError(err);
             setIsLoading(false);
         }

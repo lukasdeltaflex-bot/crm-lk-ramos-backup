@@ -17,21 +17,19 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Clientes: usa o campo 'ownerId' conforme definido no backend.json
+    // Clientes: apenas o proprietário
     match /customers/{docId} {
       allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
       allow read, update, delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
     }
 
-    // Propostas: usa o campo 'ownerId' conforme definido no backend.json
+    // Propostas: apenas o proprietário
     match /loanProposals/{docId} {
       allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
       allow read, update, delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
     }
     
-    // Lembretes (Agenda): CORREÇÃO CRÍTICA
-    // Usa exclusivamente 'userId' para permitir que o otimizador de queries do Firestore
-    // valide o filtro where('userId', '==', auth.uid) sem ambiguidades.
+    // Lembretes (Agenda): Regras explícitas para garantir compatibilidade com list/onSnapshot
     match /reminders/{docId} {
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       allow read, update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
