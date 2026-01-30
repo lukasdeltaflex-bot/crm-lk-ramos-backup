@@ -29,13 +29,10 @@ service cloud.firestore {
       allow read, update, delete: if isOwner(resource.data);
     }
     
-    // Reminders (Agenda) - Unified rule for userId field, supporting both ownerId and userId for safety
+    // Reminders (Agenda) - Simplified rule to allow optimized list operations
     match /reminders/{docId} {
-      allow create: if request.auth != null && 
-        (request.resource.data.userId == request.auth.uid || request.resource.data.ownerId == request.auth.uid);
-      
-      allow read, update, delete: if request.auth != null && 
-        (resource.data.userId == request.auth.uid || resource.data.ownerId == request.auth.uid);
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
 
     // Products (Read-only for authenticated users)
