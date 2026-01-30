@@ -1,3 +1,4 @@
+
 'use client';
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -440,19 +441,20 @@ const handleExportToExcel = async () => {
   const handleFormSubmit = async (data: Omit<Proposal, 'id' | 'ownerId'>) => {
     if (!firestore || !user) return;
   
-    const toISOString = (dateString?: string): string | undefined => {
-        if (!dateString || dateString.trim() === '') return undefined;
+    // Função auxiliar para converter string de data para ISO ou null (para limpar no banco)
+    const toValue = (dateString?: string): string | null => {
+        if (!dateString || dateString.trim() === '') return null;
         try {
             const parsed = parse(dateString, 'dd/MM/yyyy', new Date());
-            return !isNaN(parsed.getTime()) ? parsed.toISOString() : undefined;
+            return !isNaN(parsed.getTime()) ? parsed.toISOString() : null;
         } catch {
-            return undefined;
+            return null;
         }
     };
     
     try {
         const typedData = data as Proposal;
-        const dateApproved = toISOString(typedData.dateApproved);
+        const dateApproved = toValue(typedData.dateApproved);
         let commissionStatus = typedData.commissionStatus;
 
         const isEligibleForSaldoAReceber = 
@@ -467,13 +469,14 @@ const handleExportToExcel = async () => {
 
         const proposalData = {
             ...data,
-            dateDigitized: toISOString(typedData.dateDigitized) || new Date().toISOString(),
+            dateDigitized: toValue(typedData.dateDigitized) || new Date().toISOString(),
             dateApproved: dateApproved,
-            datePaidToClient: toISOString(typedData.datePaidToClient),
-            debtBalanceArrivalDate: toISOString(typedData.debtBalanceArrivalDate),
+            datePaidToClient: toValue(typedData.datePaidToClient),
+            debtBalanceArrivalDate: toValue(typedData.debtBalanceArrivalDate),
             commissionStatus: commissionStatus,
         };
         
+        // Remove apenas 'undefined', permitindo 'null' para que campos sejam limpos no Firestore
         const cleanData = Object.fromEntries(
             Object.entries(proposalData).filter(([, v]) => v !== undefined)
         );
