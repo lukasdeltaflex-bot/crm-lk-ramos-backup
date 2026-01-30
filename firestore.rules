@@ -7,7 +7,8 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Regra universal de propriedade: o usuário logado deve ser o dono do dado
+    // Função universal de propriedade: verifica se o usuário logado é o dono do dado
+    // Suporta os campos userId (Lembretes/Settings) e ownerId (Clientes/Propostas)
     function isOwner(data) {
       return signedIn() && (
         (data.userId == request.auth.uid) || 
@@ -36,8 +37,8 @@ service cloud.firestore {
 
     match /reminders/{reminderId} {
       allow read, write: if signedIn() && (
-        (resource == null && request.resource.data.userId == request.auth.uid) ||
-        (resource != null && resource.data.userId == request.auth.uid)
+        (resource == null || isOwner(resource.data)) &&
+        (request.resource == null || isOwner(request.resource.data))
       );
     }
 

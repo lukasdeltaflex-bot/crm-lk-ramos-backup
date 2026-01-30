@@ -112,6 +112,7 @@ export default function AgendaPage() {
     setIsSaving(true);
     const reminderId = selectedReminder?.id || doc(collection(firestore, 'reminders')).id;
     
+    // Preparação dos dados para o Firestore
     const cleanData = { ...data };
     if (!cleanData.customerId || cleanData.customerId === '') {
         delete cleanData.customerId;
@@ -124,10 +125,10 @@ export default function AgendaPage() {
       createdAt: selectedReminder?.createdAt || new Date().toISOString(),
     };
 
-    // SALVAMENTO NÃO-BLOQUEANTE: Fecha o modal e atualiza a UI instantaneamente
+    // Gravação não-bloqueante para agilidade da interface
     setDoc(doc(firestore, 'reminders', reminderId), reminderData, { merge: true })
       .then(() => {
-        toast({ title: 'Lembrete Salvo!', description: 'Sua agenda foi atualizada.' });
+        toast({ title: 'Agenda Atualizada', description: 'O lembrete foi salvo com sucesso.' });
       })
       .catch(async () => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
@@ -137,7 +138,7 @@ export default function AgendaPage() {
         }));
       });
 
-    // Feedback imediato ao usuário
+    // Fecha o modal e limpa estado imediatamente
     setIsDialogOpen(false);
     setIsSaving(false);
   };

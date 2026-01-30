@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useRef } from 'react';
@@ -18,7 +19,7 @@ export function FirebaseErrorListener() {
       const now = Date.now();
       const errorKey = `${error.request.method}:${error.request.path}`;
       
-      // Throttling: Evita poluir o console com o mesmo erro repetidamente (10 segundos)
+      // Evita logs repetidos em curto espaço de tempo (10 segundos)
       if (lastErrorRef.current === errorKey && now - lastLogTimeRef.current < 10000) {
         return;
       }
@@ -26,7 +27,7 @@ export function FirebaseErrorListener() {
       lastErrorRef.current = errorKey;
       lastLogTimeRef.current = now;
       
-      // Log apenas para depuração técnica
+      // Log técnico discreto
       console.warn("LK Ramos Security Access Info:", {
         action: error.request.method,
         resource: error.request.path,
