@@ -37,6 +37,7 @@ export default function AgendaPage() {
 
   const remindersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
+    // Buscamos por ownerId para consistência com o restante do sistema
     return query(
       collection(firestore, 'reminders'),
       where('ownerId', '==', user.uid)
@@ -106,6 +107,7 @@ export default function AgendaPage() {
     setIsSaving(true);
     const reminderId = selectedReminder?.id || doc(collection(firestore, 'reminders')).id;
     
+    // Filtramos campos vazios para evitar inconsistências no banco
     const cleanFields = Object.fromEntries(
       Object.entries(data).filter(([_, v]) => v !== undefined && v !== "")
     );
@@ -113,7 +115,7 @@ export default function AgendaPage() {
     const reminderData = {
       ...cleanFields,
       id: reminderId,
-      ownerId: user.uid,
+      ownerId: user.uid, // Sempre gravamos como ownerId
       createdAt: selectedReminder?.createdAt || new Date().toISOString(),
     };
 
@@ -122,11 +124,11 @@ export default function AgendaPage() {
       toast({ title: 'Agenda LK', description: 'O lembrete foi salvo com sucesso.' });
       setIsDialogOpen(false);
     } catch (err) {
-      console.warn("Permissão de escrita negada:", err);
+      console.warn("Erro ao salvar no Firestore:", err);
       toast({ 
         variant: 'destructive', 
-        title: 'Acesso Negado', 
-        description: 'Não foi possível salvar o lembrete. Verifique sua conexão e tente novamente.' 
+        title: 'Falha no Salvamento', 
+        description: 'Verifique as permissões e tente novamente em instantes.' 
       });
     } finally {
       setIsSaving(false);
