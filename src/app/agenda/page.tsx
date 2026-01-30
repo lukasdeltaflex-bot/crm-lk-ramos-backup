@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, doc, setDoc, deleteDoc, orderBy } from 'firebase/firestore';
+import { collection, query, where, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import type { Reminder, Customer } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Calendar as CalendarIcon, CheckCircle2, Circle, Trash2, User } from 'lucide-react';
@@ -32,10 +32,10 @@ export default function AgendaPage() {
 
   const remindersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
+    // Removido o orderBy para evitar a necessidade de índices compostos que causam erros de permissão
     return query(
       collection(firestore, 'reminders'),
-      where('ownerId', '==', user.uid),
-      orderBy('dueDate', 'asc')
+      where('ownerId', '==', user.uid)
     );
   }, [firestore, user]);
 
@@ -44,8 +44,14 @@ export default function AgendaPage() {
     return query(collection(firestore, 'customers'), where('ownerId', '==', user.uid));
   }, [firestore, user]);
 
-  const { data: reminders, isLoading } = useCollection<Reminder>(remindersQuery);
+  const { data: rawReminders, isLoading } = useCollection<Reminder>(remindersQuery);
   const { data: customers } = useCollection<Customer>(customersQuery);
+
+  // Ordenação manual no cliente para garantir funcionamento sem índices complexos
+  const reminders = React.useMemo(() => {
+    if (!rawReminders) return null;
+    return [...rawReminders].sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+  }, [rawReminders]);
 
   const handleAddReminder = () => {
     setSelectedReminder(undefined);
