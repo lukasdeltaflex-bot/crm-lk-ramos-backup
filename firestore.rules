@@ -14,21 +14,25 @@ service cloud.firestore {
 
     // Regras para Clientes (usam ownerId)
     match /customers/{customerId} {
-      allow read: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      allow list: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      allow get: if request.auth != null && resource.data.ownerId == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
       allow update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
     }
 
     // Regras para Propostas (usam ownerId)
     match /loanProposals/{proposalId} {
-      allow read: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      allow list: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      allow get: if request.auth != null && resource.data.ownerId == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
       allow update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
     }
 
     // Regras para Lembretes (usam userId)
     match /reminders/{reminderId} {
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      // O Firestore valida automaticamente queries que possuem o filtro correspondente ao campo testado em resource.data
+      allow list: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow get: if request.auth != null && resource.data.userId == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
       allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
