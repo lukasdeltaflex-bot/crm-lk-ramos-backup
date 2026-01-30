@@ -6,7 +6,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 
 /**
  * Componente silencioso que monitora erros de permissão do Firebase.
- * Agora apenas registra no console para evitar interrupções na interface do usuário.
+ * Registra avisos no console sem interromper a interface do usuário.
  */
 export function FirebaseErrorListener() {
   const lastErrorRef = useRef<string | null>(null);
@@ -17,7 +17,7 @@ export function FirebaseErrorListener() {
       const now = Date.now();
       const errorKey = `${error.request.method}:${error.request.path}`;
       
-      // Throttling: Evita poluir o console com o mesmo erro repetidamente
+      // Throttling: Evita poluir o console com o mesmo erro repetidamente (10 segundos)
       if (lastErrorRef.current === errorKey && now - lastLogTimeRef.current < 10000) {
         return;
       }
@@ -25,11 +25,11 @@ export function FirebaseErrorListener() {
       lastErrorRef.current = errorKey;
       lastLogTimeRef.current = now;
       
-      // Log técnico apenas para depuração, sem interromper o usuário com overlays
-      console.warn("Firestore Sync Notice:", {
-        method: error.request.method,
-        path: error.request.path,
-        uid: error.request.auth?.uid
+      // Log apenas para depuração técnica, sem overlays ou toasts
+      console.warn("LK Ramos Security Notice:", {
+        action: error.request.method,
+        resource: error.request.path,
+        timestamp: new Date().toLocaleTimeString()
       });
     };
 

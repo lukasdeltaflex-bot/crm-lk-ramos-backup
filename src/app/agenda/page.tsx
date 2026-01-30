@@ -67,7 +67,7 @@ export default function AgendaPage() {
   };
 
   const handleToggleStatus = (reminder: Reminder) => {
-    if (!firestore) return;
+    if (!firestore || !user) return;
     const newStatus = reminder.status === 'pending' ? 'completed' : 'pending';
     
     setDoc(doc(firestore, 'reminders', reminder.id), { status: newStatus }, { merge: true })
@@ -102,20 +102,20 @@ export default function AgendaPage() {
       createdAt: selectedReminder?.createdAt || new Date().toISOString(),
     };
 
-    // Padrão não-bloqueante: fecha o modal imediatamente
+    // Fecha o modal imediatamente para fluidez
     setIsDialogOpen(false);
 
     setDoc(doc(firestore, 'reminders', reminderId), reminderData)
       .then(() => {
-        toast({ title: 'Agenda Atualizada!' });
+        toast({ title: 'Agenda LK Atualizada!' });
       })
       .catch(async (err) => {
-        const pError = new FirestorePermissionError({
+        console.error("Erro ao salvar lembrete:", err);
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: `reminders/${reminderId}`,
           operation: 'write',
           requestResourceData: reminderData
-        });
-        errorEmitter.emit('permission-error', pError);
+        }));
       });
   };
 

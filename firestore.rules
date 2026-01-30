@@ -6,24 +6,28 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Regras de propriedade para Clientes e Propostas (ownerId)
+    // Função de propriedade robusta que evita erros em campos ausentes
+    function isOwner(data) {
+      return signedIn() && (
+        data.get('userId', '') == request.auth.uid || 
+        data.get('ownerId', '') == request.auth.uid ||
+        data.get('uid', '') == request.auth.uid
+      );
+    }
+
+    // Regras para Clientes
     match /customers/{customerId} {
-      allow read, write: if signedIn() && (
-        resource == null ? request.resource.data.ownerId == request.auth.uid : resource.data.ownerId == request.auth.uid
-      );
+      allow read, write: if isOwner(resource == null ? request.resource.data : resource.data);
     }
 
+    // Regras para Propostas
     match /loanProposals/{proposalId} {
-      allow read, write: if signedIn() && (
-        resource == null ? request.resource.data.ownerId == request.auth.uid : resource.data.ownerId == request.auth.uid
-      );
+      allow read, write: if isOwner(resource == null ? request.resource.data : resource.data);
     }
 
-    // Regras de propriedade para Lembretes da Agenda (userId)
+    // Regras para Lembretes (Agenda)
     match /reminders/{reminderId} {
-      allow read, write: if signedIn() && (
-        resource == null ? request.resource.data.userId == request.auth.uid : resource.data.userId == request.auth.uid
-      );
+      allow read, write: if isOwner(resource == null ? request.resource.data : resource.data);
     }
 
     // Perfil de Usuário e Configurações
@@ -35,7 +39,7 @@ service cloud.firestore {
       allow read, write: if signedIn() && request.auth.uid == userId;
     }
     
-    // Bloqueio padrão para segurança
+    // Bloqueio padrão para segurança de outras coleções
     match /{document=**} {
       allow read, write: if false;
     }
