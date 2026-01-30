@@ -1,8 +1,8 @@
 
 'use client';
 
-import React from 'react';
-import { Bell, Cake, BadgePercent, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Bell, Cake, BadgePercent, X } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,10 +19,27 @@ import type { Customer, Proposal } from '@/lib/types';
 import { differenceInDays, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
+
+const STORAGE_KEY = 'lk-ramos-dismissed-notifications-v1';
 
 export function NotificationBell() {
   const { user } = useUser();
   const firestore = useFirestore();
+  const [dismissedIds, setDismissedIds] = useState<string[]>([]);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        setDismissedIds(JSON.parse(saved));
+      } catch (e) {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+  }, []);
 
   const customersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
@@ -46,7 +63,7 @@ export function NotificationBell() {
     customers.forEach(c => {
       if (c.birthDate && c.birthDate.substring(5) === today) {
         alerts.push({
-          id: `bday-${c.id}`,
+          id: `bday-${c.id}-${today}`,
           title: `Aniversário: ${c.name}`,
           type: 'birthday',
           date: 'Hoje',
@@ -74,7 +91,21 @@ export function NotificationBell() {
     return alerts;
   }, [customers, proposals]);
 
-  const count = notifications.length;
+  const visibleNotifications = React.useMemo(() => {
+    return notifications.filter(n => !dismissedIds.includes(n.id));
+  }, [notifications, dismissedIds]);
+
+  const handleDismiss = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const newDismissed = [...dismissedIds, id];
+    setDismissedIds(newDismissed);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newDismissed));
+  };
+
+  const count = visibleNotifications.length;
+
+  if (!isClient) return <Button variant="ghost" size="icon"><Bell className="h-5 w-5" /></Button>;
 
   return (
     <DropdownMenu>
@@ -82,37 +113,62 @@ export function NotificationBell() {
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           {count > 0 && (
-            <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-red-500 hover:bg-red-600">
+            <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-red-500 hover:bg-red-600 text-[10px] animate-in zoom-in">
               {count}
             </Badge>
           )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
-        <DropdownMenuLabel>Notificações</DropdownMenuLabel>
+        <div className="flex items-center justify-between p-2 px-3">
+            <DropdownMenuLabel className="p-0">Notificações</DropdownMenuLabel>
+            {dismissedIds.length > 0 && (
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-auto p-0 text-[10px] text-muted-foreground hover:text-primary"
+                    onClick={() => {
+                        setDismissedIds([]);
+                        localStorage.removeItem(STORAGE_KEY);
+                    }}
+                >
+                    Restaurar Tudo
+                </Button>
+            )}
+        </div>
         <DropdownMenuSeparator />
         {count === 0 ? (
-          <div className="p-4 text-center text-sm text-muted-foreground">
-            Nenhum alerta para hoje.
+          <div className="p-8 text-center text-sm text-muted-foreground">
+            <Bell className="h-8 w-8 mx-auto mb-2 opacity-20" />
+            Nenhum alerta novo.
           </div>
         ) : (
           <div className="max-h-96 overflow-y-auto">
-            {notifications.map((n) => (
-              <Link key={n.id} href={n.link} passHref>
-                <DropdownMenuItem className="cursor-pointer p-3">
-                  <div className="flex items-start gap-3">
-                    {n.type === 'birthday' ? (
-                      <Cake className="h-4 w-4 text-pink-500 mt-1" />
-                    ) : (
-                      <BadgePercent className="h-4 w-4 text-orange-500 mt-1" />
-                    )}
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none">{n.title}</p>
-                      <p className="text-xs text-muted-foreground">{n.date}</p>
+            {visibleNotifications.map((n) => (
+              <div key={n.id} className="relative group">
+                <Link href={n.link} passHref>
+                    <DropdownMenuItem className="cursor-pointer p-3 pr-10">
+                    <div className="flex items-start gap-3">
+                        {n.type === 'birthday' ? (
+                        <Cake className="h-4 w-4 text-pink-500 mt-1" />
+                        ) : (
+                        <BadgePercent className="h-4 w-4 text-orange-500 mt-1" />
+                        )}
+                        <div className="space-y-1 overflow-hidden">
+                        <p className="text-sm font-medium leading-none truncate">{n.title}</p>
+                        <p className="text-xs text-muted-foreground">{n.date}</p>
+                        </div>
                     </div>
-                  </div>
-                </DropdownMenuItem>
-              </Link>
+                    </DropdownMenuItem>
+                </Link>
+                <button
+                    onClick={(e) => handleDismiss(e, n.id)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted rounded-md"
+                    title="Remover"
+                >
+                    <X className="h-3 w-3 text-muted-foreground" />
+                </button>
+              </div>
             ))}
           </div>
         )}
