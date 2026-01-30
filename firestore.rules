@@ -12,18 +12,19 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Regra genérica para coleções de dados do usuário (Clientes, Propostas, Lembretes)
-    // Usamos um padrão que verifica o ownerId tanto na criação quanto na leitura/edição
+    // Regra para Clientes
     match /customers/{docId} {
       allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
       allow get, list, update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
     }
 
+    // Regra para Propostas
     match /loanProposals/{docId} {
       allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
       allow get, list, update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
     }
     
+    // Regra para Lembretes (Agenda) - Simplificada para permitir listagem com filtro ownerId
     match /reminders/{docId} {
       allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
       allow get, list, update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
