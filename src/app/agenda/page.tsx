@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -118,8 +119,8 @@ export default function AgendaPage() {
       .then(() => {
         toast({ title: 'Agenda LK Atualizada!' });
       })
-      .catch(async (err) => {
-        console.error("Erro ao salvar lembrete:", err);
+      .catch(async () => {
+        // Emitimos o erro apenas para o monitor silencioso, sem disparar o pop-up do Next.js
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: `reminders/${reminderId}`,
           operation: 'write',
