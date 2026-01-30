@@ -42,7 +42,7 @@ const benefitSchema = z.object({
 const customerSchema = z.object({
   name: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres.'),
   cpf: z.string().min(11, 'CPF incompleto.').refine((val) => validateCPF(val), {
-    message: "CPF inválido (erro no cálculo do dígito).",
+    message: "CPF inválido. Verifique se há erro de digitação.",
   }),
   benefits: z.array(benefitSchema).optional(),
   phone: z.string().min(10, 'O telefone é obrigatório.'),
@@ -306,7 +306,7 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
                     name="cpf"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>CPF</FormLabel>
+                        <FormLabel>CPF (Validação Automática)</FormLabel>
                         <FormControl>
                             <Input placeholder="000.000.000-00" {...field} onChange={handleCpfChange} maxLength={14}/>
                         </FormControl>

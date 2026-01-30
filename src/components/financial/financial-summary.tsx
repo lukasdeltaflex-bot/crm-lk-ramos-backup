@@ -5,7 +5,7 @@ import type { Row } from '@tanstack/react-table';
 import type { Proposal, Customer } from '@/lib/types';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import { formatCurrency, cn } from '@/lib/utils';
-import { FileText, CircleDollarSign, CheckCircle, Hourglass, Info, Coins } from 'lucide-react';
+import { CheckCircle, Hourglass, Info, Coins, CircleDollarSign } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
 type ProposalWithCustomer = Proposal & { customer: Customer };
@@ -58,14 +58,14 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
 
     const validProposals = allProposalsInPeriod.filter(p => p.status !== 'Reprovado');
 
-    // 1. Comissão Total Potencial (Base 100%)
+    // 1. Comissão Total Potencial (Base 100% para os cálculos financeiros)
     const totalPotentialCommission = validProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
 
     // 2. Comissão Recebida
     const commissionReceivedProposals = validProposals.filter(p => p.commissionStatus === 'Paga');
     const totalAmountPaid = commissionReceivedProposals.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
     
-    // 3. Saldo a Receber
+    // 3. Saldo a Receber (Contratos averbados ou pagos ao cliente, mas comissão ainda pendente)
     const proposalsForSaldoAReceber = validProposals.filter(p => {
         if (p.commissionStatus === 'Paga') return false;
         const isPago = p.status === 'Pago';
@@ -79,7 +79,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       return sum + (remaining > 0 ? remaining : 0);
     }, 0);
 
-    // 4. Comissão Esperada
+    // 4. Comissão Esperada (Contratos em andamento que ainda não foram averbados)
     const expectedCommissionProposals = validProposals.filter(p => {
         const isAverbada = !!p.dateApproved;
         return !isAverbada && (p.status === 'Em Andamento' || p.status === 'Pendente' || p.status === 'Aguardando Saldo');
@@ -168,11 +168,11 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
     <div className='space-y-4'>
         <Alert variant="default" className="bg-secondary/50 print:hidden">
             <Info className="h-4 w-4" />
-            <AlertTitle>Resumo do Período Selecionado</AlertTitle>
+            <AlertTitle>Resumo Financeiro do Período</AlertTitle>
             <AlertDescription>
-                As porcentagens abaixo representam a divisão do seu **Total de Comissões**.
+                As porcentagens abaixo são baseadas no seu **Total de Comissões** (Potencial de Lucro).
                 {isFiltered && (
-                    <span className="block mt-1 font-semibold text-primary">A tabela abaixo está exibindo resultados filtrados.</span>
+                    <span className="block mt-1 font-semibold text-primary">Aviso: A tabela abaixo está exibindo resultados filtrados.</span>
                 )}
             </AlertDescription>
         </Alert>
