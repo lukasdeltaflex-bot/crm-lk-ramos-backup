@@ -6,43 +6,35 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Função auxiliar para verificar propriedade (suporta ownerId ou userId)
-    function isOwner(data) {
-      return isAuthenticated() && (
-        data.get('ownerId', '') == request.auth.uid || 
-        data.get('userId', '') == request.auth.uid
-      );
-    }
-
     // Regras para Perfis de Usuário
     match /users/{userId} {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Regras para Clientes
+    // Regras para Clientes (Usa ownerId)
     match /customers/{customerId} {
-      allow read: if isAuthenticated() && (resource == null || isOwner(resource.data));
+      allow read: if isAuthenticated() && (resource == null || resource.data.ownerId == request.auth.uid);
       allow write: if isAuthenticated() && (
         (resource == null && request.resource.data.ownerId == request.auth.uid) ||
-        (resource != null && isOwner(resource.data))
+        (resource != null && resource.data.ownerId == request.auth.uid)
       );
     }
 
-    // Regras para Propostas
+    // Regras para Propostas (Usa ownerId)
     match /loanProposals/{proposalId} {
-      allow read: if isAuthenticated() && (resource == null || isOwner(resource.data));
+      allow read: if isAuthenticated() && (resource == null || resource.data.ownerId == request.auth.uid);
       allow write: if isAuthenticated() && (
         (resource == null && request.resource.data.ownerId == request.auth.uid) ||
-        (resource != null && isOwner(resource.data))
+        (resource != null && resource.data.ownerId == request.auth.uid)
       );
     }
 
-    // Regras para Lembretes (Agenda)
+    // Regras para Lembretes (Usa userId)
     match /reminders/{reminderId} {
-      allow read: if isAuthenticated() && (resource == null || isOwner(resource.data));
+      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
       allow write: if isAuthenticated() && (
         (resource == null && request.resource.data.userId == request.auth.uid) ||
-        (resource != null && isOwner(resource.data))
+        (resource != null && resource.data.userId == request.auth.uid)
       );
     }
 
@@ -51,7 +43,7 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
     
-    // Bloqueio padrão
+    // Bloqueio padrão para qualquer outra coleção
     match /{document=**} {
       allow read, write: if false;
     }
