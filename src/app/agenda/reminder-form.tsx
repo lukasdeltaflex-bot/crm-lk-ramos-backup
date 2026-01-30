@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { format, parse } from 'date-fns';
 import type { Reminder, Customer } from '@/lib/types';
 import { useEffect, useMemo } from 'react';
-import { X, Search } from 'lucide-react';
+import { X, Search, Loader2 } from 'lucide-react';
 
 const reminderSchema = z.object({
   title: z.string().min(1, 'O título ou nome do cliente é obrigatório.'),
@@ -40,6 +40,7 @@ interface ReminderFormProps {
   onOpenCustomerSearch: () => void;
   selectedCustomerFromSearch: Customer | null;
   onCustomerSearchSelectionHandled: () => void;
+  isSaving?: boolean;
 }
 
 export function ReminderForm({ 
@@ -48,7 +49,8 @@ export function ReminderForm({
   onSubmit, 
   onOpenCustomerSearch, 
   selectedCustomerFromSearch, 
-  onCustomerSearchSelectionHandled 
+  onCustomerSearchSelectionHandled,
+  isSaving = false
 }: ReminderFormProps) {
   const form = useForm<ReminderFormValues>({
     resolver: zodResolver(reminderSchema),
@@ -182,7 +184,16 @@ export function ReminderForm({
         />
 
         <div className="flex justify-end pt-4">
-          <Button type="submit">Salvar Lembrete</Button>
+          <Button type="submit" disabled={isSaving}>
+            {isSaving ? (
+                <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Salvando...
+                </>
+            ) : (
+                'Salvar Lembrete'
+            )}
+          </Button>
         </div>
       </form>
     </Form>

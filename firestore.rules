@@ -7,14 +7,14 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Função para verificar se o usuário é dono do documento (Lida com merge:true)
-    function isOwner(data) {
-      return signedIn() && data.userId == request.auth.uid;
-    }
-    
-    // Função para dono via ownerId (Clientes/Propostas)
+    // Verifica se o usuário é dono do dado (Clientes/Propostas)
     function isDataOwner(data) {
       return signedIn() && data.ownerId == request.auth.uid;
+    }
+    
+    // Verifica se o usuário é dono do lembrete (Agenda)
+    function isReminderOwner(data) {
+      return signedIn() && data.userId == request.auth.uid;
     }
 
     match /users/{userId} {
@@ -35,12 +35,13 @@ service cloud.firestore {
       );
     }
 
-    // Regra robusta para Lembretes (Agenda)
+    // Regras simplificadas para Lembretes para evitar erros de permissão em massa
     match /reminders/{reminderId} {
-      allow read: if signedIn() && resource.data.userId == request.auth.uid;
-      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if signedIn() && resource.data.userId == request.auth.uid;
-      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
+      allow read: if signedIn() && (resource == null || resource.data.userId == request.auth.uid);
+      allow write: if signedIn() && (
+        (resource == null && request.resource.data.userId == request.auth.uid) ||
+        (resource != null && resource.data.userId == request.auth.uid)
+      );
     }
 
     match /userSettings/{userId} {

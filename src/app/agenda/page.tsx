@@ -8,7 +8,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { collection, query, where, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import type { Reminder, Customer } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Calendar as CalendarIcon, CheckCircle2, Circle, Trash2, User } from 'lucide-react';
+import { PlusCircle, Calendar as CalendarIcon, CheckCircle2, Circle, Trash2, User, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ReminderForm } from './reminder-form';
 import { format, isBefore, isToday, parseISO, startOfDay } from 'date-fns';
@@ -30,6 +30,7 @@ export default function AgendaPage() {
   const [isCustomerSearchOpen, setIsCustomerSearchOpen] = React.useState(false);
   const [newlySelectedCustomer, setNewlySelectedCustomer] = React.useState<Customer | null>(null);
   const [selectedReminder, setSelectedReminder] = React.useState<Reminder | undefined>(undefined);
+  const [isSaving, setIsSaving] = React.useState(false);
   const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
@@ -76,7 +77,6 @@ export default function AgendaPage() {
     if (!firestore || !user) return;
     const newStatus = reminder.status === 'pending' ? 'completed' : 'pending';
     
-    // Incluímos o userId para garantir que a regra de segurança aceite o update mesmo com merge
     setDoc(doc(firestore, 'reminders', reminder.id), { 
       status: newStatus,
       userId: user.uid 
@@ -106,9 +106,10 @@ export default function AgendaPage() {
     setIsCustomerSearchOpen(false);
   };
 
-  const handleFormSubmit = (data: any) => {
+  const handleFormSubmit = async (data: any) => {
     if (!firestore || !user) return;
     
+    setIsSaving(true);
     const reminderId = selectedReminder?.id || doc(collection(firestore, 'reminders')).id;
     
     const cleanData = { ...data };
@@ -123,19 +124,19 @@ export default function AgendaPage() {
       createdAt: selectedReminder?.createdAt || new Date().toISOString(),
     };
 
-    setIsDialogOpen(false);
-
-    setDoc(doc(firestore, 'reminders', reminderId), reminderData, { merge: true })
-      .then(() => {
+    try {
+        await setDoc(doc(firestore, 'reminders', reminderId), reminderData, { merge: true });
         toast({ title: 'Lembrete Salvo!', description: 'Sua agenda foi atualizada.' });
-      })
-      .catch(async () => {
+        setIsDialogOpen(false);
+    } catch (e) {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: `reminders/${reminderId}`,
           operation: 'write',
           requestResourceData: reminderData
         }));
-      });
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   const getStatusBadge = (dueDate: string, status: string) => {
@@ -256,6 +257,7 @@ export default function AgendaPage() {
             onOpenCustomerSearch={() => setIsCustomerSearchOpen(true)}
             selectedCustomerFromSearch={newlySelectedCustomer}
             onCustomerSearchSelectionHandled={() => setNewlySelectedCustomer(null)}
+            isSaving={isSaving}
           />
         </DialogContent>
       </Dialog>
