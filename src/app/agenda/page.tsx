@@ -89,7 +89,7 @@ export default function AgendaPage() {
       }, { merge: true });
       toast({ title: newStatus === 'completed' ? 'Lembrete Concluído!' : 'Lembrete Reaberto!' });
     } catch (e) {
-      toast({ variant: 'destructive', title: 'Erro ao atualizar status' });
+      toast({ variant: 'destructive', title: 'Erro de Permissão ao atualizar' });
     }
   };
 
@@ -100,7 +100,7 @@ export default function AgendaPage() {
       await deleteDoc(doc(firestore, 'reminders', reminderId));
       toast({ title: 'Lembrete removido com sucesso.' });
     } catch (e) {
-      toast({ variant: 'destructive', title: 'Erro ao remover' });
+      toast({ variant: 'destructive', title: 'Erro de Permissão ao remover' });
     }
   };
 
@@ -111,7 +111,6 @@ export default function AgendaPage() {
     try {
       const reminderId = selectedReminder?.id || doc(collection(firestore, 'reminders')).id;
       
-      // Garante que campos vazios não quebrem o Firestore e o ownerId esteja presente
       const reminderData = {
         ...data,
         id: reminderId,
@@ -119,9 +118,8 @@ export default function AgendaPage() {
         createdAt: selectedReminder?.createdAt || new Date().toISOString(),
       };
 
-      // Remove undefined de forma segura
       const cleanData = Object.fromEntries(
-        Object.entries(reminderData).filter(([_, v]) => v !== undefined)
+        Object.entries(reminderData).filter(([_, v]) => v !== undefined && v !== "")
       );
 
       await setDoc(doc(firestore, 'reminders', reminderId), cleanData);
@@ -132,8 +130,8 @@ export default function AgendaPage() {
       console.error("Erro ao salvar lembrete:", err);
       toast({ 
         variant: 'destructive', 
-        title: 'Erro de Permissão ou Conexão', 
-        description: 'Não foi possível salvar. Verifique se você está logado.' 
+        title: 'Erro de Permissão', 
+        description: 'Não foi possível salvar os dados no Firebase.' 
       });
     } finally {
       setIsSaving(false);
@@ -141,7 +139,7 @@ export default function AgendaPage() {
   };
 
   const getStatusBadge = (dueDate: string, status: string) => {
-    if (status === 'completed') return <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200">Concluído</Badge>;
+    if (status === 'completed') return <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400 border-green-200/50">Concluído</Badge>;
     const date = parseISO(dueDate);
     const now = new Date();
     if (isToday(date)) return <Badge variant="default" className="bg-yellow-500 text-black">Hoje</Badge>;
@@ -160,7 +158,7 @@ export default function AgendaPage() {
       </div>
 
       <div className="grid gap-6">
-        <Card>
+        <Card className="border-border/50">
             <CardHeader className="pb-3">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
@@ -196,7 +194,7 @@ export default function AgendaPage() {
                                 <div 
                                     key={reminder.id} 
                                     className={cn(
-                                        "group flex items-center gap-4 p-4 rounded-xl border bg-card hover:shadow-md transition-all cursor-pointer",
+                                        "group flex items-center gap-4 p-4 rounded-xl border border-border/50 bg-card hover:shadow-md transition-all cursor-pointer",
                                         isCompleted && "opacity-60 bg-muted/30"
                                     )}
                                     onClick={() => handleEditReminder(reminder)}

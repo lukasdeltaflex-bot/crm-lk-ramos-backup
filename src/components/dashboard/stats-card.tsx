@@ -20,16 +20,16 @@ interface StatsCardProps {
 
 export function StatsCard({ title, value, icon: Icon, description, percentage, className, valueClassName }: StatsCardProps) {
   return (
-    <Card className={cn('hover:shadow-md transition-all group relative overflow-hidden border-none', className)}>
+    <Card className={cn('hover:shadow-md transition-all group relative overflow-hidden border border-border/50', className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 print:pb-1">
-        <CardTitle className="text-sm font-bold uppercase tracking-tight print:text-xs">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+        <CardTitle className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-primary transition-colors print:text-[8px]">{title}</CardTitle>
+        <Icon className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary transition-colors" />
       </CardHeader>
       <CardContent className="print:pt-1">
         <div className="flex items-baseline justify-between gap-2">
-            <div className={cn("text-2xl font-normal tracking-tight print:text-lg", valueClassName)}>{value}</div>
+            <div className={cn("text-2xl font-normal tracking-tight text-foreground print:text-lg", valueClassName)}>{value}</div>
             {percentage !== undefined && (
-                <div className="text-[10px] font-bold bg-white/50 dark:bg-black/20 backdrop-blur-sm px-1.5 py-0.5 rounded border border-black/5 dark:border-white/5">
+                <div className="text-[10px] font-bold bg-background/50 dark:bg-black/20 backdrop-blur-sm px-1.5 py-0.5 rounded border border-border/50">
                     {percentage.toFixed(1).replace('.', ',')}%
                 </div>
             )}

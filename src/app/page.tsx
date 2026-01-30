@@ -44,6 +44,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { CommissionChart } from '@/components/dashboard/commission-chart';
+import { ProductBreakdownChart } from '@/components/dashboard/product-breakdown-chart';
 
 export default function DashboardPage() {
   const [startDateInput, setStartDateInput] = React.useState('');
@@ -179,7 +181,7 @@ export default function DashboardPage() {
             emAndamento: emAndamentoProposals,
             aguardandoSaldo: aguardandoSaldoProposals,
             saldoPago: saldoPagoProposals,
-            reprovado: reprovadoProposals,
+            reprovado: reprovadoValue,
             pago: pagoProposals,
             pagos: [...pagoProposals, ...saldoPagoProposals],
             todos: filteredProposals
@@ -201,7 +203,7 @@ export default function DashboardPage() {
                 <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
                 <p className="text-sm text-muted-foreground">Exibindo dados para o mês de {currentMonthName}</p>
             </div>
-            <div className="flex items-center gap-2 flex-wrap bg-card p-2 rounded-lg border shadow-sm">
+            <div className="flex items-center gap-2 flex-wrap bg-card p-2 rounded-lg border border-border/50 shadow-sm">
                 <Select onValueChange={(val) => applyRange(val as any)}>
                     <SelectTrigger className='w-[140px] h-9 border-none shadow-none focus:ring-0'>
                         <CalendarIcon className='mr-2 h-4 w-4 text-primary' />
@@ -261,7 +263,7 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.totalDigitado)} 
                     icon={FileText} 
                     percentage={100}
-                    className="bg-slate-100 border-slate-200 dark:bg-slate-900/50 dark:border-slate-800"
+                    className="bg-slate-100/50 dark:bg-slate-900/30 border-slate-200 dark:border-slate-800"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Pendentes', stats.proposals.pendente)}>
@@ -271,7 +273,7 @@ export default function DashboardPage() {
                     icon={BadgePercent} 
                     percentage={stats.percPendente}
                     valueClassName="text-purple-700 dark:text-purple-400"
-                    className="bg-purple-100 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800"
+                    className="bg-purple-100/50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Em Andamento', stats.proposals.emAndamento)}>
@@ -281,7 +283,7 @@ export default function DashboardPage() {
                     icon={Hourglass} 
                     percentage={stats.percEmAndamento}
                     valueClassName="text-yellow-700 dark:text-yellow-400"
-                    className="bg-yellow-100 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800"
+                    className="bg-yellow-100/50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
                 />
             </div>
         </div>
@@ -294,7 +296,7 @@ export default function DashboardPage() {
                     icon={Clock} 
                     percentage={stats.percAguardandoSaldo}
                     valueClassName="text-blue-700 dark:text-blue-400"
-                    className="bg-blue-100 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800"
+                    className="bg-blue-100/50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Saldo Pago', stats.proposals.saldoPago)}>
@@ -304,7 +306,7 @@ export default function DashboardPage() {
                     icon={CheckCircle2} 
                     percentage={stats.percSaldoPago}
                     valueClassName="text-orange-700 dark:text-orange-400"
-                    className="bg-orange-100 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800"
+                    className="bg-orange-100/50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Reprovado', stats.proposals.reprovado)}>
@@ -314,8 +316,17 @@ export default function DashboardPage() {
                     icon={XCircle} 
                     percentage={stats.percReprovado}
                     valueClassName="text-red-700 dark:text-red-400"
-                    className="bg-red-100 border-red-200 dark:bg-red-900/20 dark:border-red-800"
+                    className="bg-red-100/50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
                 />
+            </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+                <CommissionChart proposals={proposals || []} />
+            </div>
+            <div className="lg:col-span-1">
+                <ProductBreakdownChart proposals={filteredProposals} />
             </div>
         </div>
 
