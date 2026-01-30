@@ -62,14 +62,15 @@ export function ReminderForm({ reminder, customers, onSubmit }: ReminderFormProp
   const handleCustomerSelect = (value: string) => {
     const customerId = value === "__none__" ? "" : value;
     form.setValue('customerId', customerId);
+    
     if (customerId && !form.getValues('title')) {
         const customer = customers.find(c => c.id === customerId);
         if (customer) form.setValue('title', `Retorno: ${customer.name}`);
     }
   }
 
-  // Filtragem preventiva de clientes sem ID para evitar erro de Select.Item
-  const validCustomers = (customers || []).filter(c => c && c.id);
+  // Filtragem estrita: remove clientes nulos, sem ID ou com ID vazio para evitar erro no Select.Item
+  const validCustomers = (customers || []).filter(c => c && c.id && c.id.trim() !== '');
 
   return (
     <Form {...form}>

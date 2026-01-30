@@ -43,7 +43,7 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
     
-    // Bloqueio de qualquer outro acesso não especificado
+    // Bloqueio padrão para qualquer outro acesso
     match /{document=**} {
       allow read, write: if false;
     }

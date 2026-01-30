@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 
 /**
  * Componente que escuta erros de permissão do Firebase e os exibe de forma
- * controlada usando Toasts. Inclui deduplicação para evitar flood de mensagens.
+ * controlada usando Toasts. Inclui deduplicação severa para evitar flood.
  */
 export function FirebaseErrorListener() {
   const { toast } = useToast();
@@ -19,7 +19,7 @@ export function FirebaseErrorListener() {
       const now = Date.now();
       const errorKey = `${error.request.method}:${error.request.path}`;
       
-      // Log detalhado para o console do desenvolvedor (silencioso para o usuário final)
+      // Log silencioso para o desenvolvedor
       console.warn("Firestore Permission Insight:", error.request);
 
       // Previne que o mesmo erro exiba múltiplos toasts em menos de 10 segundos
@@ -33,7 +33,7 @@ export function FirebaseErrorListener() {
       toast({
         variant: 'destructive',
         title: 'Acesso Restrito',
-        description: 'Não foi possível carregar alguns dados devido a restrições de segurança ou filtros ausentes.',
+        description: 'Alguns dados não puderam ser carregados. Verifique se você tem permissão para acessar estes registros.',
       });
     };
 
