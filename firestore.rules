@@ -29,10 +29,11 @@ service cloud.firestore {
       allow read, update, delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
     }
     
-    // Lembretes (Agenda): Regras explícitas para garantir compatibilidade com list/onSnapshot
+    // Lembretes (Agenda): Regra simplificada para garantir compatibilidade com list/queries
     match /reminders/{docId} {
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow read, update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow list, get: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
     // Produtos: leitura pública para autenticados
