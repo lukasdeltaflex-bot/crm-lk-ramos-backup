@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Info, Copy, Printer, ChevronsUpDown, Check } from 'lucide-react';
+import { Info, Copy, Printer, ChevronsUpDown, Check, Download, FolderLock } from 'lucide-react';
 import { format, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -358,6 +359,33 @@ export function ProposalForm({
                     </FormItem>
                 )}
                 />
+
+              {/* Central de Documentos Fixos do Cliente - Atalho */}
+              {selectedCustomer && selectedCustomer.documents && selectedCustomer.documents.length > 0 && (
+                <Alert className="bg-primary/5 border-primary/20">
+                    <FolderLock className="h-4 w-4 text-primary" />
+                    <AlertTitle className="text-xs font-bold text-primary flex items-center gap-2">
+                        Documentos Permanentes Disponíveis
+                    </AlertTitle>
+                    <AlertDescription className="mt-2">
+                        <div className="flex flex-wrap gap-2">
+                            {selectedCustomer.documents.map((doc, i) => (
+                                <a 
+                                    key={i} 
+                                    href={doc.url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-1.5 px-2 py-1 bg-background border rounded text-[10px] font-medium hover:bg-accent transition-colors"
+                                >
+                                    <Download className="h-2.5 w-2.5" />
+                                    {doc.name}
+                                </a>
+                            ))}
+                        </div>
+                    </AlertDescription>
+                </Alert>
+              )}
+
               <FormField
                 control={form.control}
                 name="product"

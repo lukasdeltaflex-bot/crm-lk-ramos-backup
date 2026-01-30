@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,12 +19,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { CalendarIcon, Sparkles, AlertCircle, Loader2, PlusCircle, Trash2 } from 'lucide-react';
+import { CalendarIcon, Sparkles, AlertCircle, Loader2, PlusCircle, Trash2, FileText as FileIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn, getAge, validateCPF } from '@/lib/utils';
-import type { Customer, Benefit } from '@/lib/types';
+import type { Customer, Benefit, Attachment } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { useEffect, useState } from 'react';
@@ -33,10 +34,20 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { isWhatsApp, getWhatsAppUrl } from '@/lib/utils';
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
+import { CustomerAttachmentUploader } from '@/components/customers/customer-attachment-uploader';
+import { useUser, useFirestore } from '@/firebase';
+import { doc, collection } from 'firebase/firestore';
 
 const benefitSchema = z.object({
     number: z.string().min(1, "O número do benefício é obrigatório."),
     species: z.string().optional(),
+});
+
+const attachmentSchema = z.object({
+  name: z.string(),
+  url: z.string(),
+  type: z.string(),
+  size: z.number(),
 });
 
 const customerSchema = z.object({
@@ -65,6 +76,7 @@ const customerSchema = z.object({
   neighborhood: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
+  documents: z.array(attachmentSchema).optional(),
 });
 
 type CustomerFormValues = z.infer<typeof customerSchema>;
@@ -81,9 +93,20 @@ interface CustomerFormProps {
 }
 
 export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = false }: CustomerFormProps) {
+  const { user } = useUser();
+  const firestore = useFirestore();
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [age, setAge] = useState<number | null>(null);
+  const [tempCustomerId, setTempCustomerId] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (firestore && !customer?.id) {
+        setTempCustomerId(doc(collection(firestore, 'customers')).id);
+    }
+  }, [firestore, customer]);
+
+  const currentCustomerId = customer?.id || tempCustomerId;
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
@@ -103,6 +126,7 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
       neighborhood: '',
       city: '',
       state: '',
+      documents: [],
     },
   });
 
@@ -151,6 +175,7 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
             neighborhood: '',
             city: '',
             state: '',
+            documents: [],
         };
 
         const source = customer || defaultValues;
@@ -170,6 +195,7 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
             ...source,
             benefits: source.benefits || [],
             birthDate: formattedBirthDate,
+            documents: source.documents || [],
           };
         }
         return initial;
@@ -183,6 +209,7 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
       ...data,
       birthDate: format(parsedDate, 'yyyy-MM-dd'),
       benefits: data.benefits || [],
+      documents: data.documents || [],
     };
     onSubmit(newCustomerData);
   }
@@ -279,11 +306,15 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
     }
   };
 
+  const handleDocumentsChange = (docs: Attachment[]) => {
+    form.setValue('documents', docs, { shouldValidate: true });
+  };
+
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="py-4">
-        <ScrollArea className="h-[70vh] pr-4">
+        <ScrollArea className="h-[75vh] pr-4">
           <div className="space-y-8">
             <div className='space-y-4'>
                 <h3 className="text-lg font-medium">Dados Pessoais</h3>
@@ -413,6 +444,24 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
                         </Alert>
                     )}
                 </div>
+            </div>
+
+            <Separator />
+
+            <div>
+                <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+                    <FileIcon className="h-5 w-5 text-primary" />
+                    Central de Documentos Fixos
+                </h3>
+                <CustomerAttachmentUploader
+                    userId={user?.uid || ''}
+                    customerId={currentCustomerId || ''}
+                    initialAttachments={form.getValues('documents') || []}
+                    onAttachmentsChange={handleDocumentsChange}
+                />
+                <p className="text-xs text-muted-foreground mt-2">
+                    Arquivos como RG, CPF e Comprovante de Residência salvos aqui estarão disponíveis em todas as futuras propostas deste cliente.
+                </p>
             </div>
 
             <Separator />

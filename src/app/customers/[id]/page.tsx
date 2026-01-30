@@ -5,11 +5,11 @@ import { useParams } from 'next/navigation';
 import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
 import { useDoc, useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import { doc, collection, query, where } from 'firebase/firestore';
-import type { Customer, Proposal } from '@/lib/types';
+import { doc, collection, query, where, updateDoc } from 'firebase/firestore';
+import type { Customer, Proposal, Attachment } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Phone, Mail, Calendar, FileText, CircleDollarSign, BadgePercent, MapPin, Hash, Copy, Printer, FileBadge } from 'lucide-react';
+import { User, Phone, Mail, Calendar, FileText, CircleDollarSign, BadgePercent, MapPin, Hash, Copy, Printer, FileBadge, FolderLock } from 'lucide-react';
 import { format, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ import { CustomerAiSummary } from '@/components/customers/customer-ai-summary';
 import { isWhatsApp, getWhatsAppUrl } from '@/lib/utils';
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
 import { toast } from '@/hooks/use-toast';
+import { CustomerAttachmentUploader } from '@/components/customers/customer-attachment-uploader';
 
 
 const CopyButton = ({ text, label }: { text: string; label: string }) => {
@@ -248,6 +249,19 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
   const { data: customer, isLoading: isCustomerLoading } = useDoc<Customer>(customerDocRef);
   const { data: proposals, isLoading: areProposalsLoading } = useCollection<Proposal>(proposalsQuery);
 
+  const handleDocumentsChange = async (docs: Attachment[]) => {
+    if (!firestore || !customerId) return;
+    try {
+        await updateDoc(doc(firestore, 'customers', customerId), {
+            documents: docs
+        });
+        toast({ title: "Central Atualizada", description: "O documento foi vinculado ao cliente com sucesso." });
+    } catch (e) {
+        console.error("Error updating customer documents:", e);
+        toast({ variant: "destructive", title: "Erro ao atualizar", description: "Não foi possível salvar a alteração." });
+    }
+  };
+
   const handleExportDossier = async () => {
     if (!customer || !proposals) return;
 
@@ -357,18 +371,41 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
             </p>
         </div>
         <CustomerInfoCard customer={customer} onExportDossier={handleExportDossier} />
-        <div className="print:hidden">
-            <CustomerAiSummary customer={customer} proposals={proposals || []} />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-8">
+                <div className="print:hidden">
+                    <CustomerAiSummary customer={customer} proposals={proposals || []} />
+                </div>
+                <CustomerFinancialSummary proposals={proposals || []} />
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Histórico de Propostas</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <SimpleProposalsTable proposals={proposals || []} />
+                    </CardContent>
+                </Card>
+            </div>
+            <div className="lg:col-span-1">
+                <Card className="h-full">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <FolderLock className="h-5 w-5 text-primary" />
+                            Documentos Permanentes
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <CustomerAttachmentUploader 
+                            userId={user?.uid || ''}
+                            customerId={customer.id}
+                            initialAttachments={customer.documents || []}
+                            onAttachmentsChange={handleDocumentsChange}
+                        />
+                    </CardContent>
+                </Card>
+            </div>
         </div>
-        <CustomerFinancialSummary proposals={proposals || []} />
-        <Card>
-            <CardHeader>
-                <CardTitle>Histórico de Propostas</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <SimpleProposalsTable proposals={proposals || []} />
-            </CardContent>
-        </Card>
       </div>
     </AppLayout>
   );

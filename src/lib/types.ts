@@ -1,8 +1,14 @@
 
-
 export type Benefit = {
   number: string;
   species?: string;
+};
+
+export type Attachment = {
+  name: string;
+  url: string;
+  type: string;
+  size: number;
 };
 
 export type Customer = {
@@ -25,6 +31,7 @@ export type Customer = {
   neighborhood?: string;
   city?: string;
   state?: string;
+  documents?: Attachment[]; // Central de documentos fixos
 };
 
 export type ProductType =
@@ -47,13 +54,6 @@ export type ProposalStatus =
   | 'Reprovado';
 
 export type CommissionStatus = 'Pendente' | 'Paga' | 'Parcial';
-
-export type Attachment = {
-  name: string;
-  url: string;
-  type: string;
-  size: number;
-};
 
 export type Proposal = {
   id: string;
@@ -104,5 +104,3 @@ export type UserProfile = {
   birthDate?: string; // YYYY-MM-DD
   phone?: string;
 }
-
-    
