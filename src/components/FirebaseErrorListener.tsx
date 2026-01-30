@@ -19,11 +19,15 @@ export function FirebaseErrorListener() {
       const now = Date.now();
       const errorKey = `${error.request.method}:${error.request.path}`;
       
-      // Log silencioso para o desenvolvedor
-      console.warn("Firestore Permission Insight:", error.request);
+      // Log detalhado apenas para o console do desenvolvedor
+      console.warn("Firestore Permission Insight:", {
+        method: error.request.method,
+        path: error.request.path,
+        uid: error.request.auth?.uid
+      });
 
-      // Previne que o mesmo erro exiba múltiplos toasts em menos de 10 segundos
-      if (lastErrorRef.current === errorKey && now - lastToastTimeRef.current < 10000) {
+      // Silencia notificações repetitivas por 15 segundos
+      if (lastErrorRef.current === errorKey && now - lastToastTimeRef.current < 15000) {
         return;
       }
 
@@ -32,8 +36,8 @@ export function FirebaseErrorListener() {
       
       toast({
         variant: 'destructive',
-        title: 'Acesso Restrito',
-        description: 'Alguns dados não puderam ser carregados. Verifique se você tem permissão para acessar estes registros.',
+        title: 'Sincronização em andamento',
+        description: 'Alguns registros pertencentes a outros usuários ou antigos podem estar ocultos por segurança.',
       });
     };
 

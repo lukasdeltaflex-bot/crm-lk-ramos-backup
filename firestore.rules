@@ -6,35 +6,43 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Função auxiliar para verificar propriedade (suporta ownerId ou userId)
+    function isOwner(data) {
+      return isAuthenticated() && (
+        data.get('ownerId', '') == request.auth.uid || 
+        data.get('userId', '') == request.auth.uid
+      );
+    }
+
     // Regras para Perfis de Usuário
     match /users/{userId} {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Regras para Clientes (usam ownerId)
+    // Regras para Clientes
     match /customers/{customerId} {
-      allow read: if isAuthenticated() && resource.data.get('ownerId', '') == request.auth.uid;
+      allow read: if isAuthenticated() && (resource == null || isOwner(resource.data));
       allow write: if isAuthenticated() && (
-        (resource == null && request.resource.data.get('ownerId', '') == request.auth.uid) ||
-        (resource != null && resource.data.get('ownerId', '') == request.auth.uid)
+        (resource == null && request.resource.data.ownerId == request.auth.uid) ||
+        (resource != null && isOwner(resource.data))
       );
     }
 
-    // Regras para Propostas (usam ownerId)
+    // Regras para Propostas
     match /loanProposals/{proposalId} {
-      allow read: if isAuthenticated() && resource.data.get('ownerId', '') == request.auth.uid;
+      allow read: if isAuthenticated() && (resource == null || isOwner(resource.data));
       allow write: if isAuthenticated() && (
-        (resource == null && request.resource.data.get('ownerId', '') == request.auth.uid) ||
-        (resource != null && resource.data.get('ownerId', '') == request.auth.uid)
+        (resource == null && request.resource.data.ownerId == request.auth.uid) ||
+        (resource != null && isOwner(resource.data))
       );
     }
 
-    // Regras para Lembretes (usam userId)
+    // Regras para Lembretes (Agenda)
     match /reminders/{reminderId} {
-      allow read: if isAuthenticated() && resource.data.get('userId', '') == request.auth.uid;
+      allow read: if isAuthenticated() && (resource == null || isOwner(resource.data));
       allow write: if isAuthenticated() && (
-        (resource == null && request.resource.data.get('userId', '') == request.auth.uid) ||
-        (resource != null && resource.data.get('userId', '') == request.auth.uid)
+        (resource == null && request.resource.data.userId == request.auth.uid) ||
+        (resource != null && isOwner(resource.data))
       );
     }
 
@@ -43,7 +51,7 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
     
-    // Bloqueio padrão para qualquer outro acesso
+    // Bloqueio padrão
     match /{document=**} {
       allow read, write: if false;
     }

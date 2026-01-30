@@ -4,7 +4,6 @@ import { Toaster } from '@/components/ui/toaster';
 import { Inter as FontSans } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase';
-import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import { setDefaultOptions } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -43,7 +42,6 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <FirebaseClientProvider>
-            <FirebaseErrorListener />
             {children}
           </FirebaseClientProvider>
           <Toaster />
