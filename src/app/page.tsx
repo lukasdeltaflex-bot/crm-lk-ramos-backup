@@ -48,7 +48,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { AgendaSection } from '@/components/dashboard/agenda-section';
 import { LiveClock } from '@/components/dashboard/live-clock';
 
 export default function DashboardPage() {
@@ -227,7 +226,6 @@ export default function DashboardPage() {
         </div>
 
         <div className="lg:col-span-1 space-y-8">
-            <AgendaSection />
             <DailySummary 
                 proposals={proposals || []}
                 customers={customers || []}
