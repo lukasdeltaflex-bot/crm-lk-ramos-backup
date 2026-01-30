@@ -70,7 +70,7 @@ import type { ProposalStatus, Proposal } from '@/lib/types';
 import { DraggableHeader } from './columns';
 import type { ProposalWithCustomer } from './page';
 import { Separator } from '@/components/ui/separator';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, calculateBusinessDays } from '@/lib/utils';
 import { parse, isValid } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
@@ -360,7 +360,16 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     debtBalanceArrivalDate: 'Chegada Saldo',
   }
 
-  const getRowStatusClass = (status: string) => {
+  const getRowStatusClass = (proposal: Proposal) => {
+    const { status, product, dateDigitized } = proposal;
+    
+    // Regra de Portabilidade: Prazo de 5 dias úteis começando a contar no próximo dia útil
+    if (product === 'Portabilidade' && status === 'Aguardando Saldo' && dateDigitized) {
+        const days = calculateBusinessDays(new Date(dateDigitized));
+        if (days >= 5) return 'bg-red-500/20 hover:bg-red-500/30 animate-pulse border-l-4 border-l-destructive';
+        if (days >= 4) return 'bg-orange-500/20 hover:bg-orange-500/30 border-l-4 border-l-orange-500';
+    }
+
     switch (status) {
       case 'Pago': return 'bg-green-100/40 dark:bg-green-900/20 hover:bg-green-200/40 dark:hover:bg-green-900/30';
       case 'Saldo Pago': return 'bg-orange-100/40 dark:bg-orange-900/20 hover:bg-orange-200/40 dark:hover:bg-orange-900/30';
@@ -492,7 +501,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     <TableRow
                         key={row.id}
                         data-state={row.getIsSelected() && 'selected'}
-                        className={cn("transition-colors", getRowStatusClass(row.original.status))}
+                        className={cn("transition-colors", getRowStatusClass(row.original))}
                     >
                         {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id}>

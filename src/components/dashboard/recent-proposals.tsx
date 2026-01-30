@@ -10,9 +10,16 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '../ui/badge';
 import { Skeleton } from '../ui/skeleton';
-import { formatCurrency, cn } from '@/lib/utils';
+import { formatCurrency, cn, calculateBusinessDays } from '@/lib/utils';
 import type { Proposal, Customer } from '@/lib/types';
 import { useMemo } from 'react';
+import { AlertCircle } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface RecentProposalsProps {
     proposals: Proposal[];
@@ -59,35 +66,58 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
                     <TableCell colSpan={4} className="text-center h-24">Nenhuma proposta recente.</TableCell>
                 </TableRow>
             ) : (
-                recentProposals.map((proposal) => (
-                <TableRow key={proposal.id}>
-                    <TableCell>
-                    <div className="font-medium">{proposal.customer?.name || 'Cliente não encontrado'}</div>
-                    <div className="hidden text-sm text-muted-foreground md:inline">
-                        {proposal.customer?.email}
-                    </div>
-                    </TableCell>
-                    <TableCell>{proposal.product}</TableCell>
-                    <TableCell>
-                    <Badge
-                        variant="outline"
-                        className={cn({
-                            'border-green-500 text-green-500': proposal.status === 'Pago',
-                            'border-orange-500 text-orange-500': proposal.status === 'Saldo Pago',
-                            'border-yellow-500 text-yellow-500': proposal.status === 'Em Andamento',
-                            'border-blue-500 text-blue-500': proposal.status === 'Aguardando Saldo',
-                            'border-red-500 text-red-500': proposal.status === 'Reprovado',
-                            'border-purple-500 text-purple-500': proposal.status === 'Pendente',
-                        })}
-                    >
-                        {proposal.status}
-                    </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                    {formatCurrency(proposal.grossAmount)}
-                    </TableCell>
-                </TableRow>
-                ))
+                recentProposals.map((proposal) => {
+                    const isUrgentPort = proposal.product === 'Portabilidade' && 
+                                       proposal.status === 'Aguardando Saldo' && 
+                                       proposal.dateDigitized && 
+                                       calculateBusinessDays(new Date(proposal.dateDigitized)) >= 4;
+                    const businessDays = proposal.dateDigitized ? calculateBusinessDays(new Date(proposal.dateDigitized)) : 0;
+
+                    return (
+                        <TableRow key={proposal.id}>
+                            <TableCell>
+                            <div className="font-medium">{proposal.customer?.name || 'Cliente não encontrado'}</div>
+                            <div className="hidden text-sm text-muted-foreground md:inline">
+                                {proposal.customer?.email}
+                            </div>
+                            </TableCell>
+                            <TableCell>{proposal.product}</TableCell>
+                            <TableCell>
+                                <div className="flex items-center gap-2">
+                                    <Badge
+                                        variant="outline"
+                                        className={cn({
+                                            'border-green-500 text-green-500': proposal.status === 'Pago',
+                                            'border-orange-500 text-orange-500': proposal.status === 'Saldo Pago',
+                                            'border-yellow-500 text-yellow-500': proposal.status === 'Em Andamento',
+                                            'border-blue-500 text-blue-500': proposal.status === 'Aguardando Saldo',
+                                            'border-red-500 text-red-500': proposal.status === 'Reprovado',
+                                            'border-purple-500 text-purple-500': proposal.status === 'Pendente',
+                                        })}
+                                    >
+                                        {proposal.status}
+                                    </Badge>
+                                    {isUrgentPort && (
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger>
+                                                    <AlertCircle className={cn("h-4 w-4", businessDays >= 5 ? "text-destructive animate-pulse" : "text-orange-500")} />
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Aguardando saldo há {businessDays} dias úteis.</p>
+                                                    <p className="text-xs">Prazo limite: 5 dias úteis.</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    )}
+                                </div>
+                            </TableCell>
+                            <TableCell className="text-right">
+                            {formatCurrency(proposal.grossAmount)}
+                            </TableCell>
+                        </TableRow>
+                    );
+                })
             )}
           </TableBody>
         </Table>
