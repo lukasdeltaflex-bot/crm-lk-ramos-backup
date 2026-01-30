@@ -1,23 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    match /reminders/{docId} {
-      allow list, get, create, update, delete: if request.auth != null;
-    }
-
-    // Regras básicas para os demais paths não interromperem o sistema durante o teste
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-    match /customers/{docId} {
-      allow read, write: if request.auth != null;
-    }
-    match /loanProposals/{docId} {
-      allow read, write: if request.auth != null;
-    }
-    match /userSettings/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
 }

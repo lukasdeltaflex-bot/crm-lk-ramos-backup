@@ -79,7 +79,7 @@ export function useCollection<T = any>(
             ? (memoizedTargetRefOrQuery as CollectionReference).path
             : (memoizedTargetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString();
 
-        // Só emitimos erro fatal se for REALMENTE erro de permissão negada
+        // Emit contextual error for central listener
         if (err.code === 'permission-denied') {
             const contextualError = new FirestorePermissionError({
                 operation: 'list',
