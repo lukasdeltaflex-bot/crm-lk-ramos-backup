@@ -18,6 +18,8 @@ import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function AgendaPage() {
   const { user } = useUser();
@@ -64,30 +66,32 @@ export default function AgendaPage() {
     setIsDialogOpen(true);
   };
 
-  const handleToggleStatus = async (reminder: Reminder) => {
+  const handleToggleStatus = (reminder: Reminder) => {
     if (!firestore) return;
     const newStatus = reminder.status === 'pending' ? 'completed' : 'pending';
-    try {
-      await setDoc(doc(firestore, 'reminders', reminder.id), { status: newStatus }, { merge: true });
-      toast({
-        title: newStatus === 'completed' ? 'Lembrete concluído!' : 'Lembrete reativado.',
+    
+    setDoc(doc(firestore, 'reminders', reminder.id), { status: newStatus }, { merge: true })
+      .catch(async () => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: `reminders/${reminder.id}`,
+          operation: 'update',
+          requestResourceData: { status: newStatus }
+        }));
       });
-    } catch (e) {
-      toast({ variant: 'destructive', title: 'Erro ao atualizar status' });
-    }
   };
 
-  const handleDeleteReminder = async (id: string) => {
+  const handleDeleteReminder = (id: string) => {
     if (!firestore) return;
-    try {
-      await deleteDoc(doc(firestore, 'reminders', id));
-      toast({ title: 'Lembrete removido.' });
-    } catch (e) {
-      toast({ variant: 'destructive', title: 'Erro ao remover lembrete' });
-    }
+    deleteDoc(doc(firestore, 'reminders', id))
+      .catch(async () => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: `reminders/${id}`,
+          operation: 'delete'
+        }));
+      });
   };
 
-  const handleFormSubmit = async (data: any) => {
+  const handleFormSubmit = (data: any) => {
     if (!firestore || !user) return;
     
     const reminderId = selectedReminder?.id || doc(collection(firestore, 'reminders')).id;
@@ -98,18 +102,24 @@ export default function AgendaPage() {
       createdAt: selectedReminder?.createdAt || new Date().toISOString(),
     };
 
-    try {
-      await setDoc(doc(firestore, 'reminders', reminderId), reminderData);
-      setIsDialogOpen(false);
-      toast({ title: 'Lembrete salvo com sucesso!' });
-    } catch (e: any) {
-      console.error("Erro técnico ao salvar lembrete:", e);
-      toast({ 
-        variant: 'destructive', 
-        title: 'Erro ao salvar lembrete',
-        description: e.message || 'Verifique sua conexão ou permissões.'
+    setDoc(doc(firestore, 'reminders', reminderId), reminderData)
+      .then(() => {
+        setIsDialogOpen(false);
+        toast({ title: 'Lembrete salvo com sucesso!' });
+      })
+      .catch(async (err) => {
+        const pError = new FirestorePermissionError({
+          path: `reminders/${reminderId}`,
+          operation: 'write',
+          requestResourceData: reminderData
+        });
+        errorEmitter.emit('permission-error', pError);
+        toast({ 
+          variant: 'destructive', 
+          title: 'Erro ao salvar', 
+          description: 'Verifique suas permissões de acesso.' 
+        });
       });
-    }
   };
 
   const getStatusBadge = (dueDate: string, status: string) => {
