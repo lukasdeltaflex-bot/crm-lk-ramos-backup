@@ -8,7 +8,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { collection, query, where, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import type { Reminder, Customer } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Calendar as CalendarIcon, CheckCircle2, Circle, Trash2, User, Loader2 } from 'lucide-react';
+import { PlusCircle, Calendar as CalendarIcon, CheckCircle2, Circle, Trash2, User } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ReminderForm } from './reminder-form';
 import { format, isBefore, isToday, parseISO, startOfDay } from 'date-fns';
@@ -106,7 +106,7 @@ export default function AgendaPage() {
     setIsCustomerSearchOpen(false);
   };
 
-  const handleFormSubmit = async (data: any) => {
+  const handleFormSubmit = (data: any) => {
     if (!firestore || !user) return;
     
     setIsSaving(true);
@@ -124,19 +124,22 @@ export default function AgendaPage() {
       createdAt: selectedReminder?.createdAt || new Date().toISOString(),
     };
 
-    try {
-        await setDoc(doc(firestore, 'reminders', reminderId), reminderData, { merge: true });
+    // SALVAMENTO NÃO-BLOQUEANTE: Fecha o modal e atualiza a UI instantaneamente
+    setDoc(doc(firestore, 'reminders', reminderId), reminderData, { merge: true })
+      .then(() => {
         toast({ title: 'Lembrete Salvo!', description: 'Sua agenda foi atualizada.' });
-        setIsDialogOpen(false);
-    } catch (e) {
+      })
+      .catch(async () => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: `reminders/${reminderId}`,
           operation: 'write',
           requestResourceData: reminderData
         }));
-    } finally {
-        setIsSaving(false);
-    }
+      });
+
+    // Feedback imediato ao usuário
+    setIsDialogOpen(false);
+    setIsSaving(false);
   };
 
   const getStatusBadge = (dueDate: string, status: string) => {

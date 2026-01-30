@@ -7,14 +7,13 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Verifica se o usuário é dono do dado (Clientes/Propostas)
-    function isDataOwner(data) {
-      return signedIn() && data.ownerId == request.auth.uid;
-    }
-    
-    // Verifica se o usuário é dono do lembrete (Agenda)
-    function isReminderOwner(data) {
-      return signedIn() && data.userId == request.auth.uid;
+    // Regra universal de propriedade: o usuário logado deve ser o dono do dado
+    function isOwner(data) {
+      return signedIn() && (
+        (data.userId == request.auth.uid) || 
+        (data.ownerId == request.auth.uid) ||
+        (data.uid == request.auth.uid)
+      );
     }
 
     match /users/{userId} {
@@ -23,22 +22,20 @@ service cloud.firestore {
 
     match /customers/{customerId} {
       allow read, write: if signedIn() && (
-        (resource == null || isDataOwner(resource.data)) &&
-        (request.resource == null || isDataOwner(request.resource.data))
+        (resource == null || isOwner(resource.data)) &&
+        (request.resource == null || isOwner(request.resource.data))
       );
     }
 
     match /loanProposals/{proposalId} {
       allow read, write: if signedIn() && (
-        (resource == null || isDataOwner(resource.data)) &&
-        (request.resource == null || isDataOwner(request.resource.data))
+        (resource == null || isOwner(resource.data)) &&
+        (request.resource == null || isOwner(request.resource.data))
       );
     }
 
-    // Regras simplificadas para Lembretes para evitar erros de permissão em massa
     match /reminders/{reminderId} {
-      allow read: if signedIn() && (resource == null || resource.data.userId == request.auth.uid);
-      allow write: if signedIn() && (
+      allow read, write: if signedIn() && (
         (resource == null && request.resource.data.userId == request.auth.uid) ||
         (resource != null && resource.data.userId == request.auth.uid)
       );
