@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -63,15 +62,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, X } from 'lucide-react';
+import { ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, X, Search, Calendar as CalendarIcon } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { proposalStatuses } from '@/lib/config-data';
 import type { ProposalStatus, Proposal } from '@/lib/types';
 import { DraggableHeader } from './columns';
 import type { ProposalWithCustomer } from './page';
 import { Separator } from '@/components/ui/separator';
-import { formatCurrency, calculateBusinessDays } from '@/lib/utils';
-import { parse, isValid } from 'date-fns';
+import { formatCurrency, calculateBusinessDays, normalizeString } from '@/lib/utils';
+import { parse, isValid, startOfDay, endOfDay, subDays, startOfMonth, subMonths, endOfMonth } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 
@@ -198,6 +197,38 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     }
   };
 
+  const applyRange = (range: 'today' | 'yesterday' | 'week' | 'month' | 'lastMonth') => {
+    const now = new Date();
+    let from: Date;
+    let to: Date = now;
+
+    switch (range) {
+        case 'today':
+            from = startOfDay(now);
+            break;
+        case 'yesterday':
+            from = startOfDay(subDays(now, 1));
+            to = endOfDay(subDays(now, 1));
+            break;
+        case 'week':
+            from = startOfDay(subDays(now, 7));
+            break;
+        case 'month':
+            from = startOfMonth(now);
+            break;
+        case 'lastMonth':
+            from = startOfMonth(subMonths(now, 1));
+            to = endOfMonth(subMonths(now, 1));
+            break;
+        default:
+            return;
+    }
+
+    setStartDateInput(parse(from.toISOString(), "yyyy-MM-dd", new Date()).toLocaleDateString('pt-BR'));
+    setEndDateInput(parse(to.toISOString(), "yyyy-MM-dd", new Date()).toLocaleDateString('pt-BR'));
+    setAppliedDateRange({ from, to });
+  };
+
   const handleApplyFilter = () => {
     const startDate = parse(startDateInput, 'dd/MM/yyyy', new Date());
     const endDate = parse(endDateInput, 'dd/MM/yyyy', new Date());
@@ -268,7 +299,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
       pagination,
     },
     globalFilterFn: (row, columnId, filterValue) => {
-        const searchTerm = String(filterValue ?? '').trim();
+        const searchTerm = normalizeString(String(filterValue ?? ''));
     
         if (!searchTerm) {
           return true;
@@ -276,35 +307,28 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     
         const proposal = row.original;
         const customer = proposal.customer;
-        const lowerCaseSearchTerm = searchTerm.toLowerCase();
-
-        // Exact match for customer ID if search is purely numeric
+        
+        // Exact match for customer ID or Numeric ID
         if (/^\d+$/.test(searchTerm)) {
-            if (customer && String(customer.numericId) === searchTerm) {
-                return true;
-            }
+            if (customer && String(customer.numericId) === searchTerm) return true;
         }
 
-        // Substring search on various fields
-        if (proposal.proposalNumber?.toLowerCase().includes(lowerCaseSearchTerm)) {
-            return true;
-        }
+        const fieldsToSearch = [
+            proposal.proposalNumber,
+            proposal.product,
+            proposal.promoter,
+            proposal.bank,
+            proposal.operator,
+            customer?.name,
+            customer?.cpf,
+            customer?.city,
+            customer?.state
+        ];
 
-        if (customer && customer.name.toLowerCase().includes(lowerCaseSearchTerm)) {
-            return true;
-        }
-
-        if (proposal.promoter?.toLowerCase().includes(lowerCaseSearchTerm)) {
-          return true;
-        }
-    
-        // Digit-based search for CPF
-        const searchDigits = searchTerm.replace(/\D/g, '');
-        if (searchDigits && customer && customer.cpf?.replace(/\D/g, '').includes(searchDigits)) {
-            return true;
-        }
-    
-        return false;
+        return fieldsToSearch.some(field => {
+            if (!field) return false;
+            return normalizeString(field).includes(searchTerm);
+        });
       },
   });
   
@@ -402,32 +426,51 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     </TabsList>
                 </Tabs>
                 <div className="flex items-center gap-2 flex-wrap">
-                    <Input 
-                        placeholder="Data Início" 
-                        value={startDateInput}
-                        onChange={(e) => handleDateInputChange(e.target.value, 'start')}
-                        maxLength={10}
-                        className="h-9 w-32"
-                    />
-                    <Input 
-                        placeholder="Data Fim" 
-                        value={endDateInput}
-                        onChange={(e) => handleDateInputChange(e.target.value, 'end')}
-                        maxLength={10}
-                        className="h-9 w-32"
-                    />
+                    <Select onValueChange={(val) => applyRange(val as any)}>
+                        <SelectTrigger className='w-[140px] h-9'>
+                            <CalendarIcon className='mr-2 h-4 w-4' />
+                            <SelectValue placeholder="Período" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="today">Hoje</SelectItem>
+                            <SelectItem value="yesterday">Ontem</SelectItem>
+                            <SelectItem value="week">Últimos 7 dias</SelectItem>
+                            <SelectItem value="month">Mês Atual</SelectItem>
+                            <SelectItem value="lastMonth">Mês Passado</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <div className="flex items-center gap-1">
+                        <Input 
+                            placeholder="De" 
+                            value={startDateInput}
+                            onChange={(e) => handleDateInputChange(e.target.value, 'start')}
+                            maxLength={10}
+                            className="h-9 w-28"
+                        />
+                        <span className='text-muted-foreground'>-</span>
+                        <Input 
+                            placeholder="Até" 
+                            value={endDateInput}
+                            onChange={(e) => handleDateInputChange(e.target.value, 'end')}
+                            maxLength={10}
+                            className="h-9 w-28"
+                        />
+                    </div>
                     <Button size="sm" onClick={handleApplyFilter}><Filter className="h-4 w-4" /> Aplicar</Button>
                     {(startDateInput || endDateInput || appliedDateRange) && <Button variant="ghost" size="icon" className="h-9 w-9" onClick={clearDates}><X className="h-4 w-4" /></Button>}
                 </div>
             </div>
             <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-2 flex-grow">
-                <Input
-                placeholder="Filtrar por cliente, CPF, proposta ou promotora..."
-                value={globalFilter ?? ''}
-                onChange={(event) => setGlobalFilter(event.target.value)}
-                className="w-full"
-                />
+                <div className='relative w-full max-w-md'>
+                    <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+                    <Input
+                    placeholder="Filtrar por cliente, CPF, proposta, promotora ou operador..."
+                    value={globalFilter ?? ''}
+                    onChange={(event) => setGlobalFilter(event.target.value)}
+                    className="pl-9 w-full"
+                    />
+                </div>
                 {selectedRowCount > 0 && (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -519,7 +562,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                         colSpan={columns.length}
                         className="h-24 text-center"
                     >
-                        Nenhum resultado.
+                        Nenhum resultado para os filtros aplicados.
                     </TableCell>
                     </TableRow>
                 )}

@@ -26,6 +26,17 @@ export function getAge(birthDate: string): number {
 }
 
 /**
+ * Normalizes a string for searching by removing accents and converting to lowercase.
+ */
+export function normalizeString(str: string): string {
+  if (!str) return '';
+  return str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+/**
  * Checks if a phone number is likely a WhatsApp number.
  */
 export function isWhatsApp(phone: string): boolean {

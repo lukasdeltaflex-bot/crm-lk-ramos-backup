@@ -1,4 +1,3 @@
-
 'use client';
 import React from 'react';
 import { AppLayout } from '@/components/app-layout';
@@ -19,8 +18,9 @@ import {
   Filter,
   XCircle,
   CheckCircle2,
+  Calendar as CalendarIcon
 } from 'lucide-react';
-import { format, parse, startOfMonth, endOfMonth, isValid } from 'date-fns';
+import { format, parse, startOfMonth, endOfMonth, isValid, startOfDay, subDays, endOfDay, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency, cn } from '@/lib/utils';
 import type { Proposal, ProposalStatus, Customer, UserProfile } from '@/lib/types';
@@ -39,6 +39,14 @@ import { Input } from '@/components/ui/input';
 import { DailySummary } from '@/components/summary/daily-summary';
 import { GoalCard } from '@/components/dashboard/goal-card';
 import { ProductBreakdownChart } from '@/components/dashboard/product-breakdown-chart';
+import { Separator } from '@/components/ui/separator';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 export default function DashboardPage() {
   const [startDateInput, setStartDateInput] = React.useState('');
@@ -87,6 +95,38 @@ export default function DashboardPage() {
     } else {
       setEndDateInput(formattedValue);
     }
+  };
+
+  const applyRange = (range: 'today' | 'yesterday' | 'week' | 'month' | 'lastMonth') => {
+    const now = new Date();
+    let from: Date;
+    let to: Date = now;
+
+    switch (range) {
+        case 'today':
+            from = startOfDay(now);
+            break;
+        case 'yesterday':
+            from = startOfDay(subDays(now, 1));
+            to = endOfDay(subDays(now, 1));
+            break;
+        case 'week':
+            from = startOfDay(subDays(now, 7));
+            break;
+        case 'month':
+            from = startOfMonth(now);
+            break;
+        case 'lastMonth':
+            from = startOfMonth(subMonths(now, 1));
+            to = endOfMonth(subMonths(now, 1));
+            break;
+        default:
+            return;
+    }
+
+    setStartDateInput(parse(from.toISOString(), "yyyy-MM-dd", new Date()).toLocaleDateString('pt-BR'));
+    setEndDateInput(parse(to.toISOString(), "yyyy-MM-dd", new Date()).toLocaleDateString('pt-BR'));
+    setAppliedDateRange({ from, to });
   };
 
   const handleApplyFilter = () => {
@@ -227,25 +267,47 @@ export default function DashboardPage() {
                 <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
                 <p className='text-base text-muted-foreground'>{getFilterDescription()}</p>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-                <Input 
-                    placeholder="Data Início" 
-                    value={startDateInput}
-                    onChange={(e) => handleDateInputChange(e.target.value, 'start')}
-                    maxLength={10}
-                    className="h-9 w-32"
-                />
-                <Input 
-                    placeholder="Data Fim" 
-                    value={endDateInput}
-                    onChange={(e) => handleDateInputChange(e.target.value, 'end')}
-                    maxLength={10}
-                    className="h-9 w-32"
-                />
-                <Button size="sm" onClick={handleApplyFilter}><Filter className="h-4 w-4" /> Aplicar</Button>
-                {(startDateInput || endDateInput || appliedDateRange) && <Button variant="ghost" size="icon" className="h-9 w-9" onClick={clearDates}><X className="h-4 w-4" /></Button>}
-                <Button variant="ghost" size="icon" onClick={() => setIsPrivacyMode(!isPrivacyMode)}>
-                {isPrivacyMode ? <EyeOff /> : <Eye />}
+            <div className="flex items-center gap-2 flex-wrap bg-card p-2 rounded-lg border shadow-sm">
+                <Select onValueChange={(val) => applyRange(val as any)}>
+                    <SelectTrigger className='w-[140px] h-9 border-none shadow-none focus:ring-0'>
+                        <CalendarIcon className='mr-2 h-4 w-4 text-primary' />
+                        <SelectValue placeholder="Período" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="today">Hoje</SelectItem>
+                        <SelectItem value="yesterday">Ontem</SelectItem>
+                        <SelectItem value="week">Últimos 7 dias</SelectItem>
+                        <SelectItem value="month">Mês Atual</SelectItem>
+                        <SelectItem value="lastMonth">Mês Passado</SelectItem>
+                    </SelectContent>
+                </Select>
+                <Separator orientation="vertical" className="h-6 mx-1 hidden sm:block" />
+                <div className="flex items-center gap-1">
+                    <Input 
+                        placeholder="De" 
+                        value={startDateInput}
+                        onChange={(e) => handleDateInputChange(e.target.value, 'start')}
+                        maxLength={10}
+                        className="h-9 w-28 border-none shadow-none focus-visible:ring-1"
+                    />
+                    <span className='text-muted-foreground'>-</span>
+                    <Input 
+                        placeholder="Até" 
+                        value={endDateInput}
+                        onChange={(e) => handleDateInputChange(e.target.value, 'end')}
+                        maxLength={10}
+                        className="h-9 w-28 border-none shadow-none focus-visible:ring-1"
+                    />
+                </div>
+                <Button size="sm" onClick={handleApplyFilter} className='h-8'><Filter className="h-3.5 w-3.5 mr-1" /> Filtrar</Button>
+                {(startDateInput || endDateInput || appliedDateRange) && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={clearDates}>
+                        <X className="h-4 w-4" />
+                    </Button>
+                )}
+                <Separator orientation="vertical" className="h-6 mx-1 hidden sm:block" />
+                <Button variant="ghost" size="icon" className='h-8 w-8' onClick={() => setIsPrivacyMode(!isPrivacyMode)}>
+                    {isPrivacyMode ? <EyeOff className='h-4 w-4' /> : <Eye className='h-4 w-4' />}
                 </Button>
             </div>
         </div>

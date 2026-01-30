@@ -53,11 +53,12 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DraggableHeader } from './columns';
 import type { Customer } from '@/lib/types';
+import { normalizeString } from '@/lib/utils';
 
 const STORAGE_KEY_VISIBILITY = 'lk-ramos-customer-columns-visibility-v3';
 const STORAGE_KEY_ORDER = 'lk-ramos-customer-columns-order-v3';
@@ -201,7 +202,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
       pagination,
     },
     globalFilterFn: (row, columnId, filterValue) => {
-        const searchTerm = String(filterValue ?? '').trim();
+        const searchTerm = normalizeString(String(filterValue ?? ''));
 
         if (!searchTerm) {
           return true;
@@ -209,39 +210,28 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
     
         const customer = row.original;
         
-        const isNumericSearch = /^\d+$/.test(searchTerm);
-    
-        if (isNumericSearch) {
-            // If the search is numeric, it's an ID search.
-            // Compare it EXCLUSIVELY and EXACTLY with the customer's numericId.
-            return String(customer.numericId) === searchTerm;
+        // Match exact numeric ID if searching for just a number
+        if (/^\d+$/.test(searchTerm)) {
+            if (String(customer.numericId) === searchTerm) return true;
         } 
         
-        // If it's NOT a numeric search, it's a text search.
-        const lowerCaseSearchTerm = searchTerm.toLowerCase();
-    
-        if (customer.name.toLowerCase().includes(lowerCaseSearchTerm)) {
-            return true;
-        }
-        
-        if (customer.benefits?.some(benefit => benefit.number.toLowerCase().includes(lowerCaseSearchTerm))) {
-            return true;
-        }
-    
-        const searchDigits = searchTerm.replace(/\D/g, '');
-        if (searchDigits) {
-            if (customer.cpf?.replace(/\D/g, '').includes(searchDigits)) {
-                return true;
-            }
-            if (customer.phone?.replace(/\D/g, '').includes(searchDigits)) {
-                return true;
-            }
-            if (customer.phone2 && customer.phone2.replace(/\D/g, '').includes(searchDigits)) {
-                return true;
-            }
-        }
-    
-        return false;
+        // Search fields with normalization
+        const fieldsToSearch = [
+            customer.name,
+            customer.cpf,
+            customer.phone,
+            customer.phone2,
+            customer.city,
+            customer.state,
+            customer.email,
+            customer.observations,
+            ...(customer.benefits?.map(b => b.number) || [])
+        ];
+
+        return fieldsToSearch.some(field => {
+            if (!field) return false;
+            return normalizeString(field).includes(searchTerm);
+        });
       },
   });
 
@@ -269,14 +259,17 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
       <Card>
         <div className="p-4">
           <div className="flex items-center justify-between py-4">
-            <Input
-              placeholder="Filtrar por ID, nome, CPF, telefone ou benefício..."
-              value={globalFilter ?? ''}
-              onChange={(event) =>
-                setGlobalFilter(event.target.value)
-              }
-              className="max-w-sm"
-            />
+            <div className='relative w-full max-w-sm'>
+                <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+                <Input
+                placeholder="Busca inteligente (nome, CPF, ID, telefone...)"
+                value={globalFilter ?? ''}
+                onChange={(event) =>
+                    setGlobalFilter(event.target.value)
+                }
+                className="pl-9 w-full"
+                />
+            </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="ml-auto">
