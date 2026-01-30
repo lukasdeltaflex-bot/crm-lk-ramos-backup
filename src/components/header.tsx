@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -23,6 +22,7 @@ import { doc } from 'firebase/firestore';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LiveClock } from './dashboard/live-clock';
 import { NotificationBell } from './notifications/notification-bell';
+import { GlobalSearch } from './global-search';
 
 export function Header({ className }: { className?: string }) {
   const auth = useAuth();
@@ -67,8 +67,13 @@ export function Header({ className }: { className?: string }) {
   return (
     <header className={cn("flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6", className)}>
       <SidebarTrigger />
-      <div className="w-full flex-1">
-        <LiveClock />
+      <div className="flex-1 flex items-center gap-4">
+        <div className="hidden md:block">
+            <LiveClock />
+        </div>
+        <div className="flex-1 flex justify-center max-w-md mx-auto">
+            <GlobalSearch />
+        </div>
       </div>
       <div className="flex items-center gap-2">
         <NotificationBell />
