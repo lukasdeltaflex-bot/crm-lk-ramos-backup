@@ -52,8 +52,11 @@ export function NotificationBell() {
 
   const remindersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    // Query simplificada para validar acesso à collection root /reminders
-    return query(collection(firestore, 'reminders'));
+    // CRÍTICO: O filtro 'where' deve bater exatamente com a regra de segurança para permitir a listagem
+    return query(
+      collection(firestore, 'reminders'),
+      where('userId', '==', user.uid)
+    );
   }, [firestore, user]);
 
   const { data: customers } = useCollection<Customer>(customersQuery);
@@ -96,22 +99,24 @@ export function NotificationBell() {
       }
     });
 
-    // Lembretes da Agenda (Filtro manual no cliente)
-    reminders?.filter(r => r.status === 'pending' && r.userId === user?.uid).forEach(r => {
-        const dDate = parseISO(r.dueDate);
-        if (isToday(dDate) || isBefore(dDate, now)) {
-            alerts.push({
-                id: `rem-${r.id}`,
-                title: `Retorno: ${r.title}`,
-                type: 'reminder',
-                date: isToday(dDate) ? 'Hoje' : 'Atrasado',
-                link: '/agenda'
-            });
+    // Lembretes da Agenda
+    reminders?.forEach(r => {
+        if (r.status === 'pending') {
+            const dDate = parseISO(r.dueDate);
+            if (isToday(dDate) || isBefore(dDate, now)) {
+                alerts.push({
+                    id: `rem-${r.id}`,
+                    title: `Retorno: ${r.title}`,
+                    type: 'reminder',
+                    date: isToday(dDate) ? 'Hoje' : 'Atrasado',
+                    link: '/agenda'
+                });
+            }
         }
     });
 
     return alerts;
-  }, [customers, proposals, reminders, isClient, user]);
+  }, [customers, proposals, reminders, isClient]);
 
   const visibleNotifications = React.useMemo(() => {
     return notifications.filter(n => !dismissedIds.includes(n.id));
