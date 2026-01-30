@@ -1,3 +1,4 @@
+
 'use client';
 import React from 'react';
 import { useParams } from 'next/navigation';
@@ -8,7 +9,7 @@ import { doc, collection, query, where } from 'firebase/firestore';
 import type { Customer, Proposal } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Phone, Mail, Calendar, FileText, CircleDollarSign, BadgePercent, MapPin, Hash, Copy, Printer } from 'lucide-react';
+import { User, Phone, Mail, Calendar, FileText, CircleDollarSign, BadgePercent, MapPin, Hash, Copy, Printer, FileBadge } from 'lucide-react';
 import { format, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
@@ -42,7 +43,7 @@ const CopyButton = ({ text, label }: { text: string; label: string }) => {
     );
 }
 
-const CustomerInfoCard = ({ customer }: { customer: Customer }) => {
+const CustomerInfoCard = ({ customer, onExportDossier }: { customer: Customer; onExportDossier: () => void }) => {
     const [age, setAge] = React.useState<number | null>(null);
 
     React.useEffect(() => {
@@ -63,12 +64,16 @@ const CustomerInfoCard = ({ customer }: { customer: Customer }) => {
                         </div>
                     </div>
                     <div className="flex items-center gap-2 print:hidden">
+                        <Button variant="outline" onClick={onExportDossier}>
+                            <FileBadge className="mr-2 h-4 w-4" />
+                            Dossiê (PDF)
+                        </Button>
                         <Button variant="outline" onClick={() => window.print()}>
                             <Printer className="mr-2 h-4 w-4" />
                             Imprimir Ficha
                         </Button>
                         <Link href="/customers">
-                            <Button variant="outline">Voltar para Clientes</Button>
+                            <Button variant="outline">Voltar</Button>
                         </Link>
                     </div>
                 </div>
@@ -243,6 +248,77 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
   const { data: customer, isLoading: isCustomerLoading } = useDoc<Customer>(customerDocRef);
   const { data: proposals, isLoading: areProposalsLoading } = useCollection<Proposal>(proposalsQuery);
 
+  const handleExportDossier = async () => {
+    if (!customer || !proposals) return;
+
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(22);
+    doc.setTextColor(40, 74, 127);
+    doc.text("Dossiê do Cliente", 14, 20);
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 28);
+    
+    doc.setDrawColor(40, 74, 127);
+    doc.line(14, 32, 196, 32);
+
+    // Section: Personal Data
+    doc.setFontSize(14);
+    doc.setTextColor(0);
+    doc.text("Informações Pessoais", 14, 42);
+    
+    autoTable(doc, {
+        startY: 45,
+        body: [
+            ['Nome Completo', customer.name],
+            ['CPF', customer.cpf],
+            ['Nascimento', format(parse(customer.birthDate, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy')],
+            ['Telefone', customer.phone],
+            ['E-mail', customer.email || 'N/A'],
+            ['Cidade/UF', `${customer.city || '-'} / ${customer.state || '-'}`],
+            ['Endereço', `${customer.street || '-'}, ${customer.number || '-'} ${customer.complement ? '(' + customer.complement + ')' : ''}`],
+        ],
+        theme: 'plain',
+        styles: { fontSize: 10 },
+        columnStyles: { 0: { fontStyle: 'bold', width: 40 } }
+    });
+
+    // Section: Benefits
+    if (customer.benefits && customer.benefits.length > 0) {
+        doc.text("Benefícios Cadastrados", 14, (doc as any).lastAutoTable.finalY + 15);
+        autoTable(doc, {
+            startY: (doc as any).lastAutoTable.finalY + 18,
+            head: [['Número do Benefício', 'Espécie']],
+            body: customer.benefits.map(b => [b.number, b.species || '-']),
+            headStyles: { fillColor: [40, 74, 127] }
+        });
+    }
+
+    // Section: Proposal History
+    doc.text("Histórico de Propostas", 14, (doc as any).lastAutoTable.finalY + 15);
+    autoTable(doc, {
+        startY: (doc as any).lastAutoTable.finalY + 18,
+        head: [['Nº Proposta', 'Produto', 'Status', 'Valor Bruto', 'Data']],
+        body: proposals.map(p => [
+            p.proposalNumber,
+            p.product,
+            p.status,
+            formatCurrency(p.grossAmount),
+            format(new Date(p.dateDigitized), 'dd/MM/yyyy')
+        ]),
+        headStyles: { fillColor: [40, 74, 127] },
+        styles: { fontSize: 9 }
+    });
+
+    doc.save(`Dossie_${customer.name.replace(/\s+/g, '_')}.pdf`);
+    toast({ title: "Dossiê Gerado!", description: "O PDF foi baixado com sucesso." });
+  };
+
   const isLoading = isCustomerLoading || areProposalsLoading;
 
   if (isLoading) {
@@ -280,7 +356,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
                 LK RAMOS Gestão de Propostas - Gerado em: {format(new Date(), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
             </p>
         </div>
-        <CustomerInfoCard customer={customer} />
+        <CustomerInfoCard customer={customer} onExportDossier={handleExportDossier} />
         <div className="print:hidden">
             <CustomerAiSummary customer={customer} proposals={proposals || []} />
         </div>

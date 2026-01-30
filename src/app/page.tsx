@@ -1,3 +1,4 @@
+
 'use client';
 import React from 'react';
 import { AppLayout } from '@/components/app-layout';
@@ -37,6 +38,7 @@ import { DateRange } from 'react-day-picker';
 import { Input } from '@/components/ui/input';
 import { DailySummary } from '@/components/summary/daily-summary';
 import { GoalCard } from '@/components/dashboard/goal-card';
+import { ProductBreakdownChart } from '@/components/dashboard/product-breakdown-chart';
 
 export default function DashboardPage() {
   const [startDateInput, setStartDateInput] = React.useState('');
@@ -307,23 +309,29 @@ export default function DashboardPage() {
             <CommissionChart proposals={proposals || []} />
           </div>
           <div className="lg:col-span-1">
-            {isLoading ? (
-                <div className="space-y-4">
-                    <Skeleton className="h-4 w-1/4" />
-                    <Skeleton className="h-20 w-full" />
-                    <Skeleton className="h-20 w-full" />
-                </div>
-            ) : (
-                <DailySummary 
-                    proposals={proposals || []}
-                    customers={customers || []}
-                    userProfile={userProfile}
-                />
-            )}
+            <ProductBreakdownChart proposals={filteredProposals} />
           </div>
         </div>
-        <div>
-          <RecentProposals proposals={proposals || []} customers={customers || []} isLoading={isLoading}/>
+
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+                <RecentProposals proposals={proposals || []} customers={customers || []} isLoading={isLoading}/>
+            </div>
+            <div className="lg:col-span-1">
+                {isLoading ? (
+                    <div className="space-y-4">
+                        <Skeleton className="h-4 w-1/4" />
+                        <Skeleton className="h-20 w-full" />
+                        <Skeleton className="h-20 w-full" />
+                    </div>
+                ) : (
+                    <DailySummary 
+                        proposals={proposals || []}
+                        customers={customers || []}
+                        userProfile={userProfile}
+                    />
+                )}
+            </div>
         </div>
       </div>
     </AppLayout>

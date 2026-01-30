@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -21,6 +22,7 @@ import type { UserProfile } from '@/lib/types';
 import { doc } from 'firebase/firestore';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LiveClock } from './dashboard/live-clock';
+import { NotificationBell } from './notifications/notification-bell';
 
 export function Header({ className }: { className?: string }) {
   const auth = useAuth();
@@ -68,31 +70,34 @@ export function Header({ className }: { className?: string }) {
       <div className="w-full flex-1">
         <LiveClock />
       </div>
-      <ThemeToggle />
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="secondary" size="icon" className="rounded-full">
-            <Avatar>
-              <AvatarImage src={userProfile?.photoURL || ''} data-ai-hint="rosto de pessoa" />
-              <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
-            </Avatar>
-            <span className="sr-only">Alternar menu de usuário</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-           <Link href="/profile" passHref>
-            <DropdownMenuItem>Meu Perfil</DropdownMenuItem>
-          </Link>
-          <Link href="/settings" passHref>
-            <DropdownMenuItem>Configurações</DropdownMenuItem>
-          </Link>
-          <DropdownMenuItem>Suporte</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleSignOut}>Sair</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <div className="flex items-center gap-2">
+        <NotificationBell />
+        <ThemeToggle />
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+            <Button variant="secondary" size="icon" className="rounded-full">
+                <Avatar>
+                <AvatarImage src={userProfile?.photoURL || ''} data-ai-hint="rosto de pessoa" />
+                <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
+                </Avatar>
+                <span className="sr-only">Alternar menu de usuário</span>
+            </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <Link href="/profile" passHref>
+                <DropdownMenuItem>Meu Perfil</DropdownMenuItem>
+            </Link>
+            <Link href="/settings" passHref>
+                <DropdownMenuItem>Configurações</DropdownMenuItem>
+            </Link>
+            <DropdownMenuItem>Suporte</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleSignOut}>Sair</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </header>
   );
 }
