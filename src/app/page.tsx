@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import { AppLayout } from '@/components/app-layout';
+import { PageHeader } from '@/components/page-header';
 import { CommissionChart } from '@/components/dashboard/commission-chart';
 import { RecentProposals } from '@/components/dashboard/recent-proposals';
 import { StatsCard } from '@/components/dashboard/stats-card';
@@ -145,7 +146,7 @@ export default function DashboardPage() {
   const getProposalsByStatus = (list: Proposal[], statuses: ProposalStatus[]) => 
     list.filter((p) => statuses.includes(p.status));
 
-  // Meta baseada em Pago + Saldo Pago conforme combinado
+  // Meta baseada em Pago + Saldo Pago
   const pagoProposals = getProposalsByStatus(filteredProposals, ['Pago', 'Saldo Pago']);
   const currentTotalPago = getProposalsSum(pagoProposals);
 

@@ -3,39 +3,43 @@
 import { useEffect } from 'react';
 
 /**
- * Componente ultra-estável para resolver travamentos de interface.
- * Monitora o fechamento de modais e restaura a interatividade global.
+ * Componente de estabilização de interface.
+ * Monitora o fechamento de modais e garante que a interatividade da tela seja restaurada.
  */
 export function InteractionFixer() {
   useEffect(() => {
     if (typeof document === 'undefined') return;
 
     const forceCleanup = () => {
-      // Verifica se existem modais ou menus abertos
+      // Verifica se existem modais ou menus abertos no portal do Radix
       const activeOverlays = document.querySelectorAll('[data-radix-portal], [role="dialog"], [role="menu"], .fixed.inset-0');
       
-      // Se não houver sobreposições, limpamos travas de estilo
+      // Se não houver nada aberto, limpamos as travas do body e html
       if (activeOverlays.length === 0) {
-        document.body.style.pointerEvents = 'auto';
-        document.body.style.overflow = 'auto';
-        document.documentElement.style.pointerEvents = 'auto';
-        document.documentElement.style.overflow = 'auto';
+        const rootElements = [document.body, document.documentElement];
+        rootElements.forEach(el => {
+          el.style.pointerEvents = 'auto';
+          el.style.overflow = 'auto';
+          el.style.setProperty('pointer-events', 'auto', 'important');
+          el.style.setProperty('overflow', 'auto', 'important');
+        });
         document.body.classList.remove('pointer-events-none');
       }
     };
 
-    // Observer para capturar mudanças no DOM (fechamento de modais)
+    // Observer para capturar mudanças dinâmicas no DOM (abertura/fechamento de modais)
     const observer = new MutationObserver(forceCleanup);
     observer.observe(document.body, { childList: true, subtree: false });
 
-    // Eventos de clique para garantir destravamento manual
-    const handleEvents = () => setTimeout(forceCleanup, 100);
+    // Eventos de clique e teclado para garantir destravamento manual imediato
+    const handleEvents = () => setTimeout(forceCleanup, 50);
     window.addEventListener('mousedown', handleEvents);
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') handleEvents();
     });
 
-    const interval = setInterval(forceCleanup, 2000);
+    // Intervalo de segurança para casos raros onde o Observer não dispara
+    const interval = setInterval(forceCleanup, 1000);
 
     return () => {
       observer.disconnect();

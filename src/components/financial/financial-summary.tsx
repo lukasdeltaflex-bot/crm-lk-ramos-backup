@@ -28,7 +28,6 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
     commissionReceivedProposals,
     proposalsForSaldoAReceber,
     expectedCommissionProposals,
-    // Porcentagens baseadas no Total de Comissões para manter padrão do Dashboard
     paidPercentage,
     pendingPercentage,
     expectedPercentage
