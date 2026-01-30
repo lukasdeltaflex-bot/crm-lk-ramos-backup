@@ -1,7 +1,7 @@
+
 'use client';
 import React from 'react';
 import { AppLayout } from '@/components/app-layout';
-import { PageHeader } from '@/components/page-header';
 import { CommissionChart } from '@/components/dashboard/commission-chart';
 import { RecentProposals } from '@/components/dashboard/recent-proposals';
 import { StatsCard } from '@/components/dashboard/stats-card';
@@ -48,6 +48,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { AgendaSection } from '@/components/dashboard/agenda-section';
+import { LiveClock } from '@/components/dashboard/live-clock';
 
 export default function DashboardPage() {
   const [startDateInput, setStartDateInput] = React.useState('');
@@ -104,45 +106,24 @@ export default function DashboardPage() {
     let to: Date = now;
 
     switch (range) {
-        case 'today':
-            from = startOfDay(now);
-            break;
-        case 'yesterday':
-            from = startOfDay(subDays(now, 1));
-            to = endOfDay(subDays(now, 1));
-            break;
-        case 'week':
-            from = startOfDay(subDays(now, 7));
-            break;
-        case 'month':
-            from = startOfMonth(now);
-            break;
-        case 'lastMonth':
-            from = startOfMonth(subMonths(now, 1));
-            to = endOfMonth(subMonths(now, 1));
-            break;
-        default:
-            return;
+        case 'today': from = startOfDay(now); break;
+        case 'yesterday': from = startOfDay(subDays(now, 1)); to = endOfDay(subDays(now, 1)); break;
+        case 'week': from = startOfDay(subDays(now, 7)); break;
+        case 'month': from = startOfMonth(now); break;
+        case 'lastMonth': from = startOfMonth(subMonths(now, 1)); to = endOfMonth(subMonths(now, 1)); break;
+        default: return;
     }
 
-    setStartDateInput(parse(from.toISOString(), "yyyy-MM-dd", new Date()).toLocaleDateString('pt-BR'));
-    setEndDateInput(parse(to.toISOString(), "yyyy-MM-dd", new Date()).toLocaleDateString('pt-BR'));
+    setStartDateInput(from.toLocaleDateString('pt-BR'));
+    setEndDateInput(to.toLocaleDateString('pt-BR'));
     setAppliedDateRange({ from, to });
   };
 
   const handleApplyFilter = () => {
     const startDate = parse(startDateInput, 'dd/MM/yyyy', new Date());
     const endDate = parse(endDateInput, 'dd/MM/yyyy', new Date());
-
-    const isValidStart = isValid(startDate) && startDateInput.length === 10;
-    const isValidEnd = isValid(endDate) && endDateInput.length === 10;
-
-    if (isValidStart && isValidEnd) {
+    if (isValid(startDate) && isValid(endDate)) {
         setAppliedDateRange({ from: startDate, to: endDate });
-    } else if (isValidStart) {
-        setAppliedDateRange({ from: startDate, to: startDate });
-    } else {
-        setAppliedDateRange(undefined);
     }
   };
 
@@ -173,100 +154,17 @@ export default function DashboardPage() {
     }, 0);
   };
 
-  const getFilterDescription = () => {
-    if (!isClient) return "Carregando...";
-    if (appliedDateRange?.from) {
-        const from = format(appliedDateRange.from, 'dd/MM/yyyy', { locale: ptBR });
-        const to = appliedDateRange.to ? format(appliedDateRange.to, 'dd/MM/yyyy', { locale: ptBR }) : from;
-        return from === to ? `Exibindo: ${from}` : `De ${from} a ${to}`;
-    }
-    const monthName = format(new Date(), 'MMMM', { locale: ptBR });
-    return `Exibindo dados para o mês de ${monthName.charAt(0).toUpperCase() + monthName.slice(1)}`;
-  }
-  
   const currentTotalDigitado = getProposalsSum(filteredProposals);
-
-  const getProposalsByStatus = (list: Proposal[], statuses: ProposalStatus[]) => 
-    list.filter((p) => statuses.includes(p.status));
-
-  const pagoProposals = getProposalsByStatus(filteredProposals, ['Pago', 'Saldo Pago']);
+  const pagoProposals = filteredProposals.filter(p => ['Pago', 'Saldo Pago'].includes(p.status));
   const currentTotalPago = getProposalsSum(pagoProposals);
-
-  const pendenteProposals = getProposalsByStatus(filteredProposals, ['Pendente']);
-  const emAndamentoProposals = getProposalsByStatus(filteredProposals, ['Em Andamento']);
-  const aguardandoSaldoProposals = getProposalsByStatus(filteredProposals, ['Aguardando Saldo']);
-  const saldoPagoProposals = getProposalsByStatus(filteredProposals, ['Saldo Pago']);
-  const reprovadoProposals = getProposalsByStatus(filteredProposals, ['Reprovado']);
-
-  const getPercentage = (value: number) => {
-    if (currentTotalDigitado === 0) return 0;
-    return (value / currentTotalDigitado) * 100;
-  };
-
-  const cardData = [
-    {
-      title: 'Total Digitado',
-      value: currentTotalDigitado,
-      icon: FileText,
-      className: 'border-muted bg-muted/10',
-      valueClassName: 'text-foreground',
-      proposals: filteredProposals,
-      percentage: 100,
-    },
-    {
-      title: 'Pendente',
-      value: getProposalsSum(pendenteProposals),
-      icon: BadgePercent,
-      className: 'border-purple-500/30 bg-purple-500/5 dark:bg-purple-500/10',
-      valueClassName: 'text-purple-500',
-      proposals: pendenteProposals,
-      percentage: getPercentage(getProposalsSum(pendenteProposals)),
-    },
-    {
-      title: 'Em Andamento',
-      value: getProposalsSum(emAndamentoProposals),
-      icon: Hourglass,
-      className: 'border-yellow-500/30 bg-yellow-500/5 dark:bg-yellow-500/10',
-      valueClassName: 'text-yellow-500',
-      proposals: emAndamentoProposals,
-      percentage: getPercentage(getProposalsSum(emAndamentoProposals)),
-    },
-    {
-      title: 'Aguardando Saldo',
-      value: getProposalsSum(aguardandoSaldoProposals),
-      icon: Clock,
-      className: 'border-blue-500/30 bg-blue-500/5 dark:bg-blue-500/10',
-      valueClassName: 'text-blue-500',
-      proposals: aguardandoSaldoProposals,
-      percentage: getPercentage(getProposalsSum(aguardandoSaldoProposals)),
-    },
-    {
-      title: 'Saldo Pago',
-      value: getProposalsSum(saldoPagoProposals),
-      icon: CheckCircle2,
-      className: 'border-orange-500/30 bg-orange-500/5 dark:bg-orange-500/10',
-      valueClassName: 'text-orange-500',
-      proposals: saldoPagoProposals,
-      percentage: getPercentage(getProposalsSum(saldoPagoProposals)),
-    },
-    {
-      title: 'Reprovado',
-      value: getProposalsSum(reprovadoProposals),
-      icon: XCircle,
-      className: 'border-red-500/30 bg-red-500/5 dark:bg-red-500/10',
-      valueClassName: 'text-red-500',
-      proposals: reprovadoProposals,
-      percentage: getPercentage(getProposalsSum(reprovadoProposals)),
-    },
-  ];
 
   return (
     <AppLayout>
        <div className="space-y-4 mb-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex-1 min-w-fit">
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
-                <p className='text-base text-muted-foreground'>{getFilterDescription()}</p>
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">Olá, {userProfile?.displayName || 'Agente'}!</h1>
+                <div className="mt-1"><LiveClock /></div>
             </div>
             <div className="flex items-center gap-2 flex-wrap bg-card p-2 rounded-lg border shadow-sm">
                 <Select onValueChange={(val) => applyRange(val as any)}>
@@ -289,7 +187,7 @@ export default function DashboardPage() {
                         value={startDateInput}
                         onChange={(e) => handleDateInputChange(e.target.value, 'start')}
                         maxLength={10}
-                        className="h-9 w-28 border-none shadow-none focus-visible:ring-1"
+                        className="h-9 w-28 border-none shadow-none"
                     />
                     <span className='text-muted-foreground'>-</span>
                     <Input 
@@ -297,14 +195,12 @@ export default function DashboardPage() {
                         value={endDateInput}
                         onChange={(e) => handleDateInputChange(e.target.value, 'end')}
                         maxLength={10}
-                        className="h-9 w-28 border-none shadow-none focus-visible:ring-1"
+                        className="h-9 w-28 border-none shadow-none"
                     />
                 </div>
-                <Button size="sm" onClick={handleApplyFilter} className='h-8'><Filter className="h-3.5 w-3.5 mr-1" /> Filtrar</Button>
-                {(startDateInput || endDateInput || appliedDateRange) && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={clearDates}>
-                        <X className="h-4 w-4" />
-                    </Button>
+                <Button size="sm" onClick={handleApplyFilter} className='h-8'>Filtrar</Button>
+                {(startDateInput || appliedDateRange) && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={clearDates}><X className="h-4 w-4" /></Button>
                 )}
                 <Separator orientation="vertical" className="h-6 mx-1 hidden sm:block" />
                 <Button variant="ghost" size="icon" className='h-8 w-8' onClick={() => setIsPrivacyMode(!isPrivacyMode)}>
@@ -313,94 +209,42 @@ export default function DashboardPage() {
             </div>
         </div>
       </div>
-      <div className="space-y-8">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <div className="md:col-span-2 lg:col-span-3">
-            {isLoading ? (
-              <Card className="p-6">
-                <Skeleton className="h-5 w-48 mb-4" />
-                <Skeleton className="h-12 w-full" />
-              </Card>
-            ) : (
-              <GoalCard 
-                currentProduction={currentTotalPago} 
-                totalDigitized={currentTotalDigitado}
-                isPrivacyMode={isPrivacyMode}
-                onValueClick={() => setDialogData({ title: 'Contratos Pagos no Período', proposals: pagoProposals })}
-              />
-            )}
-          </div>
-          
-          {isLoading ? Array.from({length: 6}).map((_, i) => (
-             <Card key={i} className="p-6">
-                <Skeleton className="h-5 w-24 mb-4" />
-                <Skeleton className="h-8 w-32" />
-             </Card>
-          )) : cardData.map((card) => {
-                return (
-                  <div 
-                      key={card.title} 
-                      className="cursor-pointer" 
-                      onClick={() => setDialogData({ title: `Propostas: ${card.title}`, proposals: card.proposals})}
-                  >
-                      <StatsCard
-                        title={card.title}
-                        value={isPrivacyMode ? '•••••' : formatCurrency(card.value)}
-                        icon={card.icon}
-                        percentage={card.percentage}
-                        className={cn("h-full", card.className)}
-                        valueClassName={card.valueClassName}
-                      />
-                  </div>
-                )
-          })}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+            <div className="grid gap-4 md:grid-cols-2">
+                <GoalCard 
+                    currentProduction={currentTotalPago} 
+                    totalDigitized={currentTotalDigitado}
+                    isPrivacyMode={isPrivacyMode}
+                    className="md:col-span-2"
+                />
+                <StatsCard title="Total Digitado" value={isPrivacyMode ? '•••••' : formatCurrency(currentTotalDigitado)} icon={FileText} />
+                <StatsCard title="Contratos Pagos" value={isPrivacyMode ? '•••••' : formatCurrency(currentTotalPago)} icon={CheckCircle2} valueClassName="text-green-500" />
+            </div>
+            <CommissionChart proposals={proposals || []} />
+            <RecentProposals proposals={proposals || []} customers={customers || []} isLoading={isLoading}/>
         </div>
 
-        <Dialog open={!!dialogData} onOpenChange={(isOpen) => !isOpen && setDialogData(null)}>
+        <div className="lg:col-span-1 space-y-8">
+            <AgendaSection />
+            <DailySummary 
+                proposals={proposals || []}
+                customers={customers || []}
+                userProfile={userProfile}
+            />
+            <ProductBreakdownChart proposals={filteredProposals} />
+        </div>
+      </div>
+
+      <Dialog open={!!dialogData} onOpenChange={(isOpen) => !isOpen && setDialogData(null)}>
             <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
-                <DialogHeader>
-                    <DialogTitle>{dialogData?.title}</DialogTitle>
-                </DialogHeader>
+                <DialogHeader><DialogTitle>{dialogData?.title}</DialogTitle></DialogHeader>
                 <div className="flex-1 overflow-y-auto">
                     <ProposalsStatusTable proposals={dialogData?.proposals || []} customers={customers || []} />
                 </div>
             </DialogContent>
-        </Dialog>
-
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <CommissionChart proposals={proposals || []} />
-          </div>
-          <div className="lg:col-span-1">
-            <ProductBreakdownChart proposals={filteredProposals} />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-                <PartnerPerformanceCharts proposals={filteredProposals} />
-            </div>
-            <div className="lg:col-span-1">
-                {isLoading ? (
-                    <div className="space-y-4">
-                        <Skeleton className="h-4 w-1/4" />
-                        <Skeleton className="h-20 w-full" />
-                        <Skeleton className="h-20 w-full" />
-                    </div>
-                ) : (
-                    <DailySummary 
-                        proposals={proposals || []}
-                        customers={customers || []}
-                        userProfile={userProfile}
-                    />
-                )}
-            </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-8">
-            <RecentProposals proposals={proposals || []} customers={customers || []} isLoading={isLoading}/>
-        </div>
-      </div>
+      </Dialog>
     </AppLayout>
   );
 }
