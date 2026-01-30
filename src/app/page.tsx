@@ -2,7 +2,6 @@
 'use client';
 import React from 'react';
 import { AppLayout } from '@/components/app-layout';
-import { CommissionChart } from '@/components/dashboard/commission-chart';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from '@/firebase';
 import { collection, query, where, doc } from 'firebase/firestore';
@@ -34,7 +33,9 @@ import { ProposalsStatusTable } from '@/components/dashboard/proposals-status-ta
 import { DateRange } from 'react-day-picker';
 import { Input } from '@/components/ui/input';
 import { GoalCard } from '@/components/dashboard/goal-card';
-import { ProductBreakdownChart } from '@/components/dashboard/product-breakdown-chart';
+import { PartnerPerformanceCharts } from '@/components/dashboard/partner-performance-charts';
+import { DailySummary } from '@/components/summary/daily-summary';
+import { RecentProposals } from '@/components/dashboard/recent-proposals';
 import { Separator } from '@/components/ui/separator';
 import {
     Select,
@@ -64,13 +65,13 @@ export default function DashboardPage() {
     return query(collection(firestore, 'loanProposals'), where('ownerId', '==', user.uid));
   }, [firestore, user]);
 
-  const { data: proposals } = useCollection<Proposal>(proposalsQuery);
+  const { data: proposals, isLoading: proposalsLoading } = useCollection<Proposal>(proposalsQuery);
   
   const customersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return query(collection(firestore, 'customers'), where('ownerId', '==', user.uid));
   }, [firestore, user]);
-  const { data: customers } = useCollection<Customer>(customersQuery);
+  const { data: customers, isLoading: customersLoading } = useCollection<Customer>(customersQuery);
 
   const userProfileDocRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -285,11 +286,23 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-                <CommissionChart proposals={proposals || []} />
+                <PartnerPerformanceCharts proposals={filteredProposals} />
             </div>
             <div className="lg:col-span-1">
-                <ProductBreakdownChart proposals={filteredProposals} />
+                <DailySummary 
+                    proposals={proposals || []}
+                    customers={customers || []}
+                    userProfile={userProfile || null}
+                />
             </div>
+        </div>
+
+        <div className="w-full">
+            <RecentProposals 
+                proposals={proposals || []}
+                customers={customers || []}
+                isLoading={proposalsLoading || customersLoading}
+            />
         </div>
       </div>
 

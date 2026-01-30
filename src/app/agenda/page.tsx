@@ -6,7 +6,7 @@ import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Calendar as CalendarIcon, CheckCircle2, Circle, Trash2, User, Loader2, Search } from 'lucide-react';
+import { PlusCircle, Calendar as CalendarIcon, CheckCircle2, Circle, Trash2, User, Search } from 'lucide-react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import type { Reminder, Customer } from '@/lib/types';
@@ -120,7 +120,7 @@ export default function AgendaPage() {
       setIsDialogOpen(false);
     } catch (err) {
       console.error(err);
-      toast({ variant: 'destructive', title: 'Erro ao salvar', description: 'Verifique as permissões do sistema.' });
+      toast({ variant: 'destructive', title: 'Erro ao salvar', description: 'O banco de dados negou a permissão ou ocorreu um erro de conexão.' });
     } finally {
       setIsSaving(false);
     }
