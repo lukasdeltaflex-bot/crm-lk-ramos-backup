@@ -134,7 +134,7 @@ export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onV
                 </p>
               )}
               <p className="text-muted-foreground">
-                Cálculo baseado em status: <strong>Pago</strong>
+                Cálculo baseado em status: <strong>Pago + Saldo Pago</strong>
               </p>
             </div>
           </div>

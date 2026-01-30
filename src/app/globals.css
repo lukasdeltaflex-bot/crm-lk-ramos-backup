@@ -67,7 +67,7 @@
   }
 }
 
-/* Forçagem de Temas Customizados para vigência total em ambos os modos */
+/* Temas Customizados */
 .theme-padrão { --primary: 217 33% 25% !important; --ring: 217 33% 25% !important; }
 .theme-zinc { --primary: 240 5.9% 10% !important; --ring: 240 5.9% 10% !important; }
 .theme-blue { --primary: 217.2 91.2% 59.8% !important; --ring: 217.2 91.2% 59.8% !important; }
@@ -90,7 +90,7 @@
 .theme-peach { --primary: 29 100% 65% !important; --ring: 29 100% 65% !important; }
 .theme-slate { --primary: 215 25% 27% !important; --ring: 215 25% 27% !important; }
 
-/* Forçagem agressiva para o modo escuro */
+/* Ajustes no Modo Escuro */
 .dark .theme-padrão { --primary: 217 33% 30% !important; --ring: 217 33% 30% !important; }
 .dark .theme-zinc { --primary: 240 5.9% 90% !important; --ring: 240 5.9% 90% !important; }
 
@@ -99,7 +99,6 @@
   body { 
     @apply bg-background text-foreground;
     pointer-events: auto !important;
-    overflow: auto !important;
   }
 }
 

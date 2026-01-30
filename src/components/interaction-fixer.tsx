@@ -3,63 +3,44 @@
 import { useEffect } from 'react';
 
 /**
- * Componente utilitário ultra-robusto para resolver o bug de "tela travada" (pointer-events: none).
- * Ele monitora mudanças no DOM e interações para garantir que cliques sejam restaurados.
+ * Componente ultra-estável para resolver travamentos de interface.
+ * Monitora o fechamento de modais e restaura a interatividade global.
  */
 export function InteractionFixer() {
   useEffect(() => {
-    const forceCleanup = () => {
-      // Verifica se existem elementos de sobreposição ativos (Modais do Radix, menus, etc)
-      const overlays = document.querySelectorAll('[data-radix-portal], .fixed.inset-0, [role="dialog"], [role="menu"]');
-      
-      // Se não houver sobreposições visíveis, limpamos o corpo e o html da página agressivamente
-      if (overlays.length === 0) {
-        const resetStyles = (el: HTMLElement) => {
-          if (!el) return;
-          el.style.setProperty('pointer-events', 'auto', 'important');
-          el.style.setProperty('overflow', 'auto', 'important');
-          el.classList.remove('pointer-events-none');
-          el.removeAttribute('data-radix-scroll-lock');
-        };
+    if (typeof document === 'undefined') return;
 
-        resetStyles(document.body);
-        resetStyles(document.documentElement);
+    const forceCleanup = () => {
+      // Verifica se existem modais ou menus abertos
+      const activeOverlays = document.querySelectorAll('[data-radix-portal], [role="dialog"], [role="menu"], .fixed.inset-0');
+      
+      // Se não houver sobreposições, limpamos travas de estilo
+      if (activeOverlays.length === 0) {
+        document.body.style.pointerEvents = 'auto';
+        document.body.style.overflow = 'auto';
+        document.documentElement.style.pointerEvents = 'auto';
+        document.documentElement.style.overflow = 'auto';
+        document.body.classList.remove('pointer-events-none');
       }
     };
 
-    // Monitora mudanças na estrutura do DOM (abertura/fechamento de modais)
+    // Observer para capturar mudanças no DOM (fechamento de modais)
     const observer = new MutationObserver(forceCleanup);
+    observer.observe(document.body, { childList: true, subtree: false });
 
-    observer.observe(document.body, {
-      attributes: true,
-      childList: true,
-      subtree: false
-    });
-
-    // Eventos de redundância em interações comuns do usuário
-    const handleRelease = () => {
-      setTimeout(forceCleanup, 50);
-      setTimeout(forceCleanup, 300);
-    };
-
-    window.addEventListener('mousedown', handleRelease);
-    window.addEventListener('mouseup', handleRelease);
-    window.addEventListener('click', handleRelease);
-    window.addEventListener('touchstart', handleRelease);
+    // Eventos de clique para garantir destravamento manual
+    const handleEvents = () => setTimeout(forceCleanup, 100);
+    window.addEventListener('mousedown', handleEvents);
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') handleRelease();
+      if (e.key === 'Escape') handleEvents();
     });
 
-    // Check periódico de segurança contra travas residuais
-    const interval = setInterval(forceCleanup, 1000);
+    const interval = setInterval(forceCleanup, 2000);
 
     return () => {
       observer.disconnect();
       clearInterval(interval);
-      window.removeEventListener('mousedown', handleRelease);
-      window.removeEventListener('mouseup', handleRelease);
-      window.removeEventListener('click', handleRelease);
-      window.removeEventListener('touchstart', handleRelease);
+      window.removeEventListener('mousedown', handleEvents);
     };
   }, []);
 

@@ -28,7 +28,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
     commissionReceivedProposals,
     proposalsForSaldoAReceber,
     expectedCommissionProposals,
-    // Porcentagens baseadas no Total de Comissões
+    // Porcentagens baseadas no Total de Comissões para manter padrão do Dashboard
     paidPercentage,
     pendingPercentage,
     expectedPercentage
@@ -52,7 +52,6 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
         };
     }
 
-    // Volume Total (Base para o card 1 apenas como info)
     const totalDigitadoNoPeriodo = allProposalsInPeriod.reduce((sum, p) => {
       if (p.commissionBase === 'net') return sum + (p.netAmount || 0);
       return sum + (p.grossAmount || 0);
@@ -60,14 +59,14 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
 
     const validProposals = allProposalsInPeriod.filter(p => p.status !== 'Reprovado');
 
-    // 1. Comissão Total Potencial (A soma de todas as comissões de propostas válidas)
+    // 1. Comissão Total Potencial (Base 100%)
     const totalPotentialCommission = validProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
 
-    // 2. Comissão Recebida (Já paga)
+    // 2. Comissão Recebida
     const commissionReceivedProposals = validProposals.filter(p => p.commissionStatus === 'Paga');
     const totalAmountPaid = commissionReceivedProposals.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
     
-    // 3. Saldo a Receber (Propostas Pagas/Averbadas mas com comissão pendente ou parcial)
+    // 3. Saldo a Receber
     const proposalsForSaldoAReceber = validProposals.filter(p => {
         if (p.commissionStatus === 'Paga') return false;
         const isPago = p.status === 'Pago';
@@ -81,14 +80,13 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       return sum + (remaining > 0 ? remaining : 0);
     }, 0);
 
-    // 4. Comissão Esperada (Propostas em andamento que ainda não foram aprovadas/averbadas)
+    // 4. Comissão Esperada
     const expectedCommissionProposals = validProposals.filter(p => {
         const isAverbada = !!p.dateApproved;
         return !isAverbada && (p.status === 'Em Andamento' || p.status === 'Pendente' || p.status === 'Aguardando Saldo');
     });
     const expectedAmount = expectedCommissionProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
     
-    // Cálculo das porcentagens em relação ao Total de Comissões (Raciocínio do Dashboard)
     const getPercentage = (value: number) => {
         if (totalPotentialCommission === 0) return 0;
         return (value / totalPotentialCommission) * 100;
@@ -127,7 +125,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       title: "Comissão Recebida",
       value: formatCurrency(totalAmountPaid),
       icon: CheckCircle,
-      description: "Comissões com status 'Paga'",
+      description: "Status 'Paga'",
       className: "border-green-500/30 bg-green-500/5 dark:bg-green-500/10",
       valueClassName: "text-green-500",
       proposals: commissionReceivedProposals,
@@ -147,7 +145,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       title: "Comissão Esperada",
       value: formatCurrency(expectedAmount),
       icon: CircleDollarSign,
-      description: "Propostas em andamento",
+      description: "Contratos em andamento",
       className: "border-blue-500/30 bg-blue-500/5 dark:bg-blue-500/10",
       valueClassName: "text-blue-500",
       proposals: expectedCommissionProposals,

@@ -145,8 +145,8 @@ export default function DashboardPage() {
   const getProposalsByStatus = (list: Proposal[], statuses: ProposalStatus[]) => 
     list.filter((p) => statuses.includes(p.status));
 
-  // A meta agora se baseia exclusivamente no status "Pago"
-  const pagoProposals = getProposalsByStatus(filteredProposals, ['Pago']);
+  // Meta baseada em Pago + Saldo Pago conforme combinado
+  const pagoProposals = getProposalsByStatus(filteredProposals, ['Pago', 'Saldo Pago']);
   const currentTotalPago = getProposalsSum(pagoProposals);
 
   const pendenteProposals = getProposalsByStatus(filteredProposals, ['Pendente']);
