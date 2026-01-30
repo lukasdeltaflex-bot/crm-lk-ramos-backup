@@ -115,10 +115,11 @@ export default function AgendaPage() {
         ...cleanFields,
         id: reminderId,
         ownerId: user.uid,
+        userId: user.uid, // Compatibilidade com regras legadas
         createdAt: selectedReminder?.createdAt || new Date().toISOString(),
       };
 
-      // Gravação explícita para garantir permissão
+      // Gravação explícita
       await setDoc(doc(firestore, 'reminders', reminderId), reminderData, { merge: true });
       
       toast({ 
@@ -131,8 +132,8 @@ export default function AgendaPage() {
       console.error("Erro ao salvar lembrete:", err);
       toast({ 
         variant: 'destructive', 
-        title: 'Erro de Permissão', 
-        description: 'Não foi possível salvar. Tente novamente em alguns segundos.' 
+        title: 'Falha ao Salvar', 
+        description: 'Não foi possível gravar o lembrete. Verifique sua conexão e tente novamente.' 
       });
     } finally {
       setIsSaving(false);
