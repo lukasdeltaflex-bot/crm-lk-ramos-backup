@@ -67,10 +67,7 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
                 </TableRow>
             ) : (
                 recentProposals.map((proposal) => {
-                    const isUrgentPort = proposal.product === 'Portabilidade' && 
-                                       proposal.status === 'Aguardando Saldo' && 
-                                       proposal.dateDigitized && 
-                                       calculateBusinessDays(new Date(proposal.dateDigitized)) >= 4;
+                    const isPortAwaitingBalance = proposal.product === 'Portabilidade' && proposal.status === 'Aguardando Saldo';
                     const businessDays = proposal.dateDigitized ? calculateBusinessDays(new Date(proposal.dateDigitized)) : 0;
 
                     return (
@@ -97,15 +94,21 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
                                     >
                                         {proposal.status}
                                     </Badge>
-                                    {isUrgentPort && (
+                                    {isPortAwaitingBalance && (
                                         <TooltipProvider>
                                             <Tooltip>
-                                                <TooltipTrigger>
-                                                    <AlertCircle className={cn("h-4 w-4", businessDays >= 5 ? "text-destructive animate-pulse" : "text-orange-500")} />
+                                                <TooltipTrigger asChild>
+                                                    <AlertCircle className={cn(
+                                                        "h-4 w-4 cursor-help transition-colors", 
+                                                        businessDays >= 5 ? "text-destructive animate-pulse" : 
+                                                        businessDays === 4 ? "text-orange-500" : 
+                                                        "text-blue-400"
+                                                    )} />
                                                 </TooltipTrigger>
                                                 <TooltipContent>
-                                                    <p>Aguardando saldo há {businessDays} dias úteis.</p>
-                                                    <p className="text-xs">Prazo limite: 5 dias úteis.</p>
+                                                    <p className="font-semibold">Monitoramento de Saldo</p>
+                                                    <p>Prazo decorrido: {businessDays} dia(s) úteis.</p>
+                                                    <p className="text-[10px] text-muted-foreground">O prazo bancário padrão é de 5 dias úteis.</p>
                                                 </TooltipContent>
                                             </Tooltip>
                                         </TooltipProvider>
