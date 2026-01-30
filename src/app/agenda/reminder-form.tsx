@@ -67,7 +67,7 @@ export function ReminderForm({
 
   const selectedCustomerName = useMemo(() => {
     if (!selectedCustomerId) return "";
-    return customers.find(c => c.id === selectedCustomerId)?.name || "";
+    return customers.find(c => c.id === selectedCustomerId)?.name || "Cliente vinculado";
   }, [customers, selectedCustomerId]);
 
   useEffect(() => {
@@ -104,13 +104,13 @@ export function ReminderForm({
           name="customerId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Vincular a um Cliente (Opcional)</FormLabel>
+              <FormLabel>Vincular a um Cliente (Busca por Nome/CPF)</FormLabel>
               <div className="flex items-center gap-2">
                 <FormControl>
                   <div className="relative flex-1">
                     <Input
                         readOnly
-                        value={selectedCustomerName}
+                        value={selectedCustomerId ? selectedCustomerName : ""}
                         placeholder="Clique em buscar para localizar..."
                         className="bg-muted/30 pr-10"
                     />
@@ -121,6 +121,7 @@ export function ReminderForm({
                   type="button"
                   variant="outline"
                   onClick={onOpenCustomerSearch}
+                  disabled={isSaving}
                 >
                   {field.value ? 'Trocar' : 'Buscar'}
                 </Button>
@@ -130,12 +131,13 @@ export function ReminderForm({
                     variant="ghost"
                     size="icon"
                     onClick={handleCustomerClear}
+                    disabled={isSaving}
                   >
                     <X className="h-4 w-4" />
                   </Button>
                 )}
               </div>
-              <FormDescription>Localize clientes pelo Nome ou CPF para vincular ao lembrete.</FormDescription>
+              <FormDescription>Pesquise o cliente para vincular automaticamente.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -148,7 +150,7 @@ export function ReminderForm({
             <FormItem>
               <FormLabel>Título / Assunto</FormLabel>
               <FormControl>
-                <Input placeholder="Ex: Retorno João da Silva" {...field} />
+                <Input placeholder="Ex: Retorno João da Silva" {...field} disabled={isSaving} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -162,7 +164,7 @@ export function ReminderForm({
             <FormItem>
               <FormLabel>Data do Retorno</FormLabel>
               <FormControl>
-                <Input type="date" {...field} />
+                <Input type="date" {...field} disabled={isSaving} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -176,7 +178,7 @@ export function ReminderForm({
             <FormItem>
               <FormLabel>Anotações Adicionais</FormLabel>
               <FormControl>
-                <Textarea placeholder="Descreva o que deve ser feito..." {...field} />
+                <Textarea placeholder="Descreva o que deve ser feito..." {...field} disabled={isSaving} />
               </FormControl>
               <FormMessage />
             </FormItem>

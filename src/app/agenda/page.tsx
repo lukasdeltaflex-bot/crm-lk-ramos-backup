@@ -30,6 +30,7 @@ export default function AgendaPage() {
   const [isCustomerSearchOpen, setIsCustomerSearchOpen] = React.useState(false);
   const [newlySelectedCustomer, setNewlySelectedCustomer] = React.useState<Customer | null>(null);
   const [selectedReminder, setSelectedReminder] = React.useState<Reminder | undefined>(undefined);
+  const [isSaving, setIsSaving] = React.useState(false);
   const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
@@ -105,9 +106,10 @@ export default function AgendaPage() {
     setIsCustomerSearchOpen(false);
   };
 
-  const handleFormSubmit = (data: any) => {
+  const handleFormSubmit = async (data: any) => {
     if (!firestore || !user) return;
     
+    setIsSaving(true);
     const reminderId = selectedReminder?.id || doc(collection(firestore, 'reminders')).id;
     
     const reminderData: Reminder = {
@@ -117,21 +119,21 @@ export default function AgendaPage() {
       createdAt: selectedReminder?.createdAt || new Date().toISOString(),
     };
 
-    // Gravação otimizada: fecha o modal imediatamente
-    setIsDialogOpen(false);
-
-    setDoc(doc(firestore, 'reminders', reminderId), reminderData, { merge: true })
-      .then(() => {
-        toast({ title: 'Agenda Atualizada', description: 'O lembrete foi salvo com sucesso.' });
-      })
-      .catch(async (err) => {
-        console.warn("Permissão negada ao salvar lembrete:", err);
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: `reminders/${reminderId}`,
-          operation: 'write',
-          requestResourceData: reminderData
-        }));
-      });
+    try {
+      await setDoc(doc(firestore, 'reminders', reminderId), reminderData, { merge: true });
+      toast({ title: 'Agenda Atualizada', description: 'O lembrete foi salvo com sucesso.' });
+      setIsDialogOpen(false);
+    } catch (err) {
+      console.warn("Falha ao salvar lembrete:", err);
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: `reminders/${reminderId}`,
+        operation: 'write',
+        requestResourceData: reminderData
+      }));
+      toast({ variant: 'destructive', title: 'Erro de Permissão', description: 'Não foi possível salvar o lembrete. Verifique sua conexão.' });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const getStatusBadge = (dueDate: string, status: string) => {
@@ -252,6 +254,7 @@ export default function AgendaPage() {
             onOpenCustomerSearch={() => setIsCustomerSearchOpen(true)}
             selectedCustomerFromSearch={newlySelectedCustomer}
             onCustomerSearchSelectionHandled={() => setNewlySelectedCustomer(null)}
+            isSaving={isSaving}
           />
         </DialogContent>
       </Dialog>
