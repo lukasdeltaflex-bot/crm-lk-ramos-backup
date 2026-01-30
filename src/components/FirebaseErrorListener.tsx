@@ -19,8 +19,11 @@ export function FirebaseErrorListener() {
       const now = Date.now();
       const errorKey = `${error.request.method}:${error.request.path}`;
       
-      // Previne que o mesmo erro exiba múltiplos toasts em menos de 5 segundos
-      if (lastErrorRef.current === errorKey && now - lastToastTimeRef.current < 5000) {
+      // Log detalhado para o console do desenvolvedor (silencioso para o usuário final)
+      console.warn("Firestore Permission Insight:", error.request);
+
+      // Previne que o mesmo erro exiba múltiplos toasts em menos de 10 segundos
+      if (lastErrorRef.current === errorKey && now - lastToastTimeRef.current < 10000) {
         return;
       }
 

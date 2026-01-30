@@ -68,6 +68,9 @@ export function ReminderForm({ reminder, customers, onSubmit }: ReminderFormProp
     }
   }
 
+  // Filtragem preventiva de clientes sem ID para evitar erro de Select.Item
+  const validCustomers = (customers || []).filter(c => c && c.id);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
@@ -85,7 +88,7 @@ export function ReminderForm({ reminder, customers, onSubmit }: ReminderFormProp
                 </FormControl>
                 <SelectContent>
                   <SelectItem value="__none__">Nenhum (Cliente Novo/Prospect)</SelectItem>
-                  {customers.map((c) => (
+                  {validCustomers.map((c) => (
                     <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                   ))}
                 </SelectContent>
