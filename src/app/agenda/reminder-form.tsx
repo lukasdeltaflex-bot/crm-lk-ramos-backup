@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { format, parse } from 'date-fns';
 import type { Reminder, Customer } from '@/lib/types';
 import { useEffect, useMemo } from 'react';
-import { X } from 'lucide-react';
+import { X, Search } from 'lucide-react';
 
 const reminderSchema = z.object({
   title: z.string().min(1, 'O título ou nome do cliente é obrigatório.'),
@@ -65,21 +65,24 @@ export function ReminderForm({
 
   const selectedCustomerName = useMemo(() => {
     if (!selectedCustomerId) return "";
-    return customers.find(c => c.id === selectedCustomerId)?.name || "Cliente não encontrado";
+    return customers.find(c => c.id === selectedCustomerId)?.name || "";
   }, [customers, selectedCustomerId]);
 
   useEffect(() => {
     if (reminder) {
       form.reset({
-        ...reminder,
+        title: reminder.title,
+        description: reminder.description || '',
+        dueDate: reminder.dueDate,
         customerId: reminder.customerId || '',
+        status: reminder.status,
       });
     }
   }, [reminder, form]);
 
   useEffect(() => {
     if (selectedCustomerFromSearch) {
-      form.setValue('customerId', selectedCustomerFromSearch.id);
+      form.setValue('customerId', selectedCustomerFromSearch.id, { shouldValidate: true });
       if (!form.getValues('title')) {
         form.setValue('title', `Retorno: ${selectedCustomerFromSearch.name}`);
       }
@@ -102,12 +105,15 @@ export function ReminderForm({
               <FormLabel>Vincular a um Cliente (Opcional)</FormLabel>
               <div className="flex items-center gap-2">
                 <FormControl>
-                  <Input
-                    readOnly
-                    value={selectedCustomerName}
-                    placeholder="Busque por Nome ou CPF..."
-                    className="flex-1 bg-muted/30"
-                  />
+                  <div className="relative flex-1">
+                    <Input
+                        readOnly
+                        value={selectedCustomerName}
+                        placeholder="Clique em buscar para localizar..."
+                        className="bg-muted/30 pr-10"
+                    />
+                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground opacity-50" />
+                  </div>
                 </FormControl>
                 <Button
                   type="button"
@@ -127,7 +133,7 @@ export function ReminderForm({
                   </Button>
                 )}
               </div>
-              <FormDescription>Localize clientes existentes para facilitar o histórico.</FormDescription>
+              <FormDescription>Localize clientes pelo Nome ou CPF para vincular ao lembrete.</FormDescription>
               <FormMessage />
             </FormItem>
           )}

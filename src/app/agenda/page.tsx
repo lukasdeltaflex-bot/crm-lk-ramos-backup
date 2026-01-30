@@ -76,12 +76,16 @@ export default function AgendaPage() {
     if (!firestore || !user) return;
     const newStatus = reminder.status === 'pending' ? 'completed' : 'pending';
     
-    setDoc(doc(firestore, 'reminders', reminder.id), { status: newStatus }, { merge: true })
+    // Incluímos o userId para garantir que a regra de segurança aceite o update mesmo com merge
+    setDoc(doc(firestore, 'reminders', reminder.id), { 
+      status: newStatus,
+      userId: user.uid 
+    }, { merge: true })
       .catch(async () => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: `reminders/${reminder.id}`,
           operation: 'update',
-          requestResourceData: { status: newStatus }
+          requestResourceData: { status: newStatus, userId: user.uid }
         }));
       });
   };
@@ -149,6 +153,11 @@ export default function AgendaPage() {
   };
 
   const customerMap = React.useMemo(() => new Map(customers?.map(c => [c.id, c])), [customers]);
+
+  const nonAnonymizedCustomers = React.useMemo(() => {
+    if (!customers) return [];
+    return customers.filter(c => c.name !== 'Cliente Removido');
+  }, [customers]);
 
   return (
     <AppLayout>
@@ -242,7 +251,7 @@ export default function AgendaPage() {
           </DialogHeader>
           <ReminderForm 
             reminder={selectedReminder} 
-            customers={customers || []} 
+            customers={nonAnonymizedCustomers} 
             onSubmit={handleFormSubmit}
             onOpenCustomerSearch={() => setIsCustomerSearchOpen(true)}
             selectedCustomerFromSearch={newlySelectedCustomer}
@@ -254,7 +263,7 @@ export default function AgendaPage() {
       <CustomerSearchDialog
         open={isCustomerSearchOpen}
         onOpenChange={setIsCustomerSearchOpen}
-        customers={customers || []}
+        customers={nonAnonymizedCustomers}
         onSelectCustomer={handleCustomerSelect}
       />
     </AppLayout>

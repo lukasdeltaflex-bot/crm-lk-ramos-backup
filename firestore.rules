@@ -7,41 +7,46 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Regra para Perfil do Usuário
+    // Função para verificar se o usuário é dono do documento (Lida com merge:true)
+    function isOwner(data) {
+      return signedIn() && data.userId == request.auth.uid;
+    }
+    
+    // Função para dono via ownerId (Clientes/Propostas)
+    function isDataOwner(data) {
+      return signedIn() && data.ownerId == request.auth.uid;
+    }
+
     match /users/{userId} {
       allow read, write: if signedIn() && request.auth.uid == userId;
     }
 
-    // Regra para Clientes: Verifica ownerId
     match /customers/{customerId} {
       allow read, write: if signedIn() && (
-        (resource == null || resource.data.ownerId == request.auth.uid) &&
-        (request.resource == null || request.resource.data.ownerId == request.auth.uid)
+        (resource == null || isDataOwner(resource.data)) &&
+        (request.resource == null || isDataOwner(request.resource.data))
       );
     }
 
-    // Regra para Propostas: Verifica ownerId
     match /loanProposals/{proposalId} {
       allow read, write: if signedIn() && (
-        (resource == null || resource.data.ownerId == request.auth.uid) &&
-        (request.resource == null || request.resource.data.ownerId == request.auth.uid)
+        (resource == null || isDataOwner(resource.data)) &&
+        (request.resource == null || isDataOwner(request.resource.data))
       );
     }
 
-    // Regra para Agenda/Lembretes: Verifica userId (Crítico para salvamento)
+    // Regra robusta para Lembretes (Agenda)
     match /reminders/{reminderId} {
-      allow read, write: if signedIn() && (
-        (resource == null || resource.data.userId == request.auth.uid) &&
-        (request.resource == null || request.resource.data.userId == request.auth.uid)
-      );
+      allow read: if signedIn() && resource.data.userId == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if signedIn() && resource.data.userId == request.auth.uid;
+      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
     }
 
-    // Regra para Configurações: O próprio usuário
     match /userSettings/{userId} {
       allow read, write: if signedIn() && request.auth.uid == userId;
     }
     
-    // Bloqueio padrão
     match /{document=**} {
       allow read, write: if false;
     }
