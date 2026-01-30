@@ -12,31 +12,23 @@ export function InteractionFixer() {
       // Verifica se existem elementos de sobreposição ativos (Modais do Radix, menus, etc)
       const overlays = document.querySelectorAll('[data-radix-portal], .fixed.inset-0, [role="dialog"], [role="menu"]');
       
-      // Função para resetar estilos agressivamente
-      const resetStyles = (el: HTMLElement) => {
-        // Usamos setProperty com !important para garantir a vitória sobre estilos inline do Radix
-        el.style.setProperty('pointer-events', 'auto', 'important');
-        el.style.setProperty('overflow', 'auto', 'important');
-        el.classList.remove('pointer-events-none');
-        el.removeAttribute('data-radix-scroll-lock');
-      };
-
       // Se não houver sobreposições visíveis, limpamos o corpo e o html da página agressivamente
       if (overlays.length === 0) {
+        const resetStyles = (el: HTMLElement) => {
+          if (!el) return;
+          el.style.setProperty('pointer-events', 'auto', 'important');
+          el.style.setProperty('overflow', 'auto', 'important');
+          el.classList.remove('pointer-events-none');
+          el.removeAttribute('data-radix-scroll-lock');
+        };
+
         resetStyles(document.body);
         resetStyles(document.documentElement);
       }
     };
 
     // Monitora mudanças na estrutura do DOM (abertura/fechamento de modais)
-    const observer = new MutationObserver(() => {
-      // Múltiplos delays para garantir que as transições de saída do Radix/Lucide terminem
-      forceCleanup();
-      setTimeout(forceCleanup, 50);
-      setTimeout(forceCleanup, 150);
-      setTimeout(forceCleanup, 400);
-      setTimeout(forceCleanup, 800);
-    });
+    const observer = new MutationObserver(forceCleanup);
 
     observer.observe(document.body, {
       attributes: true,
@@ -47,7 +39,7 @@ export function InteractionFixer() {
     // Eventos de redundância em interações comuns do usuário
     const handleRelease = () => {
       setTimeout(forceCleanup, 50);
-      setTimeout(forceCleanup, 200);
+      setTimeout(forceCleanup, 300);
     };
 
     window.addEventListener('mousedown', handleRelease);
@@ -58,8 +50,8 @@ export function InteractionFixer() {
       if (e.key === 'Escape') handleRelease();
     });
 
-    // Check periódico de segurança contra travas residuais ("fantasmagóricas")
-    const interval = setInterval(forceCleanup, 1500);
+    // Check periódico de segurança contra travas residuais
+    const interval = setInterval(forceCleanup, 1000);
 
     return () => {
       observer.disconnect();

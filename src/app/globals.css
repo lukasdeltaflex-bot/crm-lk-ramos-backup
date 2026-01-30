@@ -67,13 +67,9 @@
   }
 }
 
-/* Forçagem de Temas Customizados para vigência total */
+/* Forçagem de Temas Customizados para vigência total em ambos os modos */
 .theme-padrão { --primary: 217 33% 25% !important; --ring: 217 33% 25% !important; }
-.dark .theme-padrão { --primary: 217 33% 30% !important; --ring: 217 33% 30% !important; }
-
 .theme-zinc { --primary: 240 5.9% 10% !important; --ring: 240 5.9% 10% !important; }
-.dark .theme-zinc { --primary: 240 5.9% 90% !important; --ring: 240 5.9% 90% !important; }
-
 .theme-blue { --primary: 217.2 91.2% 59.8% !important; --ring: 217.2 91.2% 59.8% !important; }
 .theme-green { --primary: 142.1 76.2% 36.3% !important; --ring: 142.1 76.2% 36.3% !important; }
 .theme-violet { --primary: 262.1 83.3% 57.8% !important; --ring: 262.1 83.3% 57.8% !important; }
@@ -94,9 +90,17 @@
 .theme-peach { --primary: 29 100% 65% !important; --ring: 29 100% 65% !important; }
 .theme-slate { --primary: 215 25% 27% !important; --ring: 215 25% 27% !important; }
 
+/* Forçagem agressiva para o modo escuro */
+.dark .theme-padrão { --primary: 217 33% 30% !important; --ring: 217 33% 30% !important; }
+.dark .theme-zinc { --primary: 240 5.9% 90% !important; --ring: 240 5.9% 90% !important; }
+
 @layer base {
   * { @apply border-border; }
-  body { @apply bg-background text-foreground; }
+  body { 
+    @apply bg-background text-foreground;
+    pointer-events: auto !important;
+    overflow: auto !important;
+  }
 }
 
 @layer utilities {
@@ -124,20 +128,4 @@
       margin: 1.5cm;
     }
   }
-
-  /* Cores de linhas por status na tabela de propostas */
-  .bg-green-100\/40 { background-color: rgba(220, 252, 231, 0.5) !important; }
-  .bg-orange-100\/40 { background-color: rgba(255, 237, 213, 0.5) !important; }
-  .bg-red-100\/40 { background-color: rgba(254, 226, 226, 0.5) !important; }
-  .bg-yellow-100\/40 { background-color: rgba(254, 249, 195, 0.5) !important; }
-  .bg-blue-100\/40 { background-color: rgba(219, 234, 254, 0.5) !important; }
-  .bg-purple-100\/40 { background-color: rgba(243, 232, 255, 0.5) !important; }
-
-  /* Ajustes para modo escuro */
-  .dark .bg-green-900\/20 { background-color: rgba(20, 83, 45, 0.3) !important; }
-  .dark .bg-orange-900\/20 { background-color: rgba(124, 45, 18, 0.3) !important; }
-  .dark .bg-red-900\/20 { background-color: rgba(127, 29, 29, 0.3) !important; }
-  .dark .bg-yellow-900\/20 { background-color: rgba(113, 63, 18, 0.3) !important; }
-  .dark .bg-blue-900\/20 { background-color: rgba(30, 58, 138, 0.3) !important; }
-  .dark .bg-purple-900\/20 { background-color: rgba(88, 28, 135, 0.3) !important; }
 }
