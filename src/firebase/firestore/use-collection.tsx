@@ -80,6 +80,8 @@ export function useCollection<T = any>(
             ? (memoizedTargetRefOrQuery as CollectionReference).path
             : (memoizedTargetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString();
 
+        console.error(`Firestore query error [${err.code}] at ${path}:`, err.message);
+
         // Só emitimos erro fatal se for REALMENTE erro de permissão negada
         if (err.code === 'permission-denied') {
             const contextualError = new FirestorePermissionError({
@@ -90,7 +92,6 @@ export function useCollection<T = any>(
             errorEmitter.emit('permission-error', contextualError);
         } else {
             // Outros erros (como falta de índice) ficam apenas no estado local do hook
-            console.warn(`Firestore collection error [${err.code}]:`, err.message);
             setError(err);
             setIsLoading(false);
         }
