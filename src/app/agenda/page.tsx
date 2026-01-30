@@ -106,8 +106,15 @@ export default function AgendaPage() {
     if (!firestore || !user) return;
     
     const reminderId = selectedReminder?.id || doc(collection(firestore, 'reminders')).id;
+    
+    // Limpeza de campos vazios para evitar erros de permissão/esquema
+    const cleanData = { ...data };
+    if (!cleanData.customerId || cleanData.customerId === '') {
+        delete cleanData.customerId;
+    }
+
     const reminderData: Reminder = {
-      ...data,
+      ...cleanData,
       id: reminderId,
       userId: user.uid,
       createdAt: selectedReminder?.createdAt || new Date().toISOString(),
@@ -115,12 +122,13 @@ export default function AgendaPage() {
 
     setIsDialogOpen(false);
 
+    // Salvamento com feedback condicional
     setDoc(doc(firestore, 'reminders', reminderId), reminderData)
       .then(() => {
-        toast({ title: 'Agenda LK Atualizada!' });
+        toast({ title: 'Lembrete Salvo!', description: 'Sua agenda foi atualizada.' });
       })
       .catch(async () => {
-        // Emitimos o erro apenas para o monitor silencioso, sem disparar o pop-up do Next.js
+        // Se falhar, o listener global registrará no console, mas não travará a tela.
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: `reminders/${reminderId}`,
           operation: 'write',
