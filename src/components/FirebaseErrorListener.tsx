@@ -5,8 +5,9 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 /**
- * Componente silencioso que monitora erros de permissão do Firebase.
- * Registra avisos no console sem interromper a interface do usuário.
+ * Monitor silencioso de erros de permissão do Firebase.
+ * Registra falhas apenas no console técnico para depuração,
+ * mantendo a interface do usuário limpa e sem interrupções.
  */
 export function FirebaseErrorListener() {
   const lastErrorRef = useRef<string | null>(null);
@@ -25,8 +26,8 @@ export function FirebaseErrorListener() {
       lastErrorRef.current = errorKey;
       lastLogTimeRef.current = now;
       
-      // Log apenas para depuração técnica, sem overlays ou toasts
-      console.warn("LK Ramos Security Notice:", {
+      // Log apenas para depuração técnica
+      console.warn("LK Ramos Security Access Info:", {
         action: error.request.method,
         resource: error.request.path,
         timestamp: new Date().toLocaleTimeString()

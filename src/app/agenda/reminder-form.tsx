@@ -15,10 +15,10 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, parse } from 'date-fns';
 import type { Reminder, Customer } from '@/lib/types';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { X } from 'lucide-react';
 
 const reminderSchema = z.object({
   title: z.string().min(1, 'O título ou nome do cliente é obrigatório.'),
@@ -36,9 +36,19 @@ interface ReminderFormProps {
   reminder?: Reminder;
   customers: Customer[];
   onSubmit: (data: ReminderFormValues) => void;
+  onOpenCustomerSearch: () => void;
+  selectedCustomerFromSearch: Customer | null;
+  onCustomerSearchSelectionHandled: () => void;
 }
 
-export function ReminderForm({ reminder, customers, onSubmit }: ReminderFormProps) {
+export function ReminderForm({ 
+  reminder, 
+  customers, 
+  onSubmit, 
+  onOpenCustomerSearch, 
+  selectedCustomerFromSearch, 
+  onCustomerSearchSelectionHandled 
+}: ReminderFormProps) {
   const form = useForm<ReminderFormValues>({
     resolver: zodResolver(reminderSchema),
     defaultValues: {
@@ -50,6 +60,13 @@ export function ReminderForm({ reminder, customers, onSubmit }: ReminderFormProp
     },
   });
 
+  const selectedCustomerId = form.watch('customerId');
+
+  const selectedCustomerName = useMemo(() => {
+    if (!selectedCustomerId) return "";
+    return customers.find(c => c.id === selectedCustomerId)?.name || "Cliente não encontrado";
+  }, [customers, selectedCustomerId]);
+
   useEffect(() => {
     if (reminder) {
       form.reset({
@@ -59,18 +76,19 @@ export function ReminderForm({ reminder, customers, onSubmit }: ReminderFormProp
     }
   }, [reminder, form]);
 
-  const handleCustomerSelect = (value: string) => {
-    const customerId = value === "__none__" ? "" : value;
-    form.setValue('customerId', customerId);
-    
-    if (customerId && !form.getValues('title')) {
-        const customer = customers.find(c => c.id === customerId);
-        if (customer) form.setValue('title', `Retorno: ${customer.name}`);
+  useEffect(() => {
+    if (selectedCustomerFromSearch) {
+      form.setValue('customerId', selectedCustomerFromSearch.id);
+      if (!form.getValues('title')) {
+        form.setValue('title', `Retorno: ${selectedCustomerFromSearch.name}`);
+      }
+      onCustomerSearchSelectionHandled();
     }
-  }
+  }, [selectedCustomerFromSearch, form, onCustomerSearchSelectionHandled]);
 
-  // Filtragem estrita: remove clientes nulos, sem ID ou com ID vazio para evitar erro no Select.Item
-  const validCustomers = (customers || []).filter(c => c && c.id && c.id.trim() !== '');
+  const handleCustomerClear = () => {
+    form.setValue('customerId', '');
+  };
 
   return (
     <Form {...form}>
@@ -81,20 +99,34 @@ export function ReminderForm({ reminder, customers, onSubmit }: ReminderFormProp
           render={({ field }) => (
             <FormItem>
               <FormLabel>Vincular a um Cliente (Opcional)</FormLabel>
-              <Select onValueChange={handleCustomerSelect} value={field.value || "__none__"}>
+              <div className="flex items-center gap-2">
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um cliente cadastrado" />
-                  </SelectTrigger>
+                  <Input
+                    readOnly
+                    value={selectedCustomerName}
+                    placeholder="Busque por Nome ou CPF..."
+                    className="flex-1 bg-muted/30"
+                  />
                 </FormControl>
-                <SelectContent>
-                  <SelectItem value="__none__">Nenhum (Cliente Novo/Prospect)</SelectItem>
-                  {validCustomers.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormDescription>Útil para lembretes de clientes que já estão na sua base.</FormDescription>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onOpenCustomerSearch}
+                >
+                  {field.value ? 'Trocar' : 'Buscar'}
+                </Button>
+                {field.value && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleCustomerClear}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              <FormDescription>Localize clientes existentes para facilitar o histórico.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -105,9 +137,9 @@ export function ReminderForm({ reminder, customers, onSubmit }: ReminderFormProp
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Título / Nome do Cliente</FormLabel>
+              <FormLabel>Título / Assunto</FormLabel>
               <FormControl>
-                <Input placeholder="Ex: João da Silva (Aguardar 90 dias)" {...field} />
+                <Input placeholder="Ex: Retorno João da Silva" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -135,7 +167,7 @@ export function ReminderForm({ reminder, customers, onSubmit }: ReminderFormProp
             <FormItem>
               <FormLabel>Anotações Adicionais</FormLabel>
               <FormControl>
-                <Textarea placeholder="Motivo do retorno, condições combinadas, etc." {...field} />
+                <Textarea placeholder="Descreva o que deve ser feito..." {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

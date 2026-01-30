@@ -20,11 +20,14 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { CustomerSearchDialog } from '@/components/proposals/customer-search-dialog';
 
 export default function AgendaPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [isCustomerSearchOpen, setIsCustomerSearchOpen] = React.useState(false);
+  const [newlySelectedCustomer, setNewlySelectedCustomer] = React.useState<Customer | null>(null);
   const [selectedReminder, setSelectedReminder] = React.useState<Reminder | undefined>(undefined);
   const [hasMounted, setHasMounted] = useState(false);
 
@@ -58,11 +61,13 @@ export default function AgendaPage() {
 
   const handleAddReminder = () => {
     setSelectedReminder(undefined);
+    setNewlySelectedCustomer(null);
     setIsDialogOpen(true);
   };
 
   const handleEditReminder = (reminder: Reminder) => {
     setSelectedReminder(reminder);
+    setNewlySelectedCustomer(null);
     setIsDialogOpen(true);
   };
 
@@ -91,6 +96,11 @@ export default function AgendaPage() {
       });
   };
 
+  const handleCustomerSelect = (customer: Customer) => {
+    setNewlySelectedCustomer(customer);
+    setIsCustomerSearchOpen(false);
+  };
+
   const handleFormSubmit = (data: any) => {
     if (!firestore || !user) return;
     
@@ -102,7 +112,6 @@ export default function AgendaPage() {
       createdAt: selectedReminder?.createdAt || new Date().toISOString(),
     };
 
-    // Fecha o modal imediatamente para fluidez
     setIsDialogOpen(false);
 
     setDoc(doc(firestore, 'reminders', reminderId), reminderData)
@@ -228,10 +237,20 @@ export default function AgendaPage() {
           <ReminderForm 
             reminder={selectedReminder} 
             customers={customers || []} 
-            onSubmit={handleFormSubmit} 
+            onSubmit={handleFormSubmit}
+            onOpenCustomerSearch={() => setIsCustomerSearchOpen(true)}
+            selectedCustomerFromSearch={newlySelectedCustomer}
+            onCustomerSearchSelectionHandled={() => setNewlySelectedCustomer(null)}
           />
         </DialogContent>
       </Dialog>
+
+      <CustomerSearchDialog
+        open={isCustomerSearchOpen}
+        onOpenChange={setIsCustomerSearchOpen}
+        customers={customers || []}
+        onSelectCustomer={handleCustomerSelect}
+      />
     </AppLayout>
   );
 }

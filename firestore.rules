@@ -6,31 +6,25 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Função de propriedade robusta que evita erros em campos ausentes
-    function isOwner(data) {
-      return signedIn() && (
-        data.get('userId', '') == request.auth.uid || 
-        data.get('ownerId', '') == request.auth.uid ||
-        data.get('uid', '') == request.auth.uid
+    // Regras simplificadas e robustas para garantir acesso total ao dono do dado
+    match /customers/{customerId} {
+      allow read, write: if signedIn() && (
+        (resource == null ? request.resource.data.ownerId : resource.data.ownerId) == request.auth.uid
       );
     }
 
-    // Regras para Clientes
-    match /customers/{customerId} {
-      allow read, write: if isOwner(resource == null ? request.resource.data : resource.data);
-    }
-
-    // Regras para Propostas
     match /loanProposals/{proposalId} {
-      allow read, write: if isOwner(resource == null ? request.resource.data : resource.data);
+      allow read, write: if signedIn() && (
+        (resource == null ? request.resource.data.ownerId : resource.data.ownerId) == request.auth.uid
+      );
     }
 
-    // Regras para Lembretes (Agenda)
     match /reminders/{reminderId} {
-      allow read, write: if isOwner(resource == null ? request.resource.data : resource.data);
+      allow read, write: if signedIn() && (
+        (resource == null ? request.resource.data.userId : resource.data.userId) == request.auth.uid
+      );
     }
 
-    // Perfil de Usuário e Configurações
     match /users/{userId} {
       allow read, write: if signedIn() && request.auth.uid == userId;
     }
@@ -39,7 +33,6 @@ service cloud.firestore {
       allow read, write: if signedIn() && request.auth.uid == userId;
     }
     
-    // Bloqueio padrão para segurança de outras coleções
     match /{document=**} {
       allow read, write: if false;
     }
