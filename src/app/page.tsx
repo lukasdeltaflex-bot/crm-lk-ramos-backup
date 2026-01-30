@@ -193,7 +193,8 @@ export default function DashboardPage() {
     setDialogData({ title, proposals: props });
   }
 
-  const currentMonthName = format(appliedDateRange?.from || new Date(), 'MMMM', { locale: ptBR });
+  const currentMonthNameRaw = format(appliedDateRange?.from || new Date(), 'MMMM', { locale: ptBR });
+  const currentMonthName = currentMonthNameRaw.charAt(0).toUpperCase() + currentMonthNameRaw.slice(1);
 
   return (
     <AppLayout>

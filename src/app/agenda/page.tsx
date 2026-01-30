@@ -89,7 +89,7 @@ export default function AgendaPage() {
       }, { merge: true });
       toast({ title: newStatus === 'completed' ? 'Lembrete Concluído!' : 'Lembrete Reaberto!' });
     } catch (e) {
-      toast({ variant: 'destructive', title: 'Erro de Permissão ao atualizar' });
+      toast({ variant: 'destructive', title: 'Erro ao atualizar status.' });
     }
   };
 
@@ -100,7 +100,7 @@ export default function AgendaPage() {
       await deleteDoc(doc(firestore, 'reminders', reminderId));
       toast({ title: 'Lembrete removido com sucesso.' });
     } catch (e) {
-      toast({ variant: 'destructive', title: 'Erro de Permissão ao remover' });
+      toast({ variant: 'destructive', title: 'Erro ao remover lembrete.' });
     }
   };
 
@@ -118,6 +118,7 @@ export default function AgendaPage() {
         createdAt: selectedReminder?.createdAt || new Date().toISOString(),
       };
 
+      // Remover campos vazios para evitar erro nas regras do Firebase
       const cleanData = Object.fromEntries(
         Object.entries(reminderData).filter(([_, v]) => v !== undefined && v !== "")
       );
@@ -130,8 +131,8 @@ export default function AgendaPage() {
       console.error("Erro ao salvar lembrete:", err);
       toast({ 
         variant: 'destructive', 
-        title: 'Erro de Permissão', 
-        description: 'Não foi possível salvar os dados no Firebase.' 
+        title: 'Erro ao Salvar', 
+        description: 'Verifique sua conexão ou permissões.' 
       });
     } finally {
       setIsSaving(false);
@@ -214,7 +215,7 @@ export default function AgendaPage() {
                                     
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <h4 className={cn("font-bold text-lg truncate", isCompleted && "line-through")}>
+                                            <h4 className={cn("text-lg truncate", isCompleted && "line-through")}>
                                                 {reminder.title}
                                             </h4>
                                             {getStatusBadge(reminder.dueDate, reminder.status)}
