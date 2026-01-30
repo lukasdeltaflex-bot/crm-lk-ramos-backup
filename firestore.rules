@@ -7,6 +7,11 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Regra para Perfil do Usuário
+    match /users/{userId} {
+      allow read, write: if signedIn() && request.auth.uid == userId;
+    }
+
     // Regra para Clientes: Verifica ownerId
     match /customers/{customerId} {
       allow read, write: if signedIn() && (
@@ -31,17 +36,12 @@ service cloud.firestore {
       );
     }
 
-    // Regra para Perfil: O próprio usuário
-    match /users/{userId} {
-      allow read, write: if signedIn() && request.auth.uid == userId;
-    }
-
     // Regra para Configurações: O próprio usuário
     match /userSettings/{userId} {
       allow read, write: if signedIn() && request.auth.uid == userId;
     }
     
-    // Bloqueio padrão para qualquer outra coleção
+    // Bloqueio padrão
     match /{document=**} {
       allow read, write: if false;
     }

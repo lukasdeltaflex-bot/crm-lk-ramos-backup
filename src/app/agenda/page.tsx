@@ -107,7 +107,6 @@ export default function AgendaPage() {
     
     const reminderId = selectedReminder?.id || doc(collection(firestore, 'reminders')).id;
     
-    // Limpeza de campos vazios para evitar erros de permissão/esquema
     const cleanData = { ...data };
     if (!cleanData.customerId || cleanData.customerId === '') {
         delete cleanData.customerId;
@@ -122,13 +121,11 @@ export default function AgendaPage() {
 
     setIsDialogOpen(false);
 
-    // Salvamento com feedback condicional
-    setDoc(doc(firestore, 'reminders', reminderId), reminderData)
+    setDoc(doc(firestore, 'reminders', reminderId), reminderData, { merge: true })
       .then(() => {
         toast({ title: 'Lembrete Salvo!', description: 'Sua agenda foi atualizada.' });
       })
       .catch(async () => {
-        // Se falhar, o listener global registrará no console, mas não travará a tela.
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: `reminders/${reminderId}`,
           operation: 'write',
