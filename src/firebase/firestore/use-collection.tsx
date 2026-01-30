@@ -61,7 +61,6 @@ export function useCollection<T = any>(
 
     setIsLoading(true);
     setError(null);
-    setData(null);
 
     const unsubscribe = onSnapshot(
       memoizedTargetRefOrQuery,
@@ -80,8 +79,6 @@ export function useCollection<T = any>(
             ? (memoizedTargetRefOrQuery as CollectionReference).path
             : (memoizedTargetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString();
 
-        console.error(`Firestore query error [${err.code}] at ${path}:`, err.message);
-
         // Só emitimos erro fatal se for REALMENTE erro de permissão negada
         if (err.code === 'permission-denied') {
             const contextualError = new FirestorePermissionError({
@@ -91,7 +88,7 @@ export function useCollection<T = any>(
             setError(contextualError);
             errorEmitter.emit('permission-error', contextualError);
         } else {
-            // Outros erros (como falta de índice) ficam apenas no estado local do hook
+            console.error(`Firestore query error [${err.code}] at ${path}:`, err.message);
             setError(err);
             setIsLoading(false);
         }
@@ -101,10 +98,5 @@ export function useCollection<T = any>(
     return () => unsubscribe();
   }, [memoizedTargetRefOrQuery]);
 
-  // Transformado em log para evitar quebra do servidor em tempo de build/SSR
-  if(memoizedTargetRefOrQuery && !memoizedTargetRefOrQuery.__memo) {
-    console.warn('Firestore target was not properly memoized using useMemoFirebase. This can cause unnecessary re-renders.');
-  }
-  
   return { data, isLoading, error };
 }
