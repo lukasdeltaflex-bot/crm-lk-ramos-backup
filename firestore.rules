@@ -2,42 +2,40 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    function isAuthenticated() {
+    function signedIn() {
       return request.auth != null;
     }
 
-    // Regras simplificadas e diretas para máxima compatibilidade com queries de listagem
-    
-    match /users/{userId} {
-      allow read, write: if isAuthenticated() && request.auth.uid == userId;
-    }
-
+    // Regras de propriedade para Clientes e Propostas (ownerId)
     match /customers/{customerId} {
-      allow read, write: if isAuthenticated() && (
-        (resource == null && request.resource.data.ownerId == request.auth.uid) ||
-        (resource != null && resource.data.ownerId == request.auth.uid)
+      allow read, write: if signedIn() && (
+        resource == null ? request.resource.data.ownerId == request.auth.uid : resource.data.ownerId == request.auth.uid
       );
     }
 
     match /loanProposals/{proposalId} {
-      allow read, write: if isAuthenticated() && (
-        (resource == null && request.resource.data.ownerId == request.auth.uid) ||
-        (resource != null && resource.data.ownerId == request.auth.uid)
+      allow read, write: if signedIn() && (
+        resource == null ? request.resource.data.ownerId == request.auth.uid : resource.data.ownerId == request.auth.uid
       );
     }
 
+    // Regras de propriedade para Lembretes da Agenda (userId)
     match /reminders/{reminderId} {
-      allow read, write: if isAuthenticated() && (
-        (resource == null && request.resource.data.userId == request.auth.uid) ||
-        (resource != null && resource.data.userId == request.auth.uid)
+      allow read, write: if signedIn() && (
+        resource == null ? request.resource.data.userId == request.auth.uid : resource.data.userId == request.auth.uid
       );
+    }
+
+    // Perfil de Usuário e Configurações
+    match /users/{userId} {
+      allow read, write: if signedIn() && request.auth.uid == userId;
     }
 
     match /userSettings/{userId} {
-      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+      allow read, write: if signedIn() && request.auth.uid == userId;
     }
     
-    // Bloqueio padrão para qualquer outra tentativa
+    // Bloqueio padrão para segurança
     match /{document=**} {
       allow read, write: if false;
     }

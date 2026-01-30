@@ -102,10 +102,12 @@ export default function AgendaPage() {
       createdAt: selectedReminder?.createdAt || new Date().toISOString(),
     };
 
+    // Padrão não-bloqueante: fecha o modal imediatamente
+    setIsDialogOpen(false);
+
     setDoc(doc(firestore, 'reminders', reminderId), reminderData)
       .then(() => {
-        setIsDialogOpen(false);
-        toast({ title: 'Lembrete salvo com sucesso!' });
+        toast({ title: 'Agenda Atualizada!' });
       })
       .catch(async (err) => {
         const pError = new FirestorePermissionError({
@@ -114,11 +116,6 @@ export default function AgendaPage() {
           requestResourceData: reminderData
         });
         errorEmitter.emit('permission-error', pError);
-        toast({ 
-          variant: 'destructive', 
-          title: 'Erro ao salvar', 
-          description: 'Verifique suas permissões de acesso.' 
-        });
       });
   };
 
