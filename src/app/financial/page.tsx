@@ -27,6 +27,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogTrigger,
   } from '@/components/ui/dialog';
 import { CommissionForm, type CommissionFormValues } from './commission-form';
 import { toast } from '@/hooks/use-toast';
@@ -51,7 +52,6 @@ export default function FinancialPage() {
   const [rowSelection, setRowSelection] = React.useState({});
   const tableRef = React.useRef<FinancialDataTableHandle>(null);
   const [dialogData, setDialogData] = React.useState<{ title: string; proposals: ProposalWithCustomer[] } | null>(null);
-  const [migrationCompleted, setMigrationCompleted] = React.useState(false);
 
   React.useEffect(() => {
     setIsClient(true);

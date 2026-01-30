@@ -20,28 +20,34 @@ export function InteractionFixer() {
         const rootElements = [document.body, document.documentElement];
         rootElements.forEach(el => {
           if (el) {
+            // Remove estilos inline que travam a tela
             el.style.pointerEvents = 'auto';
             el.style.overflow = 'auto';
             el.style.setProperty('pointer-events', 'auto', 'important');
             el.style.setProperty('overflow', 'auto', 'important');
           }
         });
+        
+        // Remove classes e atributos comuns de bloqueio
         document.body.classList.remove('pointer-events-none');
         document.body.removeAttribute('data-scroll-locked');
+        document.body.removeAttribute('style');
       }
     };
 
     // Executa a limpeza periodicamente para garantir fluidez
-    const interval = setInterval(cleanup, 500);
+    const interval = setInterval(cleanup, 1000);
     
-    // Também executa ao clicar na tela ou pressionar teclas (caso um modal tenha acabado de fechar)
-    const handleEvents = () => setTimeout(cleanup, 50);
+    // Também executa ao clicar na tela ou fechar modais
+    const handleEvents = () => setTimeout(cleanup, 100);
     window.addEventListener('mousedown', handleEvents);
+    window.addEventListener('mouseup', handleEvents);
     window.addEventListener('keydown', handleEvents);
 
     return () => {
       clearInterval(interval);
       window.removeEventListener('mousedown', handleEvents);
+      window.removeEventListener('mouseup', handleEvents);
       window.removeEventListener('keydown', handleEvents);
     };
   }, []);
