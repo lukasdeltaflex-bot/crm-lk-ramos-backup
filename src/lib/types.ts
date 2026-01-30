@@ -1,3 +1,4 @@
+
 export type Benefit = {
   number: string;
   species?: string;
@@ -90,7 +91,7 @@ export type ReminderStatus = 'pending' | 'completed';
 
 export type Reminder = {
   id: string;
-  userId: string; // Alterado de ownerId para userId para alinhar com rules
+  ownerId: string; // Padronizado para ownerId
   title: string;
   description?: string;
   dueDate: string; // YYYY-MM-DD

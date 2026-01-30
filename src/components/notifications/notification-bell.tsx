@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -52,10 +53,9 @@ export function NotificationBell() {
 
   const remindersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    // CRÍTICO: O filtro 'where' deve bater exatamente com a regra de segurança para permitir a listagem
     return query(
       collection(firestore, 'reminders'),
-      where('userId', '==', user.uid)
+      where('ownerId', '==', user.uid)
     );
   }, [firestore, user]);
 

@@ -7,6 +7,10 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isOwner(data) {
+      return signedIn() && data.ownerId == request.auth.uid;
+    }
+
     match /users/{userId} {
       allow read, write: if signedIn() && request.auth.uid == userId;
     }
@@ -26,10 +30,10 @@ service cloud.firestore {
     }
 
     match /reminders/{reminderId} {
-      allow read: if signedIn() && resource.data.userId == request.auth.uid;
-      allow write: if signedIn() && 
-        (resource == null || resource.data.userId == request.auth.uid) && 
-        (request.resource == null || request.resource.data.userId == request.auth.uid);
+      allow read, write: if signedIn() && (
+        (resource == null || resource.data.ownerId == request.auth.uid) &&
+        (request.resource == null || request.resource.data.ownerId == request.auth.uid)
+      );
     }
 
     match /userSettings/{userId} {

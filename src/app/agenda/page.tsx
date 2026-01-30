@@ -39,7 +39,7 @@ export default function AgendaPage() {
     if (!firestore || !user) return null;
     return query(
       collection(firestore, 'reminders'),
-      where('userId', '==', user.uid)
+      where('ownerId', '==', user.uid)
     );
   }, [firestore, user]);
 
@@ -78,7 +78,7 @@ export default function AgendaPage() {
     try {
       await setDoc(doc(firestore, 'reminders', reminder.id), { 
         status: newStatus,
-        userId: user.uid 
+        ownerId: user.uid 
       }, { merge: true });
     } catch (e) {
       console.warn("Falha ao atualizar status:", e);
@@ -106,7 +106,6 @@ export default function AgendaPage() {
     setIsSaving(true);
     const reminderId = selectedReminder?.id || doc(collection(firestore, 'reminders')).id;
     
-    // Limpa campos vazios para evitar erros no Firestore
     const cleanFields = Object.fromEntries(
       Object.entries(data).filter(([_, v]) => v !== undefined && v !== "")
     );
@@ -114,20 +113,20 @@ export default function AgendaPage() {
     const reminderData = {
       ...cleanFields,
       id: reminderId,
-      userId: user.uid,
+      ownerId: user.uid,
       createdAt: selectedReminder?.createdAt || new Date().toISOString(),
     };
 
     try {
       await setDoc(doc(firestore, 'reminders', reminderId), reminderData, { merge: true });
-      toast({ title: 'Agenda Atualizada', description: 'O lembrete foi salvo com sucesso.' });
+      toast({ title: 'Agenda LK', description: 'O lembrete foi salvo com sucesso.' });
       setIsDialogOpen(false);
     } catch (err) {
-      console.warn("Erro ao salvar lembrete:", err);
+      console.warn("Permissão de escrita negada:", err);
       toast({ 
         variant: 'destructive', 
-        title: 'Falha no Salvamento', 
-        description: 'Ocorreu um erro de permissão. Tente novamente em instantes.' 
+        title: 'Acesso Negado', 
+        description: 'Não foi possível salvar o lembrete. Verifique sua conexão e tente novamente.' 
       });
     } finally {
       setIsSaving(false);
