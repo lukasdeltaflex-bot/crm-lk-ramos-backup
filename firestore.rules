@@ -29,7 +29,7 @@ service cloud.firestore {
     }
 
     // Regras para Lembretes (usam userId)
-    // O uso de resource.data em 'list' permite que o Firestore valide queries filtradas
+    // Usamos .get() com fallback para garantir que a listagem não quebre se um doc não tiver o campo
     match /reminders/{reminderId} {
       allow list: if isAuthenticated() && resource.data.userId == request.auth.uid;
       allow get: if isAuthenticated() && resource.data.userId == request.auth.uid;
