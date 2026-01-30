@@ -1,3 +1,4 @@
+
 'use client';
 import React from 'react';
 import { AppLayout } from '@/components/app-layout';
@@ -75,8 +76,9 @@ export default function FinancialPage() {
     
     const customersMap = new Map(customers.map(c => [c.id, c]));
     
+    // Regra: No financeiro só entram propostas que saíram do status 'Pendente' ou 'Reprovado'
     const tableData = proposals
-      .filter(p => p.status !== 'Reprovado')
+      .filter(p => p.status !== 'Reprovado' && p.status !== 'Pendente')
       .map(p => ({
         ...p,
         customer: customersMap.get(p.customerId),

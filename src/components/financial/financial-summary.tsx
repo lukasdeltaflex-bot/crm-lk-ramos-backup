@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -56,7 +57,8 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
       return sum + (p.grossAmount || 0);
     }, 0);
 
-    const validProposals = allProposalsInPeriod.filter(p => p.status !== 'Reprovado');
+    // No resumo financeiro, ignoramos propostas 'Reprovadas' e 'Pendentes' (que ainda não entraram em produção real)
+    const validProposals = allProposalsInPeriod.filter(p => p.status !== 'Reprovado' && p.status !== 'Pendente');
 
     // 1. Comissão Total Potencial (Base 100% para os cálculos financeiros)
     const totalPotentialCommission = validProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
@@ -82,7 +84,7 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
     // 4. Comissão Esperada (Contratos em andamento que ainda não foram averbados)
     const expectedCommissionProposals = validProposals.filter(p => {
         const isAverbada = !!p.dateApproved;
-        return !isAverbada && (p.status === 'Em Andamento' || p.status === 'Pendente' || p.status === 'Aguardando Saldo');
+        return !isAverbada && (p.status === 'Em Andamento' || p.status === 'Aguardando Saldo');
     });
     const expectedAmount = expectedCommissionProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
     
