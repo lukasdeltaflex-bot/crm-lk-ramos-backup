@@ -85,11 +85,13 @@ export default function AgendaPage() {
     const newStatus = reminder.status === 'pending' ? 'completed' : 'pending';
     try {
       await setDoc(doc(firestore, 'reminders', reminder.id), { 
-        status: newStatus 
+        status: newStatus,
+        ownerId: user.uid // Garante que o ID esteja presente para a regra de segurança
       }, { merge: true });
       toast({ title: newStatus === 'completed' ? 'Lembrete Concluído!' : 'Lembrete Reaberto!' });
-    } catch (e) {
-      toast({ variant: 'destructive', title: 'Erro ao atualizar status.' });
+    } catch (err) {
+      console.error("Erro ao atualizar status:", err);
+      toast({ variant: 'destructive', title: 'Erro de Permissão', description: 'Não foi possível atualizar o status.' });
     }
   };
 
@@ -99,8 +101,9 @@ export default function AgendaPage() {
     try {
       await deleteDoc(doc(firestore, 'reminders', reminderId));
       toast({ title: 'Lembrete removido com sucesso.' });
-    } catch (e) {
-      toast({ variant: 'destructive', title: 'Erro ao remover lembrete.' });
+    } catch (err) {
+      console.error("Erro ao remover lembrete:", err);
+      toast({ variant: 'destructive', title: 'Erro ao remover', description: 'Permissão insuficiente ou erro de conexão.' });
     }
   };
 
@@ -118,7 +121,7 @@ export default function AgendaPage() {
         createdAt: selectedReminder?.createdAt || new Date().toISOString(),
       };
 
-      // Remover campos vazios para evitar erro nas regras do Firebase
+      // Remover campos vazios para consistência
       const cleanData = Object.fromEntries(
         Object.entries(reminderData).filter(([_, v]) => v !== undefined && v !== "")
       );
@@ -131,8 +134,8 @@ export default function AgendaPage() {
       console.error("Erro ao salvar lembrete:", err);
       toast({ 
         variant: 'destructive', 
-        title: 'Erro ao Salvar', 
-        description: 'Verifique sua conexão ou permissões.' 
+        title: 'Erro de Permissão', 
+        description: 'Verifique se você está logado e tente novamente.' 
       });
     } finally {
       setIsSaving(false);
@@ -140,7 +143,7 @@ export default function AgendaPage() {
   };
 
   const getStatusBadge = (dueDate: string, status: string) => {
-    if (status === 'completed') return <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400 border-green-200/50">Concluído</Badge>;
+    if (status === 'completed') return <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200/50">Concluído</Badge>;
     const date = parseISO(dueDate);
     const now = new Date();
     if (isToday(date)) return <Badge variant="default" className="bg-yellow-500 text-black">Hoje</Badge>;
@@ -215,7 +218,7 @@ export default function AgendaPage() {
                                     
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <h4 className={cn("text-lg truncate", isCompleted && "line-through")}>
+                                            <h4 className={cn("text-lg truncate font-light", isCompleted && "line-through")}>
                                                 {reminder.title}
                                             </h4>
                                             {getStatusBadge(reminder.dueDate, reminder.status)}

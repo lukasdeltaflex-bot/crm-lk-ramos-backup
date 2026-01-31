@@ -131,7 +131,7 @@ export function ProposalsStatusTable({ proposals = [], customers = [] }: { propo
         })
     }, [proposals, customers]);
 
-  if (!proposals || proposals.length === 0) {
+  if (!proposals || (Array.isArray(proposals) && proposals.length === 0)) {
     return (
       <div className="flex items-center justify-center h-40 text-muted-foreground">
         Nenhuma proposta para este status no período selecionado.
@@ -141,7 +141,7 @@ export function ProposalsStatusTable({ proposals = [], customers = [] }: { propo
 
   return (
     <div className="space-y-4">
-        <StatusBreakdownChart proposals={proposals} />
+        <StatusBreakdownChart proposals={Array.isArray(proposals) ? proposals : []} />
         <DataTable columns={statusColumns} data={data} />
     </div>
     );

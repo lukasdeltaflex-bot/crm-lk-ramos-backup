@@ -274,7 +274,7 @@ export default function DashboardPage() {
                     icon={BadgePercent} 
                     percentage={stats.percPendente}
                     valueClassName="text-purple-700 dark:text-purple-400"
-                    className="bg-purple-100/50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800"
+                    className="bg-purple-100/50 dark:bg-purple-900/20 border-purple-300/50 dark:border-purple-500/30"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Em Andamento', stats.proposals.emAndamento)}>
@@ -284,7 +284,7 @@ export default function DashboardPage() {
                     icon={Hourglass} 
                     percentage={stats.percEmAndamento}
                     valueClassName="text-yellow-700 dark:text-yellow-400"
-                    className="bg-yellow-100/50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
+                    className="bg-yellow-100/50 dark:bg-yellow-900/20 border-yellow-300/50 dark:border-yellow-500/30"
                 />
             </div>
         </div>
@@ -297,7 +297,7 @@ export default function DashboardPage() {
                     icon={Clock} 
                     percentage={stats.percAguardandoSaldo}
                     valueClassName="text-blue-700 dark:text-blue-400"
-                    className="bg-blue-100/50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
+                    className="bg-blue-100/50 dark:bg-blue-900/20 border-blue-300/50 dark:border-blue-500/30"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Saldo Pago', stats.proposals.saldoPago)}>
@@ -307,7 +307,7 @@ export default function DashboardPage() {
                     icon={CheckCircle2} 
                     percentage={stats.percSaldoPago}
                     valueClassName="text-orange-700 dark:text-orange-400"
-                    className="bg-orange-100/50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800"
+                    className="bg-orange-100/50 dark:bg-orange-900/20 border-orange-300/50 dark:border-orange-500/30"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Reprovado', stats.proposals.reprovado)}>
@@ -317,7 +317,7 @@ export default function DashboardPage() {
                     icon={XCircle} 
                     percentage={stats.percReprovado}
                     valueClassName="text-red-700 dark:text-red-400"
-                    className="bg-red-100/50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
+                    className="bg-red-100/50 dark:bg-red-900/20 border-red-300/50 dark:border-red-500/30"
                 />
             </div>
         </div>
