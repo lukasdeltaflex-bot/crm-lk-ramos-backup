@@ -115,11 +115,14 @@ function DataTable<TData, TValue>({
 
 type ProposalWithCustomer = Proposal & { customer: { name: string } | undefined };
 
-export function ProposalsStatusTable({ proposals, customers }: { proposals: Proposal[], customers: Customer[] }) {
+export function ProposalsStatusTable({ proposals = [], customers = [] }: { proposals?: Proposal[], customers?: Customer[] }) {
     
     const data: ProposalWithCustomer[] = React.useMemo(() => {
-        const customerMap = new Map(customers.map(c => [c.id, c]));
-        return proposals.map(proposal => {
+        const safeProposals = Array.isArray(proposals) ? proposals : [];
+        const safeCustomers = Array.isArray(customers) ? customers : [];
+        const customerMap = new Map(safeCustomers.map(c => [c.id, c]));
+        
+        return safeProposals.map(proposal => {
             const customer = customerMap.get(proposal.customerId);
             return {
                 ...proposal,
@@ -128,7 +131,7 @@ export function ProposalsStatusTable({ proposals, customers }: { proposals: Prop
         })
     }, [proposals, customers]);
 
-  if (proposals.length === 0) {
+  if (!proposals || proposals.length === 0) {
     return (
       <div className="flex items-center justify-center h-40 text-muted-foreground">
         Nenhuma proposta para este status no período selecionado.

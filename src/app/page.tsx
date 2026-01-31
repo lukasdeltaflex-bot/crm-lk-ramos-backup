@@ -181,7 +181,7 @@ export default function DashboardPage() {
             emAndamento: emAndamentoProposals,
             aguardandoSaldo: aguardandoSaldoProposals,
             saldoPago: saldoPagoProposals,
-            reprovado: reprovadoValue,
+            reprovado: reprovadoProposals,
             pago: pagoProposals,
             pagos: [...pagoProposals, ...saldoPagoProposals],
             todos: filteredProposals
