@@ -6,7 +6,7 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Regra para documentos globais com ownerId
+    // Regra para documentos vinculados ao proprietário
     function isOwner() {
       return signedIn() && (
         (resource == null && request.resource.data.ownerId == request.auth.uid) ||
