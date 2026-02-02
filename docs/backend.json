@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -66,9 +67,9 @@
   "firestore": {
     "structure": [
       { "path": "/users/{userId}", "definition": { "entityName": "UserProfile" } },
+      { "path": "/users/{userId}/followUps/{followUpId}", "definition": { "entityName": "FollowUp" } },
       { "path": "/customers/{customerId}", "definition": { "entityName": "Customer" } },
       { "path": "/loanProposals/{loanProposalId}", "definition": { "entityName": "LoanProposal" } },
-      { "path": "/followUps/{followUpId}", "definition": { "entityName": "FollowUp" } },
       { "path": "/userSettings/{userId}", "definition": { "entityName": "UserSettings" } }
     ]
   }

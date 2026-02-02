@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -5,29 +6,20 @@ import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Calendar as CalendarIcon, History, Search, Filter, Phone, User, ExternalLink, CheckCircle2, RefreshCw, XCircle, MoreVertical } from 'lucide-react';
+import { PlusCircle, Calendar as CalendarIcon, History, Search, User, CheckCircle2, RefreshCw, XCircle } from 'lucide-react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, setDoc, orderBy } from 'firebase/firestore';
 import type { FollowUp, Customer } from '@/lib/types';
 import { format, isBefore, isToday, parseISO, startOfDay, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
-import { cn, formatCurrency } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { FollowUpForm } from './follow-up-form';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import Link from 'next/link';
 
 export default function FollowUpsPage() {
   const { user } = useUser();
@@ -44,8 +36,7 @@ export default function FollowUpsPage() {
   const followUpsQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return query(
-      collection(firestore, 'followUps'),
-      where('ownerId', '==', user.uid),
+      collection(firestore, 'users', user.uid, 'followUps'),
       orderBy('dueDate', 'asc')
     );
   }, [firestore, user]);
@@ -84,9 +75,9 @@ export default function FollowUpsPage() {
   };
 
   const handleComplete = async () => {
-    if (!firestore || !selectedFollowUp) return;
+    if (!firestore || !selectedFollowUp || !user) return;
     try {
-      await setDoc(doc(firestore, 'followUps', selectedFollowUp.id), {
+      await setDoc(doc(firestore, 'users', user.uid, 'followUps', selectedFollowUp.id), {
         status: 'completed',
         completedAt: new Date().toISOString(),
         notes: actionNotes
@@ -94,14 +85,14 @@ export default function FollowUpsPage() {
       toast({ title: 'Retorno Concluído', description: 'O compromisso foi movido para o histórico.' });
       setIsActionDialogOpen(false);
     } catch (e) {
-      toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível salvar.' });
+      toast({ variant: 'destructive', title: 'Erro de Permissão', description: 'Verifique se você está logado corretamente.' });
     }
   };
 
   const handleCancel = async () => {
-    if (!firestore || !selectedFollowUp) return;
+    if (!firestore || !selectedFollowUp || !user) return;
     try {
-      await setDoc(doc(firestore, 'followUps', selectedFollowUp.id), {
+      await setDoc(doc(firestore, 'users', user.uid, 'followUps', selectedFollowUp.id), {
         status: 'cancelled',
         completedAt: new Date().toISOString(),
         notes: actionNotes
@@ -109,7 +100,7 @@ export default function FollowUpsPage() {
       toast({ title: 'Retorno Cancelado' });
       setIsActionDialogOpen(false);
     } catch (e) {
-      toast({ variant: 'destructive', title: 'Erro' });
+      toast({ variant: 'destructive', title: 'Erro de Permissão' });
     }
   };
 
@@ -117,17 +108,18 @@ export default function FollowUpsPage() {
     if (!firestore || !selectedFollowUp || !user) return;
     try {
       // 1. Marca o atual como reagendado
-      await setDoc(doc(firestore, 'followUps', selectedFollowUp.id), {
+      await setDoc(doc(firestore, 'users', user.uid, 'followUps', selectedFollowUp.id), {
         status: 'rescheduled',
         completedAt: new Date().toISOString(),
         notes: actionNotes
       }, { merge: true });
 
-      // 2. Cria o novo retorno
-      const newRef = doc(collection(firestore, 'followUps'));
+      // 2. Cria o novo retorno na subcoleção segura
+      const newRef = doc(collection(firestore, 'users', user.uid, 'followUps'));
       const newFollowUp: FollowUp = {
         ...selectedFollowUp,
         id: newRef.id,
+        ownerId: user.uid,
         dueDate: newDueDate,
         status: 'pending',
         createdAt: new Date().toISOString(),
@@ -152,7 +144,7 @@ export default function FollowUpsPage() {
     
     const date = parseISO(followUp.dueDate);
     if (isToday(date)) return <Badge className="bg-yellow-500 text-black border-none">Hoje</Badge>;
-    if (isBefore(date, startOfDay(new Date()))) return <Badge variant="destructive" className="animate-pulse">Atrasado</Badge>;
+    if (isBefore(date, startOfDay(new Date()))) return <Badge variant="destructive">Atrasado</Badge>;
     return <Badge variant="outline">Pendente</Badge>;
   };
 
@@ -200,7 +192,7 @@ export default function FollowUpsPage() {
                     </div>
                 ) : (
                     filteredFollowUps.map((f) => (
-                        <Card key={f.id} className="group hover:border-primary/50 transition-all cursor-pointer" onClick={() => handleOpenAction(f)}>
+                        <Card key={f.id} className="group border-border/50 hover:border-primary/50 transition-all cursor-pointer" onClick={() => handleOpenAction(f)}>
                             <CardContent className="p-4 flex items-center gap-4">
                                 <div className="h-12 w-12 rounded-full bg-primary/5 flex items-center justify-center shrink-0">
                                     <User className="h-6 w-6 text-primary/60" />
@@ -217,7 +209,7 @@ export default function FollowUpsPage() {
                                         </span>
                                         {f.contactPhone && (
                                             <span className="flex items-center gap-1">
-                                                <Phone className="h-3 w-3" />
+                                                <User className="h-3 w-3" />
                                                 {f.contactPhone}
                                             </span>
                                         )}
@@ -242,7 +234,7 @@ export default function FollowUpsPage() {
         <TabsContent value="history" className="mt-0">
              <div className="grid gap-4">
                 {filteredFollowUps.map((f) => (
-                    <Card key={f.id} className="opacity-80 grayscale-[0.5] hover:grayscale-0 transition-all">
+                    <Card key={f.id} className="opacity-80 grayscale-[0.5] hover:grayscale-0 transition-all border-border/50">
                         <CardContent className="p-4">
                             <div className="flex items-start justify-between gap-4">
                                 <div className="flex-1 min-w-0">
@@ -276,13 +268,13 @@ export default function FollowUpsPage() {
             <DialogDescription>O que foi conversado com o contato?</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="p-3 bg-secondary/30 rounded-md text-sm border">
+            <div className="p-3 bg-secondary/30 rounded-md text-sm border border-border/50">
                 <strong>Motivo agendado:</strong><br />
                 {selectedFollowUp?.description}
             </div>
             <textarea 
-                className="w-full min-h-[100px] p-3 rounded-md border text-sm"
-                placeholder="Ex: Liguei e ele pediu para retornar semana que vem pois está viajando..."
+                className="w-full min-h-[100px] p-3 rounded-md border border-border/50 text-sm focus:ring-2 focus:ring-primary outline-none"
+                placeholder="Ex: Liguei e ele pediu para retornar semana que vem..."
                 value={actionNotes}
                 onChange={(e) => setActionNotes(e.target.value)}
             />
@@ -331,15 +323,15 @@ export default function FollowUpsPage() {
             initialData={selectedFollowUp}
             onSubmit={async (data) => {
                 if (!firestore || !user) return;
-                const id = selectedFollowUp?.id || doc(collection(firestore, 'followUps')).id;
-                await setDoc(doc(firestore, 'followUps', id), {
+                const id = selectedFollowUp?.id || doc(collection(firestore, 'users', user.uid, 'followUps')).id;
+                await setDoc(doc(firestore, 'users', user.uid, 'followUps', id), {
                     ...data,
                     id,
                     ownerId: user.uid,
                     createdAt: selectedFollowUp?.createdAt || new Date().toISOString(),
                     status: 'pending'
                 }, { merge: true });
-                toast({ title: 'Agendado!', description: 'Retorno salvo com sucesso.' });
+                toast({ title: 'Agendado!', description: 'Retorno salvo com sucesso na sua lista privada.' });
                 setIsFormOpen(false);
             }}
           />

@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -51,8 +52,7 @@ export function NotificationBell() {
   const followUpsQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return query(
-        collection(firestore, 'followUps'), 
-        where('ownerId', '==', user.uid),
+        collection(firestore, 'users', user.uid, 'followUps'), 
         where('status', '==', 'pending')
     );
   }, [firestore, user]);

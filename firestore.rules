@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -6,7 +7,7 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Acesso total do usuário à sua própria pasta /users
+    // Acesso total do usuário à sua própria pasta /users e subcoleções
     match /users/{userId}/{document=**} {
       allow read, write: if signedIn() && request.auth.uid == userId;
     }
@@ -24,10 +25,6 @@ service cloud.firestore {
     }
 
     match /loanProposals/{proposalId} {
-      allow read, write: if isOwner();
-    }
-
-    match /followUps/{followUpId} {
       allow read, write: if isOwner();
     }
 

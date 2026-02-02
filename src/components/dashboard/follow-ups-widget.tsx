@@ -1,14 +1,14 @@
+
 'use client';
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CalendarClock, Phone, User, CheckCircle2, ChevronRight } from 'lucide-react';
+import { CalendarClock, Phone, CheckCircle2, ChevronRight } from 'lucide-react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy, limit } from 'firebase/firestore';
 import type { FollowUp } from '@/lib/types';
 import { format, parseISO, isToday, isBefore, startOfDay, addDays, isSameDay } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -21,8 +21,7 @@ export function FollowUpsWidget() {
   const followUpsQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return query(
-      collection(firestore, 'followUps'),
-      where('ownerId', '==', user.uid),
+      collection(firestore, 'users', user.uid, 'followUps'),
       where('status', '==', 'pending'),
       orderBy('dueDate', 'asc'),
       limit(5)
@@ -62,7 +61,7 @@ export function FollowUpsWidget() {
         {isLoading ? (
             Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)
         ) : !followUps || followUps.length === 0 ? (
-            <div className="h-32 flex flex-col items-center justify-center text-center text-muted-foreground border-2 border-dashed rounded-lg bg-muted/5">
+            <div className="h-32 flex flex-col items-center justify-center text-center text-muted-foreground border-2 border-dashed rounded-lg bg-muted/5 border-border/50">
                 <CalendarClock className="h-8 w-8 mb-2 opacity-20" />
                 <p className="text-xs">Nenhum retorno agendado.</p>
             </div>
