@@ -155,18 +155,6 @@ export function FinancialSummary({ rows, isPrivacyMode, isFiltered, onShowDetail
     },
   ];
 
-   if (!rows || (Array.isArray(rows) && rows.length === 0)) {
-      return (
-        <Alert variant="default" className="bg-secondary/50">
-            <Info className="h-4 w-4" />
-            <AlertTitle>Nenhum dado no período</AlertTitle>
-            <AlertDescription>
-                Não há propostas para exibir no período selecionado.
-            </AlertDescription>
-        </Alert>
-      )
-  }
-
   return (
     <div className='space-y-4'>
         <Alert variant="default" className="bg-secondary/50 print:hidden">

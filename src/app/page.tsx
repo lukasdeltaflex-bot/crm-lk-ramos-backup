@@ -136,19 +136,16 @@ export default function DashboardPage() {
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
 
-    // Lógica de "Backlog": Inclui o mês anterior para status operacionais
     const startOfPreviousMonth = startOfMonth(subMonths(fromDate, 1));
 
     const getSum = (list: Proposal[]) => list.reduce((sum, p) => sum + (p.grossAmount || 0), 0);
 
-    // 1. Filtragem Padrão (Mês Vigente)
     const currentMonthProposals = proposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
         return d >= fromDate && d <= effectiveToDate;
     });
 
-    // 2. Filtragem Backlog (Mês Anterior + Vigente)
     const backlogProposals = proposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
@@ -159,7 +156,6 @@ export default function DashboardPage() {
     const reprovadoProposals = currentMonthProposals.filter(p => p.status === 'Reprovado');
     const pagoProposals = currentMonthProposals.filter(p => p.status === 'Pago');
 
-    // Categorias com acúmulo do mês anterior
     const pendenteProposals = backlogProposals.filter(p => p.status === 'Pendente');
     const emAndamentoProposals = backlogProposals.filter(p => p.status === 'Em Andamento');
     const aguardandoSaldoProposals = backlogProposals.filter(p => p.status === 'Aguardando Saldo');
@@ -294,7 +290,7 @@ export default function DashboardPage() {
                     icon={BadgePercent} 
                     percentage={stats.percPendente}
                     valueClassName="text-purple-700 dark:text-purple-400"
-                    className="bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800"
+                    className="bg-purple-100/50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800"
                     description="Desde o mês anterior"
                 />
             </div>
@@ -305,7 +301,7 @@ export default function DashboardPage() {
                     icon={Hourglass} 
                     percentage={stats.percEmAndamento}
                     valueClassName="text-yellow-700 dark:text-yellow-400"
-                    className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
+                    className="bg-yellow-100/50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
                     description="Desde o mês anterior"
                 />
             </div>
@@ -319,7 +315,7 @@ export default function DashboardPage() {
                     icon={Clock} 
                     percentage={stats.percAguardandoSaldo}
                     valueClassName="text-blue-700 dark:text-blue-400"
-                    className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
+                    className="bg-blue-100/50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
                     description="Desde o mês anterior"
                 />
             </div>
@@ -330,7 +326,7 @@ export default function DashboardPage() {
                     icon={CheckCircle2} 
                     percentage={stats.percSaldoPago}
                     valueClassName="text-orange-700 dark:text-orange-400"
-                    className="bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800"
+                    className="bg-orange-100/50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800"
                     description="Desde o mês anterior"
                 />
             </div>
@@ -341,7 +337,7 @@ export default function DashboardPage() {
                     icon={XCircle} 
                     percentage={stats.percReprovado}
                     valueClassName="text-red-700 dark:text-red-400"
-                    className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
+                    className="bg-red-100/50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
                 />
             </div>
         </div>
