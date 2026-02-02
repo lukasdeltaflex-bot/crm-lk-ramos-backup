@@ -28,6 +28,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogTrigger,
   } from '@/components/ui/dialog';
 import { CommissionForm, type CommissionFormValues } from './commission-form';
 import { toast } from '@/hooks/use-toast';
@@ -91,7 +92,6 @@ export default function FinancialPage() {
       .filter(p => p.customer);
 
     const today = new Date();
-    const startOfCurrent = startOfMonth(today);
     const startOfPrev = startOfMonth(subMonths(today, 1));
     const endOfCurrent = endOfMonth(today);
     endOfCurrent.setHours(23, 59, 59, 999);
