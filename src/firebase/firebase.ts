@@ -7,7 +7,7 @@ import { getStorage, FirebaseStorage } from "firebase/storage";
  * CONFIGURAÇÃO DIRETA FIREBASE - LK RAMOS
  * 
  * ATENÇÃO: Substitua os valores abaixo pelos dados do seu Firebase Console.
- * Sem isso, o sistema não carregará seus dados.
+ * Sem isso, o sistema não carregará seus dados e parecerá vazio.
  */
 const firebaseConfig = {
   apiKey: "AIzaSyDcdnNBy0TZTsq_cI02KFVU9o7PJopEczM", // <--- COLE SUA API KEY REAL AQUI

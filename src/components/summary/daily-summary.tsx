@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Bot, Send, BellRing, Clock, BadgePercent, X, Info, Loader2, CalendarClock } from 'lucide-react';
 import type { Customer, Proposal, UserProfile, FollowUp } from '@/lib/types';
 import { Skeleton } from '../ui/skeleton';
-import { differenceInDays, format } from 'date-fns'; // Importação do format garantida aqui
+import { differenceInDays, format } from 'date-fns';
 import { calculateBusinessDays, getAge, cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from '@/hooks/use-toast';
@@ -47,7 +47,7 @@ function SummaryAlertItem({
       </div>
       <button
         onClick={() => onDismiss(id)}
-        className="absolute top-2 right-2 p-1 text-muted-foreground/80 hover:text-foreground rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="absolute top-2 right-2 p-1 text-muted-foreground/80 hover:text-foreground rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         aria-label="Dispensar alerta"
       >
         <X className="h-4 w-4" />
