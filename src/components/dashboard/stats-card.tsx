@@ -20,7 +20,7 @@ interface StatsCardProps {
 /**
  * StatsCard com visual premium LK RAMOS.
  * - Bordas sutis: border-border/50
- * - Valores monetários font-normal
+ * - Valores monetários font-normal para elegância
  */
 export function StatsCard({ title, value, icon: Icon, description, percentage, className, valueClassName }: StatsCardProps) {
   return (

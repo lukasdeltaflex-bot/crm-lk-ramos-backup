@@ -41,7 +41,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     const fromDate = currentMonthRange.from || new Date();
     const toDate = currentMonthRange.to || new Date();
     
-    // Lógica de Pipeline: Mês Anterior + Atual
+    // LÓGICA DE PIPELINE: Mês Anterior + Atual para Saldo e Esperada
     const startOfPipeline = startOfMonth(subMonths(fromDate, 1));
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
@@ -152,7 +152,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
             <Info className="h-4 w-4" />
             <AlertTitle>Inteligência de Pipeline Ativada</AlertTitle>
             <AlertDescription>
-                Os cartões **Total** e **Recebido** focam na produção do mês selecionado. Os cartões de **Saldo** e **Esperada** somam automaticamente o que "sobrou" do período anterior para facilitar seu controle de cobranças.
+                Os cartões **Total** e **Recebido** focam na produção do mês selecionado. Os cartões de **Saldo** e **Esperada** somam automaticamente o que sobrou do período anterior para facilitar seu controle de cobranças.
             </AlertDescription>
         </Alert>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 print:gap-2">

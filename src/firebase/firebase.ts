@@ -6,11 +6,12 @@ import { getStorage } from "firebase/storage";
 /**
  * RESET TOTAL FIREBASE - CONFIGURAÇÃO DIRETA
  * 
- * ATENÇÃO: Substitua os valores abaixo pelos dados reais do seu projeto
- * obtidos em: Firebase Console -> Configurações do Projeto -> Seus Apps.
+ * ATENÇÃO: Para o sistema funcionar, você PRECISA substituir os valores abaixo
+ * pelos dados reais do seu projeto obtidos em: 
+ * Firebase Console -> Configurações do Projeto -> Geral -> Seus Apps -> App Web.
  */
 const firebaseConfig = {
-  apiKey: "AIzaSyXXXXXXXXXXXX", // <--- SUBSTITUA POR SUA CHAVE REAL AQUI
+  apiKey: "AIzaSyXXXXXXXXXXXX", // <--- COLE SUA API KEY REAL AQUI
   authDomain: "seu-projeto.firebaseapp.com",
   projectId: "seu-projeto",
   storageBucket: "seu-projeto.appspot.com",
@@ -26,11 +27,11 @@ export const db = getFirestore(app);
 export const storage = getStorage(app);
 
 /**
- * Exportação centralizada exigida pelo ClientProvider.
+ * Exportação exigida pelo ClientProvider e diagnósticos.
  */
 export function initializeFirebase() {
-  if (typeof window !== 'undefined' && app.options.projectId !== 'seu-projeto') {
-    console.log("🚀 LK RAMOS - CONEXÃO FIREBASE ATIVA:", app.options.projectId);
+  if (typeof window !== 'undefined') {
+    console.log("🚀 LK RAMOS - CONEXÃO FIREBASE ATIVA NO PROJETO:", app.options.projectId);
   }
   
   return {

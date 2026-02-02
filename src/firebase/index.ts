@@ -1,8 +1,7 @@
 'use client';
 
 /**
- * Hub central de exportações do Firebase.
- * Redireciona para os módulos específicos para evitar dependências circulares.
+ * Hub central de exportações do Firebase LK RAMOS.
  */
 
 export * from './firebase';
