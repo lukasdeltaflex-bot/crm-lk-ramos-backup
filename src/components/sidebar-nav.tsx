@@ -12,8 +12,8 @@ import { LayoutDashboard, FileText, Users, CircleDollarSign, Cog, User, Calendar
 const links = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/proposals', label: 'Propostas', icon: FileText },
-  { href: '/follow-ups', label: 'Retornos', icon: CalendarClock },
   { href: '/customers', label: 'Clientes', icon: Users },
+  { href: '/follow-ups', label: 'Retornos', icon: CalendarClock },
   { href: '/financial', label: 'Financeiro', icon: CircleDollarSign },
 ];
 
