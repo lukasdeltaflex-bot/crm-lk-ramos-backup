@@ -308,9 +308,17 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         const proposal = row.original;
         const customer = proposal.customer;
         
-        // Exact match for customer ID or Numeric ID
+        // BUSCA EXATA POR ID DO CLIENTE: Se o termo for puramente numérico
         if (/^\d+$/.test(searchTerm)) {
+            // Se bater exatamente com o ID numérico do cliente vinculado
             if (customer && String(customer.numericId) === searchTerm) return true;
+            
+            // Se bater exatamente com o número da proposta
+            if (proposal.proposalNumber === searchTerm) return true;
+
+            // Se for um número curto (até 6 dígitos) e não bater exatamente com os IDs,
+            // ignoramos os outros campos para garantir precisão no filtro por ID.
+            if (searchTerm.length < 7) return false;
         }
 
         const fieldsToSearch = [

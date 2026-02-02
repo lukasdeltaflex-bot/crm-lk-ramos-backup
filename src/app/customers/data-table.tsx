@@ -210,12 +210,17 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
     
         const customer = row.original;
         
-        // Match exact numeric ID if searching for just a number
+        // BUSCA EXATA POR ID: Se o termo for puramente numérico
         if (/^\d+$/.test(searchTerm)) {
-            if (String(customer.numericId) === searchTerm) return true;
+            const isExactId = String(customer.numericId) === searchTerm;
+            if (isExactId) return true;
+            
+            // Se for um número curto (até 6 dígitos) e NÃO for o ID exato, 
+            // ignoramos os outros campos para garantir que a busca por número seja estritamente por ID.
+            if (searchTerm.length < 7) return false;
         } 
         
-        // Search fields with normalization
+        // Busca normal para textos ou números longos (como CPFs/Telefones parciais)
         const fieldsToSearch = [
             customer.name,
             customer.cpf,
