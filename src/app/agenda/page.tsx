@@ -98,7 +98,7 @@ export default function AgendaPage() {
       toast({ title: 'Lembrete removido com sucesso.' });
     } catch (err) {
       console.error("Erro ao remover lembrete:", err);
-      toast({ variant: 'destructive', title: 'Erro ao remover', description: 'Não foi possível excluir o lembrete.' });
+      toast({ variant: 'destructive', title: 'Erro ao remover', description: 'Não foi possível excluir le lembrete.' });
     }
   };
 
