@@ -1,4 +1,3 @@
-
 import {
   Card,
   CardContent,
@@ -20,6 +19,7 @@ interface StatsCardProps {
 
 /**
  * StatsCard com visual premium LK RAMOS e altura padronizada.
+ * Garante que todos os cards na grade mantenham a mesma altura.
  */
 export function StatsCard({ title, value, icon: Icon, description, percentage, className, valueClassName }: StatsCardProps) {
   return (
@@ -39,13 +39,13 @@ export function StatsCard({ title, value, icon: Icon, description, percentage, c
                 </div>
             )}
         </div>
-        <div className="mt-3 border-t pt-2 border-border/30">
+        <div className="mt-3 border-t pt-2 border-border/30 min-h-[22px]">
             {description ? (
                 <p className="text-[10px] font-bold text-muted-foreground mt-0 uppercase tracking-tighter opacity-60">
                     {description}
                 </p>
             ) : (
-                <div className="h-[14px]" /> /* Espaçador para manter proporção se não houver legenda */
+                <div className="h-[14px]" /> /* Espaçador para manter proporção */
             )}
         </div>
       </CardContent>

@@ -1,10 +1,9 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Target, TrendingUp, Pencil, Check, X, Trophy, Sparkles } from 'lucide-react';
+import { TrendingUp, Pencil, Check, X, Trophy } from 'lucide-react';
 import { formatCurrency, cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,8 +20,8 @@ const STORAGE_KEY_GOAL = 'lk-ramos-monthly-goal-v1';
 
 export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onValueClick, className }: GoalCardProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [monthlyGoal, setMonthlyGoal] = useState(100000);
-  const [editValue, setEditValue] = useState('100000');
+  const [monthlyGoal, setMonthlyGoal] = useState(150000);
+  const [editValue, setEditValue] = useState('150000');
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -53,103 +52,90 @@ export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onV
 
   const percentageOfGoal = Math.min((currentProduction / monthlyGoal) * 100, 100);
   const conversionRate = totalDigitized > 0 ? (currentProduction / totalDigitized) * 100 : 0;
-  const isGoalReached = currentProduction >= monthlyGoal;
 
-  if (!isClient) return <Card className="h-40 animate-pulse bg-muted rounded-xl" />;
+  if (!isClient) return <Card className="h-48 animate-pulse bg-muted rounded-xl" />;
 
   return (
-    <Card className={cn('hover:shadow-xl transition-all group relative overflow-hidden bg-gradient-to-br from-primary/[0.03] to-primary/[0.08] border border-border/50 rounded-xl shadow-md', className)}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 pt-6 px-8 bg-muted/5">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-full bg-primary/10">
-            <Trophy className={cn("h-5 w-5", isGoalReached ? "text-yellow-500 animate-bounce" : "text-primary/60")} />
-          </div>
-          <div>
-            <CardTitle className="text-base font-bold text-primary">Contratos Pagos (Mês)</CardTitle>
-            <CardDescription className="text-[10px] font-black uppercase tracking-widest opacity-60">Objetivo Principal do Período</CardDescription>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          {isEditing ? (
-            <div className="flex items-center gap-1 bg-background p-1.5 rounded-lg border shadow-sm">
-              <Input
-                type="number"
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
-                className="h-7 w-24 text-xs border-none focus-visible:ring-0"
-                autoFocus
-              />
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleSave}>
-                <Check className="h-4 w-4 text-green-500" />
-              </Button>
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleCancel}>
-                <X className="h-4 w-4 text-destructive" />
-              </Button>
+    <Card className={cn('relative overflow-hidden bg-blue-50/30 border border-blue-100/50 shadow-sm rounded-2xl', className)}>
+      <CardContent className="p-8">
+        {/* Header Row */}
+        <div className="flex items-start justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-full bg-white shadow-sm border border-blue-100">
+              <Trophy className="h-5 w-5 text-blue-400" />
             </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <div className="px-3 py-1 bg-background/60 backdrop-blur-md rounded-full border border-border/50 text-[11px] font-black text-primary shadow-sm">
-                Meta: {isPrivacyMode ? '•••••' : formatCurrency(monthlyGoal)}
-              </div>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-7 w-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-background shadow-sm hover:bg-muted" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsEditing(true);
-                }}
-              >
-                <Pencil className="h-3 w-3 text-muted-foreground" />
-              </Button>
-            </div>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent 
-        className={cn("pt-4 pb-8 px-8 cursor-pointer")}
-        onClick={onValueClick}
-      >
-        <div className="flex flex-col gap-8">
-          <div className="flex items-end justify-between">
-            <div className="space-y-1">
-              <div className={cn("text-5xl font-normal tracking-tighter text-primary leading-none", isPrivacyMode && "blur-md")}>
-                {isPrivacyMode ? '•••••' : formatCurrency(currentProduction)}
-              </div>
-              <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-widest flex items-center gap-2 mt-3">
-                <TrendingUp className="h-4 w-4 text-green-500" />
-                Conversão de Esteira: <span className="text-primary font-black">{conversionRate.toFixed(1).replace('.', ',')}%</span>
-              </p>
-            </div>
-            <div className={cn("flex flex-col items-end gap-1 font-bold", isGoalReached ? "text-green-500" : "text-primary")}>
-              <div className="text-4xl tabular-nums tracking-tighter">
-                {percentageOfGoal.toFixed(1)}%
-              </div>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-black">Performance</p>
+            <div>
+              <h3 className="text-lg font-bold text-blue-600 leading-tight">Performance do Mês</h3>
+              <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">Meta de Contratos Pagos</p>
             </div>
           </div>
-          
-          <div className="space-y-4">
-            <div className="relative">
-                <Progress value={percentageOfGoal} className="h-4 bg-primary/5 rounded-full" />
-                <div className="absolute top-0 bottom-0 left-0 bg-primary shadow-[0_0_20px_rgba(var(--primary),0.4)] transition-all duration-1000 ease-out rounded-full" style={{ width: `${percentageOfGoal}%` }}>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_infinite]" />
+
+          <div className="flex items-center gap-3">
+            {isEditing ? (
+              <div className="flex items-center gap-1 bg-white p-1 rounded-lg border shadow-sm">
+                <Input
+                  type="number"
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  className="h-7 w-24 text-xs border-none focus-visible:ring-0"
+                  autoFocus
+                />
+                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={handleSave}>
+                  <Check className="h-3 w-3 text-green-500" />
+                </Button>
+                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={handleCancel}>
+                  <X className="h-3 w-3 text-destructive" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="px-4 py-1.5 bg-white rounded-full border border-blue-100 text-[11px] font-bold text-blue-600 shadow-sm">
+                  Objetivo: {isPrivacyMode ? '•••••' : formatCurrency(monthlyGoal)}
                 </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 rounded-full opacity-0 hover:opacity-100 transition-opacity bg-white/50" 
+                  onClick={() => setIsEditing(true)}
+                >
+                  <Pencil className="h-3 w-3 text-muted-foreground" />
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Main Content Row */}
+        <div className="flex items-end justify-between mb-8" onClick={onValueClick}>
+          <div className="space-y-2 cursor-pointer">
+            <div className={cn("text-6xl font-normal tracking-tighter text-blue-500 leading-none", isPrivacyMode && "blur-md")}>
+              {isPrivacyMode ? '•••••' : formatCurrency(currentProduction)}
             </div>
-            <div className="flex justify-between items-center text-[11px] font-black uppercase tracking-[0.15em]">
-              {isGoalReached ? (
-                <p className="text-green-500 flex items-center gap-2">
-                  <Sparkles className="h-4 w-4" /> META ATINGIDA COM SUCESSO!
-                </p>
-              ) : (
-                <p className="text-muted-foreground">
-                  Restam <span className={cn("text-primary", isPrivacyMode && "blur-sm")}>
-                    {isPrivacyMode ? '•••••' : formatCurrency(monthlyGoal - currentProduction)}
-                  </span> para o objetivo
-                </p>
-              )}
-              <p className="text-muted-foreground opacity-60">Filtro: <span className="text-primary font-black">CONTRATOS PAGOS</span></p>
+            <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/80 uppercase tracking-wider">
+              <TrendingUp className="h-3.5 w-3.5 text-green-500" />
+              Conversão de <span className="text-foreground">{conversionRate.toFixed(1)}%</span> sobre a digitação total.
             </div>
+          </div>
+
+          <div className="text-right space-y-1">
+            <div className="text-5xl font-normal text-blue-500 tracking-tighter tabular-nums">
+              {percentageOfGoal.toFixed(1)}%
+            </div>
+            <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em]">Concluído</p>
+          </div>
+        </div>
+
+        {/* Progress Section */}
+        <div className="space-y-4">
+          <Progress value={percentageOfGoal} className="h-2.5 bg-blue-100/50" />
+          
+          <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+            <p>
+              Faltam <span className={cn("text-blue-500", isPrivacyMode && "blur-sm")}>
+                {isPrivacyMode ? '•••••' : formatCurrency(Math.max(0, monthlyGoal - currentProduction))}
+              </span> para o objetivo.
+            </p>
+            <p>Status: Pago + Saldo Pago</p>
           </div>
         </div>
       </CardContent>

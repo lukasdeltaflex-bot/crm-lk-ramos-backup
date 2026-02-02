@@ -1,11 +1,9 @@
-
 'use client';
 
 import * as React from 'react';
 import {
   ColumnDef,
   ColumnFiltersState,
-  Row,
   SortingState,
   VisibilityState,
   flexRender,
@@ -22,7 +20,6 @@ import {
   PaginationState,
 } from '@tanstack/react-table';
 import { format, parse, isValid, startOfDay, endOfDay, subDays, startOfMonth, subMonths, endOfMonth } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { DateRange } from 'react-day-picker';
 import {
     DndContext,
@@ -185,8 +182,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     useSensor(KeyboardSensor)
   );
 
-  const isAnyFilterActive = !!globalFilter || statusFilter !== 'Todos' || !!appliedDateRange;
-
   const handleDateInputChange = (value: string, type: 'start' | 'end') => {
     let formattedValue = value.replace(/\D/g, '');
     if (formattedValue.length > 8) formattedValue = formattedValue.substring(0, 8);
@@ -307,6 +302,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
       },
   });
 
+  const isAnyFilterActive = !!globalFilter || statusFilter !== 'Todos' || !!appliedDateRange;
   const selectedRows = table.getFilteredSelectedRowModel().rows;
   const totalSelectedCommission = React.useMemo(() => {
     return selectedRows.reduce((total, row) => total + (row.original.commissionValue || 0), 0);
@@ -363,8 +359,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
       onDragEnd={handleDragEnd}
       sensors={sensors}
     >
-        <Card className="print:shadow-none print:border-none financial-table border-border/50 shadow-md rounded-xl">
-        <div className="p-4 space-y-4 print:p-0">
+        <div className="space-y-4">
             <FinancialSummary 
                 rows={currentMonthData}
                 currentMonthRange={appliedDateRange || currentMonthRange}
@@ -373,221 +368,224 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                 onShowDetails={onShowDetails}
             />
 
-            <div className="flex items-center justify-between py-4 print:hidden">
-                <div className="flex flex-wrap gap-2 items-center">
-                    <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as CommissionStatus | 'Todos')}>
-                        <TabsList className="bg-muted/50">
-                            <TabsTrigger value="Todos">Todos</TabsTrigger>
-                            <TabsTrigger value="Paga">Pagas</TabsTrigger>
-                            <TabsTrigger value="Pendente">Pendentes</TabsTrigger>
-                            <TabsTrigger value="Parcial">Parciais</TabsTrigger>
-                        </TabsList>
-                    </Tabs>
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <Select onValueChange={(val) => applyRange(val as any)}>
-                            <SelectTrigger className='w-[140px] h-9 bg-card'>
-                                <CalendarIcon className='mr-2 h-4 w-4 text-primary' />
-                                <SelectValue placeholder="Período" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="today">Hoje</SelectItem>
-                                <SelectItem value="yesterday">Ontem</SelectItem>
-                                <SelectItem value="week">Últimos 7 dias</SelectItem>
-                                <SelectItem value="month">Mês Atual</SelectItem>
-                                <SelectItem value="lastMonth">Mês Passado</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <div className="flex items-center gap-1">
-                            <Input 
-                                placeholder="De" 
-                                value={startDateInput}
-                                onChange={(e) => handleDateInputChange(e.target.value, 'start')}
-                                maxLength={10}
-                                className="h-9 w-28 bg-card"
-                            />
-                            <span className='text-muted-foreground'>-</span>
-                            <Input 
-                                placeholder="Até" 
-                                value={endDateInput}
-                                onChange={(e) => handleDateInputChange(e.target.value, 'end')}
-                                maxLength={10}
-                                className="h-9 w-28 bg-card"
-                            />
-                        </div>
-                        <Button size="sm" onClick={handleApplyFilter}><Filter className="h-4 w-4" /> Aplicar</Button>
-                        {(startDateInput || endDateInput || appliedDateRange) && <Button variant="ghost" size="icon" className="h-9 w-9" onClick={clearDates}><X className="h-4 w-4" /></Button>}
-                    </div>
-                </div>
-            </div>
-
-            <div className="flex items-center justify-between py-4 print:hidden">
-            <div className='relative w-full max-w-sm'>
-                <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
-                <Input
-                placeholder="Busca inteligente (cliente, CPF, proposta...)"
-                value={globalFilter ?? ''}
-                onChange={(event) =>
-                    setGlobalFilter(event.target.value)
-                }
-                className="pl-9 w-full bg-card"
-                />
-            </div>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="ml-auto bg-card">
-                    Colunas <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                {table
-                    .getAllColumns()
-                    .filter((column) => column.getCanHide())
-                    .map((column) => {
-                    return (
-                        <DropdownMenuCheckboxItem
-                        key={column.id}
-                        className="capitalize"
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(value) =>
-                            column.toggleVisibility(!!value)
-                        }
-                        >
-                        {idToLabelMap[column.id] || column.id}
-                        </DropdownMenuCheckboxItem>
-                    );
-                    })}
-                </DropdownMenuContent>
-            </DropdownMenu>
-            </div>
-            <div className="rounded-xl border print:border print:border-gray-300 overflow-hidden shadow-sm">
-            <Table>
-                <TableHeader className="bg-muted/20">
-                {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
-                        <SortableContext
-                            items={columnOrder}
-                            strategy={horizontalListSortingStrategy}
-                        >
-                            {headerGroup.headers.map((header) => (
-                                <DraggableHeader key={header.id} header={header as Header<ProposalWithCustomer, unknown>} />
-                            ))}
-                        </SortableContext>
-                    </TableRow>
-                ))}
-                </TableHeader>
-                <TableBody>
-                {table.getRowModel().rows?.length ? (
-                    table.getRowModel().rows.map((row) => (
-                    <TableRow
-                        key={row.id}
-                        data-state={row.getIsSelected() && 'selected'}
-                        className="print:even:bg-gray-50 hover:bg-primary/[0.02] transition-colors"
-                    >
-                        {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id} className="print:text-xs print:p-2 py-4">
-                            {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                            )}
-                        </TableCell>
-                        ))}
-                    </TableRow>
-                    ))
-                ) : (
-                    <TableRow>
-                    <TableCell
-                        colSpan={columns.length}
-                        className="h-24 text-center"
-                    >
-                        Nenhum resultado para os filtros aplicados.
-                    </TableCell>
-                    </TableRow>
-                )}
-                </TableBody>
-            </Table>
-            </div>
-            <div className="flex items-center justify-between py-4 print:hidden">
-                <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                    <div>
-                        {table.getFilteredSelectedRowModel().rows.length} de{' '}
-                        {table.getFilteredRowModel().rows.length} total
-                    </div>
-                    {selectedRows.length > 0 && !isPrivacyMode && (
-                        <>
-                            <Separator orientation="vertical" className="h-4" />
-                            <div className="text-primary">
-                                Selecionado: <span className="text-foreground">{formatCurrency(totalSelectedCommission)}</span>
+            <Card className="print:shadow-none print:border-none financial-table border-border/50 shadow-md rounded-xl">
+                <div className="p-4 space-y-4 print:p-0">
+                    <div className="flex items-center justify-between py-4 print:hidden">
+                        <div className="flex flex-wrap gap-2 items-center">
+                            <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as CommissionStatus | 'Todos')}>
+                                <TabsList className="bg-muted/50">
+                                    <TabsTrigger value="Todos">Todos</TabsTrigger>
+                                    <TabsTrigger value="Paga">Pagas</TabsTrigger>
+                                    <TabsTrigger value="Pendente">Pendentes</TabsTrigger>
+                                    <TabsTrigger value="Parcial">Parciais</TabsTrigger>
+                                </TabsList>
+                            </Tabs>
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <Select onValueChange={(val) => applyRange(val as any)}>
+                                    <SelectTrigger className='w-[140px] h-9 bg-card'>
+                                        <CalendarIcon className='mr-2 h-4 w-4 text-primary' />
+                                        <SelectValue placeholder="Período" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="today">Hoje</SelectItem>
+                                        <SelectItem value="yesterday">Ontem</SelectItem>
+                                        <SelectItem value="week">Últimos 7 dias</SelectItem>
+                                        <SelectItem value="month">Mês Atual</SelectItem>
+                                        <SelectItem value="lastMonth">Mês Passado</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <div className="flex items-center gap-1">
+                                    <Input 
+                                        placeholder="De" 
+                                        value={startDateInput}
+                                        onChange={(e) => handleDateInputChange(e.target.value, 'start')}
+                                        maxLength={10}
+                                        className="h-9 w-28 bg-card"
+                                    />
+                                    <span className='text-muted-foreground'>-</span>
+                                    <Input 
+                                        placeholder="Até" 
+                                        value={endDateInput}
+                                        onChange={(e) => handleDateInputChange(e.target.value, 'end')}
+                                        maxLength={10}
+                                        className="h-9 w-28 bg-card"
+                                    />
+                                </div>
+                                <Button size="sm" onClick={handleApplyFilter}><Filter className="h-4 w-4" /> Aplicar</Button>
+                                {(startDateInput || endDateInput || appliedDateRange) && <Button variant="ghost" size="icon" className="h-9 w-9" onClick={clearDates}><X className="h-4 w-4" /></Button>}
                             </div>
-                        </>
-                    )}
-                </div>
-                <div className="flex items-center space-x-6 lg:space-x-8">
-                    <div className="flex items-center space-x-2">
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Linhas</p>
-                        <Select
-                            value={`${table.getState().pagination.pageSize}`}
-                            onValueChange={(value) => {
-                                table.setPageSize(Number(value))
-                            }}
-                        >
-                            <SelectTrigger className="h-8 w-[70px] bg-card">
-                                <SelectValue placeholder={table.getState().pagination.pageSize} />
-                            </SelectTrigger>
-                            <SelectContent side="top">
-                                {[10, 20, 50, 100].map((pageSize) => (
-                                    <SelectItem key={pageSize} value={`${pageSize}`}>
-                                        {pageSize}
-                                    </SelectItem>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-between py-4 print:hidden">
+                    <div className='relative w-full max-w-sm'>
+                        <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+                        <Input
+                        placeholder="Busca inteligente (cliente, CPF, proposta...)"
+                        value={globalFilter ?? ''}
+                        onChange={(event) =>
+                            setGlobalFilter(event.target.value)
+                        }
+                        className="pl-9 w-full bg-card"
+                        />
+                    </div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="ml-auto bg-card">
+                            Colunas <ChevronDown className="ml-2 h-4 w-4" />
+                        </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                        {table
+                            .getAllColumns()
+                            .filter((column) => column.getCanHide())
+                            .map((column) => {
+                            return (
+                                <DropdownMenuCheckboxItem
+                                key={column.id}
+                                className="capitalize"
+                                checked={column.getIsVisible()}
+                                onCheckedChange={(value) =>
+                                    column.toggleVisibility(!!value)
+                                }
+                                >
+                                {idToLabelMap[column.id] || column.id}
+                                </DropdownMenuCheckboxItem>
+                            );
+                            })}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    </div>
+                    <div className="rounded-xl border print:border print:border-gray-300 overflow-hidden shadow-sm">
+                    <Table>
+                        <TableHeader className="bg-muted/20">
+                        {table.getHeaderGroups().map((headerGroup) => (
+                            <TableRow key={headerGroup.id}>
+                                <SortableContext
+                                    items={columnOrder}
+                                    strategy={horizontalListSortingStrategy}
+                                >
+                                    {headerGroup.headers.map((header) => (
+                                        <DraggableHeader key={header.id} header={header as Header<ProposalWithCustomer, unknown>} />
+                                    ))}
+                                </SortableContext>
+                            </TableRow>
+                        ))}
+                        </TableHeader>
+                        <TableBody>
+                        {table.getRowModel().rows?.length ? (
+                            table.getRowModel().rows.map((row) => (
+                            <TableRow
+                                key={row.id}
+                                data-state={row.getIsSelected() && 'selected'}
+                                className="print:even:bg-gray-50 hover:bg-primary/[0.02] transition-colors"
+                            >
+                                {row.getVisibleCells().map((cell) => (
+                                <TableCell key={cell.id} className="print:text-xs print:p-2 py-4">
+                                    {flexRender(
+                                    cell.column.columnDef.cell,
+                                    cell.getContext()
+                                    )}
+                                </TableCell>
                                 ))}
-                            </SelectContent>
-                        </Select>
+                            </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                            <TableCell
+                                colSpan={columns.length}
+                                className="h-24 text-center"
+                            >
+                                Nenhum resultado para os filtros aplicados.
+                            </TableCell>
+                            </TableRow>
+                        )}
+                        </TableBody>
+                    </Table>
                     </div>
-                    <div className="flex w-[100px] items-center justify-center text-xs font-bold text-primary uppercase">
-                        Pág {table.getState().pagination.pageIndex + 1} de{" "}
-                        {table.getPageCount()}
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <Button
-                            variant="outline"
-                            className="hidden h-8 w-8 p-0 lg:flex bg-card"
-                            onClick={() => table.setPageIndex(0)}
-                            disabled={!table.getCanPreviousPage()}
-                        >
-                            <span className="sr-only">Primeira página</span>
-                            <ChevronsLeft className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="h-8 w-8 p-0 bg-card"
-                            onClick={() => table.previousPage()}
-                            disabled={!table.getCanPreviousPage()}
-                        >
-                            <span className="sr-only">Página anterior</span>
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="h-8 w-8 p-0 bg-card"
-                            onClick={() => table.nextPage()}
-                            disabled={!table.getCanNextPage()}
-                        >
-                            <span className="sr-only">Próxima página</span>
-                            <ChevronRight className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="hidden h-8 w-8 p-0 lg:flex bg-card"
-                            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                            disabled={!table.getCanNextPage()}
-                        >
-                            <span className="sr-only">Última página</span>
-                            <ChevronsRight className="h-4 w-4" />
-                        </Button>
+                    <div className="flex items-center justify-between py-4 print:hidden">
+                        <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                            <div>
+                                {table.getFilteredSelectedRowModel().rows.length} de{' '}
+                                {table.getFilteredRowModel().rows.length} total
+                            </div>
+                            {selectedRows.length > 0 && !isPrivacyMode && (
+                                <>
+                                    <Separator orientation="vertical" className="h-4" />
+                                    <div className="text-primary">
+                                        Seleção: <span className="text-foreground">{formatCurrency(totalSelectedCommission)}</span>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                        <div className="flex items-center space-x-6 lg:space-x-8">
+                            <div className="flex items-center space-x-2">
+                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Linhas</p>
+                                <Select
+                                    value={`${table.getState().pagination.pageSize}`}
+                                    onValueChange={(value) => {
+                                        table.setPageSize(Number(value))
+                                    }}
+                                >
+                                    <SelectTrigger className="h-8 w-[70px] bg-card">
+                                        <SelectValue placeholder={table.getState().pagination.pageSize} />
+                                    </SelectTrigger>
+                                    <SelectContent side="top">
+                                        {[10, 20, 50, 100].map((pageSize) => (
+                                            <SelectItem key={pageSize} value={`${pageSize}`}>
+                                                {pageSize}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="flex w-[100px] items-center justify-center text-xs font-bold text-primary uppercase">
+                                Pág {table.getState().pagination.pageIndex + 1} de{" "}
+                                {table.getPageCount()}
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <Button
+                                    variant="outline"
+                                    className="hidden h-8 w-8 p-0 lg:flex bg-card"
+                                    onClick={() => table.setPageIndex(0)}
+                                    disabled={!table.getCanPreviousPage()}
+                                >
+                                    <span className="sr-only">Primeira página</span>
+                                    <ChevronsLeft className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="h-8 w-8 p-0 bg-card"
+                                    onClick={() => table.previousPage()}
+                                    disabled={!table.getCanPreviousPage()}
+                                >
+                                    <span className="sr-only">Página anterior</span>
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="h-8 w-8 p-0 bg-card"
+                                    onClick={() => table.nextPage()}
+                                    disabled={!table.getCanNextPage()}
+                                >
+                                    <span className="sr-only">Próxima página</span>
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="hidden h-8 w-8 p-0 lg:flex bg-card"
+                                    onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                                    disabled={!table.getCanNextPage()}
+                                >
+                                    <span className="sr-only">Última página</span>
+                                    <ChevronsRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </Card>
         </div>
-        </Card>
     </DndContext>
   );
 });
