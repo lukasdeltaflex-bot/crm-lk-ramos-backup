@@ -4,13 +4,13 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 /**
- * RESET TOTAL FIREBASE - CONFIGURAÇÃO DIRETA
+ * CONFIGURAÇÃO DIRETA FIREBASE - LK RAMOS
  * 
- * ATENÇÃO: Substitua os valores abaixo pelos dados reais do seu projeto
- * obtidos em: Firebase Console -> Configurações do Projeto -> Geral -> App Web.
+ * ATENÇÃO: Para o sistema funcionar, você DEVE substituir os valores abaixo
+ * pelos dados reais do seu projeto obtidos no Firebase Console.
  */
 const firebaseConfig = {
-  apiKey: "AIzaSyXXXXXXXXXXXX", // <--- SUBSTITUA POR SUA API KEY REAL AQUI
+  apiKey: "AIzaSyXXXXXXXXXXXX", // <--- COLE SUA API KEY AQUI
   authDomain: "seu-projeto.firebaseapp.com",
   projectId: "seu-projeto",
   storageBucket: "seu-projeto.appspot.com",
@@ -18,7 +18,7 @@ const firebaseConfig = {
   appId: "1:123456789:web:abcdef"
 };
 
-// Singleton para garantir inicialização única no Next.js
+// Singleton para garantir inicialização única
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 export const auth = getAuth(app);
@@ -26,11 +26,11 @@ export const db = getFirestore(app);
 export const storage = getStorage(app);
 
 /**
- * Função de inicialização exigida pelo Provider.
+ * Função de inicialização exigida pelo Provider Cliente.
  */
 export function initializeFirebase() {
   if (typeof window !== 'undefined') {
-    console.log("🚀 LK RAMOS - CONEXÃO FIREBASE ATIVA NO PROJETO:", app.options.projectId);
+    console.log("🚀 LK RAMOS - CONEXÃO FIREBASE INICIALIZADA:", app.options.projectId);
   }
   
   return {

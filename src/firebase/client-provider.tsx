@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, type ReactNode } from 'react';
 import { FirebaseProvider } from '@/firebase/provider';
-import { initializeFirebase } from './firebase'; // Importação direta para evitar ciclo
+import { initializeFirebase } from './firebase'; 
 import { Loader2 } from 'lucide-react';
 
 interface FirebaseClientProviderProps {
@@ -10,16 +10,14 @@ interface FirebaseClientProviderProps {
 }
 
 /**
- * Provedor que garante a inicialização do Firebase apenas no lado do cliente.
+ * Provedor que garante a inicialização do Firebase no lado do cliente.
  */
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
-  const [firebaseServices, setFirebaseServices] = useState<any>(null);
   const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
     try {
-        const services = initializeFirebase();
-        setFirebaseServices(services);
+        initializeFirebase();
     } catch (error) {
         console.error("❌ Falha crítica na inicialização do Firebase:", error);
     } finally {
@@ -31,7 +29,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     return (
         <div className="flex h-screen w-screen flex-col items-center justify-center bg-background gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground animate-pulse">LK RAMOS: Conectando ao Banco de Dados...</p>
+            <p className="text-sm text-muted-foreground animate-pulse">LK RAMOS: Estabelecendo conexão segura...</p>
         </div>
     );
   }

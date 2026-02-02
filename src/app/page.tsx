@@ -136,7 +136,7 @@ export default function DashboardPage() {
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
 
-    // LÓGICA PIPELINE ACUMULADO: Início do mês passado até o fim do período selecionado
+    // LÓGICA PIPELINE ACUMULADO: Início do mês passado até hoje
     const startOfPipeline = startOfMonth(subMonths(fromDate, 1));
 
     const getSum = (list: Proposal[]) => list.reduce((sum, p) => sum + (p.grossAmount || 0), 0);
@@ -153,13 +153,13 @@ export default function DashboardPage() {
         return d >= startOfPipeline && d <= effectiveToDate;
     });
 
-    // MÉTRICAS DE PRODUÇÃO (Mensais)
+    // MÉTRICAS DE PRODUÇÃO (Estritamente Mensais)
     const totalDigitado = getSum(currentPeriodProposals);
     const reprovadoValue = getSum(currentPeriodProposals.filter(p => p.status === 'Reprovado'));
     const pagoProposals = currentPeriodProposals.filter(p => p.status === 'Pago');
     const pagoValue = getSum(pagoProposals);
 
-    // MÉTRICAS OPERACIONAIS (Pipeline Acumulado)
+    // MÉTRICAS OPERACIONAIS (Pipeline Acumulado: Mês Anterior + Atual)
     const pendenteProposals = accumulatedProposals.filter(p => p.status === 'Pendente');
     const emAndamentoProposals = accumulatedProposals.filter(p => p.status === 'Em Andamento');
     const aguardandoSaldoProposals = accumulatedProposals.filter(p => p.status === 'Aguardando Saldo');
@@ -208,7 +208,7 @@ export default function DashboardPage() {
         <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
-                <p className="text-sm text-muted-foreground">Exibindo dados para o mês de {currentMonthName}</p>
+                <p className="text-sm text-muted-foreground">Exibindo dados para {currentMonthName}</p>
             </div>
             <div className="flex items-center gap-2 flex-wrap bg-card p-2 rounded-lg border border-border/50 shadow-sm">
                 <Select onValueChange={(val) => applyRange(val as any)}>
