@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Bot, Send, BellRing, Clock, BadgePercent, X, Info, Loader2, CalendarClock } from 'lucide-react';
 import type { Customer, Proposal, UserProfile, FollowUp } from '@/lib/types';
 import { Skeleton } from '../ui/skeleton';
-import { differenceInDays, format } from 'date-fns';
+import { differenceInDays, format } from 'date-fns'; // Importação do format garantida aqui
 import { calculateBusinessDays, getAge, cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from '@/hooks/use-toast';
@@ -93,7 +93,7 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
   };
 
   const alertData = useMemo(() => {
-    if (!isClient) return { birthdayAlerts: [], followUpReminders: [], commissionReminders: [], debtBalanceReminders: [], partialCommissionReminders: [], manualFollowUps: [] };
+    if (!isClient || !proposals || !customers) return { birthdayAlerts: [], followUpReminders: [], commissionReminders: [], debtBalanceReminders: [], partialCommissionReminders: [], manualFollowUps: [] };
 
     const now = new Date();
     const todayStr = format(now, 'MM-dd');

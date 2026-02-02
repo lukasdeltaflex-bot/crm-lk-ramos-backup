@@ -7,7 +7,7 @@ import { getStorage, FirebaseStorage } from "firebase/storage";
  * CONFIGURAÇÃO DIRETA FIREBASE - LK RAMOS
  * 
  * ATENÇÃO: Substitua os valores abaixo pelos dados do seu Firebase Console.
- * Sem isso, o login retornará erro de "API KEY INVALID".
+ * Sem isso, o sistema não carregará seus dados.
  */
 const firebaseConfig = {
   apiKey: "AIzaSyDcdnNBy0TZTsq_cI02KFVU9o7PJopEczM", // <--- COLE SUA API KEY REAL AQUI
@@ -23,15 +23,17 @@ let auth: Auth;
 let db: Firestore;
 let storage: FirebaseStorage;
 
+// Inicialização segura para evitar tela preta em caso de erro na configuração
 try {
     app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
     auth = getAuth(app);
     db = getFirestore(app);
     storage = getStorage(app);
 } catch (error) {
-    console.error("⚠️ Erro crítico na inicialização do Firebase:", error);
+    console.error("⚠️ Erro na inicialização do Firebase. Verifique suas chaves:", error);
 }
 
+// Exportação garantida das instâncias
 export { auth, db, storage };
 
 /**
@@ -39,7 +41,7 @@ export { auth, db, storage };
  */
 export function initializeFirebase() {
   if (typeof window !== 'undefined' && app && app.options.apiKey !== "AIzaSyXXXXXXXXXXXX") {
-    console.log("🚀 LK RAMOS - CONEXÃO FIREBASE ATIVA:", app.options.projectId);
+    console.log("🚀 LK RAMOS - CONEXÃO ATIVA COM:", app.options.projectId);
   }
   
   return {

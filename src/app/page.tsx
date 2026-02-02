@@ -136,7 +136,7 @@ export default function DashboardPage() {
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
 
-    // LÓGICA PIPELINE ACUMULADO: Início do mês passado até hoje
+    // LÓGICA PIPELINE ACUMULADO: Início do mês passado até hoje para pendências
     const startOfPipeline = startOfMonth(subMonths(fromDate, 1));
 
     const getSum = (list: Proposal[]) => list.reduce((sum, p) => sum + (p.grossAmount || 0), 0);
@@ -153,13 +153,13 @@ export default function DashboardPage() {
         return d >= startOfPipeline && d <= effectiveToDate;
     });
 
-    // MÉTRICAS DE PRODUÇÃO (Estritamente Mensais)
+    // MÉTRICAS DE PRODUÇÃO (Focado em Metas Mensais)
     const totalDigitado = getSum(currentPeriodProposals);
     const reprovadoValue = getSum(currentPeriodProposals.filter(p => p.status === 'Reprovado'));
     const pagoProposals = currentPeriodProposals.filter(p => p.status === 'Pago');
     const pagoValue = getSum(pagoProposals);
 
-    // MÉTRICAS OPERACIONAIS (Pipeline Acumulado: Mês Anterior + Atual)
+    // MÉTRICAS OPERACIONAIS (Pipeline Real: Mês Anterior + Atual)
     const pendenteProposals = accumulatedProposals.filter(p => p.status === 'Pendente');
     const emAndamentoProposals = accumulatedProposals.filter(p => p.status === 'Em Andamento');
     const aguardandoSaldoProposals = accumulatedProposals.filter(p => p.status === 'Aguardando Saldo');
@@ -280,7 +280,7 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.pendente)} 
                     icon={BadgePercent} 
                     percentage={stats.percPendente}
-                    valueClassName="text-purple-600 dark:text-purple-400"
+                    valueClassName="text-purple-600 dark:text-purple-400 font-normal"
                     className="bg-purple-50/50 dark:bg-purple-900/20 border-border/50 shadow-sm"
                     description="Pipeline (Mês Ant + Atual)"
                 />
@@ -291,7 +291,7 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.emAndamento)} 
                     icon={Hourglass} 
                     percentage={stats.percEmAndamento}
-                    valueClassName="text-yellow-600 dark:text-yellow-400"
+                    valueClassName="text-yellow-600 dark:text-yellow-400 font-normal"
                     className="bg-yellow-50/50 dark:bg-yellow-900/20 border-border/50 shadow-sm"
                     description="Pipeline (Mês Ant + Atual)"
                 />
@@ -305,7 +305,7 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.aguardandoSaldo)} 
                     icon={Clock} 
                     percentage={stats.percAguardandoSaldo}
-                    valueClassName="text-blue-600 dark:text-blue-400"
+                    valueClassName="text-blue-600 dark:text-blue-400 font-normal"
                     className="bg-blue-50/50 dark:bg-blue-900/20 border-border/50 shadow-sm"
                     description="Pipeline (Mês Ant + Atual)"
                 />
@@ -316,7 +316,7 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.saldoPago)} 
                     icon={CheckCircle2} 
                     percentage={stats.percSaldoPago}
-                    valueClassName="text-orange-600 dark:text-orange-400"
+                    valueClassName="text-orange-600 dark:text-orange-400 font-normal"
                     className="bg-orange-50/50 dark:bg-orange-900/20 border-border/50 shadow-sm"
                     description="Pipeline (Mês Ant + Atual)"
                 />
@@ -327,7 +327,7 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.reprovado)} 
                     icon={XCircle} 
                     percentage={stats.percReprovado}
-                    valueClassName="text-red-600 dark:text-red-400"
+                    valueClassName="text-red-600 dark:text-red-400 font-normal"
                     className="bg-red-100/10 dark:bg-red-900/20 border-border/50 shadow-sm"
                     description="Produção Mensal"
                 />
