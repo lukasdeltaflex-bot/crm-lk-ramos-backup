@@ -31,7 +31,7 @@ import {
   } from '@/components/ui/dialog';
 import { CommissionForm, type CommissionFormValues } from './commission-form';
 import { toast } from '@/hooks/use-toast';
-import { format, startOfMonth, endOfMonth, parse } from 'date-fns';
+import { format, startOfMonth, endOfMonth, parse, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CommissionReconciliation } from '@/components/financial/commission-reconciliation';
 import { formatCurrency } from '@/lib/utils';
@@ -78,16 +78,17 @@ export default function FinancialPage() {
     const startOfCurrent = startOfMonth(today);
     const endOfCurrent = endOfMonth(today);
 
-    // Oculta reprovadas conforme solicitado (não geram comissão)
-    const tableData = proposals
-      .filter(p => p.status !== 'Reprovado')
+    // Oculta propostas reprovadas em todo o financeiro (não geram comissão)
+    const filteredProposals = proposals.filter(p => p.status !== 'Reprovado');
+
+    const tableData = filteredProposals
       .map(p => ({
         ...p,
         customer: customersMap.get(p.customerId),
       }))
       .filter(p => p.customer);
 
-    const summaryData = proposals
+    const summaryData = filteredProposals
       .map(p => ({
         ...p,
         customer: customersMap.get(p.customerId),

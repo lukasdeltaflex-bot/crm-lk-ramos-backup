@@ -20,16 +20,18 @@ const globalForFirebase = global as unknown as {
   storage: FirebaseStorage | undefined;
 };
 
-const app = globalForFirebase.app || (!getApps().length ? initializeApp(firebaseConfig) : getApp());
+const app = globalForFirebase.app || (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp());
 const auth = globalForFirebase.auth || getAuth(app);
 const db = globalForFirebase.db || getFirestore(app);
 const storage = globalForFirebase.storage || getStorage(app);
 
 // Sempre salvar no global para garantir instância única durante o desenvolvimento
-globalForFirebase.app = app;
-globalForFirebase.auth = auth;
-globalForFirebase.db = db;
-globalForFirebase.storage = storage;
+if (process.env.NODE_ENV !== "production") {
+    globalForFirebase.app = app;
+    globalForFirebase.auth = auth;
+    globalForFirebase.db = db;
+    globalForFirebase.storage = storage;
+}
 
 export { auth, db, storage, app };
 
