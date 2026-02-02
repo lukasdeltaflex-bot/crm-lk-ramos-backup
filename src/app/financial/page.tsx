@@ -95,11 +95,6 @@ export default function FinancialPage() {
       .filter(p => p.customer);
 
     const summaryData = proposals
-      .filter(p => {
-        if (!p.dateDigitized) return false;
-        const proposalDate = new Date(p.dateDigitized);
-        return proposalDate >= startOfPrev && proposalDate <= endOfCurrent;
-      })
       .map(p => ({
         ...p,
         customer: customersMap.get(p.customerId),
