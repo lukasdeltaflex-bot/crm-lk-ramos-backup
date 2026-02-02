@@ -1,12 +1,12 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Calendar as CalendarIcon, History, Search, User, CheckCircle2, RefreshCw, XCircle } from 'lucide-react';
+import { PlusCircle, Calendar as CalendarIcon, History, Search, User, CheckCircle2, RefreshCw, XCircle, Loader2 } from 'lucide-react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, setDoc, orderBy } from 'firebase/firestore';
 import type { FollowUp, Customer } from '@/lib/types';
@@ -32,6 +32,14 @@ export default function FollowUpsPage() {
   const [newDueDate, setNewDueDate] = useState(format(addDays(new Date(), 7), 'yyyy-MM-dd'));
   const [searchTerm, setSearchTerm] = useState('');
   const [tab, setTab] = useState('pending');
+  const [isSaving, setIsSaving] = useState(false);
+
+  // DEBUG PATH
+  useEffect(() => {
+    if (user) {
+        console.log("📂 LENDO RETORNOS EM:", `users/${user.uid}/followUps`);
+    }
+  }, [user]);
 
   const followUpsQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
@@ -74,38 +82,33 @@ export default function FollowUpsPage() {
     setIsActionDialogOpen(true);
   };
 
-  const handleComplete = async () => {
+  const handleUpdateStatus = async (status: FollowUp['status'], extraData: any = {}) => {
     if (!firestore || !selectedFollowUp || !user) return;
+    setIsSaving(true);
     try {
+      const path = `users/${user.uid}/followUps/${selectedFollowUp.id}`;
+      console.log("💾 ATUALIZANDO RETORNO EM:", path);
+      
       await setDoc(doc(firestore, 'users', user.uid, 'followUps', selectedFollowUp.id), {
-        status: 'completed',
+        ...extraData,
+        status,
         completedAt: new Date().toISOString(),
         notes: actionNotes
       }, { merge: true });
-      toast({ title: 'Retorno Concluído', description: 'O compromisso foi movido para o histórico.' });
+      
+      toast({ title: 'Ação realizada com sucesso' });
       setIsActionDialogOpen(false);
-    } catch (e) {
-      toast({ variant: 'destructive', title: 'Erro de Permissão', description: 'Verifique se você está logado corretamente.' });
-    }
-  };
-
-  const handleCancel = async () => {
-    if (!firestore || !selectedFollowUp || !user) return;
-    try {
-      await setDoc(doc(firestore, 'users', user.uid, 'followUps', selectedFollowUp.id), {
-        status: 'cancelled',
-        completedAt: new Date().toISOString(),
-        notes: actionNotes
-      }, { merge: true });
-      toast({ title: 'Retorno Cancelado' });
-      setIsActionDialogOpen(false);
-    } catch (e) {
-      toast({ variant: 'destructive', title: 'Erro de Permissão' });
+    } catch (e: any) {
+      console.error("❌ ERRO AO ATUALIZAR RETORNO:", e);
+      toast({ variant: 'destructive', title: 'Erro de Permissão', description: e.message });
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleReschedule = async () => {
     if (!firestore || !selectedFollowUp || !user) return;
+    setIsSaving(true);
     try {
       // 1. Marca o atual como reagendado
       await setDoc(doc(firestore, 'users', user.uid, 'followUps', selectedFollowUp.id), {
@@ -127,13 +130,44 @@ export default function FollowUpsPage() {
         notes: undefined,
         description: `(Reagendado) ${selectedFollowUp.description}`
       };
+      
+      console.log("🔄 CRIANDO NOVO AGENDAMENTO EM:", `users/${user.uid}/followUps/${newRef.id}`);
       await setDoc(newRef, newFollowUp);
 
-      toast({ title: 'Reagendamento Concluído', description: `Novo retorno definido para ${format(parseISO(newDueDate), 'dd/MM/yyyy')}` });
+      toast({ title: 'Reagendamento Concluído' });
       setIsRescheduleOpen(false);
       setIsActionDialogOpen(false);
-    } catch (e) {
-      toast({ variant: 'destructive', title: 'Erro ao reagendar' });
+    } catch (e: any) {
+      console.error("❌ ERRO AO REAGENDAR:", e);
+      toast({ variant: 'destructive', title: 'Erro ao reagendar', description: e.message });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleFormSubmit = async (data: any) => {
+    if (!firestore || !user) return;
+    setIsSaving(true);
+    try {
+        const id = selectedFollowUp?.id || doc(collection(firestore, 'users', user.uid, 'followUps')).id;
+        const path = `users/${user.uid}/followUps/${id}`;
+        console.log("💾 SALVANDO NOVO RETORNO EM:", path);
+
+        await setDoc(doc(firestore, 'users', user.uid, 'followUps', id), {
+            ...data,
+            id,
+            ownerId: user.uid,
+            createdAt: selectedFollowUp?.createdAt || new Date().toISOString(),
+            status: 'pending'
+        }, { merge: true });
+
+        toast({ title: 'Agendado com sucesso!' });
+        setIsFormOpen(false);
+    } catch (e: any) {
+        console.error("❌ ERRO AO SALVAR RETORNO:", e);
+        toast({ variant: 'destructive', title: 'Erro ao Salvar', description: e.message });
+    } finally {
+        setIsSaving(false);
     }
   };
 
@@ -192,8 +226,8 @@ export default function FollowUpsPage() {
                     </div>
                 ) : (
                     filteredFollowUps.map((f) => (
-                        <Card key={f.id} className="group border-border/50 hover:border-primary/50 transition-all cursor-pointer" onClick={() => handleOpenAction(f)}>
-                            <CardContent className="p-4 flex items-center gap-4">
+                        <Card key={f.id} className="group border-border/50 hover:border-primary/50 transition-all cursor-pointer overflow-hidden" onClick={() => handleOpenAction(f)}>
+                            <div className="p-4 flex items-center gap-4">
                                 <div className="h-12 w-12 rounded-full bg-primary/5 flex items-center justify-center shrink-0">
                                     <User className="h-6 w-6 text-primary/60" />
                                 </div>
@@ -224,7 +258,7 @@ export default function FollowUpsPage() {
                                 <Button variant="ghost" size="icon" className="shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
                                     <CheckCircle2 className="h-5 w-5" />
                                 </Button>
-                            </CardContent>
+                            </div>
                         </Card>
                     ))
                 )}
@@ -235,7 +269,7 @@ export default function FollowUpsPage() {
              <div className="grid gap-4">
                 {filteredFollowUps.map((f) => (
                     <Card key={f.id} className="opacity-80 grayscale-[0.5] hover:grayscale-0 transition-all border-border/50">
-                        <CardContent className="p-4">
+                        <div className="p-4">
                             <div className="flex items-start justify-between gap-4">
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-1">
@@ -253,7 +287,7 @@ export default function FollowUpsPage() {
                                     Criação: {format(parseISO(f.createdAt), "dd/MM/yy")}
                                 </div>
                             </div>
-                        </CardContent>
+                        </div>
                     </Card>
                 ))}
              </div>
@@ -273,21 +307,23 @@ export default function FollowUpsPage() {
                 {selectedFollowUp?.description}
             </div>
             <textarea 
-                className="w-full min-h-[100px] p-3 rounded-md border border-border/50 text-sm focus:ring-2 focus:ring-primary outline-none"
+                className="w-full min-h-[100px] p-3 rounded-md border border-border/50 text-sm focus:ring-2 focus:ring-primary outline-none bg-background"
                 placeholder="Ex: Liguei e ele pediu para retornar semana que vem..."
                 value={actionNotes}
                 onChange={(e) => setActionNotes(e.target.value)}
+                disabled={isSaving}
             />
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="ghost" className="text-destructive hover:bg-destructive/10" onClick={handleCancel}>
+            <Button variant="ghost" className="text-destructive hover:bg-destructive/10" onClick={() => handleUpdateStatus('cancelled')} disabled={isSaving}>
                 <XCircle className="mr-2 h-4 w-4" /> Cancelar
             </Button>
-            <Button variant="outline" onClick={() => setIsRescheduleOpen(true)}>
+            <Button variant="outline" onClick={() => setIsRescheduleOpen(true)} disabled={isSaving}>
                 <RefreshCw className="mr-2 h-4 w-4" /> Reagendar
             </Button>
-            <Button onClick={handleComplete}>
-                <CheckCircle2 className="mr-2 h-4 w-4" /> Concluído
+            <Button onClick={() => handleUpdateStatus('completed')} disabled={isSaving}>
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                Concluído
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -304,10 +340,14 @@ export default function FollowUpsPage() {
                 type="date" 
                 value={newDueDate} 
                 onChange={(e) => setNewDueDate(e.target.value)} 
+                disabled={isSaving}
             />
           </div>
           <DialogFooter>
-            <Button className="w-full" onClick={handleReschedule}>Confirmar Reagendamento</Button>
+            <Button className="w-full" onClick={handleReschedule} disabled={isSaving}>
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Confirmar Reagendamento
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -321,19 +361,7 @@ export default function FollowUpsPage() {
           <FollowUpForm 
             customers={customers || []} 
             initialData={selectedFollowUp}
-            onSubmit={async (data) => {
-                if (!firestore || !user) return;
-                const id = selectedFollowUp?.id || doc(collection(firestore, 'users', user.uid, 'followUps')).id;
-                await setDoc(doc(firestore, 'users', user.uid, 'followUps', id), {
-                    ...data,
-                    id,
-                    ownerId: user.uid,
-                    createdAt: selectedFollowUp?.createdAt || new Date().toISOString(),
-                    status: 'pending'
-                }, { merge: true });
-                toast({ title: 'Agendado!', description: 'Retorno salvo com sucesso na sua lista privada.' });
-                setIsFormOpen(false);
-            }}
+            onSubmit={handleFormSubmit}
           />
         </DialogContent>
       </Dialog>

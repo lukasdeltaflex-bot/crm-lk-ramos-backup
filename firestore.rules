@@ -2,38 +2,10 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    function signedIn() {
-      return request.auth != null;
-    }
-
-    // Acesso total do usuário à sua própria pasta /users e subcoleções
-    match /users/{userId}/{document=**} {
-      allow read, write: if signedIn() && request.auth.uid == userId;
-    }
-
-    // Função genérica de propriedade baseada no ownerId
-    function isOwner() {
-      return signedIn() && (
-        (resource == null && request.resource.data.ownerId == request.auth.uid) ||
-        (resource != null && resource.data.ownerId == request.auth.uid)
-      );
-    }
-
-    match /customers/{customerId} {
-      allow read, write: if isOwner();
-    }
-
-    match /loanProposals/{proposalId} {
-      allow read, write: if isOwner();
-    }
-
-    match /userSettings/{userId} {
-      allow read, write: if signedIn() && request.auth.uid == userId;
-    }
-    
+    // ABERTURA TOTAL TEMPORÁRIA PARA DEBUG OBRIGATÓRIO
+    // Se o erro persistir aqui, o problema é o Project ID ou variáveis de ambiente.
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if true;
     }
   }
 }

@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CalendarClock, Phone, CheckCircle2, ChevronRight } from 'lucide-react';
@@ -17,6 +17,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 export function FollowUpsWidget() {
   const { user } = useUser();
   const firestore = useFirestore();
+
+  useEffect(() => {
+    if (user) {
+        console.log("📂 DASHBOARD: LENDO RETORNOS EM:", `users/${user.uid}/followUps`);
+    }
+  }, [user]);
 
   const followUpsQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;

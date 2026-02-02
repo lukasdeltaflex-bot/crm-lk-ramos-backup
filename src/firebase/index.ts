@@ -1,3 +1,4 @@
+
 'use client';
 
 import { firebaseConfig } from '@/firebase/config';
@@ -21,7 +22,8 @@ export function initializeFirebase() {
   // 🔥 OBRIGATÓRIO: Garante que o login não se perca ao recarregar ou salvar
   if (typeof window !== 'undefined') {
     setPersistence(sdks.auth, browserLocalPersistence).catch(console.error);
-    console.log("🔥 LK Ramos - Conectado ao Projeto:", firebaseApp.options.projectId);
+    // DEBUG DE PROJETO: Verifique se este ID bate com o console do Firebase
+    console.log("🔥 LK RAMOS - PROJECT ID CONECTADO:", firebaseApp.options.projectId);
   }
 
   return sdks;
