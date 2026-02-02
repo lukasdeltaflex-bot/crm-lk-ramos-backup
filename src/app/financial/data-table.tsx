@@ -282,9 +282,17 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         if (!searchTerm) return true;
         const proposal = row.original;
         const customer = proposal.customer;
+        
+        // BUSCA EXATA POR ID: Se o termo for puramente numérico
         if (/^\d+$/.test(searchTerm)) {
-            if (customer && String(customer.numericId) === searchTerm) return true;
+            const isExactId = customer && String(customer.numericId) === searchTerm;
+            if (isExactId) return true;
+            
+            // Se for um número curto (até 6 dígitos) e NÃO for o ID exato, 
+            // ignoramos os outros campos para garantir que a busca por número seja estritamente por ID.
+            if (searchTerm.length < 7) return false;
         }
+
         const fieldsToSearch = [
             proposal.proposalNumber,
             proposal.promoter,
@@ -323,13 +331,22 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
 
   React.useEffect(() => {
     const dateColumn = table.getColumn('commissionPaymentDate');
-    dateColumn?.setFilterValue(appliedDateRange);
-  }, [appliedDateRange, table]);
+    
+    // REGRA SOLICITADA: No filtro "Pagas", se não houver busca manual, mostrar apenas o mês atual.
+    if (statusFilter === 'Paga' && !appliedDateRange) {
+        const now = new Date();
+        const from = startOfMonth(now);
+        const to = endOfMonth(now);
+        dateColumn?.setFilterValue({ from, to });
+    } else {
+        // Se houver busca manual ou não for o filtro "Pagas", respeita o range ou limpa
+        dateColumn?.setFilterValue(appliedDateRange);
+    }
+  }, [appliedDateRange, statusFilter, table]);
 
   React.useEffect(() => {
     const mainStatusColumn = table.getColumn('status');
     if (statusFilter === 'Todos') {
-        // Na visão geral do financeiro, ocultar propostas reprovadas para limpar o fluxo de caixa
         const allStatusesExceptReprovado = proposalStatuses.filter(s => s !== 'Reprovado');
         mainStatusColumn?.setFilterValue(allStatusesExceptReprovado);
     } else {
@@ -520,7 +537,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                         </div>
                         <div className="flex items-center space-x-6 lg:space-x-8">
                             <div className="flex items-center space-x-2">
-                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Linhas</p>
+                                <p className="text-sm font-medium">Linhas por página</p>
                                 <Select
                                     value={`${table.getState().pagination.pageSize}`}
                                     onValueChange={(value) => {
