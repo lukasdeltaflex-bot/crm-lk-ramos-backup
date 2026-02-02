@@ -73,6 +73,15 @@ export function AuthForm({ type }: AuthFormProps) {
   });
 
   async function handleFormSubmit(data: FormValues) {
+    // MODO EMERGÊNCIA: Avisa que o login está travado até a API Key ser corrigida
+    toast({
+        variant: 'destructive',
+        title: 'Sistema em Manutenção',
+        description: 'Por favor, configure sua API KEY no arquivo src/firebase/firebase.ts para habilitar o login.',
+    });
+    
+    /* 
+    TEMPORARIAMENTE COMENTADO PARA EVITAR TELA PRETA POR ERRO DE API KEY
     try {
       if (type === 'login') {
         const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
@@ -95,12 +104,11 @@ export function AuthForm({ type }: AuthFormProps) {
         const user = userCredential.user;
         
         if (user && firestore) {
-          // Create user profile document
           const userProfileRef = doc(firestore, 'users', user.uid);
           const newUserProfile: UserProfile = {
             uid: user.uid,
             email: user.email!,
-            displayName: user.email!.split('@')[0], // Default display name
+            displayName: user.email!.split('@')[0],
           };
           await setDoc(userProfileRef, newUserProfile);
           await sendEmailVerification(user);
@@ -127,12 +135,13 @@ export function AuthForm({ type }: AuthFormProps) {
         description: message,
       });
     }
+    */
   }
 
   const isSubmitting = form.formState.isSubmitting;
 
   return (
-    <Card>
+    <Card className="border-border/50 shadow-md">
       <CardHeader className="items-center text-center">
         <div className='flex justify-center mb-4'>
             <Logo />

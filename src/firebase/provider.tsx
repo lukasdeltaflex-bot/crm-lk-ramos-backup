@@ -1,7 +1,6 @@
 'use client';
 
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
-import { FirebaseApp } from 'firebase/app';
 import { Firestore } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged } from 'firebase/auth';
 import { Storage } from 'firebase/storage';
@@ -51,15 +50,22 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     return () => unsubscribe();
   }, []);
 
+  const areServicesAvailable = !!authInstance && !!db;
+
   const contextValue = useMemo((): FirebaseContextState => ({
-    areServicesAvailable: true,
+    areServicesAvailable,
     firestore: db,
     auth: authInstance,
     storage: storageInstance,
     user: userAuthState.user,
     isUserLoading: userAuthState.isUserLoading,
     userError: userAuthState.userError,
-  }), [userAuthState]);
+  }), [userAuthState, areServicesAvailable]);
+
+  // MODO EMERGÊNCIA: Não trava a UI se o Firebase falhar
+  if (!areServicesAvailable) {
+    console.warn("⚠️ LK RAMOS: Firebase indisponível ou em carregamento – modo de segurança ativado.");
+  }
 
   return (
     <FirebaseContext.Provider value={contextValue}>
@@ -71,11 +77,24 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
 
 export const useFirebase = () => {
   const context = useContext(FirebaseContext);
-  if (!context) throw new Error('useFirebase must be used within FirebaseProvider.');
+  
+  if (!context) {
+    // Retorno seguro para evitar crash, mas avisa o desenvolvedor
+    console.warn("useFirebase usado fora do Provider.");
+    return {
+        auth: authInstance,
+        firestore: db,
+        storage: storageInstance,
+        user: null,
+        isUserLoading: false,
+        userError: null,
+    };
+  }
+
   return {
-    auth: authInstance,
-    firestore: db,
-    storage: storageInstance,
+    auth: context.auth!,
+    firestore: context.firestore!,
+    storage: context.storage!,
     user: context.user,
     isUserLoading: context.isUserLoading,
     userError: context.userError,
