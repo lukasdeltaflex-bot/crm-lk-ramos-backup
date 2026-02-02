@@ -6,12 +6,12 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Perfil, Configurações e Reminders: Acesso total do usuário à sua própria pasta
+    // Acesso total do usuário à sua própria pasta /users
     match /users/{userId}/{document=**} {
       allow read, write: if signedIn() && request.auth.uid == userId;
     }
 
-    // Clientes e Propostas: Acesso baseado no ownerId
+    // Função genérica de propriedade baseada no ownerId
     function isOwner() {
       return signedIn() && (
         (resource == null && request.resource.data.ownerId == request.auth.uid) ||
@@ -24,6 +24,10 @@ service cloud.firestore {
     }
 
     match /loanProposals/{proposalId} {
+      allow read, write: if isOwner();
+    }
+
+    match /followUps/{followUpId} {
       allow read, write: if isOwner();
     }
 

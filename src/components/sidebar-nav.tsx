@@ -7,11 +7,12 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, FileText, Users, CircleDollarSign, Cog, User } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, CircleDollarSign, Cog, User, CalendarClock } from 'lucide-react';
 
 const links = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/proposals', label: 'Propostas', icon: FileText },
+  { href: '/follow-ups', label: 'Retornos', icon: CalendarClock },
   { href: '/customers', label: 'Clientes', icon: Users },
   { href: '/financial', label: 'Financeiro', icon: CircleDollarSign },
 ];

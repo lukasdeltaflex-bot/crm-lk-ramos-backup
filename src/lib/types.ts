@@ -103,3 +103,20 @@ export type UserProfile = {
   birthDate?: string; // YYYY-MM-DD
   phone?: string;
 }
+
+export type FollowUpStatus = 'pending' | 'completed' | 'rescheduled' | 'cancelled';
+
+export type FollowUp = {
+  id: string;
+  ownerId: string;
+  contactName: string;
+  contactPhone?: string;
+  customerId?: string; // Opcional: link para cliente real
+  referralInfo?: string; // Ex: "Esposo da Ana Silva"
+  description: string;
+  dueDate: string; // YYYY-MM-DD
+  status: FollowUpStatus;
+  createdAt: string;
+  completedAt?: string;
+  notes?: string;
+};

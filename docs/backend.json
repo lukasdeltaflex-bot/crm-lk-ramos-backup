@@ -5,103 +5,28 @@
       "type": "object",
       "description": "Stores user profile information.",
       "properties": {
-        "uid": {
-          "type": "string",
-          "description": "User ID, same as Firebase Auth UID."
-        },
-        "fullName": {
-          "type": "string",
-          "description": "User's full name."
-        },
-        "displayName": {
-          "type": "string",
-          "description": "How the user wants to be called."
-        },
-        "photoURL": {
-          "type": "string",
-          "description": "URL for the user's profile picture."
-        },
-        "birthDate": {
-          "type": "string",
-          "description": "User's birth date.",
-          "format": "date"
-        },
-        "phone": {
-          "type": "string",
-          "description": "User's phone number."
-        },
-        "email": {
-          "type": "string",
-          "description": "User's email address.",
-          "format": "email"
-        }
+        "uid": { "type": "string" },
+        "fullName": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "birthDate": { "type": "string", "format": "date" },
+        "phone": { "type": "string" },
+        "email": { "type": "string", "format": "email" }
       },
-      "required": [
-        "uid",
-        "email"
-      ]
+      "required": ["uid", "email"]
     },
     "Customer": {
       "title": "Customer",
       "type": "object",
-      "description": "Represents a customer who is an INSS retiree or pensioner.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Customer entity."
-        },
-        "numericId": {
-            "type": "number",
-            "description": "User-facing numeric identifier for the customer."
-        },
-        "name": {
-          "type": "string",
-          "description": "Full name of the customer."
-        },
-        "cpf": {
-          "type": "string",
-          "description": "Customer's CPF."
-        },
-        "benefits": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "number": { "type": "string" },
-                "species": { "type": "string" }
-              }
-            }
-        },
-        "phone": { "type": "string" },
-        "phone2": { "type": "string" },
-        "email": { "type": "string", "format": "email" },
-        "birthDate": { "type": "string", "format": "date" },
-        "ownerId": { "type": "string" },
-        "cep": { "type": "string" },
-        "street": { "type": "string" },
-        "number": { "type": "string" },
-        "complement": { "type": "string" },
-        "neighborhood": { "type": "string" },
-        "city": { "type": "string" },
-        "state": { "type": "string" },
-        "documents": {
-          "type": "array",
-          "items": { "$ref": "#/backend/entities/Attachment" }
-        },
-        "observations": { "type": "string" }
-      },
-      "required": ["numericId", "name", "cpf", "phone", "birthDate", "ownerId"]
-    },
-    "Attachment": {
-      "title": "Attachment",
-      "type": "object",
-      "properties": {
+        "id": { "type": "string" },
+        "numericId": { "type": "number" },
         "name": { "type": "string" },
-        "url": { "type": "string" },
-        "type": { "type": "string" },
-        "size": { "type": "number" }
+        "cpf": { "type": "string" },
+        "phone": { "type": "string" },
+        "ownerId": { "type": "string" }
       },
-      "required": ["name", "url", "type", "size"]
+      "required": ["numericId", "name", "cpf", "phone", "ownerId"]
     },
     "LoanProposal": {
       "title": "LoanProposal",
@@ -111,41 +36,28 @@
         "ownerId": { "type": "string" },
         "customerId": { "type": "string" },
         "proposalNumber": { "type": "string" },
-        "status": { "type": "string" },
-        "grossAmount": { "type": "number" },
-        "netAmount": { "type": "number" },
-        "commissionValue": { "type": "number" },
-        "commissionStatus": { "type": "string" },
-        "dateDigitized": { "type": "string", "format": "date-time" },
-        "dateApproved": { "type": "string", "format": "date-time" }
+        "status": { "type": "string" }
       }
     },
-    "Reminder": {
-      "title": "Reminder",
+    "FollowUp": {
+      "title": "FollowUp",
       "type": "object",
-      "description": "A scheduled task or reminder for a customer or prospect.",
+      "description": "Mecanismo de retornos futuros para clientes ou leads.",
       "properties": {
         "id": { "type": "string" },
-        "title": { "type": "string", "description": "Title or client name." },
+        "ownerId": { "type": "string" },
+        "contactName": { "type": "string" },
+        "contactPhone": { "type": "string" },
+        "customerId": { "type": "string" },
+        "referralInfo": { "type": "string" },
         "description": { "type": "string" },
-        "dueDate": { "type": "string", "format": "date", "description": "YYYY-MM-DD" },
-        "status": { "type": "string", "enum": ["pending", "completed"] },
-        "customerId": { "type": "string", "description": "Optional link to existing Customer." },
-        "userId": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "dueDate": { "type": "string", "format": "date" },
+        "status": { "type": "string", "enum": ["pending", "completed", "rescheduled", "cancelled"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "completedAt": { "type": "string", "format": "date-time" },
+        "notes": { "type": "string" }
       },
-      "required": ["title", "dueDate", "status", "userId"]
-    },
-    "UserSettings": {
-      "title": "UserSettings",
-      "type": "object",
-      "properties": {
-        "productTypes": { "type": "array", "items": { "type": "string" } },
-        "proposalStatuses": { "type": "array", "items": { "type": "string" } },
-        "commissionStatuses": { "type": "array", "items": { "type": "string" } },
-        "approvingBodies": { "type": "array", "items": { "type": "string" } },
-        "banks": { "type": "array", "items": { "type": "string" } }
-      }
+      "required": ["ownerId", "contactName", "dueDate", "status", "createdAt"]
     }
   },
   "auth": {
@@ -156,7 +68,7 @@
       { "path": "/users/{userId}", "definition": { "entityName": "UserProfile" } },
       { "path": "/customers/{customerId}", "definition": { "entityName": "Customer" } },
       { "path": "/loanProposals/{loanProposalId}", "definition": { "entityName": "LoanProposal" } },
-      { "path": "/reminders/{reminderId}", "definition": { "entityName": "Reminder" } },
+      { "path": "/followUps/{followUpId}", "definition": { "entityName": "FollowUp" } },
       { "path": "/userSettings/{userId}", "definition": { "entityName": "UserSettings" } }
     ]
   }

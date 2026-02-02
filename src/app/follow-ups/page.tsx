@@ -1,0 +1,350 @@
+'use client';
+
+import React, { useState, useMemo } from 'react';
+import { AppLayout } from '@/components/app-layout';
+import { PageHeader } from '@/components/page-header';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { PlusCircle, Calendar as CalendarIcon, History, Search, Filter, Phone, User, ExternalLink, CheckCircle2, RefreshCw, XCircle, MoreVertical } from 'lucide-react';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where, doc, setDoc, orderBy } from 'firebase/firestore';
+import type { FollowUp, Customer } from '@/lib/types';
+import { format, isBefore, isToday, parseISO, startOfDay, addDays } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { Badge } from '@/components/ui/badge';
+import { cn, formatCurrency } from '@/lib/utils';
+import { toast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { FollowUpForm } from './follow-up-form';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import Link from 'next/link';
+
+export default function FollowUpsPage() {
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedFollowUp, setSelectedFollowUp] = useState<FollowUp | undefined>(undefined);
+  const [isActionDialogOpen, setIsActionDialogOpen] = useState(false);
+  const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
+  const [actionNotes, setActionNotes] = useState('');
+  const [newDueDate, setNewDueDate] = useState(format(addDays(new Date(), 7), 'yyyy-MM-dd'));
+  const [searchTerm, setSearchTerm] = useState('');
+  const [tab, setTab] = useState('pending');
+
+  const followUpsQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return query(
+      collection(firestore, 'followUps'),
+      where('ownerId', '==', user.uid),
+      orderBy('dueDate', 'asc')
+    );
+  }, [firestore, user]);
+
+  const customersQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return query(collection(firestore, 'customers'), where('ownerId', '==', user.uid));
+  }, [firestore, user]);
+
+  const { data: followUps, isLoading } = useCollection<FollowUp>(followUpsQuery);
+  const { data: customers } = useCollection<Customer>(customersQuery);
+
+  const filteredFollowUps = useMemo(() => {
+    if (!followUps) return [];
+    let list = followUps.filter(f => tab === 'history' ? f.status !== 'pending' : f.status === 'pending');
+    
+    if (searchTerm) {
+      const lower = searchTerm.toLowerCase();
+      list = list.filter(f => 
+        f.contactName.toLowerCase().includes(lower) || 
+        f.description.toLowerCase().includes(lower) ||
+        f.referralInfo?.toLowerCase().includes(lower)
+      );
+    }
+    
+    if (tab === 'history') {
+        return list.sort((a, b) => (b.completedAt || '').localeCompare(a.completedAt || ''));
+    }
+    return list;
+  }, [followUps, searchTerm, tab]);
+
+  const handleOpenAction = (followUp: FollowUp) => {
+    setSelectedFollowUp(followUp);
+    setActionNotes('');
+    setIsActionDialogOpen(true);
+  };
+
+  const handleComplete = async () => {
+    if (!firestore || !selectedFollowUp) return;
+    try {
+      await setDoc(doc(firestore, 'followUps', selectedFollowUp.id), {
+        status: 'completed',
+        completedAt: new Date().toISOString(),
+        notes: actionNotes
+      }, { merge: true });
+      toast({ title: 'Retorno Concluído', description: 'O compromisso foi movido para o histórico.' });
+      setIsActionDialogOpen(false);
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível salvar.' });
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!firestore || !selectedFollowUp) return;
+    try {
+      await setDoc(doc(firestore, 'followUps', selectedFollowUp.id), {
+        status: 'cancelled',
+        completedAt: new Date().toISOString(),
+        notes: actionNotes
+      }, { merge: true });
+      toast({ title: 'Retorno Cancelado' });
+      setIsActionDialogOpen(false);
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Erro' });
+    }
+  };
+
+  const handleReschedule = async () => {
+    if (!firestore || !selectedFollowUp || !user) return;
+    try {
+      // 1. Marca o atual como reagendado
+      await setDoc(doc(firestore, 'followUps', selectedFollowUp.id), {
+        status: 'rescheduled',
+        completedAt: new Date().toISOString(),
+        notes: actionNotes
+      }, { merge: true });
+
+      // 2. Cria o novo retorno
+      const newRef = doc(collection(firestore, 'followUps'));
+      const newFollowUp: FollowUp = {
+        ...selectedFollowUp,
+        id: newRef.id,
+        dueDate: newDueDate,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        completedAt: undefined,
+        notes: undefined,
+        description: `(Reagendado) ${selectedFollowUp.description}`
+      };
+      await setDoc(newRef, newFollowUp);
+
+      toast({ title: 'Reagendamento Concluído', description: `Novo retorno definido para ${format(parseISO(newDueDate), 'dd/MM/yyyy')}` });
+      setIsRescheduleOpen(false);
+      setIsActionDialogOpen(false);
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Erro ao reagendar' });
+    }
+  };
+
+  const getStatusBadge = (followUp: FollowUp) => {
+    if (followUp.status === 'completed') return <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200">Concluído</Badge>;
+    if (followUp.status === 'cancelled') return <Badge variant="secondary" className="bg-slate-100 text-slate-500">Cancelado</Badge>;
+    if (followUp.status === 'rescheduled') return <Badge variant="secondary" className="bg-blue-100 text-blue-700">Reagendado</Badge>;
+    
+    const date = parseISO(followUp.dueDate);
+    if (isToday(date)) return <Badge className="bg-yellow-500 text-black border-none">Hoje</Badge>;
+    if (isBefore(date, startOfDay(new Date()))) return <Badge variant="destructive" className="animate-pulse">Atrasado</Badge>;
+    return <Badge variant="outline">Pendente</Badge>;
+  };
+
+  return (
+    <AppLayout>
+      <div className="flex items-center justify-between mb-8">
+        <PageHeader title="Mecanismo de Retornos" />
+        <Button onClick={() => { setSelectedFollowUp(undefined); setIsFormOpen(true); }}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Novo Retorno
+        </Button>
+      </div>
+
+      <Tabs value={tab} onValueChange={setTab} className="space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <TabsList>
+                <TabsTrigger value="pending">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    Pendentes
+                </TabsTrigger>
+                <TabsTrigger value="history">
+                    <History className="mr-2 h-4 w-4" />
+                    Histórico
+                </TabsTrigger>
+            </TabsList>
+            <div className="relative w-full max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                    placeholder="Pesquisar contatos ou motivos..." 
+                    className="pl-9"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+        </div>
+
+        <TabsContent value="pending" className="mt-0">
+            <div className="grid gap-4">
+                {isLoading ? (
+                    Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 w-full" />)
+                ) : filteredFollowUps.length === 0 ? (
+                    <div className="py-20 text-center border-2 border-dashed rounded-xl bg-muted/10">
+                        <CalendarIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-20" />
+                        <p className="text-muted-foreground">Nenhum retorno pendente.</p>
+                    </div>
+                ) : (
+                    filteredFollowUps.map((f) => (
+                        <Card key={f.id} className="group hover:border-primary/50 transition-all cursor-pointer" onClick={() => handleOpenAction(f)}>
+                            <CardContent className="p-4 flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-full bg-primary/5 flex items-center justify-center shrink-0">
+                                    <User className="h-6 w-6 text-primary/60" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <h4 className="font-semibold truncate">{f.contactName}</h4>
+                                        {getStatusBadge(f)}
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                                        <span className="flex items-center gap-1">
+                                            <CalendarIcon className="h-3 w-3" />
+                                            {format(parseISO(f.dueDate), "dd 'de' MMMM", { locale: ptBR })}
+                                        </span>
+                                        {f.contactPhone && (
+                                            <span className="flex items-center gap-1">
+                                                <Phone className="h-3 w-3" />
+                                                {f.contactPhone}
+                                            </span>
+                                        )}
+                                        {f.referralInfo && (
+                                            <span className="px-2 py-0.5 bg-secondary rounded text-[10px] truncate max-w-[200px]">
+                                                {f.referralInfo}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="mt-2 text-sm line-clamp-1">{f.description}</p>
+                                </div>
+                                <Button variant="ghost" size="icon" className="shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
+                                    <CheckCircle2 className="h-5 w-5" />
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    ))
+                )}
+            </div>
+        </TabsContent>
+
+        <TabsContent value="history" className="mt-0">
+             <div className="grid gap-4">
+                {filteredFollowUps.map((f) => (
+                    <Card key={f.id} className="opacity-80 grayscale-[0.5] hover:grayscale-0 transition-all">
+                        <CardContent className="p-4">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <h4 className="font-medium truncate">{f.contactName}</h4>
+                                        {getStatusBadge(f)}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mb-2">
+                                        Tratado em: {f.completedAt ? format(parseISO(f.completedAt), "dd/MM/yyyy HH:mm") : '-'}
+                                    </p>
+                                    <div className="p-2 bg-muted/30 rounded text-sm italic">
+                                        &quot;{f.notes || 'Nenhuma observação registrada.'}&quot;
+                                    </div>
+                                </div>
+                                <div className="text-right text-[10px] text-muted-foreground shrink-0">
+                                    Criação: {format(parseISO(f.createdAt), "dd/MM/yy")}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+             </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Dialog: Realizar Ação */}
+      <Dialog open={isActionDialogOpen} onOpenChange={setIsActionDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Realizar Retorno: {selectedFollowUp?.contactName}</DialogTitle>
+            <DialogDescription>O que foi conversado com o contato?</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="p-3 bg-secondary/30 rounded-md text-sm border">
+                <strong>Motivo agendado:</strong><br />
+                {selectedFollowUp?.description}
+            </div>
+            <textarea 
+                className="w-full min-h-[100px] p-3 rounded-md border text-sm"
+                placeholder="Ex: Liguei e ele pediu para retornar semana que vem pois está viajando..."
+                value={actionNotes}
+                onChange={(e) => setActionNotes(e.target.value)}
+            />
+          </div>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="ghost" className="text-destructive hover:bg-destructive/10" onClick={handleCancel}>
+                <XCircle className="mr-2 h-4 w-4" /> Cancelar
+            </Button>
+            <Button variant="outline" onClick={() => setIsRescheduleOpen(true)}>
+                <RefreshCw className="mr-2 h-4 w-4" /> Reagendar
+            </Button>
+            <Button onClick={handleComplete}>
+                <CheckCircle2 className="mr-2 h-4 w-4" /> Concluído
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog: Reagendamento */}
+      <Dialog open={isRescheduleOpen} onOpenChange={setIsRescheduleOpen}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle>Nova Data</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input 
+                type="date" 
+                value={newDueDate} 
+                onChange={(e) => setNewDueDate(e.target.value)} 
+            />
+          </div>
+          <DialogFooter>
+            <Button className="w-full" onClick={handleReschedule}>Confirmar Reagendamento</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog: Cadastro/Edição */}
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{selectedFollowUp ? 'Editar Retorno' : 'Agendar Novo Retorno'}</DialogTitle>
+          </DialogHeader>
+          <FollowUpForm 
+            customers={customers || []} 
+            initialData={selectedFollowUp}
+            onSubmit={async (data) => {
+                if (!firestore || !user) return;
+                const id = selectedFollowUp?.id || doc(collection(firestore, 'followUps')).id;
+                await setDoc(doc(firestore, 'followUps', id), {
+                    ...data,
+                    id,
+                    ownerId: user.uid,
+                    createdAt: selectedFollowUp?.createdAt || new Date().toISOString(),
+                    status: 'pending'
+                }, { merge: true });
+                toast({ title: 'Agendado!', description: 'Retorno salvo com sucesso.' });
+                setIsFormOpen(false);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    </AppLayout>
+  );
+}
