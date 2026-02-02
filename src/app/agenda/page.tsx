@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
@@ -86,7 +85,7 @@ export default function AgendaPage() {
     try {
       await setDoc(doc(firestore, 'reminders', reminder.id), { 
         status: newStatus,
-        ownerId: user.uid
+        ownerId: user.uid // Garante o ownerId para as regras de segurança
       }, { merge: true });
       toast({ title: newStatus === 'completed' ? 'Lembrete Concluído!' : 'Lembrete Reaberto!' });
     } catch (err) {
@@ -117,7 +116,7 @@ export default function AgendaPage() {
       const reminderData = {
         ...data,
         id: reminderId,
-        ownerId: user.uid,
+        ownerId: user.uid, // Crítico para firestore.rules
         createdAt: selectedReminder?.createdAt || new Date().toISOString(),
       };
 

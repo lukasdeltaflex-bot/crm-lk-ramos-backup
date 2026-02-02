@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -58,7 +57,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     const toDate = currentMonthRange.to || new Date();
     toDate.setHours(23, 59, 59, 999);
 
-    // 1. Filtragem por Período Vigente (Para produção mensal)
+    // 1. Filtragem por Período Vigente (Para produção mensal pura)
     const currentMonthProposals = allProposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
@@ -73,6 +72,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     const totalAmountPaid = commissionReceivedProposals.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
     
     // 4. Saldo a Receber (Acumulado: Mês Anterior + Vigente)
+    // Aqui usamos 'allProposals' pois ele já vem pré-filtrado do mês passado em financial/page.tsx
     const proposalsForSaldoAReceber = allProposals.filter(p => {
         if (p.commissionStatus === 'Paga') return false;
         const hasAverbacao = !!p.dateApproved;
@@ -138,7 +138,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
       title: "Saldo a Receber",
       value: formatCurrency(pendingAmount),
       icon: Hourglass,
-      description: "Acumulado (Desde mês anterior)",
+      description: "Acumulado (Mês Anterior + Vigente)",
       className: "border-orange-500/20 bg-orange-100/50 dark:bg-orange-900/20",
       valueClassName: "text-orange-500",
       proposals: proposalsForSaldoAReceber,
@@ -148,7 +148,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
       title: "Comissão Esperada",
       value: formatCurrency(expectedAmount),
       icon: CircleDollarSign,
-      description: "Acumulado (Desde mês anterior)",
+      description: "Acumulado (Mês Anterior + Vigente)",
       className: "border-blue-500/20 bg-blue-100/50 dark:bg-blue-900/20",
       valueClassName: "text-blue-500",
       proposals: expectedCommissionProposals,
@@ -160,9 +160,9 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     <div className='space-y-4'>
         <Alert variant="default" className="bg-secondary/50 print:hidden border-l-primary">
             <Info className="h-4 w-4" />
-            <AlertTitle>Resumo Financeiro Inteligente</AlertTitle>
+            <AlertTitle>Inteligência de Fluxo</AlertTitle>
             <AlertDescription>
-                Os cards de **Saldo a Receber** e **Comissão Esperada** incluem dados acumulados desde o mês passado para garantir que nada fique para trás.
+                Os cartões **Total** e **Recebido** focam no mês atual. **Saldo a Receber** e **Esperada** trazem o histórico desde o mês anterior.
             </AlertDescription>
         </Alert>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 print:gap-2">

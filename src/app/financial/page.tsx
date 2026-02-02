@@ -1,4 +1,3 @@
-
 'use client';
 import React from 'react';
 import { AppLayout } from '@/components/app-layout';
@@ -101,6 +100,7 @@ export default function FinancialPage() {
       .filter(p => {
         if (!p.dateDigitized) return false;
         const proposalDate = new Date(p.dateDigitized);
+        // Filtra propostas desde o mês passado para o pipeline
         return proposalDate >= startOfPrev && proposalDate <= endOfCurrent;
       })
       .map(p => ({

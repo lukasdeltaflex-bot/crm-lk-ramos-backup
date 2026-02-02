@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -118,6 +117,7 @@ type ProposalWithCustomer = Proposal & { customer: { name: string } | undefined 
 export function ProposalsStatusTable({ proposals = [], customers = [] }: { proposals?: Proposal[], customers?: Customer[] }) {
     
     const data: ProposalWithCustomer[] = React.useMemo(() => {
+        // Proteção contra dados nulos
         const safeProposals = Array.isArray(proposals) ? proposals : [];
         const safeCustomers = Array.isArray(customers) ? customers : [];
         const customerMap = new Map(safeCustomers.map(c => [c.id, c]));
