@@ -8,17 +8,24 @@ import { getStorage } from 'firebase/storage';
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
+  let firebaseApp: FirebaseApp;
+
   if (!getApps().length) {
-    const firebaseApp = initializeApp(firebaseConfig);
-    const sdks = getSdks(firebaseApp);
-    // 🔥 OBRIGATÓRIO: Garante que o login não se perca ao recarregar ou salvar
-    setPersistence(sdks.auth, browserLocalPersistence);
-    return sdks;
+    firebaseApp = initializeApp(firebaseConfig);
+  } else {
+    firebaseApp = getApp();
   }
 
-  const app = getApp();
-  const sdks = getSdks(app);
-  setPersistence(sdks.auth, browserLocalPersistence);
+  const sdks = getSdks(firebaseApp);
+  
+  // 🔥 OBRIGATÓRIO: Garante que o login não se perca ao recarregar ou salvar
+  setPersistence(sdks.auth, browserLocalPersistence).catch(console.error);
+  
+  // Diagnóstico de conexão
+  if (typeof window !== 'undefined') {
+    console.log("🔥 LK Ramos - Conectado ao Projeto:", firebaseApp.options.projectId);
+  }
+
   return sdks;
 }
 
