@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -34,10 +33,9 @@ export default function FollowUpsPage() {
   const [tab, setTab] = useState('pending');
   const [isSaving, setIsSaving] = useState(false);
 
-  // DEBUG PATH
   useEffect(() => {
     if (user) {
-        console.log("📂 LENDO RETORNOS EM:", `users/${user.uid}/followUps`);
+        console.log("📂 CRM DEBUG: Acessando Retornos em users/" + user.uid + "/followUps");
     }
   }, [user]);
 
@@ -87,7 +85,7 @@ export default function FollowUpsPage() {
     setIsSaving(true);
     try {
       const path = `users/${user.uid}/followUps/${selectedFollowUp.id}`;
-      console.log("💾 ATUALIZANDO RETORNO EM:", path);
+      console.log("💾 CRM SAVE: Atualizando status em " + path);
       
       await setDoc(doc(firestore, 'users', user.uid, 'followUps', selectedFollowUp.id), {
         ...extraData,
@@ -99,8 +97,8 @@ export default function FollowUpsPage() {
       toast({ title: 'Ação realizada com sucesso' });
       setIsActionDialogOpen(false);
     } catch (e: any) {
-      console.error("❌ ERRO AO ATUALIZAR RETORNO:", e);
-      toast({ variant: 'destructive', title: 'Erro de Permissão', description: e.message });
+      console.error("❌ CRM FIRESTORE ERROR:", e);
+      toast({ variant: 'destructive', title: 'Erro de Permissão', description: 'Verifique se o Project ID está correto.' });
     } finally {
       setIsSaving(false);
     }
@@ -117,7 +115,7 @@ export default function FollowUpsPage() {
         notes: actionNotes
       }, { merge: true });
 
-      // 2. Cria o novo retorno na subcoleção segura
+      // 2. Cria o novo retorno
       const newRef = doc(collection(firestore, 'users', user.uid, 'followUps'));
       const newFollowUp: FollowUp = {
         ...selectedFollowUp,
@@ -131,15 +129,15 @@ export default function FollowUpsPage() {
         description: `(Reagendado) ${selectedFollowUp.description}`
       };
       
-      console.log("🔄 CRIANDO NOVO AGENDAMENTO EM:", `users/${user.uid}/followUps/${newRef.id}`);
+      console.log("🔄 CRM REAGENDA: Criando novo em " + newRef.path);
       await setDoc(newRef, newFollowUp);
 
       toast({ title: 'Reagendamento Concluído' });
       setIsRescheduleOpen(false);
       setIsActionDialogOpen(false);
     } catch (e: any) {
-      console.error("❌ ERRO AO REAGENDAR:", e);
-      toast({ variant: 'destructive', title: 'Erro ao reagendar', description: e.message });
+      console.error("❌ CRM ERROR:", e);
+      toast({ variant: 'destructive', title: 'Falha Técnica', description: 'Ocorreu um erro ao salvar o novo agendamento.' });
     } finally {
       setIsSaving(false);
     }
@@ -150,8 +148,7 @@ export default function FollowUpsPage() {
     setIsSaving(true);
     try {
         const id = selectedFollowUp?.id || doc(collection(firestore, 'users', user.uid, 'followUps')).id;
-        const path = `users/${user.uid}/followUps/${id}`;
-        console.log("💾 SALVANDO NOVO RETORNO EM:", path);
+        console.log("💾 CRM SAVE: Criando/Editando em users/" + user.uid + "/followUps/" + id);
 
         await setDoc(doc(firestore, 'users', user.uid, 'followUps', id), {
             ...data,
@@ -164,8 +161,8 @@ export default function FollowUpsPage() {
         toast({ title: 'Agendado com sucesso!' });
         setIsFormOpen(false);
     } catch (e: any) {
-        console.error("❌ ERRO AO SALVAR RETORNO:", e);
-        toast({ variant: 'destructive', title: 'Erro ao Salvar', description: e.message });
+        console.error("❌ CRM ERROR:", e);
+        toast({ variant: 'destructive', title: 'Falha ao Salvar', description: 'Verifique sua conexão e permissões.' });
     } finally {
         setIsSaving(false);
     }
@@ -220,7 +217,7 @@ export default function FollowUpsPage() {
                 {isLoading ? (
                     Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 w-full" />)
                 ) : filteredFollowUps.length === 0 ? (
-                    <div className="py-20 text-center border-2 border-dashed rounded-xl bg-muted/10">
+                    <div className="py-20 text-center border-2 border-dashed rounded-xl bg-muted/10 border-border/50">
                         <CalendarIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-20" />
                         <p className="text-muted-foreground">Nenhum retorno pendente.</p>
                     </div>
@@ -253,7 +250,7 @@ export default function FollowUpsPage() {
                                             </span>
                                         )}
                                     </div>
-                                    <p className="mt-2 text-sm line-clamp-1">{f.description}</p>
+                                    <p className="mt-2 text-sm line-clamp-1 opacity-80">{f.description}</p>
                                 </div>
                                 <Button variant="ghost" size="icon" className="shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
                                     <CheckCircle2 className="h-5 w-5" />
@@ -294,7 +291,6 @@ export default function FollowUpsPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Dialog: Realizar Ação */}
       <Dialog open={isActionDialogOpen} onOpenChange={setIsActionDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -329,7 +325,6 @@ export default function FollowUpsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog: Reagendamento */}
       <Dialog open={isRescheduleOpen} onOpenChange={setIsRescheduleOpen}>
         <DialogContent className="max-w-xs">
           <DialogHeader>
@@ -352,7 +347,6 @@ export default function FollowUpsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog: Cadastro/Edição */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>

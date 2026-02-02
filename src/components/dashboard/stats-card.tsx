@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -26,6 +27,7 @@ export function StatsCard({ title, value, icon: Icon, description, percentage, c
       </CardHeader>
       <CardContent className="print:pt-1">
         <div className="flex items-baseline justify-between gap-2">
+            {/* Visual Clean: Font Normal em vez de Bold */}
             <div className={cn("text-2xl font-normal tracking-tight text-foreground print:text-lg", valueClassName)}>{value}</div>
             {percentage !== undefined && (
                 <div className="text-[10px] font-bold bg-background/50 dark:bg-black/20 backdrop-blur-sm px-1.5 py-0.5 rounded border border-border/50">

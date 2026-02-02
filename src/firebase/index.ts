@@ -1,4 +1,3 @@
-
 'use client';
 
 import { firebaseConfig } from '@/firebase/config';
@@ -7,9 +6,17 @@ import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage';
 
-// IMPORTANT: DO NOT MODIFY THIS FUNCTION
+/**
+ * Inicializa os serviços do Firebase LK RAMOS.
+ * Esta função deve ser chamada preferencialmente no lado do cliente.
+ */
 export function initializeFirebase() {
   let firebaseApp: FirebaseApp;
+
+  // Verifica se as chaves básicas estão presentes para evitar o erro auth/invalid-api-key
+  if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "xxxxxxxx") {
+    console.warn("⚠️ LK RAMOS: Firebase API Key não configurada corretamente no arquivo .env");
+  }
 
   if (!getApps().length) {
     firebaseApp = initializeApp(firebaseConfig);
@@ -19,11 +26,17 @@ export function initializeFirebase() {
 
   const sdks = getSdks(firebaseApp);
   
-  // 🔥 OBRIGATÓRIO: Garante que o login não se perca ao recarregar ou salvar
   if (typeof window !== 'undefined') {
-    setPersistence(sdks.auth, browserLocalPersistence).catch(console.error);
-    // DEBUG DE PROJETO: Verifique se este ID bate com o console do Firebase
-    console.log("🔥 LK RAMOS - PROJECT ID CONECTADO:", firebaseApp.options.projectId);
+    // DIAGNÓSTICO TÉCNICO LK RAMOS
+    console.log("-----------------------------------------");
+    console.log("🚀 LK RAMOS - CONEXÃO FIREBASE ATIVA");
+    console.log("🆔 PROJECT ID:", firebaseApp.options.projectId);
+    console.log("🔑 CONFIG STATUS:", !!firebaseConfig.apiKey ? "OK" : "PENDENTE");
+    console.log("-----------------------------------------");
+
+    setPersistence(sdks.auth, browserLocalPersistence).catch(err => {
+        console.error("❌ Erro ao configurar persistência:", err);
+    });
   }
 
   return sdks;
@@ -32,12 +45,13 @@ export function initializeFirebase() {
 export function getSdks(firebaseApp: FirebaseApp) {
   const firestore = getFirestore(firebaseApp);
   const storage = getStorage(firebaseApp);
+  const auth = getAuth(firebaseApp);
   
   return {
     firebaseApp,
-    auth: getAuth(firebaseApp),
-    firestore: firestore,
-    storage: storage,
+    auth,
+    firestore,
+    storage,
   };
 }
 

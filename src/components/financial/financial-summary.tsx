@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -41,6 +42,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     const fromDate = currentMonthRange.from || new Date();
     const toDate = currentMonthRange.to || new Date();
     
+    // Lógica de Pipeline: Do início do mês passado até o fim do período selecionado
     const startOfPrevMonth = startOfMonth(subMonths(fromDate, 1));
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
@@ -57,10 +59,12 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
         return d >= startOfPrevMonth && d <= effectiveToDate;
     });
 
+    // Produção do Mês
     const totalPotentialCommission = currentMonthProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
     const commissionReceivedProposals = currentMonthProposals.filter(p => p.commissionStatus === 'Paga');
     const totalAmountPaid = commissionReceivedProposals.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
     
+    // Saldo a Receber (Acumulado)
     const proposalsForSaldoAReceber = accumulatedProposals.filter(p => {
         if (p.commissionStatus === 'Paga') return false;
         const hasAverbacao = !!p.dateApproved;
@@ -69,6 +73,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     });
     const pendingAmount = proposalsForSaldoAReceber.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
 
+    // Comissão Esperada (Acumulado)
     const expectedCommissionProposals = accumulatedProposals.filter(p => {
         if (p.commissionStatus === 'Paga') return false;
         const isReprovado = p.status === 'Reprovado';

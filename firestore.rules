@@ -1,9 +1,9 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // ABERTURA TOTAL TEMPORÁRIA PARA DEBUG OBRIGATÓRIO
-    // Se o erro persistir aqui, o problema é o Project ID ou variáveis de ambiente.
+    // ABERTURA TOTAL TEMPORÁRIA PARA DEBUG OBRIGATÓRIO (LK RAMOS)
+    // Se o erro 'permission-denied' persistir com estas regras, 
+    // o Project ID no .env está diferente do console.
     match /{document=**} {
       allow read, write: if true;
     }
