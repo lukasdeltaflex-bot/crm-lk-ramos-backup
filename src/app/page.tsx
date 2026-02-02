@@ -155,44 +155,40 @@ export default function DashboardPage() {
     });
 
     const totalDigitado = getSum(currentPeriodProposals);
-    const reprovadoProposals = currentPeriodProposals.filter(p => p.status === 'Reprovado');
-    const reprovadoValue = getSum(reprovadoProposals);
+    const reprovadoValue = getSum(currentPeriodProposals.filter(p => p.status === 'Reprovado'));
 
-    // Cards operacionais acumulados
+    // Cards operacionais acumulados (exceto Reprovado e Total Digitado que são mensais)
     const pendenteProposals = accumulatedProposals.filter(p => p.status === 'Pendente');
     const emAndamentoProposals = accumulatedProposals.filter(p => p.status === 'Em Andamento');
     const aguardandoSaldoProposals = accumulatedProposals.filter(p => p.status === 'Aguardando Saldo');
     const saldoPagoProposals = accumulatedProposals.filter(p => p.status === 'Saldo Pago');
-    const pagoProposals = currentPeriodProposals.filter(p => p.status === 'Pago'); // Pago é produção mensal
-
-    const pendenteValue = getSum(pendenteProposals);
-    const emAndamentoValue = getSum(emAndamentoProposals);
-    const aguardandoSaldoValue = getSum(aguardandoSaldoProposals);
-    const saldoPagoValue = getSum(saldoPagoProposals);
+    
+    // Produção mensal para a meta
+    const pagoProposals = currentPeriodProposals.filter(p => p.status === 'Pago');
     const pagoValue = getSum(pagoProposals);
 
     const getPerc = (val: number) => totalDigitado > 0 ? (val / totalDigitado) * 100 : 0;
 
     return {
         totalDigitado,
-        pendente: pendenteValue,
-        emAndamento: emAndamentoValue,
-        aguardandoSaldo: aguardandoSaldoValue,
-        saldoPago: saldoPagoValue,
+        pendente: getSum(pendenteProposals),
+        emAndamento: getSum(emAndamentoProposals),
+        aguardandoSaldo: getSum(aguardandoSaldoProposals),
+        saldoPago: getSum(saldoPagoProposals),
         reprovado: reprovadoValue,
         pago: pagoValue,
         totalPagoMeta: pagoValue + (getSum(currentPeriodProposals.filter(p => p.status === 'Saldo Pago'))),
-        percPendente: getPerc(pendenteValue),
-        percEmAndamento: getPerc(emAndamentoValue),
-        percAguardandoSaldo: getPerc(aguardandoSaldoValue),
-        percSaldoPago: getPerc(saldoPagoValue),
+        percPendente: getPerc(getSum(pendenteProposals)),
+        percEmAndamento: getPerc(getSum(emAndamentoProposals)),
+        percAguardandoSaldo: getPerc(getSum(aguardandoSaldoProposals)),
+        percSaldoPago: getPerc(getSum(saldoPagoProposals)),
         percReprovado: getPerc(reprovadoValue),
         proposals: {
             pendente: pendenteProposals,
             emAndamento: emAndamentoProposals,
             aguardandoSaldo: aguardandoSaldoProposals,
             saldoPago: saldoPagoProposals,
-            reprovado: reprovadoProposals,
+            reprovado: currentPeriodProposals.filter(p => p.status === 'Reprovado'),
             pago: pagoProposals,
             todos: currentPeriodProposals
         }
@@ -266,7 +262,7 @@ export default function DashboardPage() {
             totalDigitized={stats.totalDigitado}
             isPrivacyMode={isPrivacyMode}
             className="w-full"
-            onValueClick={() => handleShowDetails('Contratos Pagos no Período', [...stats.proposals.pago, ...stats.proposals.saldoPago])}
+            onValueClick={() => handleShowDetails('Contratos Pagos no Período', [...stats.proposals.pago, ...stats.proposals.todos.filter(p => p.status === 'Saldo Pago')])}
         />
 
         <div className="grid gap-4 md:grid-cols-3">

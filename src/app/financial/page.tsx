@@ -291,7 +291,7 @@ export default function FinancialPage() {
                         <DialogTitle>Conciliação de Comissões com IA</DialogTitle>
                     </DialogHeader>
                     <CommissionReconciliation 
-                        proposals={proposalsWithCustomerData} 
+                        proposals={summaryProposals} 
                         onFinished={() => setIsReconciliationOpen(false)}
                     />
                 </DialogContent>
