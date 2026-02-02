@@ -28,9 +28,9 @@ import {
     closestCenter,
     KeyboardSensor,
     PointerSensor,
-    useSensor,
     useSensors,
     DragEndEvent,
+    useSensor,
   } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 
