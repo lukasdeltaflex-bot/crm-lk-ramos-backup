@@ -8,6 +8,7 @@ import { formatCurrency, cn } from '@/lib/utils';
 import { CheckCircle, Hourglass, Info, Coins, CircleDollarSign } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import type { DateRange } from 'react-day-picker';
+import { subMonths, startOfMonth } from 'date-fns';
 
 type ProposalWithCustomer = Proposal & { customer: Customer };
 
@@ -55,12 +56,22 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
 
     const fromDate = currentMonthRange.from || new Date();
     const toDate = currentMonthRange.to || new Date();
-    toDate.setHours(23, 59, 59, 999);
+    const startOfPrevMonth = startOfMonth(subMonths(fromDate, 1));
+    const effectiveToDate = new Date(toDate);
+    effectiveToDate.setHours(23, 59, 59, 999);
 
+    // Métrica Mensal (Apenas mês atual)
     const currentMonthProposals = allProposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
-        return d >= fromDate && d <= toDate;
+        return d >= fromDate && d <= effectiveToDate;
+    });
+
+    // Métrica Acumulada (Desde mês passado)
+    const accumulatedProposals = allProposals.filter(p => {
+        if (!p.dateDigitized) return false;
+        const d = new Date(p.dateDigitized);
+        return d >= startOfPrevMonth && d <= effectiveToDate;
     });
 
     const totalPotentialCommission = currentMonthProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
@@ -68,7 +79,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     const commissionReceivedProposals = currentMonthProposals.filter(p => p.commissionStatus === 'Paga');
     const totalAmountPaid = commissionReceivedProposals.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
     
-    const proposalsForSaldoAReceber = allProposals.filter(p => {
+    const proposalsForSaldoAReceber = accumulatedProposals.filter(p => {
         if (p.commissionStatus === 'Paga') return false;
         const hasAverbacao = !!p.dateApproved;
         const status = p.status;
@@ -76,7 +87,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     });
     const pendingAmount = proposalsForSaldoAReceber.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
 
-    const expectedCommissionProposals = allProposals.filter(p => {
+    const expectedCommissionProposals = accumulatedProposals.filter(p => {
         if (p.commissionStatus === 'Paga') return false;
         const isReprovado = p.status === 'Reprovado';
         const hasAverbacao = !!p.dateApproved;

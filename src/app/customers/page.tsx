@@ -22,7 +22,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { customers as sampleCustomers, proposals as sampleProposals } from '@/lib/data';
 import {
   Dialog,
   DialogContent,
@@ -45,7 +44,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 type CustomerFormData = Partial<Omit<Customer, 'id' | 'ownerId'>>;
 
 function CustomersPageContent() {
-  const { user, isUserLoading } = useUser();
+  const { user } = useUser();
   const firestore = useFirestore();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -65,10 +64,17 @@ function CustomersPageContent() {
     return query(collection(firestore, 'customers'), where('ownerId', '==', user.uid));
   }, [firestore, user]);
 
-  const { data: customers, isLoading, error } = useCollection<Customer>(customersQuery);
+  const { data: customers, isLoading } = useCollection<Customer>(customersQuery);
 
   const [activeCustomers, setActiveCustomers] = React.useState<Customer[]>([]);
   const [inactiveCustomers, setInactiveCustomers] = React.useState<Customer[]>([]);
+
+  const handleNewCustomer = React.useCallback(() => {
+    setSelectedCustomer(undefined);
+    setDefaultValues(undefined);
+    setSheetMode('new');
+    setIsDialog(true);
+  }, []);
 
   React.useEffect(() => {
     const action = searchParams.get('action');
@@ -76,14 +82,7 @@ function CustomersPageContent() {
       handleNewCustomer();
       router.replace('/customers', { scroll: false });
     }
-  }, [searchParams, router, isLoading]);
-
-  const handleNewCustomer = () => {
-    setSelectedCustomer(undefined);
-    setDefaultValues(undefined);
-    setSheetMode('new');
-    setIsDialog(true);
-  };
+  }, [searchParams, router, isLoading, isDialog, handleNewCustomer]);
 
   const handleEditCustomer = (customer: Customer) => {
     setSelectedCustomer(customer);
@@ -103,6 +102,7 @@ function CustomersPageContent() {
     setIsAiModalOpen(false);
     setIsDialog(true);
   }
+  
   const nonAnonymizedCustomers = React.useMemo(() => customers?.filter(c => c.name !== 'Cliente Removido') || [], [customers]);
 
   React.useEffect(() => {

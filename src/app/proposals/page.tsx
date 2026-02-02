@@ -14,7 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ProposalForm } from './proposal-form';
-import type { Proposal, Customer, ProposalStatus, UserSettings, CommissionStatus } from '@/lib/types';
+import type { Proposal, Customer, ProposalStatus, UserSettings } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from '@/firebase';
 import { collection, doc, query, where, writeBatch, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
@@ -30,7 +30,6 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import {
     DropdownMenu,
@@ -68,7 +67,7 @@ function ProposalsPageSkeleton() {
 }
 
 function ProposalsPageContent() {
-  const { user, isUserLoading } = useUser();
+  const { user } = useUser();
   const firestore = useFirestore();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -492,9 +491,10 @@ const handleExportToExcel = async () => {
             commissionStatus: commissionStatus,
         };
         
-        const cleanData = Object.fromEntries(
-            Object.entries(proposalData).filter(([, v]) => v !== undefined)
-        );
+        const cleanData = {
+            ...proposalData,
+            ownerId: user.uid
+        };
 
       if (sheetMode === 'edit' && selectedProposal) {
         await setDoc(doc(firestore, 'loanProposals', selectedProposal.id), cleanData, { merge: true });
@@ -507,7 +507,6 @@ const handleExportToExcel = async () => {
         const newProposalWithId = {
           ...cleanData,
           id: newDocRef.id,
-          ownerId: user.uid,
         };
     
         await setDoc(newDocRef, newProposalWithId);

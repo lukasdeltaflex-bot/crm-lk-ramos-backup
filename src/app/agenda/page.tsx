@@ -141,7 +141,7 @@ export default function AgendaPage() {
   };
 
   const getStatusBadge = (dueDate: string, status: string) => {
-    if (status === 'completed') return <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200/50">Concluído</Badge>;
+    if (status === 'completed') return <Badge variant="secondary" className="bg-green-100/50 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200/50">Concluído</Badge>;
     const date = parseISO(dueDate);
     const now = new Date();
     if (isToday(date)) return <Badge variant="default" className="bg-yellow-500 text-black border-none">Hoje</Badge>;

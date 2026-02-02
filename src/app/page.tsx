@@ -247,7 +247,7 @@ export default function DashboardPage() {
                         className="h-9 w-24 border-none shadow-none text-center"
                     />
                 </div>
-                <Button size="sm" onClick={handleApplyFilter} className='h-8 bg-[#0091FF] hover:bg-[#0071E3]'><Filter className="h-3 w-3 mr-1" /> Filtrar</Button>
+                <Button size="sm" onClick={handleApplyFilter} className='h-8 bg-primary hover:bg-primary/90'><Filter className="h-3 w-3 mr-1" /> Filtrar</Button>
                 {(startDateInput || appliedDateRange) && (
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={clearDates}><X className="h-4 w-4" /></Button>
                 )}
@@ -273,7 +273,7 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.totalDigitado)} 
                     icon={FileText} 
                     percentage={100}
-                    className="bg-slate-100/50 dark:bg-slate-900/20 border-border/50"
+                    className="bg-slate-50 dark:bg-slate-900/40 border-border/50"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Pendentes (Acumulado)', stats.proposals.pendente)}>
@@ -282,8 +282,8 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.pendente)} 
                     icon={BadgePercent} 
                     percentage={stats.percPendente}
-                    valueClassName="text-purple-700 dark:text-purple-400"
-                    className="bg-purple-100/10 dark:bg-purple-900/20 border-border/50"
+                    valueClassName="text-purple-600 dark:text-purple-400"
+                    className="bg-purple-50/50 dark:bg-purple-900/20 border-border/50"
                     description="Desde o mês anterior"
                 />
             </div>
@@ -293,8 +293,8 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.emAndamento)} 
                     icon={Hourglass} 
                     percentage={stats.percEmAndamento}
-                    valueClassName="text-yellow-700 dark:text-yellow-400"
-                    className="bg-yellow-100/10 dark:bg-yellow-900/20 border-border/50"
+                    valueClassName="text-yellow-600 dark:text-yellow-400"
+                    className="bg-yellow-50/50 dark:bg-yellow-900/20 border-border/50"
                     description="Desde o mês anterior"
                 />
             </div>
@@ -307,8 +307,8 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.aguardandoSaldo)} 
                     icon={Clock} 
                     percentage={stats.percAguardandoSaldo}
-                    valueClassName="text-blue-700 dark:text-blue-400"
-                    className="bg-blue-100/10 dark:bg-blue-900/20 border-border/50"
+                    valueClassName="text-blue-600 dark:text-blue-400"
+                    className="bg-blue-50/50 dark:bg-blue-900/20 border-border/50"
                     description="Desde o mês anterior"
                 />
             </div>
@@ -318,8 +318,8 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.saldoPago)} 
                     icon={CheckCircle2} 
                     percentage={stats.percSaldoPago}
-                    valueClassName="text-orange-700 dark:text-orange-400"
-                    className="bg-orange-100/10 dark:bg-orange-900/20 border-border/50"
+                    valueClassName="text-orange-600 dark:text-orange-400"
+                    className="bg-orange-50/50 dark:bg-orange-900/20 border-border/50"
                     description="Desde o mês anterior"
                 />
             </div>
@@ -329,8 +329,8 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.reprovado)} 
                     icon={XCircle} 
                     percentage={stats.percReprovado}
-                    valueClassName="text-red-700 dark:text-red-400"
-                    className="bg-red-100/10 dark:bg-red-900/20 border-border/50"
+                    valueClassName="text-red-600 dark:text-red-400"
+                    className="bg-red-50/50 dark:bg-red-900/20 border-border/50"
                 />
             </div>
         </div>
