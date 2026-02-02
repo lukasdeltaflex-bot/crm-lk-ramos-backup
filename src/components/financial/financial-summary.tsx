@@ -111,7 +111,6 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
       icon: Coins,
       description: "Produção Mensal",
       className: "border-border/50 bg-muted/10 shadow-sm",
-      valueClassName: "text-foreground font-normal",
       proposals: allProposalsInPeriod,
       percentage: 100,
     },
