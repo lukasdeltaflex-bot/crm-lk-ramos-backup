@@ -1,15 +1,11 @@
 'use client';
 
-import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
+import React, { createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { Firestore } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged } from 'firebase/auth';
 import { Storage } from 'firebase/storage';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
 import { auth as authInstance, db, storage as storageInstance } from './firebase';
-
-interface FirebaseProviderProps {
-  children: ReactNode;
-}
 
 interface UserAuthState {
   user: User | null;
@@ -29,7 +25,7 @@ export interface FirebaseContextState {
 
 export const FirebaseContext = createContext<FirebaseContextState | undefined>(undefined);
 
-export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) => {
+export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [userAuthState, setUserAuthState] = useState<UserAuthState>({
     user: null,
     isUserLoading: true,
@@ -64,11 +60,6 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     userError: userAuthState.userError,
   }), [userAuthState, areServicesAvailable]);
 
-  // MODO DE EMERGÊNCIA: Não usamos throw para evitar tela preta
-  if (!areServicesAvailable) {
-    console.warn("⚠️ LK RAMOS: Firebase indisponível – carregando em modo de segurança.");
-  }
-
   return (
     <FirebaseContext.Provider value={contextValue}>
       <FirebaseErrorListener />
@@ -79,7 +70,6 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
 
 export const useFirebase = () => {
   const context = useContext(FirebaseContext);
-  
   if (!context) {
     return {
         auth: authInstance,
@@ -90,7 +80,6 @@ export const useFirebase = () => {
         userError: null,
     };
   }
-
   return {
     auth: context.auth!,
     firestore: context.firestore!,
@@ -101,14 +90,15 @@ export const useFirebase = () => {
   };
 };
 
-export const useAuth = () => authInstance;
-export const useFirestore = () => db;
-export const useStorage = () => storageInstance;
 export const useUser = () => {
   const { user, isUserLoading, userError } = useFirebase();
   return { user, isUserLoading, userError };
 };
 
-export function useMemoFirebase<T>(factory: () => T, deps: DependencyList): T {
+export const useAuth = () => authInstance;
+export const useFirestore = () => db;
+export const useStorage = () => storageInstance;
+
+export function useMemoFirebase<T>(factory: () => T, deps: React.DependencyList): T {
   return useMemo(factory, deps);
 }

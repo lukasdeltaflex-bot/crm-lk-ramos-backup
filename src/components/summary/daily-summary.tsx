@@ -97,6 +97,7 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
 
     const now = new Date();
     const todayIso = format(now, 'yyyy-MM-dd');
+    const todayMMDD = format(now, 'MM-dd');
     const customerMap = new Map(customers.map(c => [c.id, c]));
 
     const birthdayAlerts = customers
@@ -104,7 +105,7 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
         .map(c => ({ 
             id: `birthday-${c.id}`,
             customerName: c.name, 
-            age: 75 
+            age: getAge(c.birthDate) >= 75 ? getAge(c.birthDate) : 75
         }));
 
     const followUpReminders = proposals

@@ -46,7 +46,7 @@ type ProposalFormData = Partial<Omit<Proposal, 'id' | 'ownerId'>>;
 
 function ProposalsPageSkeleton() {
     return (
-        <>
+        <AppLayout>
             <div className="flex items-center justify-between">
                 <PageHeader title="Propostas" />
                 <div className="flex items-center gap-2">
@@ -62,7 +62,7 @@ function ProposalsPageSkeleton() {
                     ))}
                 </div>
             </div>
-        </>
+        </AppLayout>
     )
 }
 
