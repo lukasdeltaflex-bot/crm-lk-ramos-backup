@@ -96,7 +96,6 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
     if (!isClient || !proposals || !customers) return { birthdayAlerts: [], followUpReminders: [], commissionReminders: [], debtBalanceReminders: [], partialCommissionReminders: [], manualFollowUps: [] };
 
     const now = new Date();
-    const todayStr = format(now, 'MM-dd');
     const todayIso = format(now, 'yyyy-MM-dd');
     const customerMap = new Map(customers.map(c => [c.id, c]));
 

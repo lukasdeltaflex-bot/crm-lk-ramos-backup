@@ -158,9 +158,9 @@ function ProposalsPageContent() {
     setDefaultValues(duplicatedData);
     setSheetMode('new');
     setIsDialogOpen(true);
-}, []);
+  }, []);
 
-React.useEffect(() => {
+  React.useEffect(() => {
     const action = searchParams.get('action');
     const openId = searchParams.get('open');
 
@@ -180,10 +180,10 @@ React.useEffect(() => {
             }
         }
     }
-}, [searchParams, proposalsLoading, customersLoading, proposalsWithCustomerData, hasOpenedFromParam, handleNewProposal, handleEditProposal, router]);
+  }, [searchParams, proposalsLoading, customersLoading, proposalsWithCustomerData, hasOpenedFromParam, handleNewProposal, handleEditProposal, router]);
 
 
-const handlePrint = React.useCallback(() => {
+  const handlePrint = React.useCallback(() => {
     const hasSelection = Object.keys(rowSelection).length > 0;
     if (hasSelection) {
         document.body.classList.add('print-selection-proposals');
@@ -200,7 +200,7 @@ const handlePrint = React.useCallback(() => {
     window.print();
   }, [rowSelection]);
 
-const handleExportToExcel = async () => {
+  const handleExportToExcel = async () => {
     const table = tableRef.current?.table;
     if (!table) return;
 
