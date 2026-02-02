@@ -14,7 +14,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { format, isValid } from 'date-fns';
+import { format, isValid, isSameMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -245,8 +245,29 @@ export const getColumns = (
         />
       );
     },
-    filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id))
+    filterFn: (row, id, filterValue) => {
+        const status = row.getValue(id) as string;
+        const paymentDateStr = row.original.commissionPaymentDate;
+        const now = new Date();
+
+        if (filterValue === '__CUSTOM_FILTER_TODOS__') {
+            // Regra: Pendente, Parcial ou Vazio: Sempre mostra
+            if (!status || status === 'Pendente' || status === 'Parcial') return true;
+            
+            // Regra: Pagas: Somente do mês vigente
+            if (status === 'Paga') {
+                if (!paymentDateStr) return false;
+                const pDate = new Date(paymentDateStr);
+                return isSameMonth(pDate, now) && pDate.getFullYear() === now.getFullYear();
+            }
+            return false;
+        }
+        
+        if (Array.isArray(filterValue)) {
+            return filterValue.includes(status);
+        }
+        
+        return status === filterValue;
     },
     id: 'commissionStatus',
   },
@@ -286,6 +307,13 @@ export const getColumns = (
     header: 'Status Proposta',
     id: 'status',
     enableHiding: true,
+    filterFn: (row, id, filterValue) => {
+        const status = row.getValue(id) as string;
+        if (Array.isArray(filterValue)) {
+            return filterValue.includes(status);
+        }
+        return true;
+    }
   },
   {
     id: 'actions',

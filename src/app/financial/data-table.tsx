@@ -19,7 +19,7 @@ import {
   Table as ReactTable,
   PaginationState,
 } from '@tanstack/react-table';
-import { format, parse, isValid, startOfDay, endOfDay, subDays, startOfMonth, subMonths, endOfMonth } from 'date-fns';
+import { format, parse, isValid, startOfDay, endOfDay, subDays, startOfMonth, subMonths, endOfMonth, isSameMonth } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import {
     DndContext,
@@ -103,9 +103,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
 }, ref) => {
   const [sorting, setSorting] = React.useState<SortingState>([{ id: 'commissionPaymentDate', desc: true }]);
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [pagination, setPagination] = React.useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -283,13 +281,9 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         const proposal = row.original;
         const customer = proposal.customer;
         
-        // BUSCA EXATA POR ID: Se o termo for puramente numérico
         if (/^\d+$/.test(searchTerm)) {
             const isExactId = customer && String(customer.numericId) === searchTerm;
             if (isExactId) return true;
-            
-            // Se for um número curto (até 6 dígitos) e NÃO for o ID exato, 
-            // ignoramos os outros campos para garantir que a busca por número seja estritamente por ID.
             if (searchTerm.length < 7) return false;
         }
 
@@ -322,27 +316,26 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
 
   React.useEffect(() => {
     const statusColumn = table.getColumn('commissionStatus');
-    if (statusFilter === 'Todos') {
-        statusColumn?.setFilterValue(undefined);
-    } else {
-        statusColumn?.setFilterValue(statusFilter);
-    }
-  }, [statusFilter, table]);
-
-  React.useEffect(() => {
     const dateColumn = table.getColumn('commissionPaymentDate');
     
-    // REGRA SOLICITADA: No filtro "Pagas", se não houver busca manual, mostrar apenas o mês atual.
-    if (statusFilter === 'Paga' && !appliedDateRange) {
-        const now = new Date();
-        const from = startOfMonth(now);
-        const to = endOfMonth(now);
-        dateColumn?.setFilterValue({ from, to });
+    // Regra Avançada solicitada pelo usuário
+    if (statusFilter === 'Todos') {
+        statusColumn?.setFilterValue('__CUSTOM_FILTER_TODOS__');
+        dateColumn?.setFilterValue(appliedDateRange);
+    } else if (statusFilter === 'Paga') {
+        statusColumn?.setFilterValue('Paga');
+        // Se clicar em Pagas e não tiver filtro manual de data, mostra apenas o mês vigente
+        if (!appliedDateRange) {
+            const now = new Date();
+            dateColumn?.setFilterValue({ from: startOfMonth(now), to: endOfMonth(now) });
+        } else {
+            dateColumn?.setFilterValue(appliedDateRange);
+        }
     } else {
-        // Se houver busca manual ou não for o filtro "Pagas", respeita o range ou limpa
+        statusColumn?.setFilterValue(statusFilter);
         dateColumn?.setFilterValue(appliedDateRange);
     }
-  }, [appliedDateRange, statusFilter, table]);
+  }, [statusFilter, appliedDateRange, table]);
 
   React.useEffect(() => {
     const mainStatusColumn = table.getColumn('status');

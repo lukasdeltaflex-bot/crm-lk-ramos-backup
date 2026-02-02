@@ -68,10 +68,10 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
         <Table>
           <TableHeader className="bg-muted/20 border-b border-border/50">
             <TableRow className="hover:bg-transparent">
-              <TableHead className="px-6 py-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80">Cliente</TableHead>
-              <TableHead className="px-6 py-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80">Produto</TableHead>
-              <TableHead className="px-6 py-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80">Status</TableHead>
-              <TableHead className="px-6 py-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 text-right">Valor Bruto</TableHead>
+              <TableHead className="px-6 py-4 font-bold text-[10px] uppercase tracking-widest text-muted-foreground/80">Cliente</TableHead>
+              <TableHead className="px-6 py-4 font-bold text-[10px] uppercase tracking-widest text-muted-foreground/80">Produto</TableHead>
+              <TableHead className="px-6 py-4 font-bold text-[10px] uppercase tracking-widest text-muted-foreground/80">Status</TableHead>
+              <TableHead className="px-6 py-4 font-bold text-[10px] uppercase tracking-widest text-muted-foreground/80 text-right">Valor Bruto</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
