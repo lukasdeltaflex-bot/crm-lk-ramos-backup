@@ -44,8 +44,8 @@ export default function AgendaPage() {
     );
   }, [firestore, user]);
 
-  const { data: rawReminders, isLoading } = useCollection<Reminder>(remindersQuery);
-  const { data: customers } = useCollection<Customer>(customersQuery);
+  const { data: rawReminders, isLoading: remindersLoading } = useCollection<Reminder>(remindersQuery);
+  const { data: customers, isLoading: customersLoading } = useCollection<Customer>(customersQuery);
 
   const customerMap = useMemo(() => new Map(customers?.map(c => [c.id, c])), [customers]);
 
@@ -98,7 +98,7 @@ export default function AgendaPage() {
       toast({ title: 'Lembrete removido com sucesso.' });
     } catch (err) {
       console.error("Erro ao remover lembrete:", err);
-      toast({ variant: 'destructive', title: 'Erro ao remover', description: 'Não foi possível excluir le lembrete.' });
+      toast({ variant: 'destructive', title: 'Erro ao remover', description: 'Não foi possível excluir o lembrete.' });
     }
   };
 
@@ -110,6 +110,7 @@ export default function AgendaPage() {
     setIsSaving(true);
     
     try {
+      // Injeta sempre na subcoleção do usuário para evitar erros de permissão
       const reminderId = selectedReminder?.id || doc(collection(firestore, 'users', user.uid, 'reminders')).id;
       
       const reminderData = {
@@ -144,6 +145,8 @@ export default function AgendaPage() {
     return <Badge variant="outline">Pendente</Badge>;
   };
 
+  const isInitialLoading = (remindersLoading || customersLoading) && filteredReminders.length === 0;
+
   return (
     <AppLayout>
       <div className="flex items-center justify-between mb-8">
@@ -175,7 +178,7 @@ export default function AgendaPage() {
             </CardHeader>
             <CardContent>
                 <div className="space-y-4">
-                    {isLoading ? (
+                    {isInitialLoading ? (
                         Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)
                     ) : filteredReminders.length === 0 ? (
                         <div className="py-12 text-center border-2 border-dashed rounded-lg">

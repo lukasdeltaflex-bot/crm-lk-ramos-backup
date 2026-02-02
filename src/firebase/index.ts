@@ -21,7 +21,7 @@ export function initializeFirebase() {
   // 🔥 OBRIGATÓRIO: Garante que o login não se perca ao recarregar ou salvar
   setPersistence(sdks.auth, browserLocalPersistence).catch(console.error);
   
-  // Diagnóstico de conexão
+  // Diagnóstico de conexão para o usuário
   if (typeof window !== 'undefined') {
     console.log("🔥 LK Ramos - Conectado ao Projeto:", firebaseApp.options.projectId);
   }

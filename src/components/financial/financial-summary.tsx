@@ -41,19 +41,19 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     const fromDate = currentMonthRange.from || new Date();
     const toDate = currentMonthRange.to || new Date();
     
-    // 🔥 Lógica de Pipeline: Mês anterior + Período Atual
+    // 🔥 Lógica de Pipeline: Mês anterior + Período Atual para acúmulo real
     const startOfPrevMonth = startOfMonth(subMonths(fromDate, 1));
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
 
-    // Métrica Mensal: Produção
+    // Métrica Mensal: Produção Estrita
     const currentMonthProposals = allProposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
         return d >= fromDate && d <= effectiveToDate;
     });
 
-    // Métrica Acumulada: Pipeline
+    // Métrica Acumulada: Pipeline (Histórico recente acumulado)
     const accumulatedProposals = allProposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
@@ -64,7 +64,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     const commissionReceivedProposals = currentMonthProposals.filter(p => p.commissionStatus === 'Paga');
     const totalAmountPaid = commissionReceivedProposals.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
     
-    // Saldo a Receber Acumulado
+    // Saldo a Receber Acumulado (Pipeline Real)
     const proposalsForSaldoAReceber = accumulatedProposals.filter(p => {
         if (p.commissionStatus === 'Paga') return false;
         const hasAverbacao = !!p.dateApproved;
@@ -73,7 +73,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     });
     const pendingAmount = proposalsForSaldoAReceber.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
 
-    // Comissão Esperada Acumulada
+    // Comissão Esperada Acumulada (Pipeline Real)
     const expectedCommissionProposals = accumulatedProposals.filter(p => {
         if (p.commissionStatus === 'Paga') return false;
         const isReprovado = p.status === 'Reprovado';
@@ -130,7 +130,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
       title: "Saldo a Receber",
       value: formatCurrency(pendingAmount),
       icon: Hourglass,
-      description: "Pipeline Acumulado",
+      description: "Pipeline (Mês Ant + Atual)",
       className: "border-border/50 bg-orange-100/10 dark:bg-orange-900/20 shadow-sm",
       valueClassName: "text-orange-500 font-normal",
       proposals: proposalsForSaldoAReceber,
@@ -140,7 +140,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
       title: "Comissão Esperada",
       value: formatCurrency(expectedAmount),
       icon: CircleDollarSign,
-      description: "Pipeline Acumulado",
+      description: "Pipeline (Mês Ant + Atual)",
       className: "border-border/50 bg-blue-100/10 dark:bg-blue-900/20 shadow-sm",
       valueClassName: "text-blue-500 font-normal",
       proposals: expectedCommissionProposals,
@@ -150,11 +150,11 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
 
   return (
     <div className='space-y-4'>
-        <Alert variant="default" className="bg-secondary/50 print:hidden border-l-primary border border-border/50">
+        <Alert variant="default" className="bg-secondary/50 print:hidden border-l-primary border border-border/50 shadow-sm">
             <Info className="h-4 w-4" />
-            <AlertTitle>Visão de Pipeline</AlertTitle>
+            <AlertTitle>Inteligência de Pipeline Ativada</AlertTitle>
             <AlertDescription>
-                Os cartões **Total** e **Recebido** focam na produção do mês selecionado. **Saldo a Receber** e **Comissão Esperada** trazem o saldo acumulado histórico.
+                Os cartões **Total** e **Recebido** focam na produção do mês. Os cartões de **Saldo** e **Esperada** somam automaticamente o saldo acumulado para facilitar seu controle de retornos.
             </AlertDescription>
         </Alert>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 print:gap-2">

@@ -135,7 +135,7 @@ export default function DashboardPage() {
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
 
-    // 🔥 Lógica de Pipeline: Mês Anterior + Período Atual
+    // 🔥 Lógica de Pipeline: Mês Anterior + Período Atual para acúmulo estratégico
     const startOfPrevMonth = startOfMonth(subMonths(fromDate, 1));
 
     const getSum = (list: Proposal[]) => list.reduce((sum, p) => sum + (p.grossAmount || 0), 0);
@@ -155,7 +155,7 @@ export default function DashboardPage() {
     const totalDigitado = getSum(currentPeriodProposals);
     const reprovadoValue = getSum(currentPeriodProposals.filter(p => p.status === 'Reprovado'));
 
-    // Cards operacionais acumulados (Pipeline)
+    // Cards operacionais acumulados (Pipeline - Mês Passado + Mês Atual)
     const pendenteProposals = accumulatedProposals.filter(p => p.status === 'Pendente');
     const emAndamentoProposals = accumulatedProposals.filter(p => p.status === 'Em Andamento');
     const aguardandoSaldoProposals = accumulatedProposals.filter(p => p.status === 'Aguardando Saldo');
@@ -281,7 +281,7 @@ export default function DashboardPage() {
                     percentage={stats.percPendente}
                     valueClassName="text-purple-600 dark:text-purple-400"
                     className="bg-purple-50/50 dark:bg-purple-900/20 border-border/50 shadow-sm"
-                    description="Acumulado Histórico"
+                    description="Acumulado (Mês Anterior + Atual)"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Em Andamento (Acumulado)', stats.proposals.emAndamento)}>
@@ -292,7 +292,7 @@ export default function DashboardPage() {
                     percentage={stats.percEmAndamento}
                     valueClassName="text-yellow-600 dark:text-yellow-400"
                     className="bg-yellow-50/50 dark:bg-yellow-900/20 border-border/50 shadow-sm"
-                    description="Acumulado Histórico"
+                    description="Acumulado (Mês Anterior + Atual)"
                 />
             </div>
         </div>
@@ -306,7 +306,7 @@ export default function DashboardPage() {
                     percentage={stats.percAguardandoSaldo}
                     valueClassName="text-blue-600 dark:text-blue-400"
                     className="bg-blue-50/50 dark:bg-blue-900/20 border-border/50 shadow-sm"
-                    description="Acumulado Histórico"
+                    description="Acumulado (Mês Anterior + Atual)"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Saldo Pago (Acumulado)', stats.proposals.saldoPago)}>
@@ -317,7 +317,7 @@ export default function DashboardPage() {
                     percentage={stats.percSaldoPago}
                     valueClassName="text-orange-600 dark:text-orange-400"
                     className="bg-orange-50/50 dark:bg-orange-900/20 border-border/50 shadow-sm"
-                    description="Acumulado Histórico"
+                    description="Acumulado (Mês Anterior + Atual)"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Reprovado (Mensal)', stats.proposals.reprovado)}>
