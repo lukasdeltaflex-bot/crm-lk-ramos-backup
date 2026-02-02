@@ -12,23 +12,22 @@ const firebaseConfig = {
   appId: "1:341426752875:web:348f88597e5b9b2057d02e",
 };
 
-// Singleton pattern robusto para evitar "Assertion Failed" no Next.js
-const globalForFirebase = global as unknown as {
+// Singleton pattern absoluto para evitar reinicialização do Firestore em desenvolvimento (Assertion Failed)
+const globalForFirebase = globalThis as unknown as {
   app: FirebaseApp | undefined;
   auth: Auth | undefined;
   db: Firestore | undefined;
   storage: FirebaseStorage | undefined;
 };
 
-const app = globalForFirebase.app || (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp());
+export const app = globalForFirebase.app || (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp());
 
-// Inicializa o Firestore com configurações de persistência se for a primeira vez
-const db = globalForFirebase.db || initializeFirestore(app, {
+export const db = globalForFirebase.db || initializeFirestore(app, {
     cacheSizeBytes: CACHE_SIZE_UNLIMITED
 });
 
-const auth = globalForFirebase.auth || getAuth(app);
-const storage = globalForFirebase.storage || getStorage(app);
+export const auth = globalForFirebase.auth || getAuth(app);
+export const storage = globalForFirebase.storage || getStorage(app);
 
 if (process.env.NODE_ENV !== "production") {
     globalForFirebase.app = app;
@@ -36,8 +35,6 @@ if (process.env.NODE_ENV !== "production") {
     globalForFirebase.db = db;
     globalForFirebase.storage = storage;
 }
-
-export { auth, db, storage, app };
 
 export function initializeFirebase(): FirebaseApp {
   return app;
