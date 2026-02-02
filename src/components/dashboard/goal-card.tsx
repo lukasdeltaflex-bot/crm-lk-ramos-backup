@@ -57,7 +57,7 @@ export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onV
 
   return (
     <Card className={cn(
-        'relative overflow-hidden bg-blue-50/40 dark:bg-blue-900/10 border-2 border-blue-200/60 dark:border-blue-800/60 shadow-sm rounded-2xl w-full', 
+        'relative overflow-hidden bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-300 dark:border-blue-700 shadow-lg rounded-2xl w-full', 
         className
     )}>
       <CardContent className="p-8">
@@ -98,7 +98,7 @@ export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onV
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="h-8 w-8 rounded-full opacity-40 hover:opacity-100 transition-opacity bg-white/50 dark:bg-black/20" 
+                  className="h-8 w-8 rounded-full opacity-40 hover:opacity-100 transition-opacity bg-white/50 dark:bg-black/40" 
                   onClick={() => setIsEditing(true)}
                 >
                   <Pencil className="h-3 w-3 text-muted-foreground" />
@@ -130,7 +130,7 @@ export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onV
 
         {/* Progress Section */}
         <div className="space-y-4">
-          <Progress value={percentageOfGoal} className="h-2.5 bg-blue-100/50 dark:bg-blue-900/30" />
+          <Progress value={percentageOfGoal} className="h-2.5 bg-blue-100 dark:bg-blue-900/50" />
           
           <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 dark:text-muted-foreground/80">
             <p>

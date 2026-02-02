@@ -52,14 +52,14 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
   }
 
   return (
-    <Card className="border-border/50 shadow-lg overflow-hidden bg-card/50 rounded-xl">
-      <CardHeader className="flex flex-row items-center justify-between pb-4 bg-muted/5">
+    <Card className="border-border/50 shadow-lg overflow-hidden bg-card rounded-xl">
+      <CardHeader className="flex flex-row items-center justify-between pb-4 bg-muted/10">
         <div className="space-y-1">
             <CardTitle className="font-bold text-xl text-primary">Últimas Propostas Digitadas</CardTitle>
             <p className="text-xs text-muted-foreground font-medium">Monitoramento em tempo real da esteira</p>
         </div>
         <Link href="/proposals">
-            <Button variant="outline" size="sm" className="h-8 rounded-full px-4 text-xs font-bold shadow-sm text-primary border-primary/20 hover:bg-primary/5">
+            <Button variant="outline" size="sm" className="h-8 rounded-full px-4 text-xs font-bold shadow-sm text-primary border-primary/20 hover:bg-primary/10">
                 Explorar Tudo <ArrowRight className="ml-2 h-3 w-3" />
             </Button>
         </Link>
@@ -98,7 +98,7 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
                             <TableCell className="px-6 py-5">
                                 <div className="flex items-center gap-3">
                                     <Avatar className="h-9 w-9 border border-primary/10 shadow-sm">
-                                        <AvatarFallback className="text-[10px] font-bold bg-primary/5 text-primary/70">
+                                        <AvatarFallback className="text-[10px] font-bold bg-primary/10 text-primary/70">
                                             {getInitials(proposal.customer?.name)}
                                         </AvatarFallback>
                                     </Avatar>
@@ -120,12 +120,12 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
                                     <Badge
                                         variant="outline"
                                         className={cn('px-3 py-1 text-[10px] font-medium uppercase tracking-wider border-2', {
-                                            'border-green-500/30 text-green-600 bg-green-50/80 dark:bg-green-900/20': proposal.status === 'Pago',
-                                            'border-orange-500/30 text-orange-600 bg-orange-50/80 dark:bg-orange-900/20': proposal.status === 'Saldo Pago',
-                                            'border-yellow-500/30 text-yellow-600 bg-yellow-50/80 dark:bg-yellow-900/20': proposal.status === 'Em Andamento',
-                                            'border-blue-500/30 text-blue-600 bg-blue-50/80 dark:bg-blue-900/20': proposal.status === 'Aguardando Saldo',
-                                            'border-red-500/30 text-red-600 bg-red-50/80 dark:bg-red-900/20': proposal.status === 'Reprovado',
-                                            'border-purple-500/30 text-purple-600 bg-purple-50/80 dark:bg-purple-900/20': proposal.status === 'Pendente',
+                                            'border-green-500/30 text-green-600 bg-green-50/80 dark:bg-green-900/40': proposal.status === 'Pago',
+                                            'border-orange-500/30 text-orange-600 bg-orange-50/80 dark:bg-orange-900/40': proposal.status === 'Saldo Pago',
+                                            'border-yellow-500/30 text-yellow-600 bg-yellow-50/80 dark:bg-yellow-900/40': proposal.status === 'Em Andamento',
+                                            'border-blue-500/30 text-blue-600 bg-blue-50/80 dark:bg-blue-900/40': proposal.status === 'Aguardando Saldo',
+                                            'border-red-500/30 text-red-600 bg-red-50/80 dark:bg-red-900/40': proposal.status === 'Reprovado',
+                                            'border-purple-500/30 text-purple-600 bg-purple-50/80 dark:bg-purple-900/40': proposal.status === 'Pendente',
                                         })}
                                     >
                                         {proposal.status}

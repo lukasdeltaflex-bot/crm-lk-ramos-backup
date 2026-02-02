@@ -23,7 +23,7 @@ interface StatsCardProps {
 export function StatsCard({ title, value, icon: Icon, description, percentage, className, valueClassName }: StatsCardProps) {
   return (
     <Card className={cn(
-        'hover:shadow-xl hover:border-primary/40 transition-all group relative overflow-hidden bg-card shadow-md rounded-xl h-full flex flex-col border-2', 
+        'hover:shadow-xl transition-all group relative overflow-hidden bg-card shadow-md rounded-xl h-full min-h-[160px] flex flex-col border-2', 
         className
     )}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 print:pb-1">
