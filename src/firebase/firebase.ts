@@ -1,7 +1,7 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
+import { getAuth, Auth } from "firebase/auth";
+import { getFirestore, Firestore } from "firebase/firestore";
+import { getStorage, FirebaseStorage } from "firebase/storage";
 
 /**
  * CONFIGURAÇÃO DIRETA FIREBASE - LK RAMOS
@@ -18,18 +18,27 @@ const firebaseConfig = {
   appId: "1:123456789:web:abcdef"
 };
 
-// Singleton para garantir inicialização única e evitar erros de hot-reload
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+let app: FirebaseApp;
+let auth: Auth;
+let db: Firestore;
+let storage: FirebaseStorage;
 
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
+try {
+    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+    auth = getAuth(app);
+    db = getFirestore(app);
+    storage = getStorage(app);
+} catch (error) {
+    console.error("⚠️ Erro crítico na inicialização do Firebase:", error);
+}
+
+export { auth, db, storage };
 
 /**
  * Função de inicialização exigida pelo Client Provider e Hooks.
  */
 export function initializeFirebase() {
-  if (typeof window !== 'undefined' && app.options.apiKey !== "AIzaSyXXXXXXXXXXXX") {
+  if (typeof window !== 'undefined' && app && app.options.apiKey !== "AIzaSyXXXXXXXXXXXX") {
     console.log("🚀 LK RAMOS - CONEXÃO FIREBASE ATIVA:", app.options.projectId);
   }
   

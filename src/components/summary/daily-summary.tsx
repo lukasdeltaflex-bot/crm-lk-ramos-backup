@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Bot, Send, BellRing, Clock, BadgePercent, Hourglass, Coins, X, Info, Loader2, CalendarClock } from 'lucide-react';
+import { Bot, Send, BellRing, Clock, BadgePercent, X, Info, Loader2, CalendarClock } from 'lucide-react';
 import type { Customer, Proposal, UserProfile, FollowUp } from '@/lib/types';
 import { Skeleton } from '../ui/skeleton';
 import { differenceInDays, format } from 'date-fns';
@@ -96,6 +96,7 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
     if (!isClient) return { birthdayAlerts: [], followUpReminders: [], commissionReminders: [], debtBalanceReminders: [], partialCommissionReminders: [], manualFollowUps: [] };
 
     const now = new Date();
+    const todayStr = format(now, 'MM-dd');
     const todayIso = format(now, 'yyyy-MM-dd');
     const customerMap = new Map(customers.map(c => [c.id, c]));
 
