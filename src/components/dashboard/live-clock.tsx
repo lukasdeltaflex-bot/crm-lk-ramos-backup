@@ -8,9 +8,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function LiveClock() {
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    // Seta a hora inicial assim que o componente é montado no cliente
+    setIsHydrated(true);
     setCurrentTime(new Date());
 
     const timer = setInterval(() => {
@@ -20,14 +21,13 @@ export function LiveClock() {
     return () => {
       clearInterval(timer);
     };
-  }, []); // O array vazio garante que isso rode apenas uma vez
+  }, []);
 
-  // Enquanto currentTime for null (no servidor ou na renderização inicial do cliente), mostra um placeholder.
-  if (!currentTime) {
+  if (!isHydrated || !currentTime) {
     return (
       <div className="flex items-center gap-2 text-base font-medium text-foreground/80">
         <Clock className="h-5 w-5 text-primary" />
-        <Skeleton className="h-5 w-[300px]" />
+        <Skeleton className="h-5 w-[200px]" />
       </div>
     );
   }
@@ -40,7 +40,7 @@ export function LiveClock() {
         <Clock className="h-5 w-5 text-primary" />
         <span className="capitalize">{formattedDate}</span>
         <span className="text-foreground/50">|</span>
-        <span>{formattedTime}</span>
+        <span className="tabular-nums">{formattedTime}</span>
     </div>
   );
 }

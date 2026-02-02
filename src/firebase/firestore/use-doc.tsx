@@ -7,6 +7,7 @@ import {
   DocumentData,
   FirestoreError,
   DocumentSnapshot,
+  Unsubscribe,
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -46,39 +47,47 @@ export function useDoc<T = any>(
 
     setIsLoading(true);
     setError(null);
-    setData(null); // Clear previous data instantly
+    setData(null);
 
-    const unsubscribe = onSnapshot(
-      memoizedDocRef,
-      (snapshot: DocumentSnapshot<DocumentData>) => {
-        if (snapshot.exists()) {
-          setData({ ...(snapshot.data() as T), id: snapshot.id });
-        } else {
-          setData(null);
-        }
-        setError(null);
+    let unsubscribe: Unsubscribe;
+
+    try {
+        unsubscribe = onSnapshot(
+          memoizedDocRef,
+          (snapshot: DocumentSnapshot<DocumentData>) => {
+            if (snapshot.exists()) {
+              setData({ ...(snapshot.data() as T), id: snapshot.id });
+            } else {
+              setData(null);
+            }
+            setError(null);
+            setIsLoading(false);
+          },
+          (error: FirestoreError) => {
+            const contextualError = new FirestorePermissionError({
+              operation: 'get',
+              path: memoizedDocRef.path,
+            })
+
+            setError(contextualError)
+            setData(null)
+            setIsLoading(false)
+            errorEmitter.emit('permission-error', contextualError);
+          }
+        );
+    } catch (e: any) {
+        console.error("Firestore document snapshot error:", e);
         setIsLoading(false);
-      },
-      (error: FirestoreError) => {
-        const contextualError = new FirestorePermissionError({
-          operation: 'get',
-          path: memoizedDocRef.path,
-        })
-
-        setError(contextualError)
-        setData(null)
-        setIsLoading(false)
-        errorEmitter.emit('permission-error', contextualError);
-      }
-    );
+        return;
+    }
 
     return () => {
-      try {
-        if (typeof unsubscribe === 'function') {
-          unsubscribe();
+      if (typeof unsubscribe === 'function') {
+        try {
+            unsubscribe();
+        } catch (e) {
+            // Silently fail cleanup if instance was already closed
         }
-      } catch (e) {
-        console.warn("Firestore cleanup safely handled");
       }
     };
   }, [memoizedDocRef]);

@@ -193,7 +193,7 @@ export default function DashboardPage() {
     setDialogData({ title, proposals: props });
   }
 
-  const rawMonthName = format(appliedDateRange?.from || new Date(), 'MMMM', { locale: ptBR });
+  const rawMonthName = isClient ? format(appliedDateRange?.from || new Date(), 'MMMM', { locale: ptBR }) : 'Mês';
   const currentMonthName = rawMonthName.charAt(0).toUpperCase() + rawMonthName.slice(1);
 
   if (!stats) return null;

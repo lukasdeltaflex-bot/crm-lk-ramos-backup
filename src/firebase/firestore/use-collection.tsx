@@ -8,6 +8,7 @@ import {
   FirestoreError,
   QuerySnapshot,
   CollectionReference,
+  Unsubscribe,
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -62,46 +63,52 @@ export function useCollection<T = any>(
     setIsLoading(true);
     setError(null);
 
-    const unsubscribe = onSnapshot(
-      memoizedTargetRefOrQuery,
-      (snapshot: QuerySnapshot<DocumentData>) => {
-        const results: ResultItemType[] = [];
-        for (const doc of snapshot.docs) {
-          results.push({ ...(doc.data() as T), id: doc.id });
-        }
-        setData(results);
-        setError(null);
-        setIsLoading(false);
-      },
-      (err: FirestoreError) => {
-        // Silently catch permission denied to avoid app crashes during hot reloads
-        if (err.code === 'permission-denied') {
-            const path: string =
-              memoizedTargetRefOrQuery.type === 'collection'
-                ? (memoizedTargetRefOrQuery as CollectionReference).path
-                : (memoizedTargetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString();
+    let unsubscribe: Unsubscribe;
 
-            const contextualError = new FirestorePermissionError({
-                operation: 'list',
-                path,
-            });
-            setError(contextualError);
-            errorEmitter.emit('permission-error', contextualError);
-        } else {
-            setError(err);
-        }
+    try {
+        unsubscribe = onSnapshot(
+          memoizedTargetRefOrQuery,
+          (snapshot: QuerySnapshot<DocumentData>) => {
+            const results: ResultItemType[] = [];
+            for (const doc of snapshot.docs) {
+              results.push({ ...(doc.data() as T), id: doc.id });
+            }
+            setData(results);
+            setError(null);
+            setIsLoading(false);
+          },
+          (err: FirestoreError) => {
+            if (err.code === 'permission-denied') {
+                const path: string =
+                  memoizedTargetRefOrQuery.type === 'collection'
+                    ? (memoizedTargetRefOrQuery as CollectionReference).path
+                    : (memoizedTargetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString();
+
+                const contextualError = new FirestorePermissionError({
+                    operation: 'list',
+                    path,
+                });
+                setError(contextualError);
+                errorEmitter.emit('permission-error', contextualError);
+            } else {
+                setError(err);
+            }
+            setIsLoading(false);
+          }
+        );
+    } catch (e: any) {
+        console.error("Firestore snapshot error:", e);
         setIsLoading(false);
-      }
-    );
+        return;
+    }
 
     return () => {
-      // Proteção contra chamadas de unsubscribe em instâncias já fechadas por erros internos do Firestore
-      try {
-        if (typeof unsubscribe === 'function') {
-          unsubscribe();
+      if (typeof unsubscribe === 'function') {
+        try {
+            unsubscribe();
+        } catch (e) {
+            // Silently fail cleanup if instance was already closed
         }
-      } catch (e) {
-        console.warn("Firestore cleanup handled safely");
       }
     };
   }, [memoizedTargetRefOrQuery]);

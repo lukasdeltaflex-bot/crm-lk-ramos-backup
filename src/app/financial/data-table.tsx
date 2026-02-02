@@ -232,8 +232,8 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             return;
     }
 
-    setStartDateInput(parse(from.toISOString(), "yyyy-MM-dd", new Date()).toLocaleDateString('pt-BR'));
-    setEndDateInput(parse(to.toISOString(), "yyyy-MM-dd", new Date()).toLocaleDateString('pt-BR'));
+    setStartDateInput(from.toLocaleDateString('pt-BR'));
+    setEndDateInput(to.toLocaleDateString('pt-BR'));
     setAppliedDateRange({ from, to });
   };
 
