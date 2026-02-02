@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -329,7 +330,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     dateColumn?.setFilterValue(appliedDateRange);
   }, [appliedDateRange, table]);
 
-  // Regra de Filtro Inteligente Financeiro: Quando "Todos" estiver ativado, ocultar registros "Reprovados"
   React.useEffect(() => {
     const mainStatusColumn = table.getColumn('status');
     if (statusFilter === 'Todos') {
