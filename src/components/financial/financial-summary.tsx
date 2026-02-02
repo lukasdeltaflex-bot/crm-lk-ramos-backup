@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -6,8 +5,7 @@ import type { Row } from '@tanstack/react-table';
 import type { Proposal, Customer } from '@/lib/types';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import { formatCurrency, cn } from '@/lib/utils';
-import { CheckCircle, Hourglass, Info, Coins, CircleDollarSign } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { CheckCircle, Hourglass, Coins, CircleDollarSign } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 import { subMonths, startOfMonth } from 'date-fns';
 
@@ -42,7 +40,6 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     const fromDate = currentMonthRange.from || new Date();
     const toDate = currentMonthRange.to || new Date();
     
-    // LÓGICA DE PIPELINE: Mês Anterior + Atual para Saldo e Esperada
     const startOfPipeline = startOfMonth(subMonths(fromDate, 1));
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
@@ -59,12 +56,10 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
         return d >= startOfPipeline && d <= effectiveToDate;
     });
 
-    // Produção do Mês (Focado em Meta)
     const totalPotentialCommission = currentMonthProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
     const commissionReceivedProposals = currentMonthProposals.filter(p => p.commissionStatus === 'Paga');
     const totalAmountPaid = commissionReceivedProposals.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
     
-    // Saldo a Receber (Pipeline Acumulado)
     const proposalsForSaldoAReceber = accumulatedProposals.filter(p => {
         if (p.commissionStatus === 'Paga') return false;
         const hasAverbacao = !!p.dateApproved;
@@ -73,7 +68,6 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     });
     const pendingAmount = proposalsForSaldoAReceber.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
 
-    // Comissão Esperada (Pipeline Acumulado)
     const expectedCommissionProposals = accumulatedProposals.filter(p => {
         if (p.commissionStatus === 'Paga') return false;
         const isReprovado = p.status === 'Reprovado';
@@ -149,13 +143,6 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
 
   return (
     <div className='space-y-4'>
-        <Alert variant="default" className="bg-secondary/50 print:hidden border-l-primary border border-border/50 shadow-sm">
-            <Info className="h-4 w-4" />
-            <AlertTitle>Inteligência de Pipeline Ativada</AlertTitle>
-            <AlertDescription>
-                Os cartões **Total** e **Recebido** focam na produção do mês selecionado. Os cartões de **Saldo** e **Esperada** somam automaticamente o que sobrou do período anterior para facilitar seu controle de cobranças.
-            </AlertDescription>
-        </Alert>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 print:gap-2">
            {cards.map(card => (
                 <div key={card.title} className="cursor-pointer" onClick={() => onShowDetails(card.title, card.proposals)}>
