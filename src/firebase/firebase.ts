@@ -4,7 +4,7 @@ import { getFirestore, Firestore } from "firebase/firestore";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 
 // Configuração do Firebase LK RAMOS
-// CERTIFIQUE-SE DE COLAR SUAS CHAVES REAIS ABAIXO PARA VER SEUS DADOS
+// CERTIFIQUE-SE DE QUE ESTAS CHAVES CORRESPONDEM AO SEU CONSOLE FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyDcdnNBy0TZTsq_cI02KFVU9o7PJopEczM",
   authDomain: "studio-248448941-9c1c2.firebaseapp.com",
