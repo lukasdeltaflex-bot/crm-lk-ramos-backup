@@ -135,7 +135,7 @@ export default function DashboardPage() {
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
 
-    // 🔥 Lógica de Pipeline: Considera desde o início do mês anterior até o fim do período atual
+    // 🔥 Lógica de Pipeline: Mês Anterior + Período Atual
     const startOfPrevMonth = startOfMonth(subMonths(fromDate, 1));
 
     const getSum = (list: Proposal[]) => list.reduce((sum, p) => sum + (p.grossAmount || 0), 0);
@@ -155,13 +155,12 @@ export default function DashboardPage() {
     const totalDigitado = getSum(currentPeriodProposals);
     const reprovadoValue = getSum(currentPeriodProposals.filter(p => p.status === 'Reprovado'));
 
-    // Cards de Pipeline Operacional (Acumulado: Mês Passado + Vigente)
+    // Cards operacionais acumulados (Pipeline)
     const pendenteProposals = accumulatedProposals.filter(p => p.status === 'Pendente');
     const emAndamentoProposals = accumulatedProposals.filter(p => p.status === 'Em Andamento');
     const aguardandoSaldoProposals = accumulatedProposals.filter(p => p.status === 'Aguardando Saldo');
     const saldoPagoProposals = accumulatedProposals.filter(p => p.status === 'Saldo Pago');
     
-    // Cards de Produção (Apenas Mensal)
     const pagoProposals = currentPeriodProposals.filter(p => p.status === 'Pago');
     const pagoValue = getSum(pagoProposals);
 
@@ -187,7 +186,7 @@ export default function DashboardPage() {
             aguardandoSaldo: aguardandoSaldoProposals,
             saldoPago: saldoPagoProposals,
             reprovado: currentPeriodProposals.filter(p => p.status === 'Reprovado'),
-            pago: pagoValue > 0 ? pagoProposals : [],
+            pago: pagoProposals,
             todos: currentPeriodProposals
         }
     };
@@ -259,19 +258,18 @@ export default function DashboardPage() {
             currentProduction={stats.totalPagoMeta} 
             totalDigitized={stats.totalDigitado}
             isPrivacyMode={isPrivacyMode}
-            className="w-full border-border/50"
+            className="w-full border-border/50 shadow-sm"
             onValueClick={() => handleShowDetails('Contratos Pagos no Período', [...stats.proposals.pago, ...stats.proposals.todos.filter(p => p.status === 'Saldo Pago')])}
         />
 
         <div className="grid gap-4 md:grid-cols-3">
-            <div className="cursor-pointer" onClick={() => handleShowDetails('Total Digitado', stats.proposals.todos)}>
+            <div className="cursor-pointer" onClick={() => handleShowDetails('Total Digitado (Mensal)', stats.proposals.todos)}>
                 <StatsCard 
                     title="Total Digitado" 
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.totalDigitado)} 
                     icon={FileText} 
                     percentage={100}
                     className="bg-slate-50 dark:bg-slate-900/40 border-border/50 shadow-sm"
-                    valueClassName="font-normal"
                     description="Produção Mensal"
                 />
             </div>
@@ -281,9 +279,9 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.pendente)} 
                     icon={BadgePercent} 
                     percentage={stats.percPendente}
-                    valueClassName="text-purple-600 dark:text-purple-400 font-normal"
+                    valueClassName="text-purple-600 dark:text-purple-400"
                     className="bg-purple-50/50 dark:bg-purple-900/20 border-border/50 shadow-sm"
-                    description="Mês Anterior + Atual"
+                    description="Acumulado Histórico"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Em Andamento (Acumulado)', stats.proposals.emAndamento)}>
@@ -292,9 +290,9 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.emAndamento)} 
                     icon={Hourglass} 
                     percentage={stats.percEmAndamento}
-                    valueClassName="text-yellow-600 dark:text-yellow-400 font-normal"
+                    valueClassName="text-yellow-600 dark:text-yellow-400"
                     className="bg-yellow-50/50 dark:bg-yellow-900/20 border-border/50 shadow-sm"
-                    description="Mês Anterior + Atual"
+                    description="Acumulado Histórico"
                 />
             </div>
         </div>
@@ -306,9 +304,9 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.aguardandoSaldo)} 
                     icon={Clock} 
                     percentage={stats.percAguardandoSaldo}
-                    valueClassName="text-blue-600 dark:text-blue-400 font-normal"
+                    valueClassName="text-blue-600 dark:text-blue-400"
                     className="bg-blue-50/50 dark:bg-blue-900/20 border-border/50 shadow-sm"
-                    description="Mês Anterior + Atual"
+                    description="Acumulado Histórico"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Saldo Pago (Acumulado)', stats.proposals.saldoPago)}>
@@ -317,18 +315,18 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.saldoPago)} 
                     icon={CheckCircle2} 
                     percentage={stats.percSaldoPago}
-                    valueClassName="text-orange-600 dark:text-orange-400 font-normal"
+                    valueClassName="text-orange-600 dark:text-orange-400"
                     className="bg-orange-50/50 dark:bg-orange-900/20 border-border/50 shadow-sm"
-                    description="Mês Anterior + Atual"
+                    description="Acumulado Histórico"
                 />
             </div>
-            <div className="cursor-pointer" onClick={() => handleShowDetails('Reprovado', stats.proposals.reprovado)}>
+            <div className="cursor-pointer" onClick={() => handleShowDetails('Reprovado (Mensal)', stats.proposals.reprovado)}>
                 <StatsCard 
                     title="Reprovado" 
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.reprovado)} 
                     icon={XCircle} 
                     percentage={stats.percReprovado}
-                    valueClassName="text-red-600 dark:text-red-400 font-normal"
+                    valueClassName="text-red-600 dark:text-red-400"
                     className="bg-red-50/50 dark:bg-red-900/20 border-border/50 shadow-sm"
                     description="Produção Mensal"
                 />

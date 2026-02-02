@@ -41,33 +41,30 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     const fromDate = currentMonthRange.from || new Date();
     const toDate = currentMonthRange.to || new Date();
     
-    // 🔥 Lógica de Pipeline: Considera desde o início do mês anterior até o fim do período atual
+    // 🔥 Lógica de Pipeline: Mês anterior + Período Atual
     const startOfPrevMonth = startOfMonth(subMonths(fromDate, 1));
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
 
-    // Métrica Mensal: Apenas período selecionado (Para Produção)
+    // Métrica Mensal: Produção
     const currentMonthProposals = allProposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
         return d >= fromDate && d <= effectiveToDate;
     });
 
-    // Métrica Acumulada: Mês anterior + Selecionado (Para Pipeline)
+    // Métrica Acumulada: Pipeline
     const accumulatedProposals = allProposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
         return d >= startOfPrevMonth && d <= effectiveToDate;
     });
 
-    // 1. Total do Mês (Puramente mensal)
     const totalPotentialCommission = currentMonthProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
-
-    // 2. Recebido no Mês (Puramente mensal)
     const commissionReceivedProposals = currentMonthProposals.filter(p => p.commissionStatus === 'Paga');
     const totalAmountPaid = commissionReceivedProposals.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
     
-    // 3. Saldo a Receber (Acumulado: Mês Anterior + Vigente)
+    // Saldo a Receber Acumulado
     const proposalsForSaldoAReceber = accumulatedProposals.filter(p => {
         if (p.commissionStatus === 'Paga') return false;
         const hasAverbacao = !!p.dateApproved;
@@ -76,7 +73,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     });
     const pendingAmount = proposalsForSaldoAReceber.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
 
-    // 4. Comissão Esperada (Acumulado: Mês Anterior + Vigente)
+    // Comissão Esperada Acumulada
     const expectedCommissionProposals = accumulatedProposals.filter(p => {
         if (p.commissionStatus === 'Paga') return false;
         const isReprovado = p.status === 'Reprovado';
@@ -113,7 +110,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
       title: "Total de Comissões",
       value: formatCurrency(totalPotentialCommission),
       icon: Coins,
-      description: "Produção do Mês",
+      description: "Produção Mensal",
       className: "border-border/50 bg-muted/10 shadow-sm",
       valueClassName: "text-foreground font-normal",
       proposals: allProposalsInPeriod,
@@ -133,7 +130,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
       title: "Saldo a Receber",
       value: formatCurrency(pendingAmount),
       icon: Hourglass,
-      description: "Mês Anterior + Atual",
+      description: "Pipeline Acumulado",
       className: "border-border/50 bg-orange-100/10 dark:bg-orange-900/20 shadow-sm",
       valueClassName: "text-orange-500 font-normal",
       proposals: proposalsForSaldoAReceber,
@@ -143,7 +140,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
       title: "Comissão Esperada",
       value: formatCurrency(expectedAmount),
       icon: CircleDollarSign,
-      description: "Mês Anterior + Atual",
+      description: "Pipeline Acumulado",
       className: "border-border/50 bg-blue-100/10 dark:bg-blue-900/20 shadow-sm",
       valueClassName: "text-blue-500 font-normal",
       proposals: expectedCommissionProposals,
@@ -157,7 +154,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
             <Info className="h-4 w-4" />
             <AlertTitle>Visão de Pipeline</AlertTitle>
             <AlertDescription>
-                Os cartões **Total** e **Recebido** focam na produção do mês selecionado. **Saldo a Receber** e **Comissão Esperada** trazem o saldo acumulado desde o mês anterior.
+                Os cartões **Total** e **Recebido** focam na produção do mês selecionado. **Saldo a Receber** e **Comissão Esperada** trazem o saldo acumulado histórico.
             </AlertDescription>
         </Alert>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 print:gap-2">

@@ -6,13 +6,12 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Permissão total e direta para o usuário em sua própria pasta e subcoleções
-    // Isso resolve definitivamente erros de permissão na Agenda, Perfil e Configurações
+    // Permissão total para o usuário em sua própria pasta (Perfil, Agenda, Configurações)
     match /users/{userId}/{document=**} {
       allow read, write: if signedIn() && request.auth.uid == userId;
     }
 
-    // Regra para Clientes e Propostas baseada no ownerId para garantir privacidade entre usuários
+    // Regra para Clientes e Propostas baseada no ownerId
     function isOwner() {
       return signedIn() && (
         (resource == null && request.resource.data.ownerId == request.auth.uid) ||

@@ -119,7 +119,6 @@ export default function AgendaPage() {
         createdAt: selectedReminder?.createdAt || new Date().toISOString(),
       };
 
-      // Salvamento direto na subcoleção do usuário logado
       await setDoc(doc(firestore, 'users', user.uid, 'reminders', reminderId), reminderData);
       
       toast({ title: 'Lembrete salvo com sucesso!' });
@@ -128,8 +127,8 @@ export default function AgendaPage() {
       console.error("Erro ao salvar lembrete:", err);
       toast({ 
         variant: 'destructive', 
-        title: 'Erro de Permissão', 
-        description: 'Não foi possível gravar na agenda. Verifique sua conexão.' 
+        title: 'Erro ao Salvar', 
+        description: 'Verifique sua conexão ou permissões de segurança.' 
       });
     } finally {
       setIsSaving(false);

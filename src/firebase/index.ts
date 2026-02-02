@@ -11,14 +11,13 @@ export function initializeFirebase() {
   if (!getApps().length) {
     const firebaseApp = initializeApp(firebaseConfig);
     const sdks = getSdks(firebaseApp);
-    // 🔥 OBRIGATÓRIO NO NEXT.JS: Configura a persistência local para garantir que a sessão de auth permaneça ativa
+    // 🔥 OBRIGATÓRIO: Garante que o login não se perca ao recarregar ou salvar
     setPersistence(sdks.auth, browserLocalPersistence);
     return sdks;
   }
 
   const app = getApp();
   const sdks = getSdks(app);
-  // Garante persistência mesmo se o app já estiver inicializado
   setPersistence(sdks.auth, browserLocalPersistence);
   return sdks;
 }
