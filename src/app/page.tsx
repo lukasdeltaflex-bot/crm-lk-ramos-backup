@@ -267,7 +267,7 @@ export default function DashboardPage() {
                     icon={FileText} 
                     percentage={100}
                     className="bg-slate-50 dark:bg-slate-900/40 border-border/50 shadow-sm"
-                    description="Produção Mensal"
+                    description="PRODUÇÃO MENSAL"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Pendentes (Acumulado)', stats.proposals.pendente)}>

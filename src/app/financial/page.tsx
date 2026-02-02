@@ -78,15 +78,9 @@ export default function FinancialPage() {
     const startOfCurrent = startOfMonth(today);
     const endOfCurrent = endOfMonth(today);
 
+    // Oculta reprovadas conforme solicitado (não geram comissão)
     const tableData = proposals
-      .filter(p => {
-        if (p.commissionStatus === 'Paga') return true;
-        const hasAverbacao = !!p.dateApproved;
-        const status = p.status;
-        const isSaldoAReceber = status === 'Pago' || 
-                               (hasAverbacao && ['Em Andamento', 'Saldo Pago', 'Pendente'].includes(status));
-        return isSaldoAReceber;
-      })
+      .filter(p => p.status !== 'Reprovado')
       .map(p => ({
         ...p,
         customer: customersMap.get(p.customerId),
