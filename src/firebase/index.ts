@@ -14,8 +14,10 @@ export function initializeFirebase() {
   let firebaseApp: FirebaseApp;
 
   // Verifica se as chaves básicas estão presentes para evitar o erro auth/invalid-api-key
-  if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "xxxxxxxx") {
-    console.warn("⚠️ LK RAMOS: Firebase API Key não configurada corretamente no arquivo .env");
+  if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "xxxxxxxx" || firebaseConfig.apiKey.trim() === "") {
+    console.error("❌ LK RAMOS: NEXT_PUBLIC_FIREBASE_API_KEY não configurada no arquivo .env");
+    // Não inicializamos se a chave for inválida para evitar crash do Auth
+    return null;
   }
 
   if (!getApps().length) {
@@ -31,7 +33,7 @@ export function initializeFirebase() {
     console.log("-----------------------------------------");
     console.log("🚀 LK RAMOS - CONEXÃO FIREBASE ATIVA");
     console.log("🆔 PROJECT ID:", firebaseApp.options.projectId);
-    console.log("🔑 CONFIG STATUS:", !!firebaseConfig.apiKey ? "OK" : "PENDENTE");
+    console.log("🔑 CONFIG STATUS: OK");
     console.log("-----------------------------------------");
 
     setPersistence(sdks.auth, browserLocalPersistence).catch(err => {

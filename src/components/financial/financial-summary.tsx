@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -64,7 +63,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     const commissionReceivedProposals = currentMonthProposals.filter(p => p.commissionStatus === 'Paga');
     const totalAmountPaid = commissionReceivedProposals.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
     
-    // Saldo a Receber (Acumulado)
+    // Saldo a Receber (Acumulado: Mês Anterior + Atual)
     const proposalsForSaldoAReceber = accumulatedProposals.filter(p => {
         if (p.commissionStatus === 'Paga') return false;
         const hasAverbacao = !!p.dateApproved;
@@ -73,7 +72,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     });
     const pendingAmount = proposalsForSaldoAReceber.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
 
-    // Comissão Esperada (Acumulado)
+    // Comissão Esperada (Acumulado: Mês Anterior + Atual)
     const expectedCommissionProposals = accumulatedProposals.filter(p => {
         if (p.commissionStatus === 'Paga') return false;
         const isReprovado = p.status === 'Reprovado';
@@ -154,7 +153,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
             <Info className="h-4 w-4" />
             <AlertTitle>Inteligência de Pipeline Ativada</AlertTitle>
             <AlertDescription>
-                Os cartões **Total** e **Recebido** focam na produção do mês. Os cartões de **Saldo** e **Esperada** somam automaticamente o saldo acumulado para facilitar seu controle de retornos.
+                Os cartões **Total** e **Recebido** focam na produção do mês selecionado. Os cartões de **Saldo** e **Esperada** somam automaticamente o que "sobrou" do mês anterior para facilitar seu controle de cobranças.
             </AlertDescription>
         </Alert>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 print:gap-2">

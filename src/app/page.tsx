@@ -1,4 +1,3 @@
-
 'use client';
 import React from 'react';
 import { AppLayout } from '@/components/app-layout';
@@ -157,7 +156,7 @@ export default function DashboardPage() {
     const totalDigitado = getSum(currentPeriodProposals);
     const reprovadoValue = getSum(currentPeriodProposals.filter(p => p.status === 'Reprovado'));
 
-    // Cards operacionais usam a base acumulada
+    // Cards operacionais usam a base acumulada (Mês Anterior + Atual)
     const pendenteProposals = accumulatedProposals.filter(p => p.status === 'Pendente');
     const emAndamentoProposals = accumulatedProposals.filter(p => p.status === 'Em Andamento');
     const aguardandoSaldoProposals = accumulatedProposals.filter(p => p.status === 'Aguardando Saldo');
