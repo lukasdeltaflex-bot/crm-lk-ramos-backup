@@ -33,6 +33,7 @@ export default function AgendaPage() {
 
   const remindersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
+    // Reminders are in subcollection /users/{uid}/reminders
     return collection(firestore, 'users', user.uid, 'reminders');
   }, [firestore, user]);
 

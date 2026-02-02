@@ -18,16 +18,16 @@ service cloud.firestore {
       );
     }
 
-    // Perfil do Usuário e Subcoleções (como lembretes da agenda)
+    // Perfil do Usuário e Subcoleção de Lembretes
     match /users/{userId} {
       allow read, write: if isOwner(userId);
       
-      match /{allSubcollections=**} {
+      match /reminders/{reminderId} {
         allow read, write: if isOwner(userId);
       }
     }
 
-    // Clientes e Propostas (Coleções de nível superior com ownerId)
+    // Clientes, Propostas e Configurações
     match /customers/{customerId} {
       allow read, write: if dataOwner();
     }
