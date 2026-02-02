@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -19,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { FollowUpForm } from './follow-up-form';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
+import { FollowUpsWidget } from '@/components/dashboard/follow-ups-widget';
 
 export default function FollowUpsPage() {
   const { user } = useUser();
@@ -174,107 +176,114 @@ export default function FollowUpsPage() {
         </Button>
       </div>
 
-      <Tabs value={tab} onValueChange={setTab} className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <TabsList>
-                <TabsTrigger value="pending">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    Pendentes
-                </TabsTrigger>
-                <TabsTrigger value="history">
-                    <History className="mr-2 h-4 w-4" />
-                    Histórico
-                </TabsTrigger>
-            </TabsList>
-            <div className="relative w-full max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                    placeholder="Pesquisar contatos ou motivos..." 
-                    className="pl-9"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-            </div>
-        </div>
-
-        <TabsContent value="pending" className="mt-0">
-            <div className="grid gap-4">
-                {isLoading ? (
-                    Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 w-full" />)
-                ) : filteredFollowUps.length === 0 ? (
-                    <div className="py-20 text-center border-2 border-dashed rounded-xl bg-muted/10 border-border/50">
-                        <CalendarIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-20" />
-                        <p className="text-muted-foreground">Nenhum retorno pendente.</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-6">
+            <Tabs value={tab} onValueChange={setTab} className="space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <TabsList>
+                        <TabsTrigger value="pending">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            Pendentes
+                        </TabsTrigger>
+                        <TabsTrigger value="history">
+                            <History className="mr-2 h-4 w-4" />
+                            Histórico
+                        </TabsTrigger>
+                    </TabsList>
+                    <div className="relative w-full max-w-sm">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                            placeholder="Pesquisar contatos ou motivos..." 
+                            className="pl-9"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                     </div>
-                ) : (
-                    filteredFollowUps.map((f) => (
-                        <Card key={f.id} className="group border-border/50 hover:border-primary/50 transition-all cursor-pointer overflow-hidden" onClick={() => handleOpenAction(f)}>
-                            <div className="p-4 flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-full bg-primary/5 flex items-center justify-center shrink-0">
-                                    <User className="h-6 w-6 text-primary/60" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <h4 className="font-semibold truncate">{f.contactName}</h4>
-                                        {getStatusBadge(f)}
-                                    </div>
-                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                                        <span className="flex items-center gap-1">
-                                            <CalendarIcon className="h-3 w-3" />
-                                            {format(parseISO(f.dueDate), "dd 'de' MMMM", { locale: ptBR })}
-                                        </span>
-                                        {f.contactPhone && (
-                                            <span className="flex items-center gap-1">
-                                                <User className="h-3 w-3" />
-                                                {f.contactPhone}
-                                            </span>
-                                        )}
-                                        {f.referralInfo && (
-                                            <span className="px-2 py-0.5 bg-secondary rounded text-[10px] truncate max-w-[200px]">
-                                                {f.referralInfo}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <p className="mt-2 text-sm line-clamp-1 opacity-80">{f.description}</p>
-                                </div>
-                                <Button variant="ghost" size="icon" className="shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
-                                    <CheckCircle2 className="h-5 w-5" />
-                                </Button>
-                            </div>
-                        </Card>
-                    ))
-                )}
-            </div>
-        </TabsContent>
+                </div>
 
-        <TabsContent value="history" className="mt-0">
-             <div className="grid gap-4">
-                {filteredFollowUps.map((f) => (
-                    <Card key={f.id} className="opacity-80 grayscale-[0.5] hover:grayscale-0 transition-all border-border/50">
-                        <div className="p-4">
-                            <div className="flex items-start justify-between gap-4">
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <h4 className="font-medium truncate">{f.contactName}</h4>
-                                        {getStatusBadge(f)}
-                                    </div>
-                                    <p className="text-xs text-muted-foreground mb-2">
-                                        Tratado em: {f.completedAt ? format(parseISO(f.completedAt), "dd/MM/yyyy HH:mm") : '-'}
-                                    </p>
-                                    <div className="p-2 bg-muted/30 rounded text-sm italic">
-                                        &quot;{f.notes || 'Nenhuma observação registrada.'}&quot;
-                                    </div>
-                                </div>
-                                <div className="text-right text-[10px] text-muted-foreground shrink-0">
-                                    Criação: {format(parseISO(f.createdAt), "dd/MM/yy")}
-                                </div>
+                <TabsContent value="pending" className="mt-0">
+                    <div className="grid gap-4">
+                        {isLoading ? (
+                            Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 w-full" />)
+                        ) : filteredFollowUps.length === 0 ? (
+                            <div className="py-20 text-center border-2 border-dashed rounded-xl bg-muted/10 border-border/50">
+                                <CalendarIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-20" />
+                                <p className="text-muted-foreground">Nenhum retorno pendente.</p>
                             </div>
-                        </div>
-                    </Card>
-                ))}
-             </div>
-        </TabsContent>
-      </Tabs>
+                        ) : (
+                            filteredFollowUps.map((f) => (
+                                <Card key={f.id} className="group border-border/50 hover:border-primary/50 transition-all cursor-pointer overflow-hidden" onClick={() => handleOpenAction(f)}>
+                                    <div className="p-4 flex items-center gap-4">
+                                        <div className="h-12 w-12 rounded-full bg-primary/5 flex items-center justify-center shrink-0">
+                                            <User className="h-6 w-6 text-primary/60" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <h4 className="font-semibold truncate">{f.contactName}</h4>
+                                                {getStatusBadge(f)}
+                                            </div>
+                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                                                <span className="flex items-center gap-1">
+                                                    <CalendarIcon className="h-3 w-3" />
+                                                    {format(parseISO(f.dueDate), "dd 'de' MMMM", { locale: ptBR })}
+                                                </span>
+                                                {f.contactPhone && (
+                                                    <span className="flex items-center gap-1">
+                                                        <User className="h-3 w-3" />
+                                                        {f.contactPhone}
+                                                    </span>
+                                                )}
+                                                {f.referralInfo && (
+                                                    <span className="px-2 py-0.5 bg-secondary rounded text-[10px] truncate max-w-[200px]">
+                                                        {f.referralInfo}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="mt-2 text-sm line-clamp-1 opacity-80">{f.description}</p>
+                                        </div>
+                                        <Button variant="ghost" size="icon" className="shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
+                                            <CheckCircle2 className="h-5 w-5" />
+                                        </Button>
+                                    </div>
+                                </Card>
+                            ))
+                        )}
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="history" className="mt-0">
+                    <div className="grid gap-4">
+                        {filteredFollowUps.map((f) => (
+                            <Card key={f.id} className="opacity-80 grayscale-[0.5] hover:grayscale-0 transition-all border-border/50">
+                                <div className="p-4">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <h4 className="font-medium truncate">{f.contactName}</h4>
+                                                {getStatusBadge(f)}
+                                            </div>
+                                            <p className="text-xs text-muted-foreground mb-2">
+                                                Tratado em: {f.completedAt ? format(parseISO(f.completedAt), "dd/MM/yyyy HH:mm") : '-'}
+                                            </p>
+                                            <div className="p-2 bg-muted/30 rounded text-sm italic">
+                                                &quot;{f.notes || 'Nenhuma observação registrada.'}&quot;
+                                            </div>
+                                        </div>
+                                        <div className="text-right text-[10px] text-muted-foreground shrink-0">
+                                            Criação: {format(parseISO(f.createdAt), "dd/MM/yy")}
+                                        </div>
+                                    </div>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                </TabsContent>
+            </Tabs>
+        </div>
+        <div className="lg:col-span-1">
+            <FollowUpsWidget />
+        </div>
+      </div>
 
       <Dialog open={isActionDialogOpen} onOpenChange={setIsActionDialogOpen}>
         <DialogContent className="max-w-md">

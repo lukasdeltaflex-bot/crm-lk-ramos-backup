@@ -268,13 +268,20 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
                 Alertas estratégicos para o seu dia.
             </CardDescription>
         </div>
-        <button onClick={handleSendEmail} disabled={isSending} className="h-8 px-3 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground flex items-center gap-2 text-xs transition-colors">
+        <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleSendEmail} 
+            disabled={isSending}
+            className="h-8 shadow-sm hover:bg-primary hover:text-primary-foreground transition-all duration-200"
+        >
             {isSending ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
             ) : (
-                <><Send className="h-3 w-3" /> Email</>
+                <Send className="h-3.5 w-3.5 mr-2" />
             )}
-        </button>
+            Enviar E-mail
+        </Button>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden pt-2">
         {!hasVisibleAlerts ? (

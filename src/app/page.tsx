@@ -36,7 +36,6 @@ import { GoalCard } from '@/components/dashboard/goal-card';
 import { PartnerPerformanceCharts } from '@/components/dashboard/partner-performance-charts';
 import { DailySummary } from '@/components/summary/daily-summary';
 import { RecentProposals } from '@/components/dashboard/recent-proposals';
-import { FollowUpsWidget } from '@/components/dashboard/follow-ups-widget';
 import { Separator } from '@/components/ui/separator';
 import {
     Select,
@@ -342,7 +341,7 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-                <FollowUpsWidget />
+                <PartnerPerformanceCharts proposals={stats.proposals.todos} />
             </div>
             <div className="lg:col-span-1">
                 <DailySummary 
@@ -353,17 +352,12 @@ export default function DashboardPage() {
             </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-                <PartnerPerformanceCharts proposals={stats.proposals.todos} />
-            </div>
-            <div className="lg:col-span-1">
-                <RecentProposals 
-                    proposals={proposals || []}
-                    customers={customers || []}
-                    isLoading={proposalsLoading || customersLoading}
-                />
-            </div>
+        <div className="grid grid-cols-1 gap-8">
+            <RecentProposals 
+                proposals={proposals || []}
+                customers={customers || []}
+                isLoading={proposalsLoading || customersLoading}
+            />
         </div>
       </div>
 

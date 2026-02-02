@@ -1,3 +1,6 @@
+
+'use client';
+
 import {
   Table,
   TableBody,
@@ -12,13 +15,14 @@ import { Skeleton } from '../ui/skeleton';
 import { formatCurrency, cn, calculateBusinessDays } from '@/lib/utils';
 import type { Proposal, Customer } from '@/lib/types';
 import { useMemo, useState, useEffect } from 'react';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, ArrowRight } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import Link from 'next/link';
 
 interface RecentProposalsProps {
     proposals: Proposal[];
@@ -37,38 +41,43 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
     const customerMap = new Map(customers.map(c => [c.id, c]));
     return proposals
         .sort((a, b) => new Date(b.dateDigitized).getTime() - new Date(a.dateDigitized).getTime())
-        .slice(0, 5)
+        .slice(0, 10)
         .map(p => ({...p, customer: customerMap.get(p.customerId)}))
   }, [proposals, customers]);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline">Propostas Recentes</CardTitle>
+    <Card className="border-border/50 shadow-sm overflow-hidden">
+      <CardHeader className="flex flex-row items-center justify-between pb-4">
+        <CardTitle className="font-headline text-xl">Últimas Propostas Digitadas</CardTitle>
+        <Link href="/proposals">
+            <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80 flex gap-1 items-center px-3 py-1">
+                Ver todas <ArrowRight className="h-3 w-3" />
+            </Badge>
+        </Link>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-muted/30">
             <TableRow>
-              <TableHead>Cliente</TableHead>
-              <TableHead>Produto</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Valor Bruto</TableHead>
+              <TableHead className="px-6 py-4 font-bold text-xs uppercase tracking-wider">Cliente</TableHead>
+              <TableHead className="px-6 py-4 font-bold text-xs uppercase tracking-wider">Produto</TableHead>
+              <TableHead className="px-6 py-4 font-bold text-xs uppercase tracking-wider">Status</TableHead>
+              <TableHead className="px-6 py-4 font-bold text-xs uppercase tracking-wider text-right">Valor Bruto</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i}>
-                        <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                        <TableCell className="text-right"><Skeleton className="h-5 w-28 ml-auto" /></TableCell>
+                        <TableCell className="px-6 py-4"><Skeleton className="h-5 w-32" /></TableCell>
+                        <TableCell className="px-6 py-4"><Skeleton className="h-5 w-24" /></TableCell>
+                        <TableCell className="px-6 py-4"><Skeleton className="h-5 w-20" /></TableCell>
+                        <TableCell className="px-6 py-4 text-right"><Skeleton className="h-5 w-28 ml-auto" /></TableCell>
                     </TableRow>
                 ))
             ) : recentProposals.length === 0 ? (
                 <TableRow>
-                    <TableCell colSpan={4} className="text-center h-24">Nenhuma proposta recente.</TableCell>
+                    <TableCell colSpan={4} className="text-center h-32 text-muted-foreground italic">Nenhuma proposta registrada recentemente.</TableCell>
                 </TableRow>
             ) : (
                 recentProposals.map((proposal) => {
@@ -76,25 +85,27 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
                     const businessDays = hasMounted && proposal.dateDigitized ? calculateBusinessDays(new Date(proposal.dateDigitized)) : 0;
 
                     return (
-                        <TableRow key={proposal.id}>
-                            <TableCell>
-                            <div className="font-medium">{proposal.customer?.name || 'Cliente não encontrado'}</div>
-                            <div className="hidden text-sm text-muted-foreground md:inline">
-                                {proposal.customer?.email}
-                            </div>
+                        <TableRow key={proposal.id} className="hover:bg-muted/30 transition-colors group">
+                            <TableCell className="px-6 py-5">
+                                <div className="font-semibold text-primary/90">{proposal.customer?.name || 'Cliente não encontrado'}</div>
+                                <div className="text-xs text-muted-foreground mt-0.5">
+                                    {proposal.customer?.cpf || 'CPF não informado'}
+                                </div>
                             </TableCell>
-                            <TableCell>{proposal.product}</TableCell>
-                            <TableCell>
+                            <TableCell className="px-6 py-5">
+                                <span className="text-sm font-medium">{proposal.product}</span>
+                            </TableCell>
+                            <TableCell className="px-6 py-5">
                                 <div className="flex items-center gap-2">
                                     <Badge
                                         variant="outline"
-                                        className={cn({
-                                            'border-green-500 text-green-500': proposal.status === 'Pago',
-                                            'border-orange-500 text-orange-500': proposal.status === 'Saldo Pago',
-                                            'border-yellow-500 text-yellow-500': proposal.status === 'Em Andamento',
-                                            'border-blue-500 text-blue-500': proposal.status === 'Aguardando Saldo',
-                                            'border-red-500 text-red-500': proposal.status === 'Reprovado',
-                                            'border-purple-500 text-purple-500': proposal.status === 'Pendente',
+                                        className={cn('px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-tight', {
+                                            'border-green-500/50 text-green-600 bg-green-50/50 dark:bg-green-900/10': proposal.status === 'Pago',
+                                            'border-orange-500/50 text-orange-600 bg-orange-50/50 dark:bg-orange-900/10': proposal.status === 'Saldo Pago',
+                                            'border-yellow-500/50 text-yellow-600 bg-yellow-50/50 dark:bg-yellow-900/10': proposal.status === 'Em Andamento',
+                                            'border-blue-500/50 text-blue-600 bg-blue-50/50 dark:bg-blue-900/10': proposal.status === 'Aguardando Saldo',
+                                            'border-red-500/50 text-red-600 bg-red-50/50 dark:bg-red-900/10': proposal.status === 'Reprovado',
+                                            'border-purple-500/50 text-purple-600 bg-purple-50/50 dark:bg-purple-900/10': proposal.status === 'Pendente',
                                         })}
                                     >
                                         {proposal.status}
@@ -120,8 +131,8 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
                                     )}
                                 </div>
                             </TableCell>
-                            <TableCell className="text-right">
-                            {formatCurrency(proposal.grossAmount)}
+                            <TableCell className="px-6 py-5 text-right font-normal text-primary">
+                                {formatCurrency(proposal.grossAmount)}
                             </TableCell>
                         </TableRow>
                     );
