@@ -112,7 +112,7 @@ export default function AgendaPage() {
       const reminderData = {
         ...data,
         id: reminderId,
-        ownerId: user.uid, // Garante que o ownerId seja gravado para as regras de segurança
+        ownerId: user.uid,
         createdAt: selectedReminder?.createdAt || new Date().toISOString(),
       };
 
@@ -125,7 +125,7 @@ export default function AgendaPage() {
       toast({ 
         variant: 'destructive', 
         title: 'Falha ao Salvar', 
-        description: 'Não foi possível gravar o lembrete no momento.' 
+        description: 'Não foi possível gravar o lembrete. Verifique sua conexão e tente novamente.' 
       });
     } finally {
       setIsSaving(false);
@@ -152,7 +152,7 @@ export default function AgendaPage() {
       </div>
 
       <div className="grid gap-6">
-        <Card className="border-border/50">
+        <Card className="border-border/50 shadow-sm">
             <CardHeader className="pb-3">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>

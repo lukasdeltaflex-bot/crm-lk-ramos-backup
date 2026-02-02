@@ -18,7 +18,7 @@ service cloud.firestore {
       );
     }
 
-    // Perfil do Usuário, Configurações e Subcoleções (como lembretes)
+    // Perfil do Usuário e Subcoleções (como lembretes da agenda)
     match /users/{userId} {
       allow read, write: if isOwner(userId);
       

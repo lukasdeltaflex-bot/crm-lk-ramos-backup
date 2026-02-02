@@ -87,7 +87,7 @@ export function AgendaSection() {
       setIsDialogOpen(false);
     } catch (err) {
       console.error(err);
-      toast({ variant: 'destructive', title: 'Acesso Negado', description: 'Você precisa estar logado para salvar lembretes.' });
+      toast({ variant: 'destructive', title: 'Falha ao salvar', description: 'Ocorreu um erro de permissão ou conexão.' });
     } finally {
       setIsSaving(false);
     }
@@ -102,7 +102,7 @@ export function AgendaSection() {
   };
 
   return (
-    <Card className="h-full border-border/50">
+    <Card className="h-full border-border/50 shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="space-y-1">
           <CardTitle className="text-xl font-headline flex items-center gap-2">

@@ -272,7 +272,7 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.totalDigitado)} 
                     icon={FileText} 
                     percentage={100}
-                    className="bg-slate-50 dark:bg-slate-900/40 border-border/50"
+                    className="bg-slate-50 dark:bg-slate-900/40 border-border/50 shadow-sm"
                     valueClassName="font-light"
                     description="Produção Mensal"
                 />
@@ -284,7 +284,7 @@ export default function DashboardPage() {
                     icon={BadgePercent} 
                     percentage={stats.percPendente}
                     valueClassName="text-purple-600 dark:text-purple-400 font-light"
-                    className="bg-purple-50/50 dark:bg-purple-900/20 border-border/50"
+                    className="bg-purple-50/50 dark:bg-purple-900/20 border-border/50 shadow-sm"
                     description="Mês Anterior + Atual"
                 />
             </div>
@@ -295,7 +295,7 @@ export default function DashboardPage() {
                     icon={Hourglass} 
                     percentage={stats.percEmAndamento}
                     valueClassName="text-yellow-600 dark:text-yellow-400 font-light"
-                    className="bg-yellow-50/50 dark:bg-yellow-900/20 border-border/50"
+                    className="bg-yellow-50/50 dark:bg-yellow-900/20 border-border/50 shadow-sm"
                     description="Mês Anterior + Atual"
                 />
             </div>
@@ -309,7 +309,7 @@ export default function DashboardPage() {
                     icon={Clock} 
                     percentage={stats.percAguardandoSaldo}
                     valueClassName="text-blue-600 dark:text-blue-400 font-light"
-                    className="bg-blue-50/50 dark:bg-blue-900/20 border-border/50"
+                    className="bg-blue-50/50 dark:bg-blue-900/20 border-border/50 shadow-sm"
                     description="Mês Anterior + Atual"
                 />
             </div>
@@ -320,7 +320,7 @@ export default function DashboardPage() {
                     icon={CheckCircle2} 
                     percentage={stats.percSaldoPago}
                     valueClassName="text-orange-600 dark:text-orange-400 font-light"
-                    className="bg-orange-50/50 dark:bg-orange-900/20 border-border/50"
+                    className="bg-orange-50/50 dark:bg-orange-900/20 border-border/50 shadow-sm"
                     description="Mês Anterior + Atual"
                 />
             </div>
@@ -331,7 +331,7 @@ export default function DashboardPage() {
                     icon={XCircle} 
                     percentage={stats.percReprovado}
                     valueClassName="text-red-600 dark:text-red-400 font-light"
-                    className="bg-red-50/50 dark:bg-red-900/20 border-border/50"
+                    className="bg-red-50/50 dark:bg-red-900/20 border-border/50 shadow-sm"
                     description="Produção Mensal"
                 />
             </div>
