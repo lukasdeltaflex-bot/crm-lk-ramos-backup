@@ -6,9 +6,8 @@ import { getStorage } from "firebase/storage";
 /**
  * RESET TOTAL FIREBASE - CONFIGURAÇÃO DIRETA
  * 
- * ATENÇÃO: Para o sistema funcionar, você PRECISA substituir os valores abaixo
- * pelos dados reais do seu projeto obtidos em: 
- * Firebase Console -> Configurações do Projeto -> Geral -> Seus Apps -> App Web.
+ * ATENÇÃO: Substitua os valores abaixo pelos dados reais do seu projeto
+ * obtidos em: Firebase Console -> Configurações do Projeto -> Geral -> App Web.
  */
 const firebaseConfig = {
   apiKey: "AIzaSyXXXXXXXXXXXX", // <--- COLE SUA API KEY REAL AQUI
