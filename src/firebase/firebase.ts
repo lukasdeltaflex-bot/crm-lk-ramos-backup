@@ -1,7 +1,7 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { getAuth, Auth } from "firebase/auth";
+import { getFirestore, Firestore } from "firebase/firestore";
+import { getStorage, FirebaseStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDcdnNBy0TZTsq_cI02KFVU9o7PJopEczM",
@@ -12,17 +12,23 @@ const firebaseConfig = {
   appId: "1:341426752875:web:348f88597e5b9b2057d02e",
 };
 
-// Singleton para evitar múltiplas inicializações e erros internos do Firestore
+// Singleton pattern to prevent "Internal Assertion Failed" and multiple instances
 let app: FirebaseApp;
+let auth: Auth;
+let db: Firestore;
+let storage: FirebaseStorage;
+
 if (!getApps().length) {
   app = initializeApp(firebaseConfig);
 } else {
   app = getApp();
 }
 
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
+auth = getAuth(app);
+db = getFirestore(app);
+storage = getStorage(app);
+
+export { auth, db, storage };
 
 export function initializeFirebase(): FirebaseApp {
   return app;
