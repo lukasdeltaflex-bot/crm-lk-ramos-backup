@@ -73,21 +73,20 @@ export function AuthForm({ type }: AuthFormProps) {
   });
 
   async function handleFormSubmit(data: FormValues) {
-    // MODO EMERGÊNCIA: Login desativado até configuração de chave real no firebase.ts
-    toast({
-        variant: 'destructive',
-        title: 'Sistema em Modo de Segurança',
-        description: 'Configure sua API KEY real no arquivo src/firebase/firebase.ts e descomente as funções de login no código.',
-    });
-    
-    console.warn("⚠️ Tentativa de login interceptada pelo modo de segurança.");
-    console.log("Dados do formulário:", data.email);
+    // Verificação de segurança: Se a chave ainda for a de exemplo, avisamos o usuário
+    if (auth.app.options.apiKey === "AIzaSyXXXXXXXXXXXX") {
+        toast({
+            variant: 'destructive',
+            title: 'Configuração Pendente',
+            description: 'Você precisa colar sua API KEY real no arquivo src/firebase/firebase.ts para logar.',
+        });
+        return;
+    }
 
-    /* 
-    COMENTADO PARA EVITAR CRASH POR API KEY INVÁLIDA (CONFORME SOLICITADO)
     try {
       if (type === 'login') {
         const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
+        
         if (!userCredential.user.emailVerified) {
           toast({
             variant: 'destructive',
@@ -98,9 +97,8 @@ export function AuthForm({ type }: AuthFormProps) {
           router.push(`/verify-email?email=${data.email}`);
           return;
         }
-        toast({
-          title: 'Login realizado com sucesso!',
-        });
+        
+        toast({ title: 'Bem-vindo de volta!' });
         router.push('/');
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
@@ -118,21 +116,30 @@ export function AuthForm({ type }: AuthFormProps) {
         }
 
         toast({
-          title: 'Conta criada com sucesso!',
-          description: 'Enviamos um link de verificação para o seu e-mail.',
+          title: 'Conta criada!',
+          description: 'Verifique seu e-mail para ativar o acesso.',
         });
         
         router.push(`/verify-email?email=${data.email}`);
       }
     } catch (error: any) {
-      console.error(error);
+      console.error("Auth Error:", error);
+      let message = 'Falha na autenticação.';
+      
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        message = 'E-mail ou senha incorretos.';
+      } else if (error.code === 'auth/email-already-in-use') {
+        message = 'Este e-mail já está cadastrado.';
+      } else if (error.code === 'auth/api-key-not-valid') {
+        message = 'Erro crítico: A API KEY no arquivo firebase.ts é inválida ou está restrita.';
+      }
+
       toast({
         variant: 'destructive',
-        title: 'Erro',
-        description: 'Falha na autenticação. Verifique os logs do console.',
+        title: 'Erro no Acesso',
+        description: message,
       });
     }
-    */
   }
 
   const isSubmitting = form.formState.isSubmitting;

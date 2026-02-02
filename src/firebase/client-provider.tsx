@@ -11,7 +11,6 @@ interface FirebaseClientProviderProps {
 
 /**
  * Provedor que garante a inicialização do Firebase no lado do cliente.
- * Importação direta do ./firebase para evitar dependência circular com o index.ts.
  */
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
   const [isInitializing, setIsInitializing] = useState(true);
@@ -20,7 +19,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     try {
         initializeFirebase();
     } catch (error) {
-        console.error("❌ Falha crítica na inicialização do Firebase:", error);
+        console.error("❌ Falha na inicialização do Firebase:", error);
     } finally {
         setIsInitializing(false);
     }
@@ -30,7 +29,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     return (
         <div className="flex h-screen w-screen flex-col items-center justify-center bg-background gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground animate-pulse">LK RAMOS: Estabelecendo conexão segura...</p>
+            <p className="text-sm text-muted-foreground animate-pulse">LK RAMOS: Carregando segurança...</p>
         </div>
     );
   }

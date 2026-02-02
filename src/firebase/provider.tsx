@@ -64,9 +64,9 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     userError: userAuthState.userError,
   }), [userAuthState, areServicesAvailable]);
 
-  // MODO EMERGÊNCIA: Não trava a UI se o Firebase falhar
+  // MODO DE EMERGÊNCIA: Não usamos throw para evitar tela preta
   if (!areServicesAvailable) {
-    console.warn("⚠️ LK RAMOS: Firebase indisponível ou em carregamento – modo emergência ativado.");
+    console.warn("⚠️ LK RAMOS: Firebase indisponível – carregando em modo de segurança.");
   }
 
   return (
@@ -81,8 +81,6 @@ export const useFirebase = () => {
   const context = useContext(FirebaseContext);
   
   if (!context) {
-    // Retorno seguro para evitar crash, mas avisa o desenvolvedor
-    console.warn("useFirebase usado fora do Provider.");
     return {
         auth: authInstance,
         firestore: db,

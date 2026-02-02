@@ -6,8 +6,8 @@ import { getStorage } from "firebase/storage";
 /**
  * CONFIGURAÇÃO DIRETA FIREBASE - LK RAMOS
  * 
- * ATENÇÃO: Substitua os valores abaixo pelos dados do seu Firebase Console
- * para que o login e o sistema funcionem corretamente.
+ * ATENÇÃO: Substitua os valores abaixo pelos dados do seu Firebase Console.
+ * Sem isso, o login retornará erro de "API KEY INVALID".
  */
 const firebaseConfig = {
   apiKey: "AIzaSyXXXXXXXXXXXX", // <--- COLE SUA API KEY REAL AQUI
