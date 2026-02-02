@@ -99,7 +99,7 @@ export default function FollowUpsPage() {
       setIsActionDialogOpen(false);
     } catch (e: any) {
       console.error("❌ CRM FIRESTORE ERROR:", e);
-      toast({ variant: 'destructive', title: 'Erro de Permissão', description: 'Verifique se o Project ID está correto no Console.' });
+      toast({ variant: 'destructive', title: 'Erro de Permissão', description: 'Ocorreu um erro ao salvar.' });
     } finally {
       setIsSaving(false);
     }
@@ -138,7 +138,7 @@ export default function FollowUpsPage() {
       setIsActionDialogOpen(false);
     } catch (e: any) {
       console.error("❌ CRM ERROR:", e);
-      toast({ variant: 'destructive', title: 'Falha Técnica', description: 'Ocorreu um erro ao salvar o novo agendamento.' });
+      toast({ variant: 'destructive', title: 'Falha Técnica', description: 'Ocorreu um erro ao salvar.' });
     } finally {
       setIsSaving(false);
     }
@@ -163,7 +163,7 @@ export default function FollowUpsPage() {
         setIsFormOpen(false);
     } catch (e: any) {
         console.error("❌ CRM ERROR:", e);
-        toast({ variant: 'destructive', title: 'Falha ao Salvar', description: 'Verifique sua conexão e permissões.' });
+        toast({ variant: 'destructive', title: 'Falha ao Salvar', description: 'Verifique sua conexão.' });
     } finally {
         setIsSaving(false);
     }
