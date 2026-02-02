@@ -23,7 +23,7 @@ const globalForFirebase = globalThis as unknown as {
 // Inicialização única do App
 export const app = globalForFirebase.app || (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp());
 
-// Inicialização única do Firestore com cache ilimitado
+// Inicialização única do Firestore com cache ilimitado e proteção de instância
 export const db = globalForFirebase.db || initializeFirestore(app, {
     cacheSizeBytes: CACHE_SIZE_UNLIMITED
 });
