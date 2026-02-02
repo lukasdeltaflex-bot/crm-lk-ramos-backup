@@ -33,7 +33,6 @@ export default function AgendaPage() {
 
   const remindersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    // Reminders are in subcollection /users/{uid}/reminders
     return collection(firestore, 'users', user.uid, 'reminders');
   }, [firestore, user]);
 
@@ -126,7 +125,7 @@ export default function AgendaPage() {
       toast({ 
         variant: 'destructive', 
         title: 'Falha ao Salvar', 
-        description: 'Não foi possível gravar o lembrete. Verifique sua conexão e tente novamente.' 
+        description: 'Verifique se você está conectado e tente novamente.' 
       });
     } finally {
       setIsSaving(false);

@@ -6,38 +6,34 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return signedIn() && request.auth.uid == userId;
-    }
-
-    // Regra universal para documentos que possuem o campo ownerId
-    function dataOwner() {
+    // Regra para documentos globais com ownerId
+    function isOwner() {
       return signedIn() && (
         (resource == null && request.resource.data.ownerId == request.auth.uid) ||
         (resource != null && resource.data.ownerId == request.auth.uid)
       );
     }
 
-    // Perfil do Usuário e Subcoleção de Lembretes
+    // Perfil do Usuário e Lembretes (Subcoleção)
     match /users/{userId} {
-      allow read, write: if isOwner(userId);
+      allow read, write: if signedIn() && request.auth.uid == userId;
       
       match /reminders/{reminderId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if signedIn() && request.auth.uid == userId;
       }
     }
 
-    // Clientes, Propostas e Configurações
+    // Clientes e Propostas
     match /customers/{customerId} {
-      allow read, write: if dataOwner();
+      allow read, write: if isOwner();
     }
 
     match /loanProposals/{proposalId} {
-      allow read, write: if dataOwner();
+      allow read, write: if isOwner();
     }
 
     match /userSettings/{userId} {
-      allow read, write: if isOwner(userId);
+      allow read, write: if signedIn() && request.auth.uid == userId;
     }
     
     match /{document=**} {
