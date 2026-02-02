@@ -59,7 +59,7 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
             <p className="text-xs text-muted-foreground font-medium">Monitoramento em tempo real da esteira</p>
         </div>
         <Link href="/proposals">
-            <Button variant="outline" size="sm" className="h-8 rounded-full px-4 text-xs font-bold shadow-sm">
+            <Button variant="outline" size="sm" className="h-8 rounded-full px-4 text-xs font-bold shadow-sm text-primary border-primary/20 hover:bg-primary/5">
                 Explorar Tudo <ArrowRight className="ml-2 h-3 w-3" />
             </Button>
         </Link>
@@ -142,7 +142,7 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
                                                     )} />
                                                 </TooltipTrigger>
                                                 <TooltipContent>
-                                                    <p className="font-semibold text-xs">Monitoramento de Saldo</p>
+                                                    <p className="font-semibold text-xs text-primary">Monitoramento de Saldo</p>
                                                     <p className="text-[10px]">Prazo decorrido: {businessDays} dia(s) úteis.</p>
                                                 </TooltipContent>
                                             </Tooltip>

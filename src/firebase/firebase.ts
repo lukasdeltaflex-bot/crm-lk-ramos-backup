@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
-import { getFirestore, Firestore, initializeFirestore, CACHE_SIZE_UNLIMITED } from "firebase/firestore";
+import { getFirestore, Firestore, initializeFirestore, CACHE_SIZE_UNLIMITED, terminate } from "firebase/firestore";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -24,7 +24,6 @@ const globalForFirebase = globalThis as unknown as {
 const app = globalForFirebase.app || (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp());
 
 // Inicialização única do Firestore com cache ilimitado e proteção de instância
-// Usamos initializeFirestore apenas se db ainda não existir no global
 const db = globalForFirebase.db || initializeFirestore(app, {
     cacheSizeBytes: CACHE_SIZE_UNLIMITED,
 });

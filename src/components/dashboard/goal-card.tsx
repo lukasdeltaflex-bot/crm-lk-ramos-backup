@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Target, TrendingUp, Pencil, Check, X, ShieldCheck, Trophy } from 'lucide-react';
+import { Target, TrendingUp, Pencil, Check, X, ShieldCheck, Trophy, Sparkles } from 'lucide-react';
 import { formatCurrency, cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,14 +57,14 @@ export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onV
   if (!isClient) return <Card className="h-48 animate-pulse bg-muted" />;
 
   return (
-    <Card className={cn('hover:border-primary/50 transition-all group relative overflow-hidden bg-gradient-to-br from-primary/[0.03] to-primary/[0.08] dark:from-primary/[0.05] dark:to-primary/[0.15] border border-border/50 rounded-xl shadow-lg', className)}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card className={cn('hover:shadow-xl transition-all group relative overflow-hidden bg-gradient-to-br from-primary/[0.03] to-primary/[0.08] dark:from-primary/[0.05] dark:to-primary/[0.15] border border-border/50 rounded-xl shadow-lg', className)}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-muted/5">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-full bg-primary/10">
-            <Trophy className={cn("h-5 w-5", isGoalReached ? "text-yellow-500" : "text-primary/60")} />
+            <Trophy className={cn("h-5 w-5", isGoalReached ? "text-yellow-500 animate-pulse" : "text-primary/60")} />
           </div>
           <div>
-            <CardTitle className="text-base font-bold text-primary">Performance do Mês</CardTitle>
+            <CardTitle className="text-base font-bold text-primary">Objetivo do Mês</CardTitle>
             <CardDescription className="text-[10px] font-bold uppercase tracking-widest opacity-70">Meta de Contratos Pagos</CardDescription>
           </div>
         </div>
@@ -87,13 +87,13 @@ export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onV
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <div className="px-3 py-1 bg-background/50 backdrop-blur-md rounded-full border border-border/50 text-xs font-bold text-primary">
-                Objetivo: {isPrivacyMode ? '•••••' : formatCurrency(monthlyGoal)}
+              <div className="px-3 py-1 bg-background/50 backdrop-blur-md rounded-full border border-border/50 text-xs font-bold text-primary shadow-sm">
+                Meta: {isPrivacyMode ? '•••••' : formatCurrency(monthlyGoal)}
               </div>
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-background/50 hover:bg-background shadow-sm" 
+                className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-background shadow-sm hover:bg-muted" 
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsEditing(true);
@@ -106,47 +106,49 @@ export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onV
         </div>
       </CardHeader>
       <CardContent 
-        className={cn("pt-6 cursor-pointer")}
+        className={cn("pt-8 cursor-pointer")}
         onClick={onValueClick}
       >
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-10">
           <div className="flex items-end justify-between">
             <div className="space-y-1">
-              <div className={cn("text-5xl font-normal tracking-tighter text-primary", isPrivacyMode && "blur-md")}>
+              <div className={cn("text-6xl font-normal tracking-tighter text-primary leading-none", isPrivacyMode && "blur-md")}>
                 {isPrivacyMode ? '•••••' : formatCurrency(currentProduction)}
               </div>
-              <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-wide flex items-center gap-2 mt-2">
+              <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-wide flex items-center gap-2 mt-4">
                 <TrendingUp className="h-3.5 w-3.5 text-green-500" />
-                Conversão de <span className="text-foreground">{conversionRate.toFixed(1).replace('.', ',')}%</span> sobre a digitação total.
+                Conversão de <span className="text-primary">{conversionRate.toFixed(1).replace('.', ',')}%</span> sobre a digitação total.
               </p>
             </div>
             <div className={cn("flex flex-col items-end gap-1 font-bold", isGoalReached ? "text-green-500" : "text-primary")}>
-              <div className="text-4xl tabular-nums">
+              <div className="text-5xl tabular-nums tracking-tighter">
                 {percentageOfGoal.toFixed(1)}%
               </div>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">Concluído</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">Progresso</p>
             </div>
           </div>
           
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="relative">
-                <Progress value={percentageOfGoal} className="h-4 bg-primary/10" />
-                <div className="absolute top-0 bottom-0 left-0 bg-primary shadow-[0_0_15px_rgba(var(--primary),0.5)] transition-all duration-1000 ease-out" style={{ width: `${percentageOfGoal}%` }} />
+                <Progress value={percentageOfGoal} className="h-5 bg-primary/5 rounded-full" />
+                <div className="absolute top-0 bottom-0 left-0 bg-primary shadow-[0_0_20px_rgba(var(--primary),0.4)] transition-all duration-1000 ease-out rounded-full" style={{ width: `${percentageOfGoal}%` }}>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_2s_infinite]" />
+                </div>
             </div>
             <div className="flex justify-between items-center text-[11px] font-bold uppercase tracking-wider">
               {isGoalReached ? (
-                <p className="text-green-500 animate-bounce flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4" /> 🚀 META ATINGIDA! VOCÊ É EXTRAORDINÁRIO!
+                <p className="text-green-500 flex items-center gap-2">
+                  <Sparkles className="h-4 w-4" /> 🚀 PERFORMANCE EXTRAORDINÁRIA ATINGIDA!
                 </p>
               ) : (
                 <p className="text-muted-foreground">
-                  Faltam <span className={cn("text-primary", isPrivacyMode && "blur-sm")}>
+                  Restam <span className={cn("text-primary", isPrivacyMode && "blur-sm")}>
                     {isPrivacyMode ? '•••••' : formatCurrency(monthlyGoal - currentProduction)}
                   </span> para o objetivo.
                 </p>
               )}
-              <p className="text-muted-foreground opacity-60">
-                Status: <strong>Pago + Saldo Pago</strong>
+              <p className="text-muted-foreground opacity-60 flex items-center gap-1">
+                Status: <span className="text-primary font-black">Pago + Saldo Pago</span>
               </p>
             </div>
           </div>
