@@ -357,7 +357,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     dateColumn?.setFilterValue(appliedDateRange);
   }, [appliedDateRange, table]);
 
-  // Regra solicitada: Quando "Todos" estiver ativado, ocultar registros "Reprovados"
+  // Regra de Filtro Inteligente: Quando "Todos" estiver ativado, ocultar registros "Reprovados"
   React.useEffect(() => {
     const mainStatusColumn = table.getColumn('status');
     if (statusFilter === 'Todos') {
@@ -391,7 +391,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
       onDragEnd={handleDragEnd}
       sensors={sensors}
     >
-        <Card className="print:shadow-none print:border-none financial-table">
+        <Card className="print:shadow-none print:border-none financial-table border-border/50 shadow-md rounded-xl">
         <div className="p-4 space-y-4 print:p-0">
             <FinancialSummary 
                 rows={currentMonthData}
@@ -404,7 +404,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             <div className="flex items-center justify-between py-4 print:hidden">
                 <div className="flex flex-wrap gap-2 items-center">
                     <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as CommissionStatus | 'Todos')}>
-                        <TabsList>
+                        <TabsList className="bg-muted/50">
                             <TabsTrigger value="Todos">Todos</TabsTrigger>
                             <TabsTrigger value="Paga">Pagas</TabsTrigger>
                             <TabsTrigger value="Pendente">Pendentes</TabsTrigger>
@@ -413,7 +413,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                     </Tabs>
                     <div className="flex items-center gap-2 flex-wrap">
                         <Select onValueChange={(val) => applyRange(val as any)}>
-                            <SelectTrigger className='w-[140px] h-9'>
+                            <SelectTrigger className='w-[140px] h-9 bg-card'>
                                 <CalendarIcon className='mr-2 h-4 w-4' />
                                 <SelectValue placeholder="Período" />
                             </SelectTrigger>
@@ -431,7 +431,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                                 value={startDateInput}
                                 onChange={(e) => handleDateInputChange(e.target.value, 'start')}
                                 maxLength={10}
-                                className="h-9 w-28"
+                                className="h-9 w-28 bg-card"
                             />
                             <span className='text-muted-foreground'>-</span>
                             <Input 
@@ -439,7 +439,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                                 value={endDateInput}
                                 onChange={(e) => handleDateInputChange(e.target.value, 'end')}
                                 maxLength={10}
-                                className="h-9 w-28"
+                                className="h-9 w-28 bg-card"
                             />
                         </div>
                         <Button size="sm" onClick={handleApplyFilter}><Filter className="h-4 w-4" /> Aplicar</Button>
@@ -457,12 +457,12 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                 onChange={(event) =>
                     setGlobalFilter(event.target.value)
                 }
-                className="pl-9 w-full"
+                className="pl-9 w-full bg-card"
                 />
             </div>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="ml-auto">
+                <Button variant="outline" className="ml-auto bg-card">
                     Colunas <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
                 </DropdownMenuTrigger>
@@ -487,9 +487,9 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                 </DropdownMenuContent>
             </DropdownMenu>
             </div>
-            <div className="rounded-md border print:border print:border-gray-300">
+            <div className="rounded-xl border print:border print:border-gray-300 overflow-hidden shadow-sm">
             <Table>
-                <TableHeader>
+                <TableHeader className="bg-muted/20">
                 {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow key={headerGroup.id}>
                         <SortableContext
@@ -509,10 +509,10 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                     <TableRow
                         key={row.id}
                         data-state={row.getIsSelected() && 'selected'}
-                        className="print:even:bg-gray-50"
+                        className="print:even:bg-gray-50 hover:bg-primary/[0.02] transition-colors"
                     >
                         {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id} className="print:text-xs print:p-2">
+                        <TableCell key={cell.id} className="print:text-xs print:p-2 py-4">
                             {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()
@@ -535,31 +535,30 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             </Table>
             </div>
             <div className="flex items-center justify-between py-4 print:hidden">
-                <div className="flex items-center gap-4 text-sm">
-                    <div className="text-muted-foreground">
+                <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    <div>
                         {table.getFilteredSelectedRowModel().rows.length} de{' '}
-                        {table.getFilteredRowModel().rows.length} linha(s) selecionadas.
+                        {table.getFilteredModel().rows.length} selecionados
                     </div>
                     {selectedRows.length > 0 && !isPrivacyMode && (
                         <>
                             <Separator orientation="vertical" className="h-4" />
-                            <div className="font-medium text-muted-foreground">
-                                Comissão Selecionada:{" "}
-                                <span className="font-bold text-foreground">{formatCurrency(totalSelectedCommission)}</span>
+                            <div className="text-primary">
+                                Selecionado: <span className="text-foreground">{formatCurrency(totalSelectedCommission)}</span>
                             </div>
                         </>
                     )}
                 </div>
                 <div className="flex items-center space-x-6 lg:space-x-8">
                     <div className="flex items-center space-x-2">
-                        <p className="text-sm font-medium">Linhas por página</p>
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Linhas</p>
                         <Select
                             value={`${table.getState().pagination.pageSize}`}
                             onValueChange={(value) => {
                                 table.setPageSize(Number(value))
                             }}
                         >
-                            <SelectTrigger className="h-8 w-[70px]">
+                            <SelectTrigger className="h-8 w-[70px] bg-card">
                                 <SelectValue placeholder={table.getState().pagination.pageSize} />
                             </SelectTrigger>
                             <SelectContent side="top">
@@ -571,14 +570,14 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                             </SelectContent>
                         </Select>
                     </div>
-                    <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                        Página {table.getState().pagination.pageIndex + 1} de{" "}
+                    <div className="flex w-[100px] items-center justify-center text-xs font-bold text-primary uppercase">
+                        Pág {table.getState().pagination.pageIndex + 1} de{" "}
                         {table.getPageCount()}
                     </div>
                     <div className="flex items-center space-x-2">
                         <Button
                             variant="outline"
-                            className="hidden h-8 w-8 p-0 lg:flex"
+                            className="hidden h-8 w-8 p-0 lg:flex bg-card"
                             onClick={() => table.setPageIndex(0)}
                             disabled={!table.getCanPreviousPage()}
                         >
@@ -587,7 +586,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                         </Button>
                         <Button
                             variant="outline"
-                            className="h-8 w-8 p-0"
+                            className="h-8 w-8 p-0 bg-card"
                             onClick={() => table.previousPage()}
                             disabled={!table.getCanPreviousPage()}
                         >
@@ -596,7 +595,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                         </Button>
                         <Button
                             variant="outline"
-                            className="h-8 w-8 p-0"
+                            className="h-8 w-8 p-0 bg-card"
                             onClick={() => table.nextPage()}
                             disabled={!table.getCanNextPage()}
                         >
@@ -605,7 +604,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                         </Button>
                         <Button
                             variant="outline"
-                            className="hidden h-8 w-8 p-0 lg:flex"
+                            className="hidden h-8 w-8 p-0 lg:flex bg-card"
                             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                             disabled={!table.getCanNextPage()}
                         >

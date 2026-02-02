@@ -38,20 +38,20 @@ function SummaryAlertItem({
   onDismiss: (id: string) => void;
 }) {
   return (
-    <Alert className="bg-card shadow-sm border-border/50 relative">
+    <Alert className="bg-card shadow-sm border-border/50 relative hover:border-primary/30 transition-colors">
       <div className="flex items-start gap-3">
         <div className="mt-0.5">{icon}</div>
         <div className="flex-1">
-          <AlertTitle className="text-sm font-semibold">{title}</AlertTitle>
-          <AlertDescription className="text-xs text-muted-foreground">{description}</AlertDescription>
+          <AlertTitle className="text-sm font-bold tracking-tight">{title}</AlertTitle>
+          <AlertDescription className="text-[11px] text-muted-foreground leading-snug">{description}</AlertDescription>
         </div>
       </div>
       <button
         onClick={() => onDismiss(id)}
-        className="absolute top-2 right-2 p-1 text-muted-foreground/80 hover:text-foreground rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="absolute top-2 right-2 p-1 text-muted-foreground/50 hover:text-foreground rounded-md transition-colors"
         aria-label="Dispensar alerta"
       >
-        <X className="h-4 w-4" />
+        <X className="h-3.5 w-3.5" />
       </button>
     </Alert>
   );
@@ -240,15 +240,15 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
 
   if (!isClient) {
     return (
-        <Card className="border-border/50 shadow-sm">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Bot /> Resumo Diário</CardTitle>
-                <CardDescription>Carregando alertas por IA...</CardDescription>
+        <Card className="border-border/50 shadow-lg rounded-xl overflow-hidden">
+            <CardHeader className="bg-muted/10">
+                <CardTitle className="flex items-center gap-2 font-bold"><Bot className="text-primary" /> Resumo Diário</CardTitle>
+                <CardDescription className="text-[10px] font-bold uppercase tracking-widest opacity-60">Analisando dados...</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
                 <div className="space-y-4">
-                    <Skeleton className="h-20 w-full" />
-                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-20 w-full rounded-xl" />
+                    <Skeleton className="h-20 w-full rounded-xl" />
                 </div>
             </CardContent>
         </Card>
@@ -256,15 +256,15 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
   }
   
   return (
-    <Card className="h-full flex flex-col border-border/50 shadow-sm overflow-hidden">
-      <CardHeader className="flex flex-row items-center justify-between pb-4 bg-muted/10">
+    <Card className="h-full flex flex-col border-border/50 shadow-lg rounded-xl overflow-hidden bg-card">
+      <CardHeader className="flex flex-row items-center justify-between pb-4 bg-muted/10 border-b border-border/30">
         <div className='space-y-1'>
-            <CardTitle className="text-lg font-headline flex items-center gap-2">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
                 <Bot className="text-primary h-5 w-5" />
-                Resumo de Pendências
+                Inteligência Diária
             </CardTitle>
-            <CardDescription className="text-xs">
-                Alertas estratégicos automatizados.
+            <CardDescription className="text-[10px] font-bold uppercase tracking-widest opacity-60">
+                Alertas estratégicos do dia
             </CardDescription>
         </div>
         <Button 
@@ -272,92 +272,100 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
             size="sm" 
             onClick={handleSendEmail} 
             disabled={isSending}
-            className="h-8 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all duration-200 group border-none"
+            className="h-8 px-4 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all group"
         >
             {isSending ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
             ) : (
                 <Send className="h-3.5 w-3.5 mr-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             )}
-            Enviar E-mail
+            Resumo E-mail
         </Button>
       </CardHeader>
-      <CardContent className="flex-1 overflow-hidden pt-4">
+      <CardContent className="flex-1 overflow-hidden pt-6">
         {!hasVisibleAlerts ? (
-            <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground p-8 border-2 border-dashed border-border/50 rounded-lg bg-muted/5">
+            <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground p-8 border-2 border-dashed border-border/50 rounded-xl bg-muted/5">
                 <Info className="h-10 w-10 mb-4 opacity-20" />
-                <p className="font-semibold text-sm">Nenhuma pendência para hoje.</p>
-                <p className="text-xs">Tenha um dia produtivo!</p>
+                <p className="font-bold text-sm text-foreground/80">Tudo em dia!</p>
+                <p className="text-[11px] opacity-60 mt-1">Nenhuma pendência ou alerta estratégico para agora.</p>
             </div>
         ) : (
-            <ScrollArea className="h-full w-full">
-                <div className="space-y-4 pr-4 pb-4">
+            <ScrollArea className="h-[400px] w-full">
+                <div className="space-y-5 pr-4 pb-6">
                     {visibleManualFollowUps.length > 0 && (
                         <div className="space-y-2">
-                            <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                                <CalendarClock className="h-3 w-3" /> Retornos Agendados
+                            <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/80 flex items-center gap-2">
+                                <CalendarClock className="h-3 w-3 text-primary" /> Retornos Agendados
                             </h3>
-                            {visibleManualFollowUps.map(f => (
-                                <SummaryAlertItem 
-                                    key={f.id}
-                                    id={f.id}
-                                    icon={<CalendarClock className={cn("h-4 w-4", f.isToday ? "text-yellow-500" : "text-destructive")} />}
-                                    title={f.contactName}
-                                    description={f.description}
-                                    onDismiss={handleDismiss}
-                                />
-                            ))}
+                            <div className="grid gap-2">
+                                {visibleManualFollowUps.map(f => (
+                                    <SummaryAlertItem 
+                                        key={f.id}
+                                        id={f.id}
+                                        icon={<CalendarClock className={cn("h-4 w-4", f.isToday ? "text-yellow-500" : "text-destructive")} />}
+                                        title={f.contactName}
+                                        description={f.description}
+                                        onDismiss={handleDismiss}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     )}
                     {visibleBirthdayAlerts.length > 0 && (
                         <div className="space-y-2">
-                            <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                                <BellRing className="h-3 w-3" /> Alertas de Idade (75+)
+                            <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/80 flex items-center gap-2">
+                                <BellRing className="h-3 w-3 text-pink-500" /> Alertas de Idade (75+)
                             </h3>
-                            {visibleBirthdayAlerts.map(alert => (
-                                <SummaryAlertItem 
-                                    key={alert.id}
-                                    id={alert.id}
-                                    icon={<BellRing className="h-4 w-4 text-pink-500" />}
-                                    title={alert.customerName}
-                                    description={`Cliente completará ${alert.age} anos. Verifique as políticas bancárias.`}
-                                    onDismiss={handleDismiss}
-                                />
-                            ))}
+                            <div className="grid gap-2">
+                                {visibleBirthdayAlerts.map(alert => (
+                                    <SummaryAlertItem 
+                                        key={alert.id}
+                                        id={alert.id}
+                                        icon={<BellRing className="h-4 w-4 text-pink-500" />}
+                                        title={alert.customerName}
+                                        description={`Cliente completará ${alert.age} anos. Verifique as políticas bancárias.`}
+                                        onDismiss={handleDismiss}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     )}
                     {visibleFollowUpReminders.length > 0 && (
                         <div className="space-y-2">
-                            <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                                <Clock className="h-3 w-3" /> Esteiras em Atraso
+                            <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/80 flex items-center gap-2">
+                                <Clock className="h-3 w-3 text-orange-500" /> Esteiras em Atraso
                             </h3>
-                            {visibleFollowUpReminders.map(reminder => (
-                                <SummaryAlertItem 
-                                    key={reminder.id}
-                                    id={reminder.id}
-                                    icon={<Clock className="h-4 w-4 text-orange-500" />}
-                                    title={`${reminder.customerName}`}
-                                    description={`Proposta ${reminder.proposalNumber} sem movimentação há ${reminder.daysOpen} dias.`}
-                                    onDismiss={handleDismiss}
-                                />
-                            ))}
+                            <div className="grid gap-2">
+                                {visibleFollowUpReminders.map(reminder => (
+                                    <SummaryAlertItem 
+                                        key={reminder.id}
+                                        id={reminder.id}
+                                        icon={<Clock className="h-4 w-4 text-orange-500" />}
+                                        title={`${reminder.customerName}`}
+                                        description={`Proposta ${reminder.proposalNumber} sem movimentação há ${reminder.daysOpen} dias.`}
+                                        onDismiss={handleDismiss}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     )}
                     {visibleCommissionReminders.length > 0 && (
                         <div className="space-y-2">
-                            <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                                <BadgePercent className="h-3 w-3" /> Cobranças Pendentes
+                            <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/80 flex items-center gap-2">
+                                <BadgePercent className="h-3 w-3 text-primary" /> Cobranças Pendentes
                             </h3>
-                            {visibleCommissionReminders.map(reminder => (
-                                <SummaryAlertItem 
-                                    key={reminder.id}
-                                    id={reminder.id}
-                                    icon={<BadgePercent className="h-4 w-4 text-primary" />}
-                                    title={`${reminder.customerName}`}
-                                    description={`Comissão da Prop. ${reminder.proposalNumber} não identificada há ${reminder.daysPending} dias.`}
-                                    onDismiss={handleDismiss}
-                                />
-                            ))}
+                            <div className="grid gap-2">
+                                {visibleCommissionReminders.map(reminder => (
+                                    <SummaryAlertItem 
+                                        key={reminder.id}
+                                        id={reminder.id}
+                                        icon={<BadgePercent className="h-4 w-4 text-primary" />}
+                                        title={`${reminder.customerName}`}
+                                        description={`Comissão da Prop. ${reminder.proposalNumber} não identificada há ${reminder.daysPending} dias.`}
+                                        onDismiss={handleDismiss}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>

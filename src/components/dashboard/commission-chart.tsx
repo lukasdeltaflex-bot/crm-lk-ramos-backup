@@ -1,13 +1,13 @@
 'use client';
 
-import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
+import { Area, AreaChart, CartesianGrid, XAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils';
 import type { Proposal } from '@/lib/types';
 import { useMemo, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import { Button } from '../ui/button';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, TrendingUp } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
@@ -24,7 +24,7 @@ interface CommissionChartProps {
 const chartConfig = {
   total: {
     label: 'Comissão',
-    color: 'hsl(var(--accent))',
+    color: 'hsl(var(--primary))',
   },
 } satisfies ChartConfig;
 
@@ -36,7 +36,7 @@ export function CommissionChart({ proposals }: CommissionChartProps) {
         proposals.forEach(p => {
             if (p.commissionStatus !== 'Pendente' && p.commissionPaymentDate && p.amountPaid) {
                 const date = new Date(p.commissionPaymentDate);
-                const monthKey = format(date, 'MMM', { locale: ptBR }).replace('.', '').toLowerCase(); // e.g., jan, fev, mar
+                const monthKey = format(date, 'MMM', { locale: ptBR }).replace('.', '').toLowerCase(); 
                 if (!monthlyData[monthKey]) {
                     monthlyData[monthKey] = 0;
                 }
@@ -54,67 +54,74 @@ export function CommissionChart({ proposals }: CommissionChartProps) {
     }, [proposals]);
 
   return (
-    <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="font-headline">Visão Geral das Comissões</CardTitle>
-            <Button variant="ghost" size="icon" onClick={() => setIsPrivacyMode(!isPrivacyMode)}>
-              {isPrivacyMode ? <EyeOff /> : <Eye />}
-              <span className="sr-only">{isPrivacyMode ? 'Mostrar valores' : 'Ocultar valores'}</span>
+    <Card className="border-border/50 shadow-lg rounded-xl overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between pb-2 bg-muted/5">
+            <div className="space-y-1">
+                <CardTitle className="text-xl font-bold text-primary flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 opacity-60" />
+                    Histórico de Comissões
+                </CardTitle>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-70">Desempenho financeiro anual</p>
+            </div>
+            <Button variant="ghost" size="icon" onClick={() => setIsPrivacyMode(!isPrivacyMode)} className="h-8 w-8 rounded-full hover:bg-primary/5">
+              {isPrivacyMode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </Button>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
             {isPrivacyMode ? (
                  <div className="flex aspect-video items-center justify-center h-[350px]">
-                    <Skeleton className="h-full w-full" />
+                    <Skeleton className="h-full w-full rounded-lg" />
                 </div>
             ) : (
-                <ChartContainer config={chartConfig} className="h-[350px] w-full">
-                <AreaChart
-                  accessibilityLayer
-                  data={data}
-                  margin={{
-                    left: 12,
-                    right: 12,
-                  }}
-                >
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="name"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    tickFormatter={(value) => value.slice(0, 3)}
-                  />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent 
-                        formatter={(value) => formatCurrency(value as number)}
-                        indicator="dot"
-                    />}
-                  />
-                  <defs>
-                    <linearGradient id="fillTotal" x1="0" y1="0" x2="0" y2="1">
-                        <stop
-                            offset="5%"
-                            stopColor="var(--color-total)"
-                            stopOpacity={0.8}
-                        />
-                        <stop
-                            offset="95%"
-                            stopColor="var(--color-total)"
-                            stopOpacity={0.1}
-                        />
-                    </linearGradient>
-                  </defs>
-                  <Area
-                    dataKey="total"
-                    type="natural"
-                    fill="url(#fillTotal)"
-                    stroke="var(--color-total)"
-                    stackId="a"
-                  />
-                </AreaChart>
-              </ChartContainer>
+                <div className="h-[350px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart
+                            data={data}
+                            margin={{ left: 0, right: 0, top: 10, bottom: 0 }}
+                        >
+                            <defs>
+                                <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--muted-foreground)/0.1)" />
+                            <XAxis
+                                dataKey="name"
+                                tickLine={false}
+                                axisLine={false}
+                                tickMargin={12}
+                                fontSize={11}
+                                fontWeight="bold"
+                                tickFormatter={(value) => value.slice(0, 3).toUpperCase()}
+                                stroke="hsl(var(--muted-foreground))"
+                            />
+                            <Tooltip
+                                cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '4 4' }}
+                                content={({ active, payload }) => {
+                                    if (active && payload && payload.length) {
+                                        return (
+                                            <div className="bg-background/95 backdrop-blur-md border border-border shadow-xl p-3 rounded-lg flex flex-col gap-1">
+                                                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{payload[0].payload.name}</p>
+                                                <p className="text-sm font-bold text-primary">{formatCurrency(payload[0].value as number)}</p>
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                }}
+                            />
+                            <Area
+                                type="monotone"
+                                dataKey="total"
+                                stroke="hsl(var(--primary))"
+                                strokeWidth={3}
+                                fillOpacity={1}
+                                fill="url(#colorTotal)"
+                                animationDuration={1500}
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </div>
             )}
         </CardContent>
     </Card>

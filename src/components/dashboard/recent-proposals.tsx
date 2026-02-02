@@ -14,7 +14,7 @@ import { Skeleton } from '../ui/skeleton';
 import { formatCurrency, cn, calculateBusinessDays } from '@/lib/utils';
 import type { Proposal, Customer } from '@/lib/types';
 import { useMemo, useState, useEffect } from 'react';
-import { AlertCircle, ArrowRight } from 'lucide-react';
+import { AlertCircle, ArrowRight, User } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -22,6 +22,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import Link from 'next/link';
+import { Avatar, AvatarFallback } from '../ui/avatar';
 
 interface RecentProposalsProps {
     proposals: Proposal[];
@@ -44,24 +45,32 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
         .map(p => ({...p, customer: customerMap.get(p.customerId)}))
   }, [proposals, customers]);
 
+  const getInitials = (name?: string) => {
+    if (!name) return '??';
+    return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+  }
+
   return (
-    <Card className="border-border/50 shadow-sm overflow-hidden bg-card/50">
-      <CardHeader className="flex flex-row items-center justify-between pb-4">
-        <CardTitle className="font-headline text-xl text-primary">Últimas Propostas Digitadas</CardTitle>
+    <Card className="border-border/50 shadow-lg overflow-hidden bg-card/50 rounded-xl">
+      <CardHeader className="flex flex-row items-center justify-between pb-4 bg-muted/5">
+        <div className="space-y-1">
+            <CardTitle className="font-bold text-xl text-primary">Últimas Propostas Digitadas</CardTitle>
+            <p className="text-xs text-muted-foreground font-medium">Monitoramento em tempo real da esteira</p>
+        </div>
         <Link href="/proposals">
-            <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80 flex gap-1 items-center px-3 py-1 transition-colors">
-                Ver todas <ArrowRight className="h-3 w-3" />
-            </Badge>
+            <Button variant="outline" size="sm" className="h-8 rounded-full px-4 text-xs font-bold shadow-sm">
+                Explorar Tudo <ArrowRight className="ml-2 h-3 w-3" />
+            </Button>
         </Link>
       </CardHeader>
       <CardContent className="p-0">
         <Table>
           <TableHeader className="bg-muted/20 border-b border-border/50">
             <TableRow className="hover:bg-transparent">
-              <TableHead className="px-6 py-4 font-bold text-[10px] uppercase tracking-widest text-muted-foreground">Cliente</TableHead>
-              <TableHead className="px-6 py-4 font-bold text-[10px] uppercase tracking-widest text-muted-foreground">Produto</TableHead>
-              <TableHead className="px-6 py-4 font-bold text-[10px] uppercase tracking-widest text-muted-foreground">Status</TableHead>
-              <TableHead className="px-6 py-4 font-bold text-[10px] uppercase tracking-widest text-muted-foreground text-right">Valor Bruto</TableHead>
+              <TableHead className="px-6 py-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80">Cliente</TableHead>
+              <TableHead className="px-6 py-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80">Produto</TableHead>
+              <TableHead className="px-6 py-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80">Status</TableHead>
+              <TableHead className="px-6 py-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 text-right">Valor Bruto</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -76,7 +85,7 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
                 ))
             ) : recentProposals.length === 0 ? (
                 <TableRow>
-                    <TableCell colSpan={4} className="text-center h-32 text-muted-foreground italic">Nenhuma proposta registrada recentemente.</TableCell>
+                    <TableCell colSpan={4} className="text-center h-48 text-muted-foreground italic">Nenhuma proposta registrada recentemente.</TableCell>
                 </TableRow>
             ) : (
                 recentProposals.map((proposal) => {
@@ -84,27 +93,38 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
                     const businessDays = hasMounted && proposal.dateDigitized ? calculateBusinessDays(new Date(proposal.dateDigitized)) : 0;
 
                     return (
-                        <TableRow key={proposal.id} className="hover:bg-muted/30 transition-all group">
+                        <TableRow key={proposal.id} className="hover:bg-primary/[0.02] border-b border-border/30 transition-all group">
                             <TableCell className="px-6 py-5">
-                                <div className="font-semibold text-primary/90 group-hover:text-primary transition-colors">{proposal.customer?.name || 'Cliente não encontrado'}</div>
-                                <div className="text-[10px] text-muted-foreground mt-0.5">
-                                    {proposal.customer?.cpf || 'CPF não informado'}
+                                <div className="flex items-center gap-3">
+                                    <Avatar className="h-9 w-9 border border-primary/10 shadow-sm">
+                                        <AvatarFallback className="text-[10px] font-bold bg-primary/5 text-primary/70">
+                                            {getInitials(proposal.customer?.name)}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="overflow-hidden">
+                                        <div className="font-bold text-primary/90 group-hover:text-primary transition-colors truncate max-w-[200px]">{proposal.customer?.name || 'Cliente não encontrado'}</div>
+                                        <div className="text-[10px] text-muted-foreground font-medium mt-0.5">
+                                            {proposal.customer?.cpf || 'CPF não informado'}
+                                        </div>
+                                    </div>
                                 </div>
                             </TableCell>
                             <TableCell className="px-6 py-5">
-                                <span className="text-sm font-medium opacity-80">{proposal.product}</span>
+                                <Badge variant="secondary" className="bg-muted/50 text-muted-foreground font-bold text-[10px] border-none px-2 py-0.5">
+                                    {proposal.product}
+                                </Badge>
                             </TableCell>
                             <TableCell className="px-6 py-5">
                                 <div className="flex items-center gap-2">
                                     <Badge
                                         variant="outline"
-                                        className={cn('px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-tight', {
-                                            'border-green-500/50 text-green-600 bg-green-50/50 dark:bg-green-900/10': proposal.status === 'Pago',
-                                            'border-orange-500/50 text-orange-600 bg-orange-50/50 dark:bg-orange-900/10': proposal.status === 'Saldo Pago',
-                                            'border-yellow-500/50 text-yellow-600 bg-yellow-50/50 dark:bg-yellow-900/10': proposal.status === 'Em Andamento',
-                                            'border-blue-500/50 text-blue-600 bg-blue-50/50 dark:bg-blue-900/10': proposal.status === 'Aguardando Saldo',
-                                            'border-red-500/50 text-red-600 bg-red-50/50 dark:bg-red-900/10': proposal.status === 'Reprovado',
-                                            'border-purple-500/50 text-purple-600 bg-purple-50/50 dark:bg-purple-900/10': proposal.status === 'Pendente',
+                                        className={cn('px-3 py-1 text-[10px] font-black uppercase tracking-tighter border-2', {
+                                            'border-green-500/30 text-green-600 bg-green-50/80 dark:bg-green-900/20': proposal.status === 'Pago',
+                                            'border-orange-500/30 text-orange-600 bg-orange-50/80 dark:bg-orange-900/20': proposal.status === 'Saldo Pago',
+                                            'border-yellow-500/30 text-yellow-600 bg-yellow-50/80 dark:bg-yellow-900/20': proposal.status === 'Em Andamento',
+                                            'border-blue-500/30 text-blue-600 bg-blue-50/80 dark:bg-blue-900/20': proposal.status === 'Aguardando Saldo',
+                                            'border-red-500/30 text-red-600 bg-red-50/80 dark:bg-red-900/20': proposal.status === 'Reprovado',
+                                            'border-purple-500/30 text-purple-600 bg-purple-50/80 dark:bg-purple-900/20': proposal.status === 'Pendente',
                                         })}
                                     >
                                         {proposal.status}
@@ -121,9 +141,8 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
                                                     )} />
                                                 </TooltipTrigger>
                                                 <TooltipContent>
-                                                    <p className="font-semibold">Monitoramento de Saldo</p>
-                                                    <p>Prazo decorrido: {businessDays} dia(s) úteis.</p>
-                                                    <p className="text-[10px] text-muted-foreground">O prazo bancário padrão é de 5 dias úteis.</p>
+                                                    <p className="font-semibold text-xs">Monitoramento de Saldo</p>
+                                                    <p className="text-[10px]">Prazo decorrido: {businessDays} dia(s) úteis.</p>
                                                 </TooltipContent>
                                             </Tooltip>
                                         </TooltipProvider>
