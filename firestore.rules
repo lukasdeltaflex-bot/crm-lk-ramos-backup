@@ -10,6 +10,7 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == userId;
     }
 
+    // Regra universal para documentos que possuem o campo ownerId
     function dataOwner() {
       return signedIn() && (
         (resource == null && request.resource.data.ownerId == request.auth.uid) ||
@@ -17,17 +18,16 @@ service cloud.firestore {
       );
     }
 
-    // Perfil do Usuário e Configurações
+    // Perfil do Usuário, Configurações e Subcoleções (como lembretes)
     match /users/{userId} {
       allow read, write: if isOwner(userId);
       
-      // Subcoleção de lembretes (Agenda LK) - Caminho corrigido e autorizado
-      match /reminders/{reminderId} {
+      match /{allSubcollections=**} {
         allow read, write: if isOwner(userId);
       }
     }
 
-    // Clientes e Propostas
+    // Clientes e Propostas (Coleções de nível superior com ownerId)
     match /customers/{customerId} {
       allow read, write: if dataOwner();
     }

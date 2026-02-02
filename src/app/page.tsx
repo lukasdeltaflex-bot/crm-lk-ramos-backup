@@ -135,19 +135,19 @@ export default function DashboardPage() {
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
 
-    // Faixa para Acúmulo (Mês anterior + Atual)
+    // LÓGICA DE ACÚMULO: Começa no início do mês anterior
     const startOfAccumulation = startOfMonth(subMonths(fromDate, 1));
 
     const getSum = (list: Proposal[]) => list.reduce((sum, p) => sum + (p.grossAmount || 0), 0);
 
-    // Propostas do Período Atual (Foco em Produção Mensal)
+    // Propostas do Período Estrito (Para cards de produção mensal)
     const currentPeriodProposals = proposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
         return d >= fromDate && d <= effectiveToDate;
     });
 
-    // Propostas Acumuladas (Foco em Pipeline)
+    // Propostas Acumuladas (Para cards operacionais - Pipeline)
     const accumulatedProposals = proposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
@@ -163,7 +163,7 @@ export default function DashboardPage() {
     const aguardandoSaldoProposals = accumulatedProposals.filter(p => p.status === 'Aguardando Saldo');
     const saldoPagoProposals = accumulatedProposals.filter(p => p.status === 'Saldo Pago');
     
-    // Produção Mensal
+    // Produção Mensal Estrita
     const pagoProposals = currentPeriodProposals.filter(p => p.status === 'Pago');
     const pagoValue = getSum(pagoProposals);
 
@@ -274,6 +274,7 @@ export default function DashboardPage() {
                     percentage={100}
                     className="bg-slate-50 dark:bg-slate-900/40 border-border/50"
                     valueClassName="font-light"
+                    description="Produção Mensal"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Pendentes (Acumulado)', stats.proposals.pendente)}>
@@ -284,7 +285,7 @@ export default function DashboardPage() {
                     percentage={stats.percPendente}
                     valueClassName="text-purple-600 dark:text-purple-400 font-light"
                     className="bg-purple-50/50 dark:bg-purple-900/20 border-border/50"
-                    description="Acumulado"
+                    description="Mês Anterior + Atual"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Em Andamento (Acumulado)', stats.proposals.emAndamento)}>
@@ -295,7 +296,7 @@ export default function DashboardPage() {
                     percentage={stats.percEmAndamento}
                     valueClassName="text-yellow-600 dark:text-yellow-400 font-light"
                     className="bg-yellow-50/50 dark:bg-yellow-900/20 border-border/50"
-                    description="Acumulado"
+                    description="Mês Anterior + Atual"
                 />
             </div>
         </div>
@@ -309,7 +310,7 @@ export default function DashboardPage() {
                     percentage={stats.percAguardandoSaldo}
                     valueClassName="text-blue-600 dark:text-blue-400 font-light"
                     className="bg-blue-50/50 dark:bg-blue-900/20 border-border/50"
-                    description="Acumulado"
+                    description="Mês Anterior + Atual"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Saldo Pago (Acumulado)', stats.proposals.saldoPago)}>
@@ -320,7 +321,7 @@ export default function DashboardPage() {
                     percentage={stats.percSaldoPago}
                     valueClassName="text-orange-600 dark:text-orange-400 font-light"
                     className="bg-orange-50/50 dark:bg-orange-900/20 border-border/50"
-                    description="Acumulado"
+                    description="Mês Anterior + Atual"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Reprovado', stats.proposals.reprovado)}>
@@ -331,6 +332,7 @@ export default function DashboardPage() {
                     percentage={stats.percReprovado}
                     valueClassName="text-red-600 dark:text-red-400 font-light"
                     className="bg-red-50/50 dark:bg-red-900/20 border-border/50"
+                    description="Produção Mensal"
                 />
             </div>
         </div>

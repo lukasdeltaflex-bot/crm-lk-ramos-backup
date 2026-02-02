@@ -2,20 +2,20 @@
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage';
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
   if (!getApps().length) {
-    // For this project, we will always initialize with the config object.
-    // The complex logic for App Hosting is removed to ensure a stable connection.
     const firebaseApp = initializeApp(firebaseConfig);
-    return getSdks(firebaseApp);
+    const sdks = getSdks(firebaseApp);
+    // Configura a persistência local para evitar perda de estado de auth entre reloads
+    setPersistence(sdks.auth, browserLocalPersistence);
+    return sdks;
   }
 
-  // If already initialized, return the SDKs with the already initialized App
   return getSdks(getApp());
 }
 

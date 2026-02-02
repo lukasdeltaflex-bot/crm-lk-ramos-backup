@@ -112,7 +112,7 @@ export default function AgendaPage() {
       const reminderData = {
         ...data,
         id: reminderId,
-        ownerId: user.uid,
+        ownerId: user.uid, // Garante que o ownerId seja gravado para as regras de segurança
         createdAt: selectedReminder?.createdAt || new Date().toISOString(),
       };
 
@@ -124,8 +124,8 @@ export default function AgendaPage() {
       console.error("Erro ao salvar lembrete:", err);
       toast({ 
         variant: 'destructive', 
-        title: 'Acesso Negado', 
-        description: 'Você precisa estar logado para salvar lembretes.' 
+        title: 'Falha ao Salvar', 
+        description: 'Não foi possível gravar o lembrete no momento.' 
       });
     } finally {
       setIsSaving(false);

@@ -131,7 +131,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
       title: "Saldo a Receber",
       value: formatCurrency(pendingAmount),
       icon: Hourglass,
-      description: "Acumulado (Mês Anterior + Atual)",
+      description: "Mês Anterior + Atual",
       className: "border-border/50 bg-orange-100/10 dark:bg-orange-900/20",
       valueClassName: "text-orange-500 font-light",
       proposals: proposalsForSaldoAReceber,
@@ -141,7 +141,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
       title: "Comissão Esperada",
       value: formatCurrency(expectedAmount),
       icon: CircleDollarSign,
-      description: "Acumulado (Mês Anterior + Atual)",
+      description: "Mês Anterior + Atual",
       className: "border-border/50 bg-blue-100/10 dark:bg-blue-900/20",
       valueClassName: "text-blue-500 font-light",
       proposals: expectedCommissionProposals,
@@ -153,9 +153,9 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     <div className='space-y-4'>
         <Alert variant="default" className="bg-secondary/50 print:hidden border-l-primary">
             <Info className="h-4 w-4" />
-            <AlertTitle>Inteligência de Fluxo</AlertTitle>
+            <AlertTitle>Visão de Pipeline</AlertTitle>
             <AlertDescription>
-                Os cartões **Total** e **Recebido** focam na produção estrita do mês selecionado. **Saldo a Receber** e **Comissão Esperada** trazem o histórico acumulado desde o mês anterior.
+                Os cartões **Total** e **Recebido** focam na produção do mês selecionado. **Saldo a Receber** e **Comissão Esperada** trazem o saldo acumulado desde o mês anterior.
             </AlertDescription>
         </Alert>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 print:gap-2">
