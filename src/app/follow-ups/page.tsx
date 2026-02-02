@@ -33,13 +33,6 @@ export default function FollowUpsPage() {
   const [tab, setTab] = useState('pending');
   const [isSaving, setIsSaving] = useState(false);
 
-  // LOG DE DIAGNÓSTICO
-  useEffect(() => {
-    if (user) {
-        console.log("📂 CRM DEBUG: Acessando Retornos em users/" + user.uid + "/followUps");
-    }
-  }, [user]);
-
   const followUpsQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return query(
@@ -85,9 +78,6 @@ export default function FollowUpsPage() {
     if (!firestore || !selectedFollowUp || !user) return;
     setIsSaving(true);
     try {
-      const path = `users/${user.uid}/followUps/${selectedFollowUp.id}`;
-      console.log("💾 CRM SAVE: Atualizando status em " + path);
-      
       await setDoc(doc(firestore, 'users', user.uid, 'followUps', selectedFollowUp.id), {
         ...extraData,
         status,
@@ -98,7 +88,7 @@ export default function FollowUpsPage() {
       toast({ title: 'Ação realizada com sucesso' });
       setIsActionDialogOpen(false);
     } catch (e: any) {
-      console.error("❌ CRM FIRESTORE ERROR:", e);
+      console.error("❌ CRM ERROR:", e);
       toast({ variant: 'destructive', title: 'Erro de Permissão', description: 'Ocorreu um erro ao salvar.' });
     } finally {
       setIsSaving(false);
@@ -109,14 +99,12 @@ export default function FollowUpsPage() {
     if (!firestore || !selectedFollowUp || !user) return;
     setIsSaving(true);
     try {
-      // 1. Marca o atual como reagendado
       await setDoc(doc(firestore, 'users', user.uid, 'followUps', selectedFollowUp.id), {
         status: 'rescheduled',
         completedAt: new Date().toISOString(),
         notes: actionNotes
       }, { merge: true });
 
-      // 2. Cria o novo retorno
       const newRef = doc(collection(firestore, 'users', user.uid, 'followUps'));
       const newFollowUp: FollowUp = {
         ...selectedFollowUp,
@@ -130,9 +118,7 @@ export default function FollowUpsPage() {
         description: `(Reagendado) ${selectedFollowUp.description}`
       };
       
-      console.log("🔄 CRM REAGENDA: Criando novo em " + newRef.path);
       await setDoc(newRef, newFollowUp);
-
       toast({ title: 'Reagendamento Concluído' });
       setIsRescheduleOpen(false);
       setIsActionDialogOpen(false);
@@ -149,8 +135,6 @@ export default function FollowUpsPage() {
     setIsSaving(true);
     try {
         const id = selectedFollowUp?.id || doc(collection(firestore, 'users', user.uid, 'followUps')).id;
-        console.log("💾 CRM SAVE: Criando/Editando em users/" + user.uid + "/followUps/" + id);
-
         await setDoc(doc(firestore, 'users', user.uid, 'followUps', id), {
             ...data,
             id,

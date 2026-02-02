@@ -7,6 +7,9 @@ import app, { auth, db, storage } from './firebase';
  * Retorna as instâncias singleton do Firebase.
  */
 export function initializeFirebase() {
+  if (typeof window !== 'undefined') {
+    console.log("🚀 LK RAMOS - CONEXÃO FIREBASE ATIVA:", app.options.projectId);
+  }
   return {
     firebaseApp: app,
     auth,
