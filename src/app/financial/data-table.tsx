@@ -386,7 +386,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                     <div className="flex items-center gap-2 flex-wrap">
                         <Select onValueChange={(val) => applyRange(val as any)}>
                             <SelectTrigger className='w-[140px] h-9 bg-card'>
-                                <CalendarIcon className='mr-2 h-4 w-4' />
+                                <CalendarIcon className='mr-2 h-4 w-4 text-primary' />
                                 <SelectValue placeholder="Período" />
                             </SelectTrigger>
                             <SelectContent>

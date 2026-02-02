@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -18,18 +19,18 @@ interface StatsCardProps {
 }
 
 /**
- * StatsCard com visual premium LK RAMOS.
+ * StatsCard com visual premium LK RAMOS e altura padronizada.
  */
 export function StatsCard({ title, value, icon: Icon, description, percentage, className, valueClassName }: StatsCardProps) {
   return (
-    <Card className={cn('hover:shadow-xl hover:border-primary/20 transition-all group relative overflow-hidden border border-border/50 bg-card shadow-md rounded-xl', className)}>
+    <Card className={cn('hover:shadow-xl hover:border-primary/20 transition-all group relative overflow-hidden border border-border/50 bg-card shadow-md rounded-xl h-full flex flex-col', className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 print:pb-1">
         <CardTitle className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground group-hover:text-primary transition-colors print:text-[8px]">{title}</CardTitle>
         <div className="p-2 rounded-lg bg-primary/5 group-hover:bg-primary/10 transition-colors">
             <Icon className="h-4 w-4 text-primary/60 group-hover:text-primary transition-colors" />
         </div>
       </CardHeader>
-      <CardContent className="print:pt-1">
+      <CardContent className="flex-1 flex flex-col justify-between print:pt-1">
         <div className="flex items-baseline justify-between gap-2">
             <div className={cn("text-2xl font-normal tracking-tight text-foreground print:text-lg", valueClassName)}>{value}</div>
             {percentage !== undefined && (
@@ -38,7 +39,15 @@ export function StatsCard({ title, value, icon: Icon, description, percentage, c
                 </div>
             )}
         </div>
-        {description && <p className="text-[10px] font-bold text-muted-foreground mt-3 uppercase tracking-tighter opacity-60 border-t pt-2 border-border/30">{description}</p>}
+        <div className="mt-3 border-t pt-2 border-border/30">
+            {description ? (
+                <p className="text-[10px] font-bold text-muted-foreground mt-0 uppercase tracking-tighter opacity-60">
+                    {description}
+                </p>
+            ) : (
+                <div className="h-[14px]" /> /* Espaçador para manter proporção se não houver legenda */
+            )}
+        </div>
       </CardContent>
     </Card>
   );

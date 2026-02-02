@@ -13,6 +13,7 @@ const firebaseConfig = {
   appId: "1:341426752875:web:348f88597e5b9b2057d02e",
 };
 
+// Padrão Singleton Blindado para evitar reinicializações indevidas no Next.js
 const globalForFirebase = globalThis as unknown as {
   app: FirebaseApp | undefined;
   auth: Auth | undefined;
