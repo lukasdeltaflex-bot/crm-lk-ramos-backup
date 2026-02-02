@@ -33,10 +33,8 @@ export default function AgendaPage() {
 
   const remindersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    return query(
-      collection(firestore, 'reminders'),
-      where('ownerId', '==', user.uid)
-    );
+    // Usando subcoleção para maior segurança e compatibilidade com snippets do usuário
+    return collection(firestore, 'users', user.uid, 'reminders');
   }, [firestore, user]);
 
   const customersQuery = useMemoFirebase(() => {
@@ -83,9 +81,8 @@ export default function AgendaPage() {
     if (!firestore || !user) return;
     const newStatus = reminder.status === 'pending' ? 'completed' : 'pending';
     try {
-      await setDoc(doc(firestore, 'reminders', reminder.id), { 
-        status: newStatus,
-        ownerId: user.uid
+      await setDoc(doc(firestore, 'users', user.uid, 'reminders', reminder.id), { 
+        status: newStatus
       }, { merge: true });
       toast({ title: newStatus === 'completed' ? 'Lembrete Concluído!' : 'Lembrete Reaberto!' });
     } catch (err) {
@@ -96,9 +93,9 @@ export default function AgendaPage() {
 
   const handleDeleteReminder = async (e: React.MouseEvent, reminderId: string) => {
     e.stopPropagation();
-    if (!firestore) return;
+    if (!firestore || !user) return;
     try {
-      await deleteDoc(doc(firestore, 'reminders', reminderId));
+      await deleteDoc(doc(firestore, 'users', user.uid, 'reminders', reminderId));
       toast({ title: 'Lembrete removido com sucesso.' });
     } catch (err) {
       console.error("Erro ao remover lembrete:", err);
@@ -111,7 +108,7 @@ export default function AgendaPage() {
     setIsSaving(true);
     
     try {
-      const reminderId = selectedReminder?.id || doc(collection(firestore, 'reminders')).id;
+      const reminderId = selectedReminder?.id || doc(collection(firestore, 'users', user.uid, 'reminders')).id;
       
       const reminderData = {
         ...data,
@@ -120,8 +117,7 @@ export default function AgendaPage() {
         createdAt: selectedReminder?.createdAt || new Date().toISOString(),
       };
 
-      // Garante que o ownerId esteja presente para satisfazer as regras de segurança
-      await setDoc(doc(firestore, 'reminders', reminderId), reminderData);
+      await setDoc(doc(firestore, 'users', user.uid, 'reminders', reminderId), reminderData);
       
       toast({ title: 'Lembrete salvo com sucesso!' });
       setIsDialogOpen(false);

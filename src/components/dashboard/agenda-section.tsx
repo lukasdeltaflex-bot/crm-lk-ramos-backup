@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -30,10 +29,7 @@ export function AgendaSection() {
 
   const remindersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    return query(
-      collection(firestore, 'reminders'),
-      where('ownerId', '==', user.uid)
-    );
+    return collection(firestore, 'users', user.uid, 'reminders');
   }, [firestore, user]);
 
   const customersQuery = useMemoFirebase(() => {
@@ -66,7 +62,7 @@ export function AgendaSection() {
   const handleToggleStatus = async (reminder: Reminder) => {
     if (!firestore || !user) return;
     try {
-      await setDoc(doc(firestore, 'reminders', reminder.id), { 
+      await setDoc(doc(firestore, 'users', user.uid, 'reminders', reminder.id), { 
         status: 'completed'
       }, { merge: true });
       toast({ title: 'Lembrete Concluído' });
@@ -79,14 +75,14 @@ export function AgendaSection() {
     if (!firestore || !user) return;
     setIsSaving(true);
     try {
-      const reminderId = selectedReminder?.id || doc(collection(firestore, 'reminders')).id;
+      const reminderId = selectedReminder?.id || doc(collection(firestore, 'users', user.uid, 'reminders')).id;
       const reminderData = {
         ...data,
         id: reminderId,
         ownerId: user.uid,
         createdAt: selectedReminder?.createdAt || new Date().toISOString(),
       };
-      await setDoc(doc(firestore, 'reminders', reminderId), reminderData);
+      await setDoc(doc(firestore, 'users', user.uid, 'reminders', reminderId), reminderData);
       toast({ title: 'Salvo com sucesso' });
       setIsDialogOpen(false);
     } catch (err) {
@@ -100,13 +96,13 @@ export function AgendaSection() {
   const getStatusBadge = (dueDate: string) => {
     const date = parseISO(dueDate);
     const now = new Date();
-    if (isToday(date)) return <Badge variant="default" className="bg-yellow-500 text-black">Hoje</Badge>;
-    if (isBefore(date, startOfDay(now))) return <Badge variant="destructive">Atrasado</Badge>;
-    return <Badge variant="secondary">Futuro</Badge>;
+    if (isToday(date)) return <Badge variant="default" className="bg-yellow-500 text-black border-none">Hoje</Badge>;
+    if (isBefore(date, startOfDay(now))) return <Badge variant="destructive" className="border-none">Atrasado</Badge>;
+    return <Badge variant="secondary" className="border-none">Futuro</Badge>;
   };
 
   return (
-    <Card className="h-full">
+    <Card className="h-full border-border/50">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="space-y-1">
           <CardTitle className="text-xl font-headline flex items-center gap-2">
@@ -133,7 +129,7 @@ export function AgendaSection() {
             reminders.map((reminder) => {
               const customer = reminder.customerId ? customerMap.get(reminder.customerId) : null;
               return (
-                <div key={reminder.id} className="group flex items-center gap-3 p-3 rounded-lg border bg-card hover:shadow-sm transition-all">
+                <div key={reminder.id} className="group flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-card hover:shadow-sm transition-all">
                   <Button 
                     variant="ghost" 
                     size="icon" 

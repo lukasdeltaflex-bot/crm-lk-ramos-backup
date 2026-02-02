@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -53,10 +52,8 @@ export function NotificationBell() {
 
   const remindersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    return query(
-      collection(firestore, 'reminders'),
-      where('ownerId', '==', user.uid)
-    );
+    // Usando subcoleção para Agenda
+    return collection(firestore, 'users', user.uid, 'reminders');
   }, [firestore, user]);
 
   const { data: customers } = useCollection<Customer>(customersQuery);
