@@ -135,36 +135,40 @@ export default function DashboardPage() {
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
 
-    const startOfPreviousMonth = startOfMonth(subMonths(fromDate, 1));
+    // Lógica de Acúmulo: Desde o início do mês anterior
+    const startOfAccumulation = startOfMonth(subMonths(fromDate, 1));
 
     const getSum = (list: Proposal[]) => list.reduce((sum, p) => sum + (p.grossAmount || 0), 0);
 
-    const currentMonthProposals = proposals.filter(p => {
+    // Dados estritamente do período selecionado
+    const currentPeriodProposals = proposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
         return d >= fromDate && d <= effectiveToDate;
     });
 
+    // Dados acumulados (Mês anterior + selecionado)
     const accumulatedProposals = proposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
-        return d >= startOfPreviousMonth && d <= effectiveToDate;
+        return d >= startOfAccumulation && d <= effectiveToDate;
     });
 
-    const totalDigitado = getSum(currentMonthProposals);
-    const reprovadoProposals = currentMonthProposals.filter(p => p.status === 'Reprovado');
-    const pagoProposals = currentMonthProposals.filter(p => p.status === 'Pago');
+    const totalDigitado = getSum(currentPeriodProposals);
+    const reprovadoProposals = currentPeriodProposals.filter(p => p.status === 'Reprovado');
+    const reprovadoValue = getSum(reprovadoProposals);
 
+    // Cards operacionais acumulados
     const pendenteProposals = accumulatedProposals.filter(p => p.status === 'Pendente');
     const emAndamentoProposals = accumulatedProposals.filter(p => p.status === 'Em Andamento');
     const aguardandoSaldoProposals = accumulatedProposals.filter(p => p.status === 'Aguardando Saldo');
     const saldoPagoProposals = accumulatedProposals.filter(p => p.status === 'Saldo Pago');
+    const pagoProposals = currentPeriodProposals.filter(p => p.status === 'Pago'); // Pago é produção mensal
 
     const pendenteValue = getSum(pendenteProposals);
     const emAndamentoValue = getSum(emAndamentoProposals);
     const aguardandoSaldoValue = getSum(aguardandoSaldoProposals);
     const saldoPagoValue = getSum(saldoPagoProposals);
-    const reprovadoValue = getSum(reprovadoProposals);
     const pagoValue = getSum(pagoProposals);
 
     const getPerc = (val: number) => totalDigitado > 0 ? (val / totalDigitado) * 100 : 0;
@@ -177,7 +181,7 @@ export default function DashboardPage() {
         saldoPago: saldoPagoValue,
         reprovado: reprovadoValue,
         pago: pagoValue,
-        totalPagoMeta: pagoValue + saldoPagoValue,
+        totalPagoMeta: pagoValue + (getSum(currentPeriodProposals.filter(p => p.status === 'Saldo Pago'))),
         percPendente: getPerc(pendenteValue),
         percEmAndamento: getPerc(emAndamentoValue),
         percAguardandoSaldo: getPerc(aguardandoSaldoValue),
@@ -190,8 +194,7 @@ export default function DashboardPage() {
             saldoPago: saldoPagoProposals,
             reprovado: reprovadoProposals,
             pago: pagoProposals,
-            pagos: [...pagoProposals, ...saldoPagoProposals],
-            todos: currentMonthProposals
+            todos: currentPeriodProposals
         }
     };
   }, [proposals, appliedDateRange, isClient]);
@@ -263,7 +266,7 @@ export default function DashboardPage() {
             totalDigitized={stats.totalDigitado}
             isPrivacyMode={isPrivacyMode}
             className="w-full"
-            onValueClick={() => handleShowDetails('Contratos Pagos no Período', stats.proposals.pagos)}
+            onValueClick={() => handleShowDetails('Contratos Pagos no Período', [...stats.proposals.pago, ...stats.proposals.saldoPago])}
         />
 
         <div className="grid gap-4 md:grid-cols-3">
@@ -284,7 +287,7 @@ export default function DashboardPage() {
                     percentage={stats.percPendente}
                     valueClassName="text-purple-600 dark:text-purple-400"
                     className="bg-purple-50/50 dark:bg-purple-900/20 border-border/50"
-                    description="Desde o mês anterior"
+                    description="Acumulado"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Em Andamento (Acumulado)', stats.proposals.emAndamento)}>
@@ -295,7 +298,7 @@ export default function DashboardPage() {
                     percentage={stats.percEmAndamento}
                     valueClassName="text-yellow-600 dark:text-yellow-400"
                     className="bg-yellow-50/50 dark:bg-yellow-900/20 border-border/50"
-                    description="Desde o mês anterior"
+                    description="Acumulado"
                 />
             </div>
         </div>
@@ -309,7 +312,7 @@ export default function DashboardPage() {
                     percentage={stats.percAguardandoSaldo}
                     valueClassName="text-blue-600 dark:text-blue-400"
                     className="bg-blue-50/50 dark:bg-blue-900/20 border-border/50"
-                    description="Desde o mês anterior"
+                    description="Acumulado"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Saldo Pago (Acumulado)', stats.proposals.saldoPago)}>
@@ -320,7 +323,7 @@ export default function DashboardPage() {
                     percentage={stats.percSaldoPago}
                     valueClassName="text-orange-600 dark:text-orange-400"
                     className="bg-orange-50/50 dark:bg-orange-900/20 border-border/50"
-                    description="Desde o mês anterior"
+                    description="Acumulado"
                 />
             </div>
             <div className="cursor-pointer" onClick={() => handleShowDetails('Reprovado', stats.proposals.reprovado)}>

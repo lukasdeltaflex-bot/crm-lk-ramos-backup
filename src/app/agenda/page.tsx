@@ -124,6 +124,9 @@ export default function AgendaPage() {
         Object.entries(reminderData).filter(([_, v]) => v !== undefined && v !== "")
       );
 
+      // Garante que o ownerId esteja no objeto limpo para as regras de segurança
+      cleanData.ownerId = user.uid;
+
       await setDoc(doc(firestore, 'reminders', reminderId), cleanData);
       
       toast({ title: 'Lembrete salvo com sucesso!' });
@@ -133,7 +136,7 @@ export default function AgendaPage() {
       toast({ 
         variant: 'destructive', 
         title: 'Erro ao Salvar', 
-        description: 'Verifique sua conexão e tente novamente.' 
+        description: 'Verifique sua conexão e permissões.' 
       });
     } finally {
       setIsSaving(false);
