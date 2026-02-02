@@ -520,7 +520,7 @@ function ProposalsPageContent() {
       toast({
         variant: 'destructive',
         title: 'Erro ao Salvar',
-        description: 'Não foi possível salvar a proposta. Tente novamente.',
+        description: 'Não foi possível salvar la proposta. Tente novamente.',
       });
     }
 
