@@ -119,6 +119,7 @@ export default function AgendaPage() {
         createdAt: selectedReminder?.createdAt || new Date().toISOString(),
       };
 
+      // Salvamento direto na subcoleção do usuário logado
       await setDoc(doc(firestore, 'users', user.uid, 'reminders', reminderId), reminderData);
       
       toast({ title: 'Lembrete salvo com sucesso!' });
