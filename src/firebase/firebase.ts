@@ -10,7 +10,7 @@ import { getStorage } from "firebase/storage";
  * Sem isso, o login retornará erro de "API KEY INVALID".
  */
 const firebaseConfig = {
-  apiKey: "AIzaSyXXXXXXXXXXXX", // <--- COLE SUA API KEY REAL AQUI
+  apiKey: "AIzaSyDcdnNBy0TZTsq_cI02KFVU9o7PJopEczM", // <--- COLE SUA API KEY REAL AQUI
   authDomain: "seu-projeto.firebaseapp.com",
   projectId: "seu-projeto",
   storageBucket: "seu-projeto.appspot.com",
