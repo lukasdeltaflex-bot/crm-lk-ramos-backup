@@ -21,25 +21,27 @@ const globalForFirebase = globalThis as unknown as {
 };
 
 // Inicialização única do App
-export const app = globalForFirebase.app || (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp());
+const app = globalForFirebase.app || (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp());
 
 // Inicialização única do Firestore com cache ilimitado e proteção de instância
-export const db = globalForFirebase.db || initializeFirestore(app, {
+// Usamos initializeFirestore apenas se db ainda não existir no global
+const db = globalForFirebase.db || initializeFirestore(app, {
     cacheSizeBytes: CACHE_SIZE_UNLIMITED,
-    localCache: undefined 
 });
 
 // Inicialização única do Auth e Storage
-export const auth = globalForFirebase.auth || getAuth(app);
-export const storage = globalForFirebase.storage || getStorage(app);
+const auth = globalForFirebase.auth || getAuth(app);
+const storage = globalForFirebase.storage || getStorage(app);
 
-// Persistência no objeto global em desenvolvimento
+// Persistência no objeto global em desenvolvimento para evitar Assertion Failed durante Hot Reload
 if (process.env.NODE_ENV !== "production") {
     globalForFirebase.app = app;
     globalForFirebase.auth = auth;
     globalForFirebase.db = db;
     globalForFirebase.storage = storage;
 }
+
+export { app, auth, db, storage };
 
 export function initializeFirebase(): FirebaseApp {
   return app;

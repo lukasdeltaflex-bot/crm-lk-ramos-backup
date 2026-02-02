@@ -134,25 +134,19 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     if (savedVisibility) {
         try {
             setColumnVisibility(JSON.parse(savedVisibility));
-        } catch (e) {
-            // Use default
-        }
+        } catch (e) {}
     }
     const savedOrder = localStorage.getItem(STORAGE_KEY_ORDER);
     if (savedOrder) {
         try {
             setColumnOrder(JSON.parse(savedOrder));
-        } catch (e) {
-            // Use default
-        }
+        } catch (e) {}
     }
     const savedSizing = localStorage.getItem(STORAGE_KEY_SIZING);
     if (savedSizing) {
         try {
             setColumnSizing(JSON.parse(savedSizing));
-        } catch (e) {
-            // Use default
-        }
+        } catch (e) {}
     }
     const savedPageSize = localStorage.getItem(STORAGE_KEY_PAGESIZE);
     if (savedPageSize) {
@@ -211,25 +205,12 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     let to: Date = now;
 
     switch (range) {
-        case 'today':
-            from = startOfDay(now);
-            break;
-        case 'yesterday':
-            from = startOfDay(subDays(now, 1));
-            to = endOfDay(subDays(now, 1));
-            break;
-        case 'week':
-            from = startOfDay(subDays(now, 7));
-            break;
-        case 'month':
-            from = startOfMonth(now);
-            break;
-        case 'lastMonth':
-            from = startOfMonth(subMonths(now, 1));
-            to = endOfMonth(subMonths(now, 1));
-            break;
-        default:
-            return;
+        case 'today': from = startOfDay(now); break;
+        case 'yesterday': from = startOfDay(subDays(now, 1)); to = endOfDay(subDays(now, 1)); break;
+        case 'week': from = startOfDay(subDays(now, 7)); break;
+        case 'month': from = startOfMonth(now); break;
+        case 'lastMonth': from = startOfMonth(subMonths(now, 1)); to = endOfMonth(subMonths(now, 1)); break;
+        default: return;
     }
 
     setStartDateInput(from.toLocaleDateString('pt-BR'));
@@ -240,14 +221,13 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   const handleApplyFilter = () => {
     const startDate = parse(startDateInput, 'dd/MM/yyyy', new Date());
     const endDate = parse(endDateInput, 'dd/MM/yyyy', new Date());
-
     const isValidStart = isValid(startDate) && startDateInput.length === 10;
     const isValidEnd = isValid(endDate) && endDateInput.length === 10;
 
     if (isValidStart && isValidEnd) {
         setAppliedDateRange({ from: startDate, to: endDate });
     } else if (isValidStart) {
-        setAppliedDateRange({ from: startDate, to: startDate }); // Filtra por um único dia
+        setAppliedDateRange({ from: startDate, to: startDate });
     } else {
         setAppliedDateRange(undefined);
     }
@@ -303,19 +283,12 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     },
     globalFilterFn: (row, columnId, filterValue) => {
         const searchTerm = normalizeString(String(filterValue ?? ''));
-    
-        if (!searchTerm) {
-          return true;
-        }
-    
+        if (!searchTerm) return true;
         const proposal = row.original;
         const customer = proposal.customer;
-        
-        // Exact match for customer Numeric ID
         if (/^\d+$/.test(searchTerm)) {
             if (customer && String(customer.numericId) === searchTerm) return true;
         }
-
         const fieldsToSearch = [
             proposal.proposalNumber,
             proposal.promoter,
@@ -326,7 +299,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             customer?.city,
             customer?.state
         ];
-
         return fieldsToSearch.some(field => {
             if (!field) return false;
             return normalizeString(field).includes(searchTerm);
@@ -357,7 +329,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     dateColumn?.setFilterValue(appliedDateRange);
   }, [appliedDateRange, table]);
 
-  // Regra de Filtro Inteligente: Quando "Todos" estiver ativado, ocultar registros "Reprovados"
+  // Regra de Filtro Inteligente Financeiro: Quando "Todos" estiver ativado, ocultar registros "Reprovados"
   React.useEffect(() => {
     const mainStatusColumn = table.getColumn('status');
     if (statusFilter === 'Todos') {
