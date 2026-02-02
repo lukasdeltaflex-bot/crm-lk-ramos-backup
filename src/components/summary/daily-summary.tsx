@@ -7,6 +7,7 @@ import { Bot, Send, BellRing, Clock, BadgePercent, X, Info, Loader2, CalendarClo
 import type { Customer, Proposal, UserProfile, FollowUp } from '@/lib/types';
 import { Skeleton } from '../ui/skeleton';
 import { differenceInDays, format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { calculateBusinessDays, getAge, cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from '@/hooks/use-toast';
