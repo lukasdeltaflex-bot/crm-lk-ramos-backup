@@ -1,4 +1,3 @@
-
 'use client';
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -455,10 +454,13 @@ function ProposalsPageContent() {
   }, [firestore, rowSelection]);
 
 
-  const handleFormSubmit = async (data: Omit<Proposal, 'id' | 'ownerId'>) => {
-    if (!firestore || !user) return;
+  const handleFormSubmit = async (data: any) => {
+    if (!firestore || !user) {
+        toast({ variant: 'destructive', title: 'Erro de Sessão', description: 'Usuário não autenticado.' });
+        return;
+    }
   
-    const toValue = (dateString?: string): string | null => {
+    const toISO = (dateString?: string): string | null => {
         if (!dateString || dateString.trim() === '') return null;
         try {
             const parsed = parse(dateString, 'dd/MM/yyyy', new Date());
@@ -469,63 +471,52 @@ function ProposalsPageContent() {
     };
     
     try {
-        const typedData = data as Proposal;
-        const dateApproved = toValue(typedData.dateApproved);
-        let commissionStatus = typedData.commissionStatus;
+        const dateApproved = toISO(data.dateApproved);
+        let commissionStatus = data.commissionStatus;
 
+        // Regra Automática de Status de Comissão
         const isEligibleForSaldoAReceber = 
-            typedData.status === 'Pago' ||
-            typedData.status === 'Saldo Pago' ||
-            (typedData.status === 'Em Andamento' && !!dateApproved) ||
-            (typedData.status === 'Pendente' && !!dateApproved);
+            data.status === 'Pago' ||
+            data.status === 'Saldo Pago' ||
+            (data.status === 'Em Andamento' && !!dateApproved) ||
+            (data.status === 'Pendente' && !!dateApproved);
         
-        if (isEligibleForSaldoAReceber && !commissionStatus) {
+        if (isEligibleForSaldoAReceber && (!commissionStatus || commissionStatus === '')) {
             commissionStatus = 'Pendente';
         }
 
         const proposalData = {
             ...data,
-            dateDigitized: toValue(typedData.dateDigitized) || new Date().toISOString(),
+            ownerId: user.uid,
+            dateDigitized: toISO(data.dateDigitized) || new Date().toISOString(),
             dateApproved: dateApproved,
-            datePaidToClient: toValue(typedData.datePaidToClient),
-            debtBalanceArrivalDate: toValue(typedData.debtBalanceArrivalDate),
-            commissionStatus: commissionStatus,
-        };
-        
-        const cleanData = {
-            ...proposalData,
-            ownerId: user.uid
+            datePaidToClient: toISO(data.datePaidToClient),
+            debtBalanceArrivalDate: toISO(data.debtBalanceArrivalDate),
+            commissionStatus: commissionStatus || 'Pendente',
+            amountPaid: data.amountPaid || 0,
+            commissionValue: data.commissionValue || 0,
+            grossAmount: data.grossAmount || 0,
+            netAmount: data.netAmount || 0,
+            installmentAmount: data.installmentAmount || 0,
+            term: Number(data.term) || 0,
+            interestRate: Number(data.interestRate) || 0,
+            commissionPercentage: Number(data.commissionPercentage) || 0,
         };
 
       if (sheetMode === 'edit' && selectedProposal) {
-        await setDoc(doc(firestore, 'loanProposals', selectedProposal.id), cleanData, { merge: true });
-        toast({
-          title: 'Proposta Atualizada!',
-          description: `A proposta foi atualizada com sucesso.`,
-        });
+        await setDoc(doc(firestore, 'loanProposals', selectedProposal.id), proposalData, { merge: true });
+        toast({ title: 'Proposta Atualizada!', description: `A proposta foi salva.` });
       } else {
         const newDocRef = doc(collection(firestore, 'loanProposals'));
-        const newProposalWithId = {
-          ...cleanData,
-          id: newDocRef.id,
-        };
-    
-        await setDoc(newDocRef, newProposalWithId);
-        toast({
-          title: 'Proposta Salva!',
-          description: `A nova proposta foi criada com sucesso.`,
-        });
+        const finalData = { ...proposalData, id: newDocRef.id };
+        await setDoc(newDocRef, finalData);
+        toast({ title: 'Proposta Salva!', description: `A nova proposta foi criada.` });
       }
+      setIsDialogOpen(false);
     } catch (error) {
       console.error('Error saving proposal:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao Salvar',
-        description: 'Não foi possível salvar a proposta. Tente novamente.',
-      });
+      toast({ variant: 'destructive', title: 'Falha Técnica', description: 'Não foi possível salvar os dados no banco.' });
     }
-
-    setIsDialogOpen(false);
   };
 
   const getSheetTitle = () => {
