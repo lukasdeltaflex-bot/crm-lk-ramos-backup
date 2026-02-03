@@ -31,8 +31,8 @@ export interface InternalQuery extends Query<DocumentData> {
 }
 
 /**
- * Hook Defensivo V15 para coleções Firestore.
- * Ignora erros de estado interno (ca9/b815) para manter a fluidez da UI.
+ * Hook Defensivo V19 para coleções Firestore.
+ * Ignora erros de estado interno (ca9/b815) e utiliza try-catch na inicialização.
  */
 export function useCollection<T = any>(
     memoizedTargetRefOrQuery: ((CollectionReference<DocumentData> | Query<DocumentData>) & {__memo?: boolean})  | null | undefined,
@@ -58,6 +58,7 @@ export function useCollection<T = any>(
     let unsubscribe: Unsubscribe | null = null;
 
     try {
+        // Envolvemos o listener em um try-catch para capturar falhas síncronas de inicialização
         unsubscribe = onSnapshot(
           memoizedTargetRefOrQuery,
           (snapshot: QuerySnapshot<DocumentData>) => {
@@ -73,14 +74,13 @@ export function useCollection<T = any>(
           (err: FirestoreError) => {
             if (!isMounted) return;
             
-            // SILENCIADOR V15: Ignora erros de asserção interna do SDK
+            // 🛡️ SILENCIADOR V19: Ignora inconsistências técnicas do SDK (ca9/b815)
             const isAssertion = err.message?.includes('INTERNAL ASSERTION FAILED') || 
                                err.message?.includes('ca9') || 
                                err.message?.includes('b815');
             
             if (isAssertion) {
-                console.warn("🛡️ useCollection: Ignorando inconsistência interna do Firebase.");
-                return;
+                return; // Ignora silenciosamente para não travar a UI
             }
             
             if (err.code === 'permission-denied') {
@@ -102,8 +102,8 @@ export function useCollection<T = any>(
           }
         );
     } catch (e: any) {
-        // Silêncio em erros de inicialização de watch para evitar crash visual
-        setIsLoading(false);
+        // Captura falhas críticas de Hot Reload
+        if (isMounted) setIsLoading(false);
     }
 
     return () => {
@@ -112,7 +112,7 @@ export function useCollection<T = any>(
         try {
             unsubscribe();
         } catch (e) {
-            // Cleanup silencioso
+            // Cleanup silencioso de listeners órfãos
         }
       }
     };

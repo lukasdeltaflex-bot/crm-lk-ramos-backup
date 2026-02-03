@@ -12,7 +12,7 @@ const firebaseConfig = {
   appId: "1:341426752875:web:348f88597e5b9b2057d02e",
 };
 
-// Singleton Blindado V18: Proteção definitiva contra reinicialização ca9/b815
+// Singleton Blindado V19: Persistência absoluta contra erros de estado ca9/b815
 const globalForFirebase = globalThis as unknown as {
   app: FirebaseApp | undefined;
   auth: Auth | undefined;
@@ -20,6 +20,7 @@ const globalForFirebase = globalThis as unknown as {
   storage: FirebaseStorage | undefined;
 };
 
+// Inicialização segura da App
 const app = globalForFirebase.app || (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp());
 
 let db: Firestore;
@@ -27,17 +28,17 @@ if (globalForFirebase.db) {
     db = globalForFirebase.db;
 } else {
     try {
-        // Inicialização forçada com Long Polling para evitar falhas de WebSocket em ambientes Cloud
+        // Forçamos Long Polling para evitar quebras de WebSocket que disparam o erro ca9
         db = initializeFirestore(app, {
             cacheSizeBytes: CACHE_SIZE_UNLIMITED,
             experimentalForceLongPolling: true,
             experimentalAutoDetectLongPolling: false,
         });
     } catch (e) {
-        // Fallback seguro se já inicializado
+        // Fallback redundante
         try {
             db = getExistingFirestore(app);
-        } catch (innerError) {
+        } catch (inner) {
             db = getFirestore(app);
         }
     }
@@ -47,6 +48,7 @@ if (globalForFirebase.db) {
 const auth = globalForFirebase.auth || getAuth(app);
 const storage = globalForFirebase.storage || getStorage(app);
 
+// Persiste as instâncias no objeto global para evitar Hot Reload crashes
 if (process.env.NODE_ENV !== "production") {
     globalForFirebase.app = app;
     globalForFirebase.auth = auth;

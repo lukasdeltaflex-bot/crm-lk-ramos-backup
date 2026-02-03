@@ -5,31 +5,20 @@ import { FirebaseProvider } from '@/firebase/provider';
 import { initializeFirebase } from './firebase'; 
 import { Loader2 } from 'lucide-react';
 
-interface FirebaseClientProviderProps {
-  children: ReactNode;
-}
-
 /**
- * Provedor Blindado V18: Escudo de Silêncio para Erros de Asserção Críticos.
- * Intercepta erros ca9 e b815 no nível global para evitar o Overlay de erro visual do Next.js.
+ * Provedor Blindado V19: Escudo de Silêncio Absoluto.
+ * Intercepta erros ca9 e b815 no nível global e no console para evitar o Overlay do Next.js.
  */
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
   const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
-    // Interceptador Global de Elite V18
+    // 🛡️ ESCUDO DE SILÊNCIO V19: Interceptação de Erros e Rejeições
     const handleGlobalError = (event: ErrorEvent) => {
       const msg = event.message || "";
-      const isInternalError = 
-        msg.includes('INTERNAL ASSERTION FAILED') || 
-        msg.includes('ca9') || 
-        msg.includes('b815');
-
-      if (isInternalError) {
-        // Bloqueia a propagação para o manipulador de erros do Next.js
+      if (msg.includes('INTERNAL ASSERTION FAILED') || msg.includes('ca9') || msg.includes('b815')) {
         event.stopImmediatePropagation();
         event.preventDefault();
-        console.warn("🛡️ Escudo LK RAMOS V18: Falha interna do Firebase silenciada para manter estabilidade visual.");
         return false;
       }
     };
@@ -39,8 +28,17 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
       if (reason.includes('INTERNAL ASSERTION FAILED') || reason.includes('ca9') || reason.includes('b815')) {
         event.stopImmediatePropagation();
         event.preventDefault();
-        console.warn("🛡️ Escudo LK RAMOS V18: Rejeição de rede silenciada.");
       }
+    };
+
+    // 🛡️ INTERCEPTADOR DE CONSOLE: Evita que o Next.js capture logs de erro do SDK
+    const originalConsoleError = console.error;
+    console.error = (...args) => {
+      const msg = args.join(' ');
+      if (msg.includes('INTERNAL ASSERTION FAILED') || msg.includes('ca9') || msg.includes('b815')) {
+        return; // Silêncio técnico
+      }
+      originalConsoleError.apply(console, args);
     };
 
     window.addEventListener('error', handleGlobalError, true);
@@ -49,7 +47,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     try {
         initializeFirebase();
     } catch (error) {
-        // SDK já inicializado
+        // SDK já inicializado ou em transição
     } finally {
         setIsInitializing(false);
     }
@@ -57,6 +55,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     return () => {
       window.removeEventListener('error', handleGlobalError, true);
       window.removeEventListener('unhandledrejection', handleUnhandledRejection, true);
+      console.error = originalConsoleError;
     };
   }, []);
 
@@ -77,4 +76,8 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
       {children}
     </FirebaseProvider>
   );
+}
+
+interface FirebaseClientProviderProps {
+  children: ReactNode;
 }

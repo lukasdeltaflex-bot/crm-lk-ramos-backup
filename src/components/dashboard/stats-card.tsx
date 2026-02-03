@@ -18,8 +18,8 @@ interface StatsCardProps {
 }
 
 /**
- * StatsCard Premium Executivo V17
- * Design com fonte font-light ultra-fina e cores harmonizadas.
+ * StatsCard Premium Executivo Compacto V19
+ * Design com fonte ultra-fina e dimensões reduzidas para melhor densidade de dados.
  */
 export function StatsCard({ title, value, icon: Icon, description, percentage, className, valueClassName }: StatsCardProps) {
   
