@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -21,17 +22,8 @@ export interface UseCollectionResult<T> {
   error: FirestoreError | Error | null;
 }
 
-export interface InternalQuery extends Query<DocumentData> {
-  _query: {
-    path: {
-      canonicalString(): string;
-      toString(): string;
-    }
-  }
-}
-
 /**
- * Hook Defensivo V25 para coleções Firestore.
+ * Hook Defensivo V26 para coleções Firestore.
  * Silencia inconsistências de permissão e estado durante reconexões.
  */
 export function useCollection<T = any>(
@@ -74,16 +66,16 @@ export function useCollection<T = any>(
             if (!isMounted) return;
             
             const msg = (err.message || "").toUpperCase();
+            // 🛡️ Filtro de erro técnico V26
             if (msg.includes('INTERNAL ASSERTION FAILED') || msg.includes('CA9') || msg.includes('B815')) {
+                console.warn("🛡️ LK Ramos: Inconsistência de rede suprimida.");
                 return; 
             }
             
             if (err.code === 'permission-denied') {
                 let path = 'unknown';
                 try {
-                    path = memoizedTargetRefOrQuery.type === 'collection'
-                        ? (memoizedTargetRefOrQuery as CollectionReference).path
-                        : (memoizedTargetRefOrQuery as any)._query?.path?.canonicalString() || 'query';
+                    path = (memoizedTargetRefOrQuery as any).path || 'query';
                 } catch(e) {}
 
                 const contextualError = new FirestorePermissionError({

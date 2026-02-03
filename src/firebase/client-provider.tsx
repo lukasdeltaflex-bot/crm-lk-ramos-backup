@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, type ReactNode } from 'react';
@@ -6,14 +7,15 @@ import { initializeFirebase } from './firebase';
 import { LoaderCircle } from 'lucide-react';
 
 /**
- * Provedor Blindado V25: Protocolo de Supressão Total.
+ * Provedor Blindado V26: Protocolo de Supressão Total.
  * Resolve erros de permissão transientes e falhas fatais de asserção (ca9/b815).
  */
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
   const [mounted, setMounted] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // 🛡️ ESCUDO DE SILÊNCIO V25: Interceptação Global
+    // 🛡️ ESCUDO DE SILÊNCIO V26: Interceptação Global de Baixo Nível
     const isSuppressibleError = (msg: string) => {
         if (!msg) return false;
         const normalized = String(msg).toUpperCase();
@@ -32,10 +34,12 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
       if (isSuppressibleError(message)) {
         if (event.stopImmediatePropagation) event.stopImmediatePropagation();
         event.preventDefault();
+        console.warn("🛡️ LK Ramos: Falha técnica suprimida para estabilidade.");
         return true;
       }
     };
 
+    // Mute de Console para evitar disparos do Overlay do Next.js
     const originalConsoleError = console.error;
     console.error = (...args) => {
       const msg = args.join(' ');
@@ -51,15 +55,19 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     } catch (error) {}
 
     setMounted(true);
+    // Pequeno delay para garantir que a hidratação de texto coincida
+    const timer = setTimeout(() => setIsReady(true), 100);
 
     return () => {
       window.removeEventListener('error', handleGlobalError, true);
       window.removeEventListener('unhandledrejection', handleGlobalError, true);
       console.error = originalConsoleError;
+      clearTimeout(timer);
     };
   }, []);
 
-  if (!mounted) {
+  // Evita Hydration Mismatch garantindo que o servidor e o cliente renderizem o mesmo inicialmente
+  if (!mounted || !isReady) {
     return (
         <div className="flex h-screen w-screen flex-col items-center justify-center bg-background gap-4">
             <LoaderCircle className="h-10 w-10 animate-spin text-primary opacity-20" />

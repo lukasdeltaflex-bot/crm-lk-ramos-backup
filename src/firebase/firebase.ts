@@ -1,6 +1,7 @@
+
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore, initializeFirestore, CACHE_SIZE_UNLIMITED } from "firebase/firestore";
+import { getFirestore, initializeFirestore, CACHE_SIZE_UNLIMITED, Firestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -12,7 +13,7 @@ const firebaseConfig = {
   appId: "1:341426752875:web:348f88597e5b9b2057d02e",
 };
 
-// 🛡️ SINGLETON ABSOLUTO V25: Proteção contra erros de reinicialização (b815/ca9)
+// 🛡️ SINGLETON ABSOLUTO V26: Proteção Imutável no globalThis
 const g = globalThis as any;
 
 if (!g._firebaseApp) {
@@ -20,18 +21,20 @@ if (!g._firebaseApp) {
 }
 const app = g._firebaseApp;
 
-// Firestore Singleton Blindado com Long Polling Mandatório
+// Firestore Singleton Blindado com bloqueio de re-inicialização
 if (!g._firebaseDb) {
     try {
+        // Força Long Polling para evitar erros de WebSocket (ca9) em proxies de nuvem
         g._firebaseDb = initializeFirestore(app, {
             cacheSizeBytes: CACHE_SIZE_UNLIMITED,
-            experimentalForceLongPolling: true, 
+            experimentalForceLongPolling: true,
         });
     } catch (e) {
+        console.warn("🛡️ LK Ramos: Recuperando instância existente do Firestore.");
         g._firebaseDb = getFirestore(app);
     }
 }
-const db = g._firebaseDb;
+const db: Firestore = g._firebaseDb;
 
 if (!g._firebaseAuth) {
     g._firebaseAuth = getAuth(app);
