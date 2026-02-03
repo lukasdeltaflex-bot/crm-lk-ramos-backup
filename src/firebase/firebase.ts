@@ -1,7 +1,7 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
-import { getAuth, Auth } from "firebase/auth";
-import { getFirestore, Firestore, initializeFirestore, CACHE_SIZE_UNLIMITED, getFirestore as getExistingFirestore } from "firebase/firestore";
-import { getStorage, FirebaseStorage } from "firebase/storage";
+import { getAuth } from "firebase/auth";
+import { getFirestore, initializeFirestore, CACHE_SIZE_UNLIMITED } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDcdnNBy0TZTsq_cI02KFVU9o7PJopEczM",
@@ -12,36 +12,40 @@ const firebaseConfig = {
   appId: "1:341426752875:web:348f88597e5b9b2057d02e",
 };
 
-// 🛡️ SINGLETON BLINDADO V21: Proteção absoluta contra erros de estado ca9/b815
-// Usamos o globalThis para garantir que as instâncias persistam entre os Hot Reloads do Next.js
+// 🛡️ SINGLETON BLINDADO V22: Proteção absoluta contra erros de estado b815/ca9
 const g = globalThis as any;
 
-const app = g._firebaseApp || (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp());
-if (process.env.NODE_ENV !== "production") g._firebaseApp = app;
+// App Singleton
+if (!g._firebaseApp) {
+    g._firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+}
+const app = g._firebaseApp;
 
-let db: Firestore;
-if (g._firebaseDb) {
-    db = g._firebaseDb;
-} else {
+// Firestore Singleton - Configurado uma única vez com Long Polling forçado
+if (!g._firebaseDb) {
     try {
-        // Forçamos Long Polling e desativamos auto-detect para estabilidade total em ambientes Cloud
-        db = initializeFirestore(app, {
+        g._firebaseDb = initializeFirestore(app, {
             cacheSizeBytes: CACHE_SIZE_UNLIMITED,
             experimentalForceLongPolling: true,
             experimentalAutoDetectLongPolling: false,
         });
     } catch (e) {
-        try {
-            db = getExistingFirestore(app);
-        } catch (inner) {
-            db = getFirestore(app);
-        }
+        g._firebaseDb = getFirestore(app);
     }
-    g._firebaseDb = db;
 }
+const db = g._firebaseDb;
 
-const auth = g._firebaseAuth || (g._firebaseAuth = getAuth(app));
-const storage = g._firebaseStorage || (g._firebaseStorage = getStorage(app));
+// Auth Singleton
+if (!g._firebaseAuth) {
+    g._firebaseAuth = getAuth(app);
+}
+const auth = g._firebaseAuth;
+
+// Storage Singleton
+if (!g._firebaseStorage) {
+    g._firebaseStorage = getStorage(app);
+}
+const storage = g._firebaseStorage;
 
 export { app, auth, db, storage };
 

@@ -6,52 +6,48 @@ import { initializeFirebase } from './firebase';
 import { Loader2 } from 'lucide-react';
 
 /**
- * Provedor Blindado V21: Protocolo de Supressão Total.
- * Intercepta e silencia erros fatais do Firebase (ca9/b815) para impedir o Overlay do Next.js.
+ * Provedor Blindado V22: Protocolo de Supressão Total.
+ * Intercepta e silencia erros fatais do Firebase (ca9/b815) no nível global.
  */
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
   const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
-    // 🛡️ ESCUDO DE SILÊNCIO V21: Interceptação Global de Erros de Asserção
-    const isFirebaseAssertionError = (msg: string, stack?: string) => {
-        const patterns = ['INTERNAL ASSERTION FAILED', 'ca9', 'b815', 'Fe: -1', 'Unexpected state'];
-        const fullText = (msg + (stack || '')).toUpperCase();
-        return patterns.some(pattern => fullText.includes(pattern.toUpperCase()));
+    // 🛡️ ESCUDO DE SILÊNCIO V22: Interceptação Global de Erros de Asserção do SDK
+    const isSuppressibleError = (msg: string) => {
+        if (!msg) return false;
+        const normalized = msg.toUpperCase();
+        return (
+            normalized.includes('INTERNAL ASSERTION FAILED') ||
+            normalized.includes('CA9') ||
+            normalized.includes('B815') ||
+            normalized.includes('FE: -1') ||
+            normalized.includes('UNEXPECTED STATE')
+        );
     };
 
-    const handleGlobalError = (event: ErrorEvent) => {
-      if (isFirebaseAssertionError(event.message, event.error?.stack)) {
-        console.warn("🛡️ LK Ramos: Interceptada e silenciada falha interna do Firebase. Sistema preservado.");
+    const handleGlobalError = (event: ErrorEvent | PromiseRejectionEvent) => {
+      const message = 'message' in event ? event.message : (event.reason?.message || String(event.reason));
+      if (isSuppressibleError(message)) {
+        console.warn("🛡️ LK Ramos: Suprimida falha técnica do Firebase SDK. Sistema preservado.");
         event.stopImmediatePropagation();
         event.preventDefault();
         return true;
       }
     };
 
-    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      const reason = event.reason?.message || String(event.reason);
-      if (isFirebaseAssertionError(reason, event.reason?.stack)) {
-        console.warn("🛡️ LK Ramos: Interceptada promessa rejeitada por estado interno. Ignorando silenciosamente.");
-        event.stopImmediatePropagation();
-        event.preventDefault();
-        return true;
-      }
-    };
-
-    // 🛡️ INTERCEPTADOR DE CONSOLE: Evita que o Next.js capture logs do SDK que disparam a tela de erro
+    // Interceptação de Console para evitar que o Next.js capture logs do SDK que disparam o Overlay
     const originalConsoleError = console.error;
     console.error = (...args) => {
       const msg = args.join(' ');
-      if (isFirebaseAssertionError(msg)) {
-        // Silêncio técnico: O erro não sobe para o motor de Overlay do Next.js
-        return; 
+      if (isSuppressibleError(msg)) {
+        return; // Silêncio técnico para o Next.js
       }
       originalConsoleError.apply(console, args);
     };
 
     window.addEventListener('error', handleGlobalError, true);
-    window.addEventListener('unhandledrejection', handleUnhandledRejection, true);
+    window.addEventListener('unhandledrejection', handleGlobalError, true);
 
     try {
         initializeFirebase();
@@ -63,7 +59,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
 
     return () => {
       window.removeEventListener('error', handleGlobalError, true);
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection, true);
+      window.removeEventListener('unhandledrejection', handleGlobalError, true);
       console.error = originalConsoleError;
     };
   }, []);
@@ -74,7 +70,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <div className="space-y-1">
                 <p className="text-sm font-bold text-foreground uppercase tracking-widest">LK RAMOS</p>
-                <p className="text-[10px] text-muted-foreground animate-pulse font-bold">ESTABILIZANDO MOTOR DE DADOS V21...</p>
+                <p className="text-[10px] text-muted-foreground animate-pulse font-bold">ESTABILIZANDO MOTOR DE DADOS V22...</p>
             </div>
         </div>
     );

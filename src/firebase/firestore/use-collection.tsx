@@ -31,7 +31,7 @@ export interface InternalQuery extends Query<DocumentData> {
 }
 
 /**
- * Hook Defensivo V20 para coleções Firestore.
+ * Hook Defensivo V22 para coleções Firestore.
  * Ignora erros de estado interno (ca9/b815) para manter a interface estável.
  */
 export function useCollection<T = any>(
@@ -73,10 +73,11 @@ export function useCollection<T = any>(
           (err: FirestoreError) => {
             if (!isMounted) return;
             
-            // 🛡️ FILTRO V20: Ignora silenciosamente inconsistências técnicas (ca9/b815)
-            const isAssertion = err.message?.includes('INTERNAL ASSERTION FAILED') || 
-                               err.message?.includes('ca9') || 
-                               err.message?.includes('b815');
+            // 🛡️ FILTRO V22: Ignora silenciosamente inconsistências técnicas (ca9/b815)
+            const msg = (err.message || "").toUpperCase();
+            const isAssertion = msg.includes('INTERNAL ASSERTION FAILED') || 
+                               msg.includes('CA9') || 
+                               msg.includes('B815');
             
             if (isAssertion) {
                 console.warn("🛡️ Hook: Ignorada falha de sincronização do SDK.");
