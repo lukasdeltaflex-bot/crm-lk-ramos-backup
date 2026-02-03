@@ -6,17 +6,18 @@ import { initializeFirebase } from './firebase';
 import { LoaderCircle } from 'lucide-react';
 
 /**
- * Provedor Blindado V41: Protocolo de Supressão Total de Falhas de Asserção do Firestore.
+ * Provedor Blindado V42: Protocolo de Supressão Total de Falhas de Asserção do Firestore.
  * Intercepta e anula erros fatais técnicos (ca9/b815) no nível mais profundo do navegador.
  */
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // 🛡️ ESCUDO DE SILÊNCIO V41: Interceptação Global Absoluta
-    const isSuppressibleError = (msg: string) => {
-        if (!msg) return false;
-        const normalized = String(msg).toUpperCase();
+    // 🛡️ ESCUDO DE SILÊNCIO V42: Interceptação Global Absoluta
+    const isSuppressibleError = (err: any) => {
+        if (!err) return false;
+        const msg = typeof err === 'string' ? err : (err.message || String(err));
+        const normalized = msg.toUpperCase();
         return (
             normalized.includes('INTERNAL ASSERTION FAILED') ||
             normalized.includes('CA9') ||
@@ -27,10 +28,10 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     };
 
     const handleGlobalError = (event: ErrorEvent | PromiseRejectionEvent) => {
-      const message = 'message' in event ? event.message : (event.reason?.message || String(event.reason));
-      if (isSuppressibleError(message)) {
-        if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+      const error = 'error' in event ? event.error : (event.reason);
+      if (isSuppressibleError(error) || isSuppressibleError(event instanceof ErrorEvent ? event.message : '')) {
         event.preventDefault();
+        if (event.stopImmediatePropagation) event.stopImmediatePropagation();
         return true;
       }
     };
@@ -38,8 +39,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     // Mute de Console para suprimir disparos técnicos do SDK do Firebase
     const originalConsoleError = console.error;
     console.error = (...args) => {
-      const msg = args.join(' ');
-      if (isSuppressibleError(msg)) {
+      if (args.some(arg => isSuppressibleError(arg))) {
         return; 
       }
       originalConsoleError.apply(console, args);
@@ -48,7 +48,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     // Override de window.onerror para redundância máxima
     const oldOnError = window.onerror;
     window.onerror = (message, source, lineno, colno, error) => {
-      if (isSuppressibleError(String(message)) || isSuppressibleError(String(error?.message))) {
+      if (isSuppressibleError(message) || isSuppressibleError(error)) {
         return true; 
       }
       if (oldOnError) return oldOnError(message, source, lineno, colno, error);

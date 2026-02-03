@@ -12,7 +12,7 @@ const firebaseConfig = {
   appId: "1:341426752875:web:348f88597e5b9b2057d02e",
 };
 
-// 🛡️ SINGLETON ABSOLUTO V41: Bloqueio imutável no globalThis para evitar conflitos de HMR
+// 🛡️ SINGLETON ABSOLUTO V42: Bloqueio imutável no globalThis para evitar conflitos de HMR e erros ca9/b815
 const g = globalThis as any;
 
 if (!g._firebaseApp) {
@@ -22,6 +22,7 @@ const app: FirebaseApp = g._firebaseApp;
 
 if (!g._firebaseDb) {
     try {
+        // experimentalForceLongPolling é essencial para evitar falhas de watch stream em ambientes proxied
         g._firebaseDb = initializeFirestore(app, {
             cacheSizeBytes: CACHE_SIZE_UNLIMITED,
             experimentalForceLongPolling: true,
