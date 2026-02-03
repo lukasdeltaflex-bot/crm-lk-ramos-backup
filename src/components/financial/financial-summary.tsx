@@ -64,7 +64,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
         return d >= startOfPipeline && d <= effectiveToDate;
     });
 
-    // Saldo a Receber (ACUMULADO)
+    // Saldo a Receber (ACUMULADO) - COR LARANJA via StatsCard
     const proposalsForSaldoAReceber = accumulatedProposals.filter(p => {
         if (p.commissionStatus === 'Paga') return false;
         const hasAverbacao = !!p.dateApproved;

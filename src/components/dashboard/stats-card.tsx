@@ -19,15 +19,21 @@ interface StatsCardProps {
 
 /**
  * StatsCard Premium Executivo LK RAMOS
- * Fonte fina, elegante e colorida conforme o status.
+ * Fonte fina (font-light), elegante e colorida conforme o status.
  * Contornos coloridos e preenchimento suave.
  */
 export function StatsCard({ title, value, icon: Icon, description, percentage, className, valueClassName }: StatsCardProps) {
   
-  // Mapeamento de cores para bordas, fundos e agora para o TEXTO do valor
   const getThemeStyles = () => {
     const t = title.toLowerCase();
     
+    // ORANGE: Saldo Pago / Saldo a Receber
+    if (t.includes('saldo pago') || t.includes('saldo a receber')) 
+        return {
+            card: 'border-orange-300 dark:border-orange-800 bg-orange-50/50 dark:bg-orange-900/20',
+            text: 'text-orange-600 dark:text-orange-400'
+        };
+
     if (t.includes('total') || t.includes('digitado') || t.includes('comissões')) 
         return {
             card: 'border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/20',
@@ -38,12 +44,6 @@ export function StatsCard({ title, value, icon: Icon, description, percentage, c
         return {
             card: 'border-green-300 dark:border-green-800 bg-green-50/50 dark:bg-green-900/20',
             text: 'text-green-600 dark:text-green-400'
-        };
-    
-    if (t.includes('saldo a receber') || t.includes('saldo pago')) 
-        return {
-            card: 'border-orange-300 dark:border-orange-800 bg-orange-50/50 dark:bg-orange-900/20',
-            text: 'text-orange-600 dark:text-orange-400'
         };
     
     if (t.includes('comissão esperada') || t.includes('aguardando') || t.includes('andamento')) 
@@ -85,7 +85,7 @@ export function StatsCard({ title, value, icon: Icon, description, percentage, c
       </CardHeader>
       <CardContent className="flex-1 flex flex-col justify-between print:pt-1">
         <div className="flex items-baseline justify-between gap-2">
-            <div className={cn("text-3xl font-normal tracking-tighter print:text-lg", theme.text, valueClassName)}>
+            <div className={cn("text-4xl font-light tracking-tighter print:text-lg", theme.text, valueClassName)}>
                 {value}
             </div>
             {percentage !== undefined && (
