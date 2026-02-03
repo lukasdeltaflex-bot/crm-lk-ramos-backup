@@ -84,9 +84,10 @@ export function useDoc<T = any>(
     return () => {
       if (typeof unsubscribe === 'function') {
         try {
+            // Cleanup ultra-seguro para evitar erro b815 durante HMR
             unsubscribe();
         } catch (e) {
-            console.debug("Firestore unsubscribe silent fail (likely normal in dev)");
+            console.debug("Firestore doc unsubscribe silent fail (expected during HMR)", e);
         }
       }
     };

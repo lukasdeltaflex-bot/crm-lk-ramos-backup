@@ -105,10 +105,10 @@ export function useCollection<T = any>(
     return () => {
       if (typeof unsubscribe === 'function') {
         try {
+            // Cleanup ultra-seguro para evitar erro b815 durante HMR
             unsubscribe();
         } catch (e) {
-            // Silently fail cleanup if instance was already closed or state is unexpected
-            console.debug("Firestore unsubscribe silent fail (likely normal in dev)");
+            console.debug("Firestore unsubscribe silent fail (expected during HMR)", e);
         }
       }
     };

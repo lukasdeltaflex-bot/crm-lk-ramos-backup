@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
-import { getFirestore, Firestore, initializeFirestore, CACHE_SIZE_UNLIMITED, getFirestore as getFsInstance } from "firebase/firestore";
+import { getFirestore, Firestore, initializeFirestore, CACHE_SIZE_UNLIMITED } from "firebase/firestore";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -12,7 +12,7 @@ const firebaseConfig = {
   appId: "1:341426752875:web:348f88597e5b9b2057d02e",
 };
 
-// Singleton Blindado V6: Previne múltiplas inicializações e erros de estado inesperado (ca9/b815)
+// Singleton Blindado V7: Persistência absoluta via globalThis para evitar erro b815/ca9 no NextJS
 const globalForFirebase = globalThis as unknown as {
   app: FirebaseApp | undefined;
   auth: Auth | undefined;
@@ -22,21 +22,16 @@ const globalForFirebase = globalThis as unknown as {
 
 const app = globalForFirebase.app || (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp());
 
-let db: Firestore;
-try {
-    // Tenta obter a instância já inicializada para evitar conflitos de HMR no NextJS (Erro ca9/b815)
-    db = getFsInstance(app);
-} catch (e) {
-    // Se não houver instância, inicializa com configurações de estabilidade máxima
-    db = initializeFirestore(app, {
-        cacheSizeBytes: CACHE_SIZE_UNLIMITED,
-        experimentalForceLongPolling: true, // Essencial para estabilidade em ambientes Cloud
-    });
-}
+// Inicializa o Firestore apenas se não existir no escopo global
+const db = globalForFirebase.db || initializeFirestore(app, {
+    cacheSizeBytes: CACHE_SIZE_UNLIMITED,
+    experimentalForceLongPolling: true, // Estabilidade essencial para ambientes Cloud
+});
 
 const auth = globalForFirebase.auth || getAuth(app);
 const storage = globalForFirebase.storage || getStorage(app);
 
+// No desenvolvimento, salva as instâncias no objeto global para sobreviver ao HMR
 if (process.env.NODE_ENV !== "production") {
     globalForFirebase.app = app;
     globalForFirebase.auth = auth;
