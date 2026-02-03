@@ -43,13 +43,13 @@ export function PartnerPerformanceCharts({ proposals }: PartnerPerformanceCharts
   const renderChart = (data: { name: string; total: number }[]) => (
     <div className="h-[300px] w-full pt-4">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} layout="vertical" margin={{ left: 30, right: 30 }}>
+        <BarChart data={data} layout="vertical" margin={{ left: 0, right: 30 }}>
           <CartesianGrid strokeDasharray="3 3" horizontal={false} />
           <XAxis type="number" hide />
           <YAxis 
             dataKey="name" 
             type="category" 
-            width={120} 
+            width={100} 
             fontSize={11}
             tickLine={false}
             axisLine={false}

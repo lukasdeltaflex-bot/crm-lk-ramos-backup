@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
@@ -35,7 +34,7 @@ export function StatusBreakdownChart({ proposals }: StatusBreakdownChartProps) {
   return (
     <div className="h-[400px] w-full pt-4">
         <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} layout="vertical" margin={{ left: 20, right: 30 }}>
+            <BarChart data={data} layout="vertical" margin={{ left: 0, right: 30 }}>
             <CartesianGrid strokeDasharray="3 3" horizontal={false} />
             <XAxis
                 type="number"
@@ -52,7 +51,7 @@ export function StatusBreakdownChart({ proposals }: StatusBreakdownChartProps) {
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
-                width={100}
+                width={80}
                 interval={0}
             />
              <Tooltip
