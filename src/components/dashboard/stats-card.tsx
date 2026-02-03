@@ -71,37 +71,37 @@ export function StatsCard({ title, value, icon: Icon, description, percentage, c
 
   return (
     <Card className={cn(
-        'hover:shadow-lg transition-all group relative overflow-hidden shadow-md rounded-xl h-full min-h-[160px] flex flex-col border-2', 
+        'hover:shadow-lg transition-all group relative overflow-hidden shadow-md rounded-xl h-full min-h-[140px] flex flex-col border-2', 
         theme.card,
         className
     )}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 print:pb-1">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1.5 print:pb-1">
         <CardTitle className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/80 group-hover:text-primary transition-colors print:text-[8px]">
             {title}
         </CardTitle>
-        <div className="p-2 rounded-lg bg-background/50 dark:bg-black/20 shadow-sm border border-border/10">
-            <Icon className={cn("h-4 w-4 opacity-80 group-hover:opacity-100 transition-opacity", theme.text)} />
+        <div className="p-1.5 rounded-lg bg-background/50 dark:bg-black/20 shadow-sm border border-border/10">
+            <Icon className={cn("h-3.5 w-3.5 opacity-80 group-hover:opacity-100 transition-opacity", theme.text)} />
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col justify-between print:pt-1">
         <div className="flex items-baseline justify-between gap-2">
-            <div className={cn("text-4xl font-light tracking-tighter print:text-lg", theme.text, valueClassName)}>
+            <div className={cn("text-3xl font-light tracking-tighter print:text-lg", theme.text, valueClassName)}>
                 {value}
             </div>
             {percentage !== undefined && (
-                <div className="text-[10px] font-bold bg-background/80 dark:bg-black/40 px-2.5 py-1 rounded-full border border-border/50 shadow-sm text-primary">
+                <div className="text-[10px] font-bold bg-background/80 dark:bg-black/40 px-2 py-0.5 rounded-full border border-border/50 shadow-sm text-primary">
                     {percentage.toFixed(1).replace('.', ',')}%
                 </div>
             )}
         </div>
         
-        <div className="mt-3 border-t pt-2 border-border/30 min-h-[24px]">
+        <div className="mt-2 border-t pt-1.5 border-border/30 min-h-[20px]">
             {description ? (
-                <p className="text-[10px] font-bold text-muted-foreground/60 mt-0 uppercase tracking-tighter">
+                <p className="text-[9px] font-bold text-muted-foreground/60 mt-0 uppercase tracking-tighter">
                     {description}
                 </p>
             ) : (
-                <div className="h-[14px] w-full" />
+                <div className="h-[12px] w-full" />
             )}
         </div>
       </CardContent>

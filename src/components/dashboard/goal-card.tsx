@@ -58,14 +58,14 @@ export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onV
         'relative overflow-hidden bg-green-50 dark:bg-green-900/20 border-2 border-green-300 dark:border-green-700 shadow-lg rounded-2xl w-full', 
         className
     )}>
-      <CardContent className="p-8">
-        <div className="flex items-start justify-between mb-6">
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-full bg-white dark:bg-green-950 shadow-sm border border-green-100 dark:border-green-900">
-              <Trophy className="h-5 w-5 text-green-500" />
+            <div className="p-2 rounded-full bg-white dark:bg-green-950 shadow-sm border border-green-100 dark:border-green-900">
+              <Trophy className="h-4 w-4 text-green-500" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-green-700 dark:text-green-400 leading-tight">Performance do Mês</h3>
+              <h3 className="text-base font-bold text-green-700 dark:text-green-400 leading-tight">Performance do Mês</h3>
               <p className="text-[10px] font-bold text-muted-foreground/60 dark:text-muted-foreground/80 uppercase tracking-widest">Meta de Contratos Pagos</p>
             </div>
           </div>
@@ -89,13 +89,13 @@ export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onV
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <div className="px-4 py-1.5 bg-white dark:bg-green-950 rounded-full border border-green-100 dark:border-green-900 text-[11px] font-bold text-green-700 dark:text-green-400 shadow-sm">
+                <div className="px-3 py-1 bg-white dark:bg-green-950 rounded-full border border-green-100 dark:border-green-900 text-[10px] font-bold text-green-700 dark:text-green-400 shadow-sm">
                   Objetivo: {isPrivacyMode ? '•••••' : formatCurrency(monthlyGoal)}
                 </div>
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="h-8 w-8 rounded-full opacity-40 hover:opacity-100 transition-opacity bg-white/50 dark:bg-black/40" 
+                  className="h-7 w-7 rounded-full opacity-40 hover:opacity-100 transition-opacity bg-white/50 dark:bg-black/40" 
                   onClick={() => setIsEditing(true)}
                 >
                   <Pencil className="h-3 w-3 text-muted-foreground" />
@@ -105,29 +105,29 @@ export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onV
           </div>
         </div>
 
-        <div className="flex items-end justify-between mb-8" onClick={onValueClick}>
-          <div className="space-y-2 cursor-pointer">
-            <div className={cn("text-6xl font-light tracking-tighter text-green-600 dark:text-green-400 leading-none")}>
+        <div className="flex items-end justify-between mb-6" onClick={onValueClick}>
+          <div className="space-y-1 cursor-pointer">
+            <div className={cn("text-5xl font-light tracking-tighter text-green-600 dark:text-green-400 leading-none")}>
               {isPrivacyMode ? '•••••' : formatCurrency(currentProduction)}
             </div>
             <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/80 dark:text-muted-foreground uppercase tracking-wider">
-              <TrendingUp className="h-3.5 w-3.5 text-green-500" />
+              <TrendingUp className="h-3 w-3 text-green-500" />
               Conversão de <span className="text-foreground dark:text-green-200">{conversionRate.toFixed(1)}%</span> sobre a digitação total.
             </div>
           </div>
 
-          <div className="text-right space-y-1">
-            <div className="text-5xl font-light text-green-600 dark:text-green-400 tracking-tighter tabular-nums">
+          <div className="text-right space-y-0.5">
+            <div className="text-4xl font-light text-green-600 dark:text-green-400 tracking-tighter tabular-nums">
               {percentageOfGoal.toFixed(1)}%
             </div>
             <p className="text-[10px] font-bold text-muted-foreground/60 dark:text-muted-foreground/80 uppercase tracking-[0.2em]">Concluído</p>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <Progress value={percentageOfGoal} className="h-2.5 bg-green-100 dark:bg-green-900/50" />
+        <div className="space-y-3">
+          <Progress value={percentageOfGoal} className="h-2 bg-green-100 dark:bg-green-900/50" />
           
-          <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 dark:text-muted-foreground/80">
+          <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 dark:text-muted-foreground/80">
             <p>
               Faltam <span className={cn("text-green-600 dark:text-green-400")}>
                 {isPrivacyMode ? '•••••' : formatCurrency(Math.max(0, monthlyGoal - currentProduction))}
