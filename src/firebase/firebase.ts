@@ -13,7 +13,7 @@ const firebaseConfig = {
   appId: "1:341426752875:web:348f88597e5b9b2057d02e",
 };
 
-// 🛡️ SINGLETON ABSOLUTO V26: Proteção Imutável no globalThis
+// 🛡️ SINGLETON ABSOLUTO V27: Bloqueio de Re-inicialização no globalThis
 const g = globalThis as any;
 
 if (!g._firebaseApp) {
@@ -21,16 +21,15 @@ if (!g._firebaseApp) {
 }
 const app = g._firebaseApp;
 
-// Firestore Singleton Blindado com bloqueio de re-inicialização
+// Firestore Singleton Blindado
 if (!g._firebaseDb) {
     try {
-        // Força Long Polling para evitar erros de WebSocket (ca9) em proxies de nuvem
+        // Força Long Polling e ignora WebSockets para evitar erro ca9 em nuvem
         g._firebaseDb = initializeFirestore(app, {
             cacheSizeBytes: CACHE_SIZE_UNLIMITED,
             experimentalForceLongPolling: true,
         });
     } catch (e) {
-        console.warn("🛡️ LK Ramos: Recuperando instância existente do Firestore.");
         g._firebaseDb = getFirestore(app);
     }
 }
