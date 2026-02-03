@@ -558,7 +558,7 @@ export function ProposalForm({
                         name="netAmount"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Valor Líquido</FormLabel>
+                            <FormLabel>Valor Líquido</CardLabel>
                             <FormControl>
                             <Input type="number" step="0.01" placeholder="25000" {...field} readOnly={isReadOnly} value={field.value || ''} />
                             </FormControl>
