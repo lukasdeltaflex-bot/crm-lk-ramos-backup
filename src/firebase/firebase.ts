@@ -12,7 +12,7 @@ const firebaseConfig = {
   appId: "1:341426752875:web:348f88597e5b9b2057d02e",
 };
 
-// Singleton blindado para evitar "Assertion Failed" e reinicializações indevidas em ambientes de nuvem
+// Singleton Blindado para evitar reinicializações e erros de Assertion Failed (ca9)
 const globalForFirebase = globalThis as unknown as {
   app: FirebaseApp | undefined;
   auth: Auth | undefined;
@@ -22,7 +22,7 @@ const globalForFirebase = globalThis as unknown as {
 
 const app = globalForFirebase.app || (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp());
 
-// Inicializa o Firestore com Long Polling obrigatório para evitar erros de WebSocket em Workstations (Unexpected state ID: ca9)
+// Ativação do Long Polling: Essencial para estabilidade em ambientes de Workstation/Cloud
 const db = globalForFirebase.db || initializeFirestore(app, {
     cacheSizeBytes: CACHE_SIZE_UNLIMITED,
     experimentalForceLongPolling: true, 

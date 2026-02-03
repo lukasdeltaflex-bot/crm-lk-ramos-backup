@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -40,7 +39,7 @@ import {
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { ProposalAttachmentUploader } from '@/components/proposals/proposal-attachment-uploader';
 import { useUser } from '@/firebase';
-import { doc, collection } from 'firebase/firestore'; // Only for ID generation
+import { doc, collection } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Logo } from '@/components/logo';
@@ -181,7 +180,7 @@ export function ProposalForm({
 
   useEffect(() => {
     if (firestore && !proposal?.id) {
-      setTempProposalId(doc(collection(firestore, 'proposals')).id);
+      setTempProposalId(doc(collection(firestore, 'loanProposals')).id);
     }
   }, [firestore, proposal]);
   
@@ -226,7 +225,6 @@ export function ProposalForm({
     }
   }, [selectedCustomerId, form, selectedCustomer]);
 
-  // Auto-select benefit if customer has only one
   useEffect(() => {
     if (selectedCustomer && selectedCustomer.benefits && selectedCustomer.benefits.length === 1) {
         form.setValue('selectedBenefitNumber', selectedCustomer.benefits[0].number);
@@ -322,15 +320,12 @@ export function ProposalForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="py-4">
-        {/* Print Header */}
         <div className="hidden print:block mb-8">
           <Logo forPrinting={true} />
           <h1 className="text-2xl font-bold mt-4">Detalhes da Proposta</h1>
         </div>
         <ScrollArea className="h-[70vh] pr-4 print:h-auto print:overflow-visible">
           <div className="space-y-6">
-            
-            {/* Customer and Product */}
             <div className="space-y-4">
               <FormField
                 control={form.control}
@@ -360,7 +355,6 @@ export function ProposalForm({
                 )}
                 />
 
-              {/* Central de Documentos Fixos do Cliente - Atalho */}
               {selectedCustomer && selectedCustomer.documents && selectedCustomer.documents.length > 0 && (
                 <Alert className="bg-primary/5 border-primary/20">
                     <FolderLock className="h-4 w-4 text-primary" />
@@ -414,7 +408,6 @@ export function ProposalForm({
             
             <Separator />
 
-            {/* Proposal Details */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Detalhes da Proposta</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -544,7 +537,6 @@ export function ProposalForm({
             
             <Separator />
             
-            {/* Amounts */}
             <div className="space-y-4">
                 <h3 className="text-lg font-medium">Valores</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -592,7 +584,6 @@ export function ProposalForm({
             
             <Separator />
             
-            {/* Commission */}
             <div className="space-y-4">
                 <h3 className="text-lg font-medium">Comissão</h3>
                  <FormField
@@ -663,7 +654,6 @@ export function ProposalForm({
             
             <Separator />
 
-            {/* Banks and Operator */}
              <div className="space-y-4">
                 <h3 className="text-lg font-medium">Dados Bancários e Operacionais</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -750,7 +740,6 @@ export function ProposalForm({
 
             <Separator />
             
-            {/* Status and Finalization */}
             <div className="space-y-4">
                 <h3 className="text-lg font-medium">Finalização e Datas</h3>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -826,7 +815,6 @@ export function ProposalForm({
 
             <Separator />
 
-            {/* Attachments */}
             <div className="space-y-4">
                 <h3 className="text-lg font-medium">Anexos da Proposta</h3>
                 {isAttachmentSectionDisabled ? (
