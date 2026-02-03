@@ -13,17 +13,12 @@ import {
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
-/** Utility type to add an 'id' field to a given type T. */
 export type WithId<T> = T & { id: string };
 
-/**
- * Interface for the return value of the useCollection hook.
- * @template T Type of the document data.
- */
 export interface UseCollectionResult<T> {
-  data: WithId<T>[] | null; // Document data with ID, or null.
-  isLoading: boolean;       // True if loading.
-  error: FirestoreError | Error | null; // Error object, or null.
+  data: WithId<T>[] | null;
+  isLoading: boolean;
+  error: FirestoreError | Error | null;
 }
 
 export interface InternalQuery extends Query<DocumentData> {
@@ -36,8 +31,8 @@ export interface InternalQuery extends Query<DocumentData> {
 }
 
 /**
- * React hook to subscribe to a Firestore collection or query in real-time.
- * Blindagem V8: Tratamento ultra-seguro contra erros de asserção interna.
+ * React hook defensivo para coleções Firestore.
+ * Proteção extra contra erro ca9 detectando falhas de fluxo.
  */
 export function useCollection<T = any>(
     memoizedTargetRefOrQuery: ((CollectionReference<DocumentData> | Query<DocumentData>) & {__memo?: boolean})  | null | undefined,
@@ -75,8 +70,9 @@ export function useCollection<T = any>(
             setIsLoading(false);
           },
           (err: FirestoreError) => {
-            // Se o Firestore falhar com erro ca9 ou similar, capturamos aqui sem crashar a UI
-            console.warn("Firestore listener warning:", err.message);
+            // Monitoramento discreto de erro ca9
+            console.warn("Firestore collection stream interrupted:", err.message);
+            
             if (err.code === 'permission-denied') {
                 const path: string =
                   memoizedTargetRefOrQuery.type === 'collection'
@@ -96,17 +92,17 @@ export function useCollection<T = any>(
           }
         );
     } catch (e: any) {
-        console.warn("Firestore snapshot setup blocked to prevent crash:", e);
+        console.warn("Firestore snapshot request failed to initialize:", e);
         setIsLoading(false);
     }
 
     return () => {
       if (unsubscribe) {
         try {
-            // Desinscrição ultra-segura para evitar erro b815 no HMR
+            // Desinscrição segura: evita crash se a instância já estiver terminada
             unsubscribe();
         } catch (e) {
-            // Ignora erros de encerramento já que o Firebase pode já estar em estado 'terminated'
+            // Ignore safe cleanup errors
         }
       }
     };

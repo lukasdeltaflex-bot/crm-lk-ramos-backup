@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
-import { getFirestore, Firestore, initializeFirestore, CACHE_SIZE_UNLIMITED, terminate } from "firebase/firestore";
+import { getFirestore, Firestore, initializeFirestore, CACHE_SIZE_UNLIMITED } from "firebase/firestore";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -12,7 +12,7 @@ const firebaseConfig = {
   appId: "1:341426752875:web:348f88597e5b9b2057d02e",
 };
 
-// Singleton Blindado V8: Proteção extrema contra instâncias duplicadas e falhas de WebSocket (ID: ca9)
+// Singleton Blindado V9: Persistência absoluta das instâncias para evitar erro ca9/b815
 const globalForFirebase = globalThis as unknown as {
   app: FirebaseApp | undefined;
   auth: Auth | undefined;
@@ -23,15 +23,15 @@ const globalForFirebase = globalThis as unknown as {
 // Inicializa o App apenas se não existir
 const app = globalForFirebase.app || (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp());
 
-// Inicializa o Firestore com Long Polling forçado. 
-// Em ambientes de Cloud Workstation, WebSockets costumam causar o erro ca9.
+// Inicializa o Firestore com Long Polling forçado e travamento de Singleton
 let db: Firestore;
 if (globalForFirebase.db) {
     db = globalForFirebase.db;
 } else {
+    // initializeFirestore deve ser chamado apenas UMA vez por ciclo de vida da página
     db = initializeFirestore(app, {
         cacheSizeBytes: CACHE_SIZE_UNLIMITED,
-        experimentalForceLongPolling: true, // Crucial para resolver erro ca9 em proxies/nuvem
+        experimentalForceLongPolling: true, // Crucial para resolver erro ca9
     });
     globalForFirebase.db = db;
 }
@@ -42,6 +42,7 @@ const storage = globalForFirebase.storage || getStorage(app);
 if (process.env.NODE_ENV !== "production") {
     globalForFirebase.app = app;
     globalForFirebase.auth = auth;
+    globalForFirebase.db = db;
     globalForFirebase.storage = storage;
 }
 

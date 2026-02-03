@@ -64,7 +64,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
         return d >= startOfPipeline && d <= effectiveToDate;
     });
 
-    // Saldo a Receber (ACUMULADO) - COR LARANJA via StatsCard
+    // Saldo a Receber (ACUMULADO)
     const proposalsForSaldoAReceber = accumulatedProposals.filter(p => {
         if (p.commissionStatus === 'Paga') return false;
         const hasAverbacao = !!p.dateApproved;
@@ -83,7 +83,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     });
     const expectedAmount = expectedCommissionProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
     
-    // Função de porcentagem baseada SEMPRE no Total do Mês Vigente
+    // REGRA DE OURO: Todas as porcentagens baseadas no Total de Comissões (Digitado no Mês)
     const getPercentage = (value: number) => {
         if (totalPotentialCommission === 0) return 0;
         return (value / totalPotentialCommission) * 100;

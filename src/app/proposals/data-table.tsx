@@ -337,7 +337,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   React.useEffect(() => {
     const statusColumn = table.getColumn('status');
     if (statusFilter === 'Todos') {
-      // PERMITE BUSCAR EM TUDO (INCLUINDO REPROVADAS) NA ABA TODOS
+      // REGRA DE OURO: ABA TODOS NÃO FILTRA STATUS, PERMITE BUSCAR REPROVADOS
       statusColumn?.setFilterValue(undefined);
     } else {
       statusColumn?.setFilterValue([statusFilter]);

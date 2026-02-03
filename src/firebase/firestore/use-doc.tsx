@@ -12,22 +12,17 @@ import {
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
-/** Utility type to add an 'id' field to a given type T. */
 type WithId<T> = T & { id: string };
 
-/**
- * Interface for the return value of the useDoc hook.
- * @template T Type of the document data.
- */
 export interface UseDocResult<T> {
-  data: WithId<T> | null; // Document data with ID, or null.
-  isLoading: boolean;       // True if loading.
-  error: FirestoreError | Error | null; // Error object, or null.
+  data: WithId<T> | null;
+  isLoading: boolean;
+  error: FirestoreError | Error | null;
 }
 
 /**
- * React hook to subscribe to a single Firestore document in real-time.
- * Blindagem V8: Proteção contra erros de instanciamento duplo.
+ * React hook defensivo para documentos Firestore.
+ * Previne falhas de sincronização em tempo real (ID: ca9).
  */
 export function useDoc<T = any>(
   memoizedDocRef: DocumentReference<DocumentData> | null | undefined,
@@ -64,20 +59,20 @@ export function useDoc<T = any>(
             setIsLoading(false);
           },
           (err: FirestoreError) => {
-            console.warn("Firestore doc listener warning:", err.message);
+            console.warn("Firestore document stream interrupted:", err.message);
             const contextualError = new FirestorePermissionError({
               operation: 'get',
               path: memoizedDocRef.path,
-            })
+            });
 
-            setError(contextualError)
-            setData(null)
-            setIsLoading(false)
+            setError(contextualError);
+            setData(null);
+            setIsLoading(false);
             errorEmitter.emit('permission-error', contextualError);
           }
         );
     } catch (e: any) {
-        console.warn("Firestore snapshot setup blocked to prevent crash:", e);
+        console.warn("Firestore document snapshot failed to initialize:", e);
         setIsLoading(false);
     }
 
@@ -86,7 +81,7 @@ export function useDoc<T = any>(
         try {
             unsubscribe();
         } catch (e) {
-            // Safe cleanup
+            // Ignore safe cleanup errors
         }
       }
     };
