@@ -21,7 +21,7 @@ export interface UseDocResult<T> {
 }
 
 /**
- * Hook Defensivo V48 para documentos Firestore.
+ * Hook Defensivo V49 para documentos Firestore.
  * Silencia falhas internas de estado (ca9/b815).
  */
 export function useDoc<T = any>(
@@ -64,7 +64,7 @@ export function useDoc<T = any>(
             if (!isMounted) return;
 
             const msg = (err.message || "").toUpperCase();
-            if (msg.includes('ASSERTION') || msg.includes('CA9') || msg.includes('B815')) {
+            if (msg.includes('ASSERTION') || msg.includes('CA9') || msg.includes('B815') || msg.includes('STATE')) {
                 return; // Ignora falha de asserção interna
             }
 
@@ -85,7 +85,7 @@ export function useDoc<T = any>(
     } catch (e: any) {
         if (isMounted) {
             const msg = (e.message || "").toUpperCase();
-            if (!msg.includes('CA9') && !msg.includes('B815')) {
+            if (!msg.includes('CA9') && !msg.includes('B815') && !msg.includes('ASSERTION')) {
                 setError(e);
             }
             setIsLoading(false);

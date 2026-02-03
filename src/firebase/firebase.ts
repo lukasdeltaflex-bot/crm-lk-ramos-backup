@@ -12,7 +12,7 @@ const firebaseConfig = {
   appId: "1:341426752875:web:348f88597e5b9b2057d02e",
 };
 
-// 🛡️ SINGLETON IMUTÁVEL V48: Bloqueio absoluto para evitar colisões ca9/b815
+// 🛡️ SINGLETON IMUTÁVEL V49: Bloqueio absoluto para evitar colisões ca9/b815
 const g = globalThis as any;
 
 if (!g._firebaseApp) {
