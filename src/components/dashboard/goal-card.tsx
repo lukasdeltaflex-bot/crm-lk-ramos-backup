@@ -55,17 +55,17 @@ export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onV
 
   return (
     <Card className={cn(
-        'relative overflow-hidden bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-300 dark:border-blue-700 shadow-lg rounded-2xl w-full', 
+        'relative overflow-hidden bg-green-50 dark:bg-green-900/20 border-2 border-green-300 dark:border-green-700 shadow-lg rounded-2xl w-full', 
         className
     )}>
       <CardContent className="p-8">
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-full bg-white dark:bg-blue-950 shadow-sm border border-blue-100 dark:border-blue-900">
-              <Trophy className="h-5 w-5 text-blue-400" />
+            <div className="p-2.5 rounded-full bg-white dark:bg-green-950 shadow-sm border border-green-100 dark:border-green-900">
+              <Trophy className="h-5 w-5 text-green-500" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-blue-600 dark:text-blue-400 leading-tight">Performance do Mês</h3>
+              <h3 className="text-lg font-bold text-green-700 dark:text-green-400 leading-tight">Performance do Mês</h3>
               <p className="text-[10px] font-bold text-muted-foreground/60 dark:text-muted-foreground/80 uppercase tracking-widest">Meta de Contratos Pagos</p>
             </div>
           </div>
@@ -89,7 +89,7 @@ export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onV
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <div className="px-4 py-1.5 bg-white dark:bg-blue-950 rounded-full border border-blue-100 dark:border-blue-900 text-[11px] font-bold text-blue-600 dark:text-blue-400 shadow-sm">
+                <div className="px-4 py-1.5 bg-white dark:bg-green-950 rounded-full border border-green-100 dark:border-green-900 text-[11px] font-bold text-green-700 dark:text-green-400 shadow-sm">
                   Objetivo: {isPrivacyMode ? '•••••' : formatCurrency(monthlyGoal)}
                 </div>
                 <Button 
@@ -107,17 +107,17 @@ export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onV
 
         <div className="flex items-end justify-between mb-8" onClick={onValueClick}>
           <div className="space-y-2 cursor-pointer">
-            <div className={cn("text-6xl font-normal tracking-tighter text-blue-500 dark:text-blue-400 leading-none")}>
+            <div className={cn("text-6xl font-light tracking-tighter text-green-600 dark:text-green-400 leading-none")}>
               {isPrivacyMode ? '•••••' : formatCurrency(currentProduction)}
             </div>
             <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/80 dark:text-muted-foreground uppercase tracking-wider">
               <TrendingUp className="h-3.5 w-3.5 text-green-500" />
-              Conversão de <span className="text-foreground dark:text-blue-200">{conversionRate.toFixed(1)}%</span> sobre a digitação total.
+              Conversão de <span className="text-foreground dark:text-green-200">{conversionRate.toFixed(1)}%</span> sobre a digitação total.
             </div>
           </div>
 
           <div className="text-right space-y-1">
-            <div className="text-5xl font-normal text-blue-500 dark:text-blue-400 tracking-tighter tabular-nums">
+            <div className="text-5xl font-light text-green-600 dark:text-green-400 tracking-tighter tabular-nums">
               {percentageOfGoal.toFixed(1)}%
             </div>
             <p className="text-[10px] font-bold text-muted-foreground/60 dark:text-muted-foreground/80 uppercase tracking-[0.2em]">Concluído</p>
@@ -125,11 +125,11 @@ export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onV
         </div>
 
         <div className="space-y-4">
-          <Progress value={percentageOfGoal} className="h-2.5 bg-blue-100 dark:bg-blue-900/50" />
+          <Progress value={percentageOfGoal} className="h-2.5 bg-green-100 dark:bg-green-900/50" />
           
           <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 dark:text-muted-foreground/80">
             <p>
-              Faltam <span className={cn("text-blue-500 dark:text-blue-400")}>
+              Faltam <span className={cn("text-green-600 dark:text-green-400")}>
                 {isPrivacyMode ? '•••••' : formatCurrency(Math.max(0, monthlyGoal - currentProduction))}
               </span> para o objetivo.
             </p>
