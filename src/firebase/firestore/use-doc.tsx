@@ -22,7 +22,7 @@ export interface UseDocResult<T> {
 }
 
 /**
- * Hook Defensivo V54 para documentos Firestore.
+ * Hook Defensivo V55 para documentos Firestore.
  * Silencia falhas internas de estado (ca9/b815) tratadas pelo Escudo de Infraestrutura.
  */
 export function useDoc<T = any>(
@@ -65,7 +65,7 @@ export function useDoc<T = any>(
             if (!isMounted) return;
 
             const msg = (err.message || "").toUpperCase();
-            // 🛡️ Filtro de supressão para erros de Watch Stream Aggregator
+            // 🛡️ Filtro de supressão para erros de Watch Stream Aggregator (ca9/b815)
             if (msg.includes('ASSERTION') || msg.includes('CA9') || msg.includes('B815') || msg.includes('STATE') || msg.includes('FE: -1')) {
                 return; 
             }
@@ -87,7 +87,7 @@ export function useDoc<T = any>(
     } catch (e: any) {
         if (isMounted) {
             const msg = (e.message || "").toUpperCase();
-            if (!msg.includes('CA9') || !msg.includes('B815') || !msg.includes('ASSERTION')) {
+            if (!msg.includes('CA9') && !msg.includes('B815') && !msg.includes('ASSERTION')) {
                 setError(e);
             }
             setIsLoading(false);

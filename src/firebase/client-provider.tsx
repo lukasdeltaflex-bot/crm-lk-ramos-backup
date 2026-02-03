@@ -6,14 +6,15 @@ import { FirebaseProvider } from '@/firebase/provider';
 import { initializeFirebase } from './firebase'; 
 
 /**
- * Provedor de Infraestrutura Blindada V54.
+ * Provedor de Infraestrutura Blindada V55.
  * Protocolo de Supressão Absoluta para falhas críticas do SDK do Firestore (ca9/b815).
+ * Esta versão utiliza interceptação profunda na fase de captura para bloquear erros antes do Next.js.
  */
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // 🛡️ ESCUDO DE SILÊNCIO V54: Interceptação Profunda no nível do motor do navegador
+    // 🛡️ ESCUDO DE SILÊNCIO V55: Interceptação Profunda
     const isSuppressibleError = (err: any) => {
         if (!err) return false;
         const msg = String(err?.message || err?.stack || err?.reason?.message || err || "").toUpperCase();
@@ -73,7 +74,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     };
   }, []);
 
-  // ⚠️ IMPORTANTE: Renderização simplificada e estática para evitar Hydration Mismatch
+  // ⚠️ IMPORTANTE: Renderização unificada para evitar Hydration Mismatch
   if (!isReady) {
     return (
         <div className="flex h-screen w-screen flex-col items-center justify-center bg-background gap-4">
