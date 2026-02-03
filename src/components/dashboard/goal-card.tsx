@@ -43,99 +43,70 @@ export function GoalCard({ currentProduction, totalDigitized, isPrivacyMode, onV
     }
   };
 
-  const handleCancel = () => {
-    setEditValue(String(monthlyGoal));
-    setIsEditing(false);
-  };
-
   const percentageOfGoal = Math.min((currentProduction / monthlyGoal) * 100, 100);
   const conversionRate = totalDigitized > 0 ? (currentProduction / totalDigitized) * 100 : 0;
 
-  if (!isClient) return <Card className="h-48 animate-pulse bg-muted rounded-xl w-full" />;
+  if (!isClient) return <Card className="h-40 animate-pulse bg-muted rounded-xl w-full" />;
 
   return (
     <Card className={cn(
-        'relative overflow-hidden bg-green-50 dark:bg-green-900/20 border-2 border-green-300 dark:border-green-700 shadow-lg rounded-2xl w-full', 
+        'relative overflow-hidden bg-green-50/50 dark:bg-green-900/10 border-2 border-green-200 dark:border-green-800 shadow-md rounded-2xl w-full py-4', 
         className
     )}>
       <CardContent className="p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-full bg-white dark:bg-green-950 shadow-sm border border-green-100 dark:border-green-900">
-              <Trophy className="h-4 w-4 text-green-500" />
-            </div>
+            <Trophy className="h-4 w-4 text-green-500" />
             <div>
-              <h3 className="text-base font-bold text-green-700 dark:text-green-400 leading-tight">Performance do Mês</h3>
-              <p className="text-[10px] font-bold text-muted-foreground/60 dark:text-muted-foreground/80 uppercase tracking-widest">Meta de Contratos Pagos</p>
+              <h3 className="text-sm font-bold text-green-700 dark:text-green-400">Performance do Mês</h3>
+              <p className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-widest">Contratos Pagos vs Meta</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {isEditing ? (
-              <div className="flex items-center gap-1 bg-white dark:bg-background p-1 rounded-lg border shadow-sm">
-                <Input
-                  type="number"
-                  value={editValue}
-                  onChange={(e) => setEditValue(e.target.value)}
-                  className="h-7 w-24 text-xs border-none focus-visible:ring-0"
-                  autoFocus
-                />
-                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={handleSave}>
-                  <Check className="h-3 w-3 text-green-500" />
-                </Button>
-                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={handleCancel}>
-                  <X className="h-3 w-3 text-destructive" />
-                </Button>
+          {isEditing ? (
+            <div className="flex items-center gap-1 bg-white p-1 rounded-lg border shadow-sm scale-90 origin-right">
+              <Input
+                type="number"
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                className="h-7 w-20 text-xs border-none"
+                autoFocus
+              />
+              <Button size="icon" variant="ghost" className="h-6 w-6" onClick={handleSave}><Check className="h-3 w-3 text-green-500" /></Button>
+              <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setIsEditing(false)}><X className="h-3 w-3 text-destructive" /></Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <div className="text-[10px] font-bold text-green-700 bg-white/80 px-2 py-0.5 rounded border border-green-100 shadow-sm">
+                Meta: {isPrivacyMode ? '•••••' : formatCurrency(monthlyGoal)}
               </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <div className="px-3 py-1 bg-white dark:bg-green-950 rounded-full border border-green-100 dark:border-green-900 text-[10px] font-bold text-green-700 dark:text-green-400 shadow-sm">
-                  Objetivo: {isPrivacyMode ? '•••••' : formatCurrency(monthlyGoal)}
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-7 w-7 rounded-full opacity-40 hover:opacity-100 transition-opacity bg-white/50 dark:bg-black/40" 
-                  onClick={() => setIsEditing(true)}
-                >
-                  <Pencil className="h-3 w-3 text-muted-foreground" />
-                </Button>
-              </div>
-            )}
-          </div>
+              <Button variant="ghost" size="icon" className="h-6 w-6 opacity-40 hover:opacity-100" onClick={() => setIsEditing(true)}>
+                <Pencil className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
         </div>
 
-        <div className="flex items-end justify-between mb-6" onClick={onValueClick}>
-          <div className="space-y-1 cursor-pointer">
-            <div className={cn("text-5xl font-light tracking-tighter text-green-600 dark:text-green-400 leading-none")}>
+        <div className="flex items-end justify-between mb-4" onClick={onValueClick}>
+          <div className="space-y-0.5 cursor-pointer">
+            <div className="text-4xl font-light tracking-tighter text-green-600 dark:text-green-400">
               {isPrivacyMode ? '•••••' : formatCurrency(currentProduction)}
             </div>
-            <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/80 dark:text-muted-foreground uppercase tracking-wider">
+            <div className="flex items-center gap-1.5 text-[9px] font-bold text-muted-foreground uppercase">
               <TrendingUp className="h-3 w-3 text-green-500" />
-              Conversão de <span className="text-foreground dark:text-green-200">{conversionRate.toFixed(1)}%</span> sobre a digitação total.
+              Conversão: <span className="text-foreground">{conversionRate.toFixed(1)}%</span>
             </div>
           </div>
 
-          <div className="text-right space-y-0.5">
-            <div className="text-4xl font-light text-green-600 dark:text-green-400 tracking-tighter tabular-nums">
+          <div className="text-right">
+            <div className="text-3xl font-light text-green-600 dark:text-green-400 tracking-tighter">
               {percentageOfGoal.toFixed(1)}%
             </div>
-            <p className="text-[10px] font-bold text-muted-foreground/60 dark:text-muted-foreground/80 uppercase tracking-[0.2em]">Concluído</p>
+            <p className="text-[8px] font-bold text-muted-foreground/60 uppercase tracking-widest">Objetivo</p>
           </div>
         </div>
 
-        <div className="space-y-3">
-          <Progress value={percentageOfGoal} className="h-2 bg-green-100 dark:bg-green-900/50" />
-          
-          <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 dark:text-muted-foreground/80">
-            <p>
-              Faltam <span className={cn("text-green-600 dark:text-green-400")}>
-                {isPrivacyMode ? '•••••' : formatCurrency(Math.max(0, monthlyGoal - currentProduction))}
-              </span> para o objetivo.
-            </p>
-            <p>Status: Pago + Saldo Pago</p>
-          </div>
-        </div>
+        <Progress value={percentageOfGoal} className="h-1.5 bg-green-100 dark:bg-green-900/30" />
       </CardContent>
     </Card>
   );

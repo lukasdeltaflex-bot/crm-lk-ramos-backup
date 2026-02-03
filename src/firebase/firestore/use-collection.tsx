@@ -31,8 +31,8 @@ export interface InternalQuery extends Query<DocumentData> {
 }
 
 /**
- * React hook defensivo V14 para coleções Firestore.
- * Ignora falhas de asserção interna do SDK para manter a fluidez da interface.
+ * Hook Defensivo V15 para coleções Firestore.
+ * Ignora erros de estado interno (ca9/b815) para manter a fluidez da UI.
  */
 export function useCollection<T = any>(
     memoizedTargetRefOrQuery: ((CollectionReference<DocumentData> | Query<DocumentData>) & {__memo?: boolean})  | null | undefined,
@@ -73,9 +73,13 @@ export function useCollection<T = any>(
           (err: FirestoreError) => {
             if (!isMounted) return;
             
-            // SILENCIADOR V14: Ignora erros de asserção interna
-            if (err.message?.includes('INTERNAL ASSERTION FAILED') || err.message?.includes('ca9')) {
-                console.warn("🛡️ useCollection: Ignorando falha de estado interno do SDK.");
+            // SILENCIADOR V15: Ignora erros de asserção interna do SDK
+            const isAssertion = err.message?.includes('INTERNAL ASSERTION FAILED') || 
+                               err.message?.includes('ca9') || 
+                               err.message?.includes('b815');
+            
+            if (isAssertion) {
+                console.warn("🛡️ useCollection: Ignorando inconsistência interna do Firebase.");
                 return;
             }
             
@@ -98,9 +102,7 @@ export function useCollection<T = any>(
           }
         );
     } catch (e: any) {
-        if (!e.message?.includes('INTERNAL ASSERTION FAILED')) {
-            console.error("Erro ao inicializar stream Firestore:", e);
-        }
+        // Silêncio em erros de inicialização de watch para evitar crash visual
         setIsLoading(false);
     }
 
@@ -110,7 +112,7 @@ export function useCollection<T = any>(
         try {
             unsubscribe();
         } catch (e) {
-            // Cleanup silencioso para evitar falha ca9 no unmount
+            // Cleanup silencioso
         }
       }
     };

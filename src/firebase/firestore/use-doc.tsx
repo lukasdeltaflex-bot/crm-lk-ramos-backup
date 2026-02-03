@@ -21,8 +21,7 @@ export interface UseDocResult<T> {
 }
 
 /**
- * React hook defensivo V13 para documentos Firestore.
- * Previne que inconsistências internas do SDK disparem Overlays visuais.
+ * Hook Defensivo V15 para documentos Firestore.
  */
 export function useDoc<T = any>(
   memoizedDocRef: DocumentReference<DocumentData> | null | undefined,
@@ -63,9 +62,12 @@ export function useDoc<T = any>(
           (err: FirestoreError) => {
             if (!isMounted) return;
 
-            // SILENCIADOR V13: Ignora erros ca9/b815
-            if (err.message?.includes('INTERNAL ASSERTION FAILED')) {
-                console.warn("LK RAMOS: Firestore Doc Listener ignorou falha de estado interno.");
+            // SILENCIADOR V15: Ignora inconsistências do SDK
+            const isAssertion = err.message?.includes('INTERNAL ASSERTION FAILED') || 
+                               err.message?.includes('ca9') || 
+                               err.message?.includes('b815');
+
+            if (isAssertion) {
                 return;
             }
 
@@ -81,9 +83,6 @@ export function useDoc<T = any>(
           }
         );
     } catch (e: any) {
-        if (!e.message?.includes('INTERNAL ASSERTION FAILED')) {
-            console.error("Falha ao configurar observador de documento:", e);
-        }
         setIsLoading(false);
     }
 

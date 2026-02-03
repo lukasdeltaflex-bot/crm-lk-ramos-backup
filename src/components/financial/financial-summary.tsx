@@ -83,7 +83,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     });
     const expectedAmount = expectedCommissionProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
     
-    // REGRA DE OURO: Todas as porcentagens baseadas no Total de Comissões (Digitado no Mês)
+    // REGRA DE OURO: Todas as porcentagens baseadas no Total de Comissões (Digitado no Mês Vigente)
     const getPercentage = (value: number) => {
         if (totalPotentialCommission === 0) return 0;
         return (value / totalPotentialCommission) * 100;
@@ -142,20 +142,18 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
   ];
 
   return (
-    <div className='space-y-4'>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 print:gap-2">
-           {cards.map(card => (
-                <div key={card.title} className="cursor-pointer" onClick={() => onShowDetails(card.title, card.proposals)}>
-                    <StatsCard
-                        title={card.title}
-                        value={isPrivacyMode ? privacyPlaceholder : card.value}
-                        icon={card.icon}
-                        description={card.description}
-                        percentage={card.percentage}
-                    />
-                </div>
-            ))}
-        </div>
+    <div className='grid gap-3 md:grid-cols-2 lg:grid-cols-4 print:grid-cols-4'>
+        {cards.map(card => (
+            <div key={card.title} className="cursor-pointer" onClick={() => onShowDetails(card.title, card.proposals)}>
+                <StatsCard
+                    title={card.title}
+                    value={isPrivacyMode ? privacyPlaceholder : card.value}
+                    icon={card.icon}
+                    description={card.description}
+                    percentage={card.percentage}
+                />
+            </div>
+        ))}
     </div>
   );
 }

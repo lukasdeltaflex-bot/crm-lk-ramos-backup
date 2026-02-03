@@ -18,9 +18,8 @@ interface StatsCardProps {
 }
 
 /**
- * StatsCard Premium Executivo LK RAMOS
- * Fonte fina (font-light), elegante e colorida conforme o status.
- * Contornos coloridos e preenchimento suave.
+ * StatsCard Premium Executivo V15
+ * Tipografia font-light elegante, cores dinâmicas e dimensões compactas.
  */
 export function StatsCard({ title, value, icon: Icon, description, percentage, className, valueClassName }: StatsCardProps) {
   
@@ -30,37 +29,42 @@ export function StatsCard({ title, value, icon: Icon, description, percentage, c
     // ORANGE: Saldo Pago / Saldo a Receber
     if (t.includes('saldo pago') || t.includes('saldo a receber')) 
         return {
-            card: 'border-orange-300 dark:border-orange-800 bg-orange-50/50 dark:bg-orange-900/20',
+            card: 'border-orange-200 dark:border-orange-800 bg-orange-50/30 dark:bg-orange-900/10',
             text: 'text-orange-600 dark:text-orange-400'
         };
 
+    // SLATE: Produção / Total Digitado
     if (t.includes('total') || t.includes('digitado') || t.includes('comissões')) 
         return {
-            card: 'border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/20',
+            card: 'border-slate-200 dark:border-slate-700 bg-slate-50/30 dark:bg-slate-900/10',
             text: 'text-slate-600 dark:text-slate-300'
         };
     
+    // GREEN: Recebida / Paga / Pago
     if (t.includes('recebida') || t.includes('paga') || t.includes('pago')) 
         return {
-            card: 'border-green-300 dark:border-green-800 bg-green-50/50 dark:bg-green-900/20',
+            card: 'border-green-200 dark:border-green-800 bg-green-50/30 dark:bg-green-900/10',
             text: 'text-green-600 dark:text-green-400'
         };
     
+    // BLUE: Aguardando / Em Andamento
     if (t.includes('comissão esperada') || t.includes('aguardando') || t.includes('andamento')) 
         return {
-            card: 'border-blue-300 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/20',
+            card: 'border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-900/10',
             text: 'text-blue-600 dark:text-blue-400'
         };
     
+    // PURPLE: Pendente
     if (t.includes('pendente')) 
         return {
-            card: 'border-purple-300 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-900/20',
+            card: 'border-purple-200 dark:border-purple-800 bg-purple-50/30 dark:bg-purple-900/10',
             text: 'text-purple-600 dark:text-purple-400'
         };
     
+    // RED: Reprovado
     if (t.includes('reprovado')) 
         return {
-            card: 'border-red-300 dark:border-red-800 bg-red-50/50 dark:bg-red-900/20',
+            card: 'border-red-200 dark:border-red-800 bg-red-50/30 dark:bg-red-900/10',
             text: 'text-red-600 dark:text-red-400'
         };
 
@@ -71,39 +75,35 @@ export function StatsCard({ title, value, icon: Icon, description, percentage, c
 
   return (
     <Card className={cn(
-        'hover:shadow-lg transition-all group relative overflow-hidden shadow-md rounded-xl h-full min-h-[140px] flex flex-col border-2', 
+        'hover:shadow-md transition-all group relative overflow-hidden rounded-xl h-full flex flex-col border-2 py-3 px-4', 
         theme.card,
         className
     )}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1.5 print:pb-1">
-        <CardTitle className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/80 group-hover:text-primary transition-colors print:text-[8px]">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 mb-2">
+        <CardTitle className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/70 group-hover:text-primary transition-colors">
             {title}
         </CardTitle>
-        <div className="p-1.5 rounded-lg bg-background/50 dark:bg-black/20 shadow-sm border border-border/10">
-            <Icon className={cn("h-3.5 w-3.5 opacity-80 group-hover:opacity-100 transition-opacity", theme.text)} />
-        </div>
+        <Icon className={cn("h-3.5 w-3.5 opacity-60", theme.text)} />
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col justify-between print:pt-1">
+      <CardContent className="flex-1 flex flex-col justify-between p-0">
         <div className="flex items-baseline justify-between gap-2">
-            <div className={cn("text-3xl font-light tracking-tighter print:text-lg", theme.text, valueClassName)}>
+            <div className={cn("text-2xl font-light tracking-tighter", theme.text, valueClassName)}>
                 {value}
             </div>
             {percentage !== undefined && (
-                <div className="text-[10px] font-bold bg-background/80 dark:bg-black/40 px-2 py-0.5 rounded-full border border-border/50 shadow-sm text-primary">
+                <div className="text-[9px] font-bold bg-background/60 px-1.5 py-0.5 rounded border border-border/30 text-primary">
                     {percentage.toFixed(1).replace('.', ',')}%
                 </div>
             )}
         </div>
         
-        <div className="mt-2 border-t pt-1.5 border-border/30 min-h-[20px]">
-            {description ? (
-                <p className="text-[9px] font-bold text-muted-foreground/60 mt-0 uppercase tracking-tighter">
+        {description && (
+            <div className="mt-2 border-t pt-1.5 border-border/20">
+                <p className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-tighter">
                     {description}
                 </p>
-            ) : (
-                <div className="h-[12px] w-full" />
-            )}
-        </div>
+            </div>
+        )}
       </CardContent>
     </Card>
   );
