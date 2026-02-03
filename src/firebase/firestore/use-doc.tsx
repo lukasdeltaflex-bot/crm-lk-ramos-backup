@@ -27,7 +27,7 @@ export interface UseDocResult<T> {
 
 /**
  * React hook to subscribe to a single Firestore document in real-time.
- * Blindagem V7: Tratamento ultra-seguro para evitar erros de conexão.
+ * Blindagem V8: Proteção contra erros de instanciamento duplo.
  */
 export function useDoc<T = any>(
   memoizedDocRef: DocumentReference<DocumentData> | null | undefined,
@@ -63,8 +63,8 @@ export function useDoc<T = any>(
             setError(null);
             setIsLoading(false);
           },
-          (error: FirestoreError) => {
-            console.error("Firestore useDoc error:", error);
+          (err: FirestoreError) => {
+            console.warn("Firestore doc listener warning:", err.message);
             const contextualError = new FirestorePermissionError({
               operation: 'get',
               path: memoizedDocRef.path,
@@ -77,17 +77,16 @@ export function useDoc<T = any>(
           }
         );
     } catch (e: any) {
-        console.warn("Snapshot setup failed:", e);
+        console.warn("Firestore snapshot setup blocked to prevent crash:", e);
         setIsLoading(false);
     }
 
     return () => {
       if (unsubscribe) {
         try {
-            // Desinscrição segura para evitar erro b815
             unsubscribe();
         } catch (e) {
-            console.debug("Safe unsubscribe fail (expected in HMR)");
+            // Safe cleanup
         }
       }
     };

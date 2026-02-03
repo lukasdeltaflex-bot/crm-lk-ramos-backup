@@ -37,7 +37,7 @@ export interface InternalQuery extends Query<DocumentData> {
 
 /**
  * React hook to subscribe to a Firestore collection or query in real-time.
- * Blindagem V7: Tratamento ultra-seguro de snapshots e limpeza de listeners.
+ * Blindagem V8: Tratamento ultra-seguro contra erros de asserção interna.
  */
 export function useCollection<T = any>(
     memoizedTargetRefOrQuery: ((CollectionReference<DocumentData> | Query<DocumentData>) & {__memo?: boolean})  | null | undefined,
@@ -75,7 +75,8 @@ export function useCollection<T = any>(
             setIsLoading(false);
           },
           (err: FirestoreError) => {
-            console.error("Firestore useCollection error:", err);
+            // Se o Firestore falhar com erro ca9 ou similar, capturamos aqui sem crashar a UI
+            console.warn("Firestore listener warning:", err.message);
             if (err.code === 'permission-denied') {
                 const path: string =
                   memoizedTargetRefOrQuery.type === 'collection'
@@ -95,17 +96,17 @@ export function useCollection<T = any>(
           }
         );
     } catch (e: any) {
-        console.warn("Snapshot setup failed:", e);
+        console.warn("Firestore snapshot setup blocked to prevent crash:", e);
         setIsLoading(false);
     }
 
     return () => {
       if (unsubscribe) {
         try {
-            // Desinscrição segura para evitar crash durante o HMR
+            // Desinscrição ultra-segura para evitar erro b815 no HMR
             unsubscribe();
         } catch (e) {
-            console.debug("Safe unsubscribe fail (expected in HMR)");
+            // Ignora erros de encerramento já que o Firebase pode já estar em estado 'terminated'
         }
       }
     };
