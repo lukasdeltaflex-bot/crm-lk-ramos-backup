@@ -22,7 +22,7 @@ const globalForFirebase = globalThis as unknown as {
 
 const app = globalForFirebase.app || (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp());
 
-// Inicializa o Firestore com Long Polling obrigatório para evitar erros de WebSocket em Workstations
+// Inicializa o Firestore com Long Polling obrigatório para evitar erros de WebSocket em Workstations (Unexpected state ID: ca9)
 const db = globalForFirebase.db || initializeFirestore(app, {
     cacheSizeBytes: CACHE_SIZE_UNLIMITED,
     experimentalForceLongPolling: true, 
