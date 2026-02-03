@@ -135,7 +135,6 @@ export default function DashboardPage() {
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
 
-    // Pipeline acumulado: propostas digitadas desde o mês passado que ainda não foram resolvidas
     const startOfPipeline = startOfMonth(subMonths(fromDate, 1));
 
     const getSum = (list: Proposal[]) => list.reduce((sum, p) => sum + (p.grossAmount || 0), 0);
@@ -148,6 +147,7 @@ export default function DashboardPage() {
     });
 
     // 2. Propostas PAGAS no período (Lógica solicitada: Data de Pagamento ao Cliente)
+    // Filtramos apenas pelo status e data de pagamento, ignorando a data de digitação
     const paidInPeriod = proposals.filter(p => {
         if (p.status !== 'Pago' && p.status !== 'Saldo Pago') return false;
         if (!p.datePaidToClient) return false;
@@ -155,10 +155,11 @@ export default function DashboardPage() {
         return d >= fromDate && d <= effectiveToDate;
     });
 
-    // 3. Propostas acumuladas para cards de pipeline
+    // 3. Propostas acumuladas para cards de pipeline (Desde o mês passado para visibilidade de esteira)
     const accumulatedProposals = proposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
+        // Mantemos visibilidade de esteira acumulada (digitados desde o mês anterior que ainda não resolveram)
         return d >= startOfPipeline && d <= effectiveToDate;
     });
 
