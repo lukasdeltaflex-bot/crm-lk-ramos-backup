@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Info, Copy, Printer, ChevronsUpDown, Check, Download, FolderLock } from 'lucide-react';
+import { Info, Copy, Printer, ChevronsUpDown, Check, Download, FolderLock, Loader2 } from 'lucide-react';
 import { format, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -112,6 +112,7 @@ interface ProposalFormProps {
   onOpenCustomerSearch: () => void;
   selectedCustomerFromSearch: Customer | null;
   onCustomerSearchSelectionHandled: () => void;
+  isSaving?: boolean;
 }
 
 const handleDateMask = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -162,7 +163,8 @@ export function ProposalForm({
     sheetMode,
     onOpenCustomerSearch,
     selectedCustomerFromSearch,
-    onCustomerSearchSelectionHandled
+    onCustomerSearchSelectionHandled,
+    isSaving = false
 }: ProposalFormProps) {
   const { user } = useUser();
   const firestore = useFirestore();
@@ -180,7 +182,7 @@ export function ProposalForm({
 
   useEffect(() => {
     if (firestore && !proposal?.id) {
-      // Use 'loanProposals' here to match rules
+      // Usando 'loanProposals' para consistência com as regras de segurança
       setTempProposalId(doc(collection(firestore, 'loanProposals')).id);
     }
   }, [firestore, proposal]);
@@ -346,7 +348,7 @@ export function ProposalForm({
                                 type="button"
                                 variant="outline"
                                 onClick={onOpenCustomerSearch}
-                                disabled={isReadOnly}
+                                disabled={isReadOnly || isSaving}
                             >
                                 {field.value ? 'Trocar' : 'Selecionar'} Cliente
                             </Button>
@@ -387,7 +389,7 @@ export function ProposalForm({
                 render={({ field }) => (
                 <FormItem>
                     <FormLabel>Produto</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly || isSaving}>
                     <FormControl>
                         <SelectTrigger>
                         <SelectValue placeholder="Selecione o produto" />
@@ -422,7 +424,7 @@ export function ProposalForm({
                         <Input
                           placeholder="Digite o número da proposta"
                           {...field}
-                          readOnly={isReadOnly && sheetMode === 'edit'}
+                          readOnly={(isReadOnly && sheetMode === 'edit') || isSaving}
                           value={field.value || ''}
                         />
                       </FormControl>
@@ -440,7 +442,7 @@ export function ProposalForm({
                         <Input
                           placeholder="Tabela A"
                           {...field}
-                          readOnly={isReadOnly}
+                          readOnly={isReadOnly || isSaving}
                           value={field.value || ''}
                         />
                       </FormControl>
@@ -457,7 +459,7 @@ export function ProposalForm({
                     <FormItem>
                       <FormLabel>Nº do Benefício</FormLabel>
                       {selectedCustomer && selectedCustomer.benefits && selectedCustomer.benefits.length > 0 ? (
-                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value || ''} disabled={isReadOnly}>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value || ''} disabled={isReadOnly || isSaving}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione um benefício..." />
@@ -477,9 +479,9 @@ export function ProposalForm({
                           <Input
                             placeholder={selectedCustomerId ? "Benefício não cadastrado (digitação manual)" : "Selecione um cliente"}
                             {...field}
-                            readOnly={isReadOnly}
+                            readOnly={isReadOnly || isSaving}
                             value={field.value || ''}
-                            disabled={isReadOnly || !selectedCustomerId}
+                            disabled={isReadOnly || !selectedCustomerId || isSaving}
                           />
                         </FormControl>
                       )}
@@ -505,7 +507,7 @@ export function ProposalForm({
                           type="number"
                           placeholder="84"
                           {...field}
-                          readOnly={isReadOnly}
+                          readOnly={isReadOnly || isSaving}
                           value={field.value || ''}
                         />
                       </FormControl>
@@ -525,7 +527,7 @@ export function ProposalForm({
                           step="0.01"
                           placeholder="1.8"
                           {...field}
-                          readOnly={isReadOnly}
+                          readOnly={isReadOnly || isSaving}
                           value={field.value || ''}
                         />
                       </FormControl>
@@ -548,7 +550,7 @@ export function ProposalForm({
                         <FormItem>
                             <FormLabel>Valor da Parcela</FormLabel>
                             <FormControl>
-                            <Input type="number" step="0.01" placeholder="450.50" {...field} readOnly={isReadOnly} value={field.value || ''} />
+                            <Input type="number" step="0.01" placeholder="450.50" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -561,7 +563,7 @@ export function ProposalForm({
                         <FormItem>
                             <FormLabel>Valor Líquido</FormLabel>
                             <FormControl>
-                            <Input type="number" step="0.01" placeholder="25000" {...field} readOnly={isReadOnly} value={field.value || ''} />
+                            <Input type="number" step="0.01" placeholder="25000" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -574,7 +576,7 @@ export function ProposalForm({
                         <FormItem>
                             <FormLabel>Valor Bruto</FormLabel>
                             <FormControl>
-                            <Input type="number" step="0.01" placeholder="30000" {...field} readOnly={isReadOnly} value={field.value || ''} />
+                            <Input type="number" step="0.01" placeholder="30000" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -599,7 +601,7 @@ export function ProposalForm({
                             defaultValue={field.value}
                             value={field.value}
                             className="flex items-center space-x-4"
-                            disabled={isReadOnly}
+                            disabled={isReadOnly || isSaving}
                             >
                             <FormItem className="flex items-center space-x-2 space-y-0">
                                 <FormControl>
@@ -631,7 +633,7 @@ export function ProposalForm({
                         <FormItem>
                             <FormLabel>Comissão (%)</FormLabel>
                             <FormControl>
-                            <Input type="number" step="0.01" placeholder="5" {...field} readOnly={isReadOnly} value={field.value || ''} />
+                            <Input type="number" step="0.01" placeholder="5" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -644,7 +646,7 @@ export function ProposalForm({
                         <FormItem>
                             <FormLabel>Comissão (R$)</FormLabel>
                             <FormControl>
-                            <Input type="number" step="0.01" placeholder="1500" {...field} readOnly={isReadOnly} value={field.value || ''} />
+                            <Input type="number" step="0.01" placeholder="1500" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -664,7 +666,7 @@ export function ProposalForm({
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>Banco Digitado</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly}>
+                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly || isSaving}>
                                 <FormControl>
                                     <SelectTrigger>
                                     <SelectValue placeholder="Selecione um banco" />
@@ -689,7 +691,7 @@ export function ProposalForm({
                             render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Banco de Origem</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value || ''} value={field.value || ''} disabled={isReadOnly}>
+                                <Select onValueChange={field.onChange} defaultValue={field.value || ''} value={field.value || ''} disabled={isReadOnly || isSaving}>
                                 <FormControl>
                                     <SelectTrigger>
                                     <SelectValue placeholder="Selecione um banco" />
@@ -717,7 +719,7 @@ export function ProposalForm({
                         <FormItem>
                             <FormLabel>Promotora</FormLabel>
                             <FormControl>
-                            <Input placeholder="Promotora X" {...field} readOnly={isReadOnly} value={field.value || ''} />
+                            <Input placeholder="Promotora X" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -730,7 +732,7 @@ export function ProposalForm({
                         <FormItem>
                             <FormLabel>Operador</FormLabel>
                             <FormControl>
-                            <Input placeholder="Nome do Operador" {...field} readOnly={isReadOnly} value={field.value || ''} />
+                            <Input placeholder="Nome do Operador" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -750,7 +752,7 @@ export function ProposalForm({
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>Status da Proposta</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly}>
+                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly || isSaving}>
                             <FormControl>
                                 <SelectTrigger>
                                 <SelectValue placeholder="Selecione o status" />
@@ -774,7 +776,7 @@ export function ProposalForm({
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>Órgão Aprovador</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly}>
+                                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly || isSaving}>
                                 <FormControl>
                                     <SelectTrigger>
                                     <SelectValue placeholder="Selecione o órgão" />
@@ -794,21 +796,21 @@ export function ProposalForm({
                     />
                  </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
-                    <MaskedDatePicker name="dateDigitized" label="Data de Digitação" control={form.control} isReadOnly={isReadOnly} />
+                    <MaskedDatePicker name="dateDigitized" label="Data de Digitação" control={form.control} isReadOnly={isReadOnly || isSaving} />
                     {product === 'Portabilidade' ? (
                         <>
-                            <MaskedDatePicker name="debtBalanceArrivalDate" label="Chegada Saldo Devedor" control={form.control} isReadOnly={isReadOnly} />
-                            <MaskedDatePicker name="dateApproved" label="Data de Averbação" control={form.control} isReadOnly={isReadOnly} />
+                            <MaskedDatePicker name="debtBalanceArrivalDate" label="Chegada Saldo Devedor" control={form.control} isReadOnly={isReadOnly || isSaving} />
+                            <MaskedDatePicker name="dateApproved" label="Data de Averbação" control={form.control} isReadOnly={isReadOnly || isSaving} />
                         </>
                     ) : (product === 'Refin Port') ? (
                         <>
-                            <MaskedDatePicker name="dateApproved" label="Data de Averbação" control={form.control} isReadOnly={isReadOnly} />
-                            <MaskedDatePicker name="datePaidToClient" label="Data de Pagamento ao Cliente" control={form.control} isReadOnly={isReadOnly} />
+                            <MaskedDatePicker name="dateApproved" label="Data de Averbação" control={form.control} isReadOnly={isReadOnly || isSaving} />
+                            <MaskedDatePicker name="datePaidToClient" label="Data de Pagamento ao Cliente" control={form.control} isReadOnly={isReadOnly || isSaving} />
                         </>
                     ) : (
                         <>
-                            <MaskedDatePicker name="dateApproved" label="Data de Averbação" control={form.control} isReadOnly={isReadOnly} />
-                            <MaskedDatePicker name="datePaidToClient" label="Data de Pagamento ao Cliente" control={form.control} isReadOnly={isReadOnly} />
+                            <MaskedDatePicker name="dateApproved" label="Data de Averbação" control={form.control} isReadOnly={isReadOnly || isSaving} />
+                            <MaskedDatePicker name="datePaidToClient" label="Data de Pagamento ao Cliente" control={form.control} isReadOnly={isReadOnly || isSaving} />
                         </>
                     )}
                  </div>
@@ -832,7 +834,7 @@ export function ProposalForm({
                         proposalId={proposalId!}
                         initialAttachments={form.getValues('attachments') || []}
                         onAttachmentsChange={handleAttachmentsChange}
-                        isReadOnly={isReadOnly || isAttachmentSectionDisabled}
+                        isReadOnly={isReadOnly || isAttachmentSectionDisabled || isSaving}
                     />
                 )}
             </div>
@@ -842,10 +844,10 @@ export function ProposalForm({
             <div className="flex items-center gap-2">
                 {sheetMode !== 'new' && proposal && (
                     <>
-                        <Button type="button" variant="outline" onClick={() => onDuplicate(proposal)}>
+                        <Button type="button" variant="outline" onClick={() => onDuplicate(proposal)} disabled={isSaving}>
                             <Copy /> Duplicar Proposta
                         </Button>
-                        <Button type="button" variant="outline" onClick={() => window.print()}>
+                        <Button type="button" variant="outline" onClick={() => window.print()} disabled={isSaving}>
                             <Printer /> Imprimir
                         </Button>
                     </>
@@ -853,7 +855,13 @@ export function ProposalForm({
             </div>
 
             {!isReadOnly && (
-                <Button type="submit">Salvar Proposta</Button>
+                <Button type="submit" disabled={isSaving}>
+                    {isSaving ? (
+                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...</>
+                    ) : (
+                        'Salvar Proposta'
+                    )}
+                </Button>
             )}
         </div>
       </form>

@@ -80,6 +80,7 @@ function ProposalsPageContent() {
   const [sheetMode, setSheetMode] = React.useState<'new' | 'edit' | 'view'>('new');
   const [rowSelection, setRowSelection] = React.useState({});
   const [defaultValues, setDefaultValues] = React.useState<ProposalFormData | undefined>(undefined);
+  const [isSaving, setIsSaving] = React.useState(false);
   const tableRef = React.useRef<ProposalsDataTableHandle>(null);
   const [hasOpenedFromParam, setHasOpenedFromParam] = React.useState(false);
   
@@ -470,11 +471,11 @@ function ProposalsPageContent() {
         }
     };
     
+    setIsSaving(true);
     try {
         const dateApproved = toISO(data.dateApproved);
         let commissionStatus = data.commissionStatus;
 
-        // Regra Automática de Status de Comissão
         const isEligibleForSaldoAReceber = 
             data.status === 'Pago' ||
             data.status === 'Saldo Pago' ||
@@ -493,11 +494,11 @@ function ProposalsPageContent() {
             datePaidToClient: toISO(data.datePaidToClient),
             debtBalanceArrivalDate: toISO(data.debtBalanceArrivalDate),
             commissionStatus: commissionStatus || 'Pendente',
-            amountPaid: data.amountPaid || 0,
-            commissionValue: data.commissionValue || 0,
-            grossAmount: data.grossAmount || 0,
-            netAmount: data.netAmount || 0,
-            installmentAmount: data.installmentAmount || 0,
+            amountPaid: Number(data.amountPaid) || 0,
+            commissionValue: Number(data.commissionValue) || 0,
+            grossAmount: Number(data.grossAmount) || 0,
+            netAmount: Number(data.netAmount) || 0,
+            installmentAmount: Number(data.installmentAmount) || 0,
             term: Number(data.term) || 0,
             interestRate: Number(data.interestRate) || 0,
             commissionPercentage: Number(data.commissionPercentage) || 0,
@@ -516,6 +517,8 @@ function ProposalsPageContent() {
     } catch (error) {
       console.error('Error saving proposal:', error);
       toast({ variant: 'destructive', title: 'Falha Técnica', description: 'Não foi possível salvar os dados no banco.' });
+    } finally {
+        setIsSaving(false);
     }
   };
 
@@ -603,6 +606,7 @@ function ProposalsPageContent() {
             onOpenCustomerSearch={() => setIsCustomerSearchOpen(true)}
             selectedCustomerFromSearch={newlySelectedCustomer}
             onCustomerSearchSelectionHandled={() => setNewlySelectedCustomer(null)}
+            isSaving={isSaving}
           />
         </DialogContent>
       </Dialog>
