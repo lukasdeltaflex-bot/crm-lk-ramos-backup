@@ -22,7 +22,7 @@ export interface UseCollectionResult<T> {
 }
 
 /**
- * Hook Defensivo V36 para coleções Firestore.
+ * Hook Defensivo V37 para coleções Firestore.
  * Silencia inconsistências de asserção interna do SDK (ca9/b815).
  */
 export function useCollection<T = any>(
@@ -65,7 +65,7 @@ export function useCollection<T = any>(
             if (!isMounted) return;
             
             const msg = (err.message || "").toUpperCase();
-            // 🛡️ Filtro de erro técnico V36: Supressão de Falhas de Asserção
+            // 🛡️ Filtro de erro técnico V37: Supressão de Falhas de Asserção
             if (msg.includes('ASSERTION') || msg.includes('CA9') || msg.includes('B815') || msg.includes('FE: -1')) {
                 return; 
             }
@@ -89,7 +89,15 @@ export function useCollection<T = any>(
           }
         );
     } catch (e: any) {
-        if (isMounted) setIsLoading(false);
+        if (isMounted) {
+            const msg = (e.message || "").toUpperCase();
+            if (msg.includes('ASSERTION') || msg.includes('CA9') || msg.includes('B815')) {
+                // Silencia erros de asserção na criação do listener
+            } else {
+                setError(e);
+            }
+            setIsLoading(false);
+        }
     }
 
     return () => {

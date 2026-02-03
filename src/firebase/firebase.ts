@@ -12,11 +12,11 @@ const firebaseConfig = {
   appId: "1:341426752875:web:348f88597e5b9b2057d02e",
 };
 
-// 🛡️ SINGLETON ABSOLUTO V36: Bloqueio imutável no globalThis para evitar conflitos de HMR
+// 🛡️ SINGLETON ABSOLUTO V37: Bloqueio imutável no globalThis para evitar conflitos de HMR
 const g = globalThis as any;
 
 if (!g._firebaseApp) {
-    g._firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+    g._firebaseApp = initializeApp(firebaseConfig);
 }
 const app: FirebaseApp = g._firebaseApp;
 
@@ -24,7 +24,7 @@ if (!g._firebaseDb) {
     try {
         g._firebaseDb = initializeFirestore(app, {
             cacheSizeBytes: CACHE_SIZE_UNLIMITED,
-            experimentalForceLongPolling: true, // Vital para estabilidade em ambientes de nuvem/proxy
+            experimentalForceLongPolling: true,
         });
     } catch (e) {
         g._firebaseDb = getFirestore(app);
