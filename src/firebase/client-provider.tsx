@@ -6,14 +6,14 @@ import { initializeFirebase } from './firebase';
 import { LoaderCircle } from 'lucide-react';
 
 /**
- * Provedor Blindado V37: Protocolo de Supressão Total de Falhas de Asserção do Firestore.
+ * Provedor Blindado V38: Protocolo de Supressão Total de Falhas de Asserção do Firestore.
  * Intercepta e anula erros fatais técnicos (ca9/b815) antes que eles causem o crash da aplicação.
  */
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // 🛡️ ESCUDO DE SILÊNCIO V37: Interceptação Global Absoluta
+    // 🛡️ ESCUDO DE SILÊNCIO V38: Interceptação Global Absoluta
     const isSuppressibleError = (msg: string) => {
         if (!msg) return false;
         const normalized = String(msg).toUpperCase();
@@ -53,7 +53,8 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
         initializeFirebase();
     } catch (error) {}
 
-    const timer = setTimeout(() => setIsReady(true), 50);
+    // Delay mínimo para garantir estabilização do motor
+    const timer = setTimeout(() => setIsReady(true), 10);
 
     return () => {
       window.removeEventListener('error', handleGlobalError, true);
@@ -63,6 +64,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     };
   }, []);
 
+  // UI de Carregamento Estática (Safe Hydration)
   if (!isReady) {
     return (
         <div className="flex h-screen w-screen flex-col items-center justify-center bg-background gap-4">
