@@ -12,49 +12,36 @@ const firebaseConfig = {
   appId: "1:341426752875:web:348f88597e5b9b2057d02e",
 };
 
-// Singleton Blindado V20: Bloqueio absoluto contra erros de estado ca9/b815
-const globalForFirebase = globalThis as unknown as {
-  app: FirebaseApp | undefined;
-  auth: Auth | undefined;
-  db: Firestore | undefined;
-  storage: FirebaseStorage | undefined;
-};
+// 🛡️ SINGLETON BLINDADO V21: Proteção absoluta contra erros de estado ca9/b815
+// Usamos o globalThis para garantir que as instâncias persistam entre os Hot Reloads do Next.js
+const g = globalThis as any;
 
-// Inicialização segura da App
-const app = globalForFirebase.app || (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp());
+const app = g._firebaseApp || (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp());
+if (process.env.NODE_ENV !== "production") g._firebaseApp = app;
 
 let db: Firestore;
-if (globalForFirebase.db) {
-    db = globalForFirebase.db;
+if (g._firebaseDb) {
+    db = g._firebaseDb;
 } else {
     try {
-        // 🛡️ PROTOCOLO V20: Forçamos Long Polling e desativamos auto-detect para estabilidade total
+        // Forçamos Long Polling e desativamos auto-detect para estabilidade total em ambientes Cloud
         db = initializeFirestore(app, {
             cacheSizeBytes: CACHE_SIZE_UNLIMITED,
             experimentalForceLongPolling: true,
             experimentalAutoDetectLongPolling: false,
         });
     } catch (e) {
-        // Fallback redundante para evitar crash na reinicialização do Next.js
         try {
             db = getExistingFirestore(app);
         } catch (inner) {
             db = getFirestore(app);
         }
     }
-    globalForFirebase.db = db;
+    g._firebaseDb = db;
 }
 
-const auth = globalForFirebase.auth || getAuth(app);
-const storage = globalForFirebase.storage || getStorage(app);
-
-// Persistência vitalícia no objeto global para ambientes de desenvolvimento
-if (process.env.NODE_ENV !== "production") {
-    globalForFirebase.app = app;
-    globalForFirebase.auth = auth;
-    globalForFirebase.db = db;
-    globalForFirebase.storage = storage;
-}
+const auth = g._firebaseAuth || (g._firebaseAuth = getAuth(app));
+const storage = g._firebaseStorage || (g._firebaseStorage = getStorage(app));
 
 export { app, auth, db, storage };
 

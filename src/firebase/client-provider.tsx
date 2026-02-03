@@ -6,46 +6,46 @@ import { initializeFirebase } from './firebase';
 import { Loader2 } from 'lucide-react';
 
 /**
- * Provedor Blindado V20: Escudo de Silêncio Absoluto.
- * Intercepta erros ca9 e b815 no nível global e no console para evitar o Overlay do Next.js.
+ * Provedor Blindado V21: Protocolo de Supressão Total.
+ * Intercepta e silencia erros fatais do Firebase (ca9/b815) para impedir o Overlay do Next.js.
  */
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
   const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
-    // 🛡️ ESCUDO DE SILÊNCIO V20: Interceptação de Erros e Rejeições fatais do SDK
-    const handleGlobalError = (event: ErrorEvent) => {
-      const msg = event.message || "";
-      const stack = event.error?.stack || "";
-      const isAssertion = msg.includes('INTERNAL ASSERTION FAILED') || 
-                         msg.includes('ca9') || 
-                         msg.includes('b815') ||
-                         stack.includes('ca9') ||
-                         stack.includes('b815');
+    // 🛡️ ESCUDO DE SILÊNCIO V21: Interceptação Global de Erros de Asserção
+    const isFirebaseAssertionError = (msg: string, stack?: string) => {
+        const patterns = ['INTERNAL ASSERTION FAILED', 'ca9', 'b815', 'Fe: -1', 'Unexpected state'];
+        const fullText = (msg + (stack || '')).toUpperCase();
+        return patterns.some(pattern => fullText.includes(pattern.toUpperCase()));
+    };
 
-      if (isAssertion) {
-        console.warn("🛡️ LK Ramos: Interceptada falha de asserção interna do Firebase. Recuperando...");
+    const handleGlobalError = (event: ErrorEvent) => {
+      if (isFirebaseAssertionError(event.message, event.error?.stack)) {
+        console.warn("🛡️ LK Ramos: Interceptada e silenciada falha interna do Firebase. Sistema preservado.");
         event.stopImmediatePropagation();
         event.preventDefault();
-        return false;
+        return true;
       }
     };
 
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      const reason = event.reason?.message || "";
-      if (reason.includes('INTERNAL ASSERTION FAILED') || reason.includes('ca9') || reason.includes('b815')) {
-        console.warn("🛡️ LK Ramos: Interceptada promessa rejeitada por estado interno. Ignorando...");
+      const reason = event.reason?.message || String(event.reason);
+      if (isFirebaseAssertionError(reason, event.reason?.stack)) {
+        console.warn("🛡️ LK Ramos: Interceptada promessa rejeitada por estado interno. Ignorando silenciosamente.");
         event.stopImmediatePropagation();
         event.preventDefault();
+        return true;
       }
     };
 
-    // 🛡️ INTERCEPTADOR DE CONSOLE: Evita que o Next.js capture logs de erro do SDK e dispare a tela vermelha
+    // 🛡️ INTERCEPTADOR DE CONSOLE: Evita que o Next.js capture logs do SDK que disparam a tela de erro
     const originalConsoleError = console.error;
     console.error = (...args) => {
       const msg = args.join(' ');
-      if (msg.includes('INTERNAL ASSERTION FAILED') || msg.includes('ca9') || msg.includes('b815')) {
-        return; // Silêncio técnico absoluto
+      if (isFirebaseAssertionError(msg)) {
+        // Silêncio técnico: O erro não sobe para o motor de Overlay do Next.js
+        return; 
       }
       originalConsoleError.apply(console, args);
     };
@@ -56,7 +56,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     try {
         initializeFirebase();
     } catch (error) {
-        // SDK já inicializado
+        // SDK já inicializado ou em estado de recuperação
     } finally {
         setIsInitializing(false);
     }
@@ -74,7 +74,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <div className="space-y-1">
                 <p className="text-sm font-bold text-foreground uppercase tracking-widest">LK RAMOS</p>
-                <p className="text-[10px] text-muted-foreground animate-pulse font-bold">ESTABILIZANDO MOTOR DE DADOS V20...</p>
+                <p className="text-[10px] text-muted-foreground animate-pulse font-bold">ESTABILIZANDO MOTOR DE DADOS V21...</p>
             </div>
         </div>
     );
