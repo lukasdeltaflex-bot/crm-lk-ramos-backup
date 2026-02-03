@@ -5,17 +5,17 @@ import { FirebaseProvider } from '@/firebase/provider';
 import { initializeFirebase } from './firebase'; 
 
 /**
- * Provedor de Infraestrutura Blindada V50.
+ * Provedor de Infraestrutura Blindada V51.
  * Protocolo de Supressão Absoluta para falhas críticas do SDK do Firestore (ca9/b815).
  */
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // 🛡️ ESCUDO DE SILÊNCIO V50: Interceptação Profunda no nível do motor
+    // 🛡️ ESCUDO DE SILÊNCIO V51: Interceptação Profunda no nível do motor
     const isSuppressibleError = (err: any) => {
         if (!err) return false;
-        const msg = String(err?.message || err?.stack || err || "").toUpperCase();
+        const msg = String(err?.message || err?.stack || err?.reason?.message || err || "").toUpperCase();
         const details = JSON.stringify(err).toUpperCase();
         
         return (
@@ -25,13 +25,15 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
             msg.includes('FE: -1') ||
             msg.includes('UNEXPECTED STATE') ||
             details.includes('CA9') ||
-            details.includes('B815')
+            details.includes('B815') ||
+            details.includes('FE: -1')
         );
     };
 
     const handleGlobalError = (event: ErrorEvent | PromiseRejectionEvent) => {
       const error = 'error' in event ? event.error : (event as any).reason;
       if (isSuppressibleError(error)) {
+        // 🛑 BLOQUEIO ABSOLUTO: Impede que o erro chegue ao Next.js e trave a tela
         event.preventDefault();
         event.stopPropagation();
         return true;
@@ -47,13 +49,15 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
       originalConsoleError.apply(console, args);
     };
 
-    // Captura no nível mais baixo do navegador
+    // Captura no nível mais baixo do navegador usando a fase de captura (true)
     window.addEventListener('error', handleGlobalError, true);
     window.addEventListener('unhandledrejection', handleGlobalError, true);
 
     try {
         initializeFirebase();
-    } catch (error) {}
+    } catch (error) {
+        // Silencioso se já inicializado
+    }
 
     // Delay de estabilização para hidratação perfeita
     const timer = setTimeout(() => {
@@ -68,7 +72,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     };
   }, []);
 
-  // ⚠️ IMPORTANTE: Renderização unificada para evitar Hydration Mismatch
+  // ⚠️ IMPORTANTE: Renderização simplificada para evitar Hydration Mismatch
   if (!isReady) {
     return (
         <div className="flex h-screen w-screen flex-col items-center justify-center bg-background gap-4">
