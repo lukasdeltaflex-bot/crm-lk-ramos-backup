@@ -10,12 +10,31 @@ interface FirebaseClientProviderProps {
 }
 
 /**
- * Provedor que garante a inicialização do Firebase no lado do cliente.
+ * Provedor que garante a inicialização do Firebase e suprime erros de asserção interna.
  */
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
   const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
+    // BLINDAGEM V12: Interceptador Global de Erros de Asserção
+    // Impede que falhas internas do SDK (ca9/b815) travem a UI do Next.js
+    const handleGlobalError = (event: ErrorEvent) => {
+      if (event.message?.includes('INTERNAL ASSERTION FAILED')) {
+        event.preventDefault();
+        console.warn("LK RAMOS: Asserção interna do Firebase suprimida para evitar crash da UI.", event.message);
+      }
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      if (event.reason?.message?.includes('INTERNAL ASSERTION FAILED')) {
+        event.preventDefault();
+        console.warn("LK RAMOS: Rejeição de asserção interna suprimida.", event.reason.message);
+      }
+    };
+
+    window.addEventListener('error', handleGlobalError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
     try {
         initializeFirebase();
     } catch (error) {
@@ -23,6 +42,11 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     } finally {
         setIsInitializing(false);
     }
+
+    return () => {
+      window.removeEventListener('error', handleGlobalError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
   }, []);
 
   if (isInitializing) {

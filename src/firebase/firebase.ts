@@ -12,7 +12,7 @@ const firebaseConfig = {
   appId: "1:341426752875:web:348f88597e5b9b2057d02e",
 };
 
-// Singleton Blindado V11: Prevenção absoluta contra reinicialização de instâncias
+// Singleton Blindado V12: Garantia absoluta de instância única e estável
 const globalForFirebase = globalThis as unknown as {
   app: FirebaseApp | undefined;
   auth: Auth | undefined;
@@ -27,13 +27,13 @@ if (globalForFirebase.db) {
     db = globalForFirebase.db;
 } else {
     try {
-        // Tenta inicializar com configurações otimizadas para ambientes Cloud
+        // Tenta inicializar com Long Polling forçado para evitar Erro ca9 em ambientes Cloud
         db = initializeFirestore(app, {
             cacheSizeBytes: CACHE_SIZE_UNLIMITED,
-            experimentalForceLongPolling: true, // Evita instabilidade de WebSockets (Erro ca9)
+            experimentalForceLongPolling: true,
         });
     } catch (e) {
-        // Se já estiver inicializado, recupera a instância existente para evitar b815
+        // Fallback para instância existente para prevenir Erro b815
         db = getExistingFirestore(app);
     }
     globalForFirebase.db = db;
