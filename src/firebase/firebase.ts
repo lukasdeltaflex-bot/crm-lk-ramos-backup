@@ -20,18 +20,19 @@ const globalForFirebase = globalThis as unknown as {
   storage: FirebaseStorage | undefined;
 };
 
+// Garante que o App seja inicializado apenas uma vez
 const app = globalForFirebase.app || (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp());
 
-// Inicializa o Firestore apenas se não existir no escopo global
+// Inicializa o Firestore com Long Polling forçado para estabilidade máxima em ambientes de nuvem (Fix ca9)
 const db = globalForFirebase.db || initializeFirestore(app, {
     cacheSizeBytes: CACHE_SIZE_UNLIMITED,
-    experimentalForceLongPolling: true, // Estabilidade essencial para ambientes Cloud
+    experimentalForceLongPolling: true, 
 });
 
 const auth = globalForFirebase.auth || getAuth(app);
 const storage = globalForFirebase.storage || getStorage(app);
 
-// No desenvolvimento, salva as instâncias no objeto global para sobreviver ao HMR
+// No desenvolvimento, salva as instâncias no objeto global para sobreviver ao HMR do Next.js
 if (process.env.NODE_ENV !== "production") {
     globalForFirebase.app = app;
     globalForFirebase.auth = auth;

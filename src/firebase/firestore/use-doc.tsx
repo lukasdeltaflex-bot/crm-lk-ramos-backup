@@ -27,6 +27,7 @@ export interface UseDocResult<T> {
 
 /**
  * React hook to subscribe to a single Firestore document in real-time.
+ * Blindagem V7: Tratamento ultra-seguro para evitar erros de conexão.
  */
 export function useDoc<T = any>(
   memoizedDocRef: DocumentReference<DocumentData> | null | undefined,
@@ -47,9 +48,8 @@ export function useDoc<T = any>(
 
     setIsLoading(true);
     setError(null);
-    setData(null);
 
-    let unsubscribe: Unsubscribe;
+    let unsubscribe: Unsubscribe | null = null;
 
     try {
         unsubscribe = onSnapshot(
@@ -64,6 +64,7 @@ export function useDoc<T = any>(
             setIsLoading(false);
           },
           (error: FirestoreError) => {
+            console.error("Firestore useDoc error:", error);
             const contextualError = new FirestorePermissionError({
               operation: 'get',
               path: memoizedDocRef.path,
@@ -76,18 +77,17 @@ export function useDoc<T = any>(
           }
         );
     } catch (e: any) {
-        console.error("Firestore document snapshot error:", e);
+        console.warn("Snapshot setup failed:", e);
         setIsLoading(false);
-        return;
     }
 
     return () => {
-      if (typeof unsubscribe === 'function') {
+      if (unsubscribe) {
         try {
-            // Cleanup ultra-seguro para evitar erro b815 durante HMR
+            // Desinscrição segura para evitar erro b815
             unsubscribe();
         } catch (e) {
-            console.debug("Firestore doc unsubscribe silent fail (expected during HMR)", e);
+            console.debug("Safe unsubscribe fail (expected in HMR)");
         }
       }
     };
