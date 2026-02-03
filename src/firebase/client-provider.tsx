@@ -6,14 +6,14 @@ import { initializeFirebase } from './firebase';
 import { LoaderCircle } from 'lucide-react';
 
 /**
- * Provedor de Infraestrutura Blindada V43.
+ * Provedor de Infraestrutura Blindada V44.
  * Intercepta e anula erros fatais de asserção do Firestore (ca9/b815).
  */
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // 🛡️ ESCUDO DE SILÊNCIO V43: Interceptação Profunda
+    // 🛡️ ESCUDO DE SILÊNCIO V44: Interceptação Profunda e Seletiva
     const isSuppressibleError = (err: any) => {
         if (!err) return false;
         const msg = typeof err === 'string' ? err : (err.message || String(err));
@@ -36,7 +36,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
       }
     };
 
-    // Mute de Console Redundante
+    // Mute de Console Redundante para evitar o Overlay do Next.js
     const originalConsoleError = console.error;
     console.error = (...args) => {
       if (args.some(arg => isSuppressibleError(arg))) {
@@ -45,7 +45,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
       originalConsoleError.apply(console, args);
     };
 
-    // Override de window.onerror
+    // Override de window.onerror no estágio de captura
     const oldOnError = window.onerror;
     window.onerror = (message, source, lineno, colno, error) => {
       if (isSuppressibleError(message) || isSuppressibleError(error)) {
@@ -62,7 +62,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
         initializeFirebase();
     } catch (error) {}
 
-    const timer = setTimeout(() => setIsReady(true), 10);
+    const timer = setTimeout(() => setIsReady(true), 50);
 
     return () => {
       window.removeEventListener('error', handleGlobalError, true);

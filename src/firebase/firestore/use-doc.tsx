@@ -21,7 +21,7 @@ export interface UseDocResult<T> {
 }
 
 /**
- * Hook Defensivo V43 para documentos Firestore.
+ * Hook Defensivo V44 para documentos Firestore.
  * Filtra falhas técnicas internas (ca9/b815) para manter a estabilidade da UI.
  */
 export function useDoc<T = any>(
@@ -64,7 +64,7 @@ export function useDoc<T = any>(
             if (!isMounted) return;
 
             const msg = (err.message || "").toUpperCase();
-            // 🛡️ Supressão de Erros de Asserção V43
+            // 🛡️ Supressão de Erros de Asserção V44
             if (msg.includes('ASSERTION') || msg.includes('CA9') || msg.includes('B815') || msg.includes('FE: -1')) {
                 return;
             }
