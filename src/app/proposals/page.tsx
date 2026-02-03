@@ -1,3 +1,4 @@
+
 'use client';
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -476,14 +477,18 @@ function ProposalsPageContent() {
         const dateApproved = toISO(data.dateApproved);
         let commissionStatus = data.commissionStatus;
 
-        const isEligibleForSaldoAReceber = 
+        const isEligibleForFinancialTracking = 
             data.status === 'Pago' ||
             data.status === 'Saldo Pago' ||
-            (data.status === 'Em Andamento' && !!dateApproved) ||
-            (data.status === 'Pendente' && !!dateApproved);
+            ((data.status === 'Em Andamento' || data.status === 'Pendente') && !!dateApproved);
         
-        if (isEligibleForSaldoAReceber && (!commissionStatus || commissionStatus === '')) {
+        // Se for elegível e não tiver status, coloca como Pendente (Saldo a Receber)
+        if (isEligibleForFinancialTracking && (!commissionStatus || commissionStatus === '')) {
             commissionStatus = 'Pendente';
+        } 
+        // Se NÃO for elegível (apenas Digitada), o status de comissão deve ser vazio para não poluir o financeiro
+        else if (!isEligibleForFinancialTracking && (!commissionStatus || commissionStatus === 'Pendente')) {
+            commissionStatus = '';
         }
 
         const proposalData = {
@@ -493,7 +498,7 @@ function ProposalsPageContent() {
             dateApproved: dateApproved,
             datePaidToClient: toISO(data.datePaidToClient),
             debtBalanceArrivalDate: toISO(data.debtBalanceArrivalDate),
-            commissionStatus: commissionStatus || 'Pendente',
+            commissionStatus: commissionStatus || '',
             amountPaid: Number(data.amountPaid) || 0,
             commissionValue: Number(data.commissionValue) || 0,
             grossAmount: Number(data.grossAmount) || 0,

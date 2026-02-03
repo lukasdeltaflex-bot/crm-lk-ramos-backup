@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ColumnDef, flexRender, Header } from '@tanstack/react-table';
@@ -237,6 +238,8 @@ export const getColumns = (
     header: 'Status Comissão',
     cell: ({ row }) => {
       const proposal = row.original;
+      const { commissionStatus } = proposal;
+      if (!commissionStatus) return <div className="text-muted-foreground italic text-[10px]">Aguardando Averbação</div>;
       return (
         <CommissionStatusCell 
             proposal={proposal} 
@@ -248,16 +251,14 @@ export const getColumns = (
     filterFn: (row, id, filterValue) => {
         const status = row.getValue(id) as string;
         const mainStatus = row.original.status;
+        const hasAverbacao = !!row.original.dateApproved;
         
         // REGRA DE OURO: Reprovadas nunca aparecem no financeiro
         if (mainStatus === 'Reprovado') return false;
 
         // REGRA PARA ABA "TODOS"
         if (filterValue === '__CUSTOM_FILTER_TODOS__') {
-            // Sempre mostra: Sem status, Pendente ou Parcial (de qualquer período)
-            if (!status || status === 'Pendente' || status === 'Parcial') return true;
-            
-            // Pagas: Filtrar apenas pelo mês vigente para não poluir
+            // Se já foi paga, mostramos apenas se for deste mês para não poluir
             if (status === 'Paga') {
                 const paymentDateStr = row.original.commissionPaymentDate;
                 if (!paymentDateStr) return false;
@@ -265,15 +266,18 @@ export const getColumns = (
                 const now = new Date();
                 return isSameMonth(pDate, now) && pDate.getFullYear() === now.getFullYear();
             }
+            
+            // Se for Pendente ou Parcial, mostramos apenas se for "Saldo a Receber" (Averbado ou Pago)
+            if (status === 'Pendente' || status === 'Parcial') {
+                return mainStatus === 'Pago' || mainStatus === 'Saldo Pago' || hasAverbacao;
+            }
+
             return false;
         }
         
         // REGRA PARA ABA "PAGAS" (Filtro específico selecionado no Tab)
         if (filterValue === 'Paga') {
-            const isPaga = status === 'Paga';
-            if (!isPaga) return false;
-            
-            // Se for Paga, por padrão mostra apenas o mês vigente (a menos que tenha range de data aplicado)
+            if (status !== 'Paga') return false;
             const paymentDateStr = row.original.commissionPaymentDate;
             if (!paymentDateStr) return false;
             const pDate = new Date(paymentDateStr);
