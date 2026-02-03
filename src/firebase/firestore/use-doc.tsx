@@ -21,8 +21,8 @@ export interface UseDocResult<T> {
 }
 
 /**
- * Hook Defensivo V41 para documentos Firestore.
- * Silencia inconsistências de asserção interna do SDK (ca9/b815/Fe:-1).
+ * Hook Defensivo V43 para documentos Firestore.
+ * Filtra falhas técnicas internas (ca9/b815) para manter a estabilidade da UI.
  */
 export function useDoc<T = any>(
   memoizedDocRef: DocumentReference<DocumentData> | null | undefined,
@@ -64,7 +64,7 @@ export function useDoc<T = any>(
             if (!isMounted) return;
 
             const msg = (err.message || "").toUpperCase();
-            // 🛡️ Filtro de erro técnico V41: Supressão de Falhas de Asserção
+            // 🛡️ Supressão de Erros de Asserção V43
             if (msg.includes('ASSERTION') || msg.includes('CA9') || msg.includes('B815') || msg.includes('FE: -1')) {
                 return;
             }
@@ -87,7 +87,7 @@ export function useDoc<T = any>(
         if (isMounted) {
             const msg = (e.message || "").toUpperCase();
             if (msg.includes('ASSERTION') || msg.includes('CA9') || msg.includes('B815')) {
-                // Silencia erros de asserção na criação do listener
+                // Silencia falha na criação do listener
             } else {
                 setError(e);
             }

@@ -1,6 +1,6 @@
-import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
+import { initializeApp, FirebaseApp } from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
-import { getFirestore, initializeFirestore, CACHE_SIZE_UNLIMITED, Firestore } from "firebase/firestore";
+import { getFirestore, initializeFirestore, Firestore } from "firebase/firestore";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -12,7 +12,7 @@ const firebaseConfig = {
   appId: "1:341426752875:web:348f88597e5b9b2057d02e",
 };
 
-// 🛡️ SINGLETON ABSOLUTO V42: Bloqueio imutável no globalThis para evitar conflitos de HMR e erros ca9/b815
+// 🛡️ SINGLETON IMUTÁVEL V43: Bloqueio absoluto no globalThis para evitar colisões de estado ca9/b815
 const g = globalThis as any;
 
 if (!g._firebaseApp) {
@@ -22,9 +22,8 @@ const app: FirebaseApp = g._firebaseApp;
 
 if (!g._firebaseDb) {
     try {
-        // experimentalForceLongPolling é essencial para evitar falhas de watch stream em ambientes proxied
+        // experimentalForceLongPolling é CRÍTICO para evitar erros ca9 em ambientes cloud
         g._firebaseDb = initializeFirestore(app, {
-            cacheSizeBytes: CACHE_SIZE_UNLIMITED,
             experimentalForceLongPolling: true,
         });
     } catch (e) {
