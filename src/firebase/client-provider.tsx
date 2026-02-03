@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, type ReactNode } from 'react';
@@ -7,16 +6,16 @@ import { initializeFirebase } from './firebase';
 import { LoaderCircle } from 'lucide-react';
 
 /**
- * Provedor Blindado V27: Protocolo de Supressão Total.
+ * Provedor Blindado V28: Protocolo de Supressão Total.
  * Resolve erros de permissão transientes e falhas fatais de asserção (ca9/b815).
- * Garante hidratação estável sem versões dinâmicas no texto.
+ * Garante hidratação estável sem discrepâncias de texto.
  */
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
   const [mounted, setMounted] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // 🛡️ ESCUDO DE SILÊNCIO V27: Interceptação Global de Baixo Nível
+    // 🛡️ ESCUDO DE SILÊNCIO V28: Interceptação Global de Baixo Nível
     const isSuppressibleError = (msg: string) => {
         if (!msg) return false;
         const normalized = String(msg).toUpperCase();
@@ -35,7 +34,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
       if (isSuppressibleError(message)) {
         if (event.stopImmediatePropagation) event.stopImmediatePropagation();
         event.preventDefault();
-        console.warn("🛡️ LK Ramos: Falha técnica de sincronização suprimida.");
+        console.warn("🛡️ LK Ramos: Sincronização técnica suprimida para estabilidade.");
         return true;
       }
     };
@@ -45,8 +44,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     console.error = (...args) => {
       const msg = args.join(' ');
       if (isSuppressibleError(msg)) {
-        // Silencia logs técnicos do SDK
-        return; 
+        return; // Silencia logs técnicos que causam o travamento visual
       }
       originalConsoleError.apply(console, args);
     };
@@ -59,8 +57,8 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     } catch (error) {}
 
     setMounted(true);
-    // Delay para garantir estabilidade na hidratação
-    const timer = setTimeout(() => setIsReady(true), 50);
+    // Delay para estabilidade na hidratação
+    const timer = setTimeout(() => setIsReady(true), 100);
 
     return () => {
       window.removeEventListener('error', handleGlobalError, true);
@@ -70,14 +68,14 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     };
   }, []);
 
-  // 🛡️ ESTABILIDADE DE HIDRATAÇÃO: Renderiza o mesmo conteúdo inicial em ambos os lados
+  // 🛡️ ESTABILIDADE DE HIDRATAÇÃO: Renderiza loader estático e neutro
   if (!mounted || !isReady) {
     return (
         <div className="flex h-screen w-screen flex-col items-center justify-center bg-background gap-4">
             <LoaderCircle className="h-10 w-10 animate-spin text-primary opacity-20" />
             <div className="space-y-1 text-center">
                 <p className="text-sm font-bold text-foreground uppercase tracking-widest opacity-40">LK RAMOS</p>
-                <p className="text-[10px] text-muted-foreground animate-pulse font-bold">ESTABILIZANDO MOTOR DE DADOS...</p>
+                <p className="text-[10px] text-muted-foreground animate-pulse font-bold tracking-tighter">ESTABILIZANDO MOTOR DE DADOS...</p>
             </div>
         </div>
     );

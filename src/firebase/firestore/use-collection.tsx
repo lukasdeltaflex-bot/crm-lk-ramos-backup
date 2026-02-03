@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -23,8 +22,8 @@ export interface UseCollectionResult<T> {
 }
 
 /**
- * Hook Defensivo V27 para coleções Firestore.
- * Silencia inconsistências de asserção interna (ca9/b815).
+ * Hook Defensivo V28 para coleções Firestore.
+ * Silencia inconsistências de asserção interna do SDK.
  */
 export function useCollection<T = any>(
     memoizedTargetRefOrQuery: ((CollectionReference<DocumentData> | Query<DocumentData>) & {__memo?: boolean})  | null | undefined,
@@ -66,9 +65,10 @@ export function useCollection<T = any>(
             if (!isMounted) return;
             
             const msg = (err.message || "").toUpperCase();
-            // 🛡️ Filtro de erro técnico V27: ca9/b815/assertion
+            // 🛡️ Filtro de erro técnico V28: ca9/b815/assertion
             if (msg.includes('ASSERTION') || msg.includes('CA9') || msg.includes('B815')) {
-                return; // Ignora falhas de estado interno do SDK
+                console.warn("🛡️ SDK Internal state anomaly ignored.");
+                return; 
             }
             
             if (err.code === 'permission-denied') {
