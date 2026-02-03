@@ -278,7 +278,6 @@ export const getColumns = (
             if (!paymentDateStr) return false;
             const pDate = new Date(paymentDateStr);
             const now = new Date();
-            // Esta lógica será refinada pelo appliedDateRange no data-table
             return isSameMonth(pDate, now) && pDate.getFullYear() === now.getFullYear();
         }
 

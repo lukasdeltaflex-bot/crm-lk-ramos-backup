@@ -19,21 +19,22 @@ interface StatsCardProps {
 
 /**
  * StatsCard Premium LK RAMOS
- * Altura rigorosamente uniforme, alinhamento perfeito e contornos coloridos leves para identificar o status.
+ * Altura rigorosamente uniforme e contornos coloridos leves para identificação do status.
  */
 export function StatsCard({ title, value, icon: Icon, description, percentage, className, valueClassName }: StatsCardProps) {
   
-  // Mapeamento de cores para bordas e ícones baseado no título
+  // Mapeamento de cores para bordas e ícones baseado no título para o efeito de contorno leve
   const getThemeColor = () => {
     const t = title.toLowerCase();
-    if (t.includes('digitado')) return 'border-slate-300 dark:border-slate-700 text-slate-500';
-    if (t.includes('pendente')) return 'border-purple-300 dark:border-purple-700 text-purple-500';
-    if (t.includes('andamento')) return 'border-yellow-300 dark:border-yellow-700 text-yellow-500';
-    if (t.includes('aguardando')) return 'border-blue-300 dark:border-blue-700 text-blue-500';
-    if (t.includes('saldo pago')) return 'border-orange-300 dark:border-orange-700 text-orange-500';
-    if (t.includes('reprovado')) return 'border-red-300 dark:border-red-700 text-red-500';
-    if (t.includes('comissão') || t.includes('paga') || t.includes('recebida')) return 'border-green-300 dark:border-green-700 text-green-500';
-    if (t.includes('esperada')) return 'border-blue-300 dark:border-blue-700 text-blue-500';
+    if (t.includes('digitado')) return 'border-slate-200 dark:border-slate-800 text-slate-500';
+    if (t.includes('pendente')) return 'border-purple-200 dark:border-purple-900/50 text-purple-500';
+    if (t.includes('andamento')) return 'border-yellow-200 dark:border-yellow-900/50 text-yellow-500';
+    if (t.includes('aguardando')) return 'border-blue-200 dark:border-blue-900/50 text-blue-500';
+    if (t.includes('saldo pago')) return 'border-orange-200 dark:border-orange-900/50 text-orange-500';
+    if (t.includes('reprovado')) return 'border-red-200 dark:border-red-900/50 text-red-500';
+    if (t.includes('comissão') || t.includes('paga') || t.includes('recebida')) return 'border-green-200 dark:border-green-900/50 text-green-500';
+    if (t.includes('esperada')) return 'border-blue-200 dark:border-blue-900/50 text-blue-500';
+    if (t.includes('saldo a receber')) return 'border-orange-200 dark:border-orange-900/50 text-orange-500';
     return 'border-border text-primary';
   };
 
