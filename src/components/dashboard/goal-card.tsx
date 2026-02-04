@@ -58,12 +58,11 @@ export function GoalCard({
   const percentageOfGoal = Math.min((currentProduction / monthlyGoal) * 100, 100);
   const conversionRate = totalDigitized > 0 ? (currentProduction / totalDigitized) * 100 : 0;
 
-  // Renderizador de Sparkline em SVG para o card principal
   const renderSparkline = () => {
     if (!sparklineData || sparklineData.length < 2) return null;
     const max = Math.max(...sparklineData, 1);
-    const width = 100;
-    const height = 24;
+    const width = 80;
+    const height = 20;
     const points = sparklineData.map((v, i) => {
         const x = (i / (sparklineData.length - 1)) * width;
         const y = height - (v / max) * height;
@@ -75,7 +74,7 @@ export function GoalCard({
             <polyline
                 fill="none"
                 stroke="#16a34a"
-                strokeWidth="3"
+                strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 points={points}
@@ -84,92 +83,87 @@ export function GoalCard({
     );
   };
 
-  if (!isClient) return <Card className="h-32 animate-pulse bg-muted rounded-xl w-full" />;
+  if (!isClient) return <Card className="h-28 animate-pulse bg-muted rounded-xl w-full" />;
 
   return (
     <Card className={cn(
-        'relative overflow-hidden bg-green-50/50 dark:bg-green-900/10 border-2 border-green-200 dark:border-green-800 shadow-md rounded-2xl w-full transition-all duration-500 py-0.5', 
+        'relative overflow-hidden bg-green-50/50 dark:bg-green-900/10 border-2 border-green-200 dark:border-green-800 shadow-sm rounded-2xl w-full transition-all duration-500', 
         isHot && 'ring-2 ring-orange-500 ring-offset-2 scale-[1.01]',
         className
     )}>
-      <CardContent className="p-4 sm:p-6">
-        <div className="flex items-start justify-between mb-4">
+      <CardContent className="p-4 sm:p-5">
+        <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className={cn(
-                "p-2 rounded-xl bg-green-100 dark:bg-green-900/40",
+                "p-1.5 rounded-lg bg-green-100 dark:bg-green-900/40",
                 isHot && "bg-orange-100 dark:bg-orange-900/40 animate-pulse"
             )}>
-                {isHot ? <Zap className="h-4 w-4 text-orange-600" /> : <Trophy className="h-4 w-4 text-green-600" />}
+                {isHot ? <Zap className="h-3.5 w-3.5 text-orange-600" /> : <Trophy className="h-3.5 w-3.5 text-green-600" />}
             </div>
             <div>
-              <h3 className="text-xs font-black text-green-800 dark:text-green-400 uppercase tracking-widest">Meta de Produção Mensal</h3>
-              <p className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-tighter">Performance real de contratos pagos vs objetivo</p>
+              <h3 className="text-[10px] font-black text-green-800 dark:text-green-400 uppercase tracking-widest">Meta de Produção</h3>
+              <p className="text-[8px] font-bold text-muted-foreground/60 uppercase tracking-tighter">Performance real acumulada</p>
             </div>
           </div>
 
           {isEditing ? (
-            <div className="flex items-center gap-2 bg-white p-2 rounded-lg border shadow-sm scale-90 origin-right">
+            <div className="flex items-center gap-2 bg-white p-1 rounded-lg border shadow-sm scale-90 origin-right">
               <Input
                 type="number"
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
-                className="h-8 w-24 text-xs border-none"
+                className="h-7 w-20 text-[10px] border-none"
                 autoFocus
               />
-              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleSave}><Check className="h-4 w-4 text-green-500" /></Button>
-              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setIsEditing(false)}><X className="h-4 w-4 text-destructive" /></Button>
+              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleSave}><Check className="h-3.5 w-3.5 text-green-500" /></Button>
+              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setIsEditing(false)}><X className="h-3.5 w-3.5 text-destructive" /></Button>
             </div>
           ) : (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <div className="hidden sm:block">{renderSparkline()}</div>
-              <div className="text-[9px] font-black text-green-700 bg-white/90 px-2.5 py-1 rounded-full border border-green-100 shadow-sm">
+              <div className="text-[8px] font-black text-green-700 bg-white/90 px-2 py-0.5 rounded-full border border-green-100 shadow-sm">
                 META: {isPrivacyMode ? '•••••' : formatCurrency(monthlyGoal)}
               </div>
-              <Button variant="ghost" size="icon" className="h-7 w-7 opacity-40 hover:opacity-100 transition-opacity" onClick={() => setIsEditing(true)}>
+              <Button variant="ghost" size="icon" className="h-6 w-6 opacity-40 hover:opacity-100 transition-opacity" onClick={() => setIsEditing(true)}>
                 <Pencil className="h-3 w-3" />
               </Button>
             </div>
           )}
         </div>
 
-        <div className="flex items-end justify-between mb-4" onClick={onValueClick}>
-          <div className="space-y-1 cursor-pointer group">
-            <div className="text-3xl sm:text-4xl font-light tracking-tighter text-green-600 dark:text-green-400 group-hover:translate-x-1 transition-transform">
+        <div className="flex items-end justify-between mb-3" onClick={onValueClick}>
+          <div className="space-y-0.5 cursor-pointer group">
+            <div className="text-2xl sm:text-3xl font-light tracking-tighter text-green-600 dark:text-green-400 group-hover:translate-x-1 transition-transform">
               {isPrivacyMode ? '•••••' : formatCurrency(currentProduction)}
             </div>
-            <div className="flex items-center gap-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">
-              <TrendingUp className="h-3.5 w-3.5 text-green-500" />
-              Taxa de Conversão: <span className="text-foreground">{conversionRate.toFixed(1)}%</span>
+            <div className="flex items-center gap-2 text-[8px] font-black text-muted-foreground uppercase tracking-widest">
+              <TrendingUp className="h-3 w-3 text-green-500" />
+              Conversão: <span className="text-foreground">{conversionRate.toFixed(1)}%</span>
             </div>
           </div>
 
           <div className="text-right">
-            <div className="text-2xl sm:text-3xl font-light text-green-600 dark:text-green-400 tracking-tighter">
+            <div className="text-xl sm:text-2xl font-light text-green-600 dark:text-green-400 tracking-tighter">
               {percentageOfGoal.toFixed(1)}%
             </div>
-            <p className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest">Atingido</p>
+            <p className="text-[8px] font-black text-muted-foreground/60 uppercase tracking-widest">Atingido</p>
           </div>
         </div>
 
         <div className="relative pt-1">
-            <Progress value={percentageOfGoal} className="h-2 bg-green-100 dark:bg-green-900/30" />
-            {isHot && (
-                <div className="absolute -top-6 right-0 text-[8px] font-black text-orange-600 uppercase animate-bounce">
-                    Ritmo Acelerado!
-                </div>
-            )}
+            <Progress value={percentageOfGoal} className="h-1.5 bg-green-100 dark:bg-green-900/30" />
         </div>
 
         {topContributor && (
-            <div className="mt-4 pt-2 border-t border-green-200/50 flex items-center justify-between">
+            <div className="mt-3 pt-2 border-t border-green-200/50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-[9px] font-bold text-muted-foreground uppercase">Líder:</span>
-                    <span className="text-[9px] font-black text-primary uppercase">{topContributor}</span>
+                    <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-[8px] font-bold text-muted-foreground uppercase">Líder:</span>
+                    <span className="text-[8px] font-black text-primary uppercase">{topContributor}</span>
                 </div>
                 {isHot && (
-                    <div className="flex items-center gap-2 text-[8px] font-black text-orange-600">
-                        <Zap className="h-2.5 w-2.5 fill-current" /> PERFORMANCE ALTA
+                    <div className="flex items-center gap-1.5 text-[7px] font-black text-orange-600">
+                        <Zap className="h-2 w-2 fill-current" /> PERFORMANCE ALTA
                     </div>
                 )}
             </div>
