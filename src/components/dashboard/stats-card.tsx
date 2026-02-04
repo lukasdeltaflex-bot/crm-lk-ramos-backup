@@ -23,8 +23,8 @@ interface StatsCardProps {
 }
 
 /**
- * StatsCard Premium Executivo Compacto V26
- * Ajustado para ser mais compacto e com cores diferenciadas para Totais.
+ * StatsCard Premium Executivo Compacto V27
+ * Cor Neutra (Zinc) para Totais e tamanho levemente reduzido para equilíbrio.
  */
 export function StatsCard({ 
     title, 
@@ -51,12 +51,12 @@ export function StatsCard({
             stroke: '#dc2626'
         };
 
-    // Cores específicas para Totais (Azul)
+    // Cores Neutras exclusivas para Totais (Zinc)
     if (t === 'total digitado' || t === 'total de comissões')
         return {
-            card: 'border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-900/10',
-            text: 'text-blue-600 dark:text-blue-400',
-            stroke: '#2563eb'
+            card: 'border-zinc-300 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/10',
+            text: 'text-zinc-600 dark:text-zinc-400',
+            stroke: '#52525b'
         };
     
     if (t.includes('andamento') || t.includes('esperada')) 
@@ -114,7 +114,7 @@ export function StatsCard({
     if (!sparklineData || sparklineData.length < 2) return null;
     const max = Math.max(...sparklineData, 1);
     const width = 60;
-    const height = 20;
+    const height = 18;
     const points = sparklineData.map((v, i) => {
         const x = (i / (sparklineData.length - 1)) * width;
         const y = height - (v / max) * height;
@@ -137,7 +137,7 @@ export function StatsCard({
 
   return (
     <Card className={cn(
-        'hover:shadow-md transition-all group relative overflow-hidden rounded-xl h-full flex flex-col border-2 py-3 px-4 sm:py-3.5 sm:px-4', 
+        'hover:shadow-md transition-all group relative overflow-hidden rounded-xl h-full flex flex-col border-2 py-2.5 px-4 sm:py-3 sm:px-4', 
         theme.card,
         isHot && 'ring-2 ring-orange-500 ring-offset-2',
         className

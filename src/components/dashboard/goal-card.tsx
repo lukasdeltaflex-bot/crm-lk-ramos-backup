@@ -62,7 +62,7 @@ export function GoalCard({
     if (!sparklineData || sparklineData.length < 2) return null;
     const max = Math.max(...sparklineData, 1);
     const width = 80;
-    const height = 20;
+    const height = 18;
     const points = sparklineData.map((v, i) => {
         const x = (i / (sparklineData.length - 1)) * width;
         const y = height - (v / max) * height;
@@ -83,7 +83,7 @@ export function GoalCard({
     );
   };
 
-  if (!isClient) return <Card className="h-24 animate-pulse bg-muted rounded-xl w-full" />;
+  if (!isClient) return <Card className="h-20 animate-pulse bg-muted rounded-xl w-full" />;
 
   return (
     <Card className={cn(
@@ -91,8 +91,8 @@ export function GoalCard({
         isHot && 'ring-2 ring-orange-500 ring-offset-2 scale-[1.01]',
         className
     )}>
-      <CardContent className="p-4 sm:p-4">
-        <div className="flex items-start justify-between mb-2">
+      <CardContent className="p-3 sm:p-3.5">
+        <div className="flex items-start justify-between mb-1.5">
           <div className="flex items-center gap-3">
             <div className={cn(
                 "p-1.5 rounded-lg bg-green-100 dark:bg-green-900/40",
@@ -131,7 +131,7 @@ export function GoalCard({
           )}
         </div>
 
-        <div className="flex items-end justify-between mb-2" onClick={onValueClick}>
+        <div className="flex items-end justify-between mb-1.5" onClick={onValueClick}>
           <div className="space-y-0.5 cursor-pointer group">
             <div className="text-xl sm:text-2xl font-light tracking-tighter text-green-600 dark:text-green-400 group-hover:translate-x-1 transition-transform">
               {isPrivacyMode ? '•••••' : formatCurrency(currentProduction)}
