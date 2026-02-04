@@ -582,26 +582,32 @@ function ProposalsPageContent() {
         <PageHeader title="Propostas" />
         <div className="flex items-center gap-2">
             {selectedCount > 0 && (
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button variant="destructive">
-                            <Trash2 />
-                            Cancelar ({selectedCount})
-                        </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Essa ação não pode ser desfeita. Isso irá cancelar permanentemente {selectedCount} proposta(s).
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Voltar</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleBulkDelete}>Cancelar Propostas</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                <>
+                    <Button variant="outline" onClick={handlePrint} className="bg-primary/5 border-primary/20 text-primary">
+                        <Printer className="mr-2 h-4 w-4" />
+                        Imprimir Seleção ({selectedCount})
+                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive">
+                                <Trash2 />
+                                Cancelar ({selectedCount})
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Essa ação não pode ser desfeita. Isso irá cancelar permanentemente {selectedCount} proposta(s).
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Voltar</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleBulkDelete}>Cancelar Propostas</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </>
             )}
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>

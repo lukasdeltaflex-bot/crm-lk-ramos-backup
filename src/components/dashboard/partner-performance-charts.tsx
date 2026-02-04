@@ -40,6 +40,23 @@ export function PartnerPerformanceCharts({ proposals }: PartnerPerformanceCharts
       .slice(0, 5);
   }, [proposals]);
 
+  const operatorData = useMemo(() => {
+    const dataMap: Record<string, number> = {};
+    proposals.forEach(p => {
+      // Apenas propostas pagas contam para o ranking de performance real
+      if (p.status === 'Pago' || p.status === 'Saldo Pago') {
+        const operator = p.operator || 'Sem Operador';
+        const amount = p.commissionBase === 'net' ? (p.netAmount || 0) : (p.grossAmount || 0);
+        dataMap[operator] = (dataMap[operator] || 0) + amount;
+      }
+    });
+
+    return Object.entries(dataMap)
+      .map(([name, total]) => ({ name, total }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5);
+  }, [proposals]);
+
   const renderChart = (data: { name: string; total: number }[]) => (
     <div className="h-[300px] w-full pt-4">
       <ResponsiveContainer width="100%" height="100%">
@@ -78,16 +95,17 @@ export function PartnerPerformanceCharts({ proposals }: PartnerPerformanceCharts
   if (proposals.length === 0) return null;
 
   return (
-    <Card className="h-full">
+    <Card className="h-full border-border/50 shadow-md">
       <CardHeader>
-        <CardTitle className="text-xl font-headline text-primary">Ranking de Performance</CardTitle>
-        <CardDescription>Volume financeiro por parceiro (Top 5)</CardDescription>
+        <CardTitle className="text-xl font-headline text-primary">Rankings de Produção</CardTitle>
+        <CardDescription>Performance financeira por categoria (Top 5)</CardDescription>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="banks">
-          <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsList className="grid w-full grid-cols-3 mb-4 bg-muted/50">
             <TabsTrigger value="banks">Bancos</TabsTrigger>
             <TabsTrigger value="promoters">Promotoras</TabsTrigger>
+            <TabsTrigger value="operators">Operadores</TabsTrigger>
           </TabsList>
           <TabsContent value="banks" className="mt-0">
             {bankData.length > 0 ? renderChart(bankData) : (
@@ -100,6 +118,13 @@ export function PartnerPerformanceCharts({ proposals }: PartnerPerformanceCharts
             {promoterData.length > 0 ? renderChart(promoterData) : (
                 <div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm border-2 border-dashed rounded-lg">
                     Nenhuma promotora registrada no período.
+                </div>
+            )}
+          </TabsContent>
+          <TabsContent value="operators" className="mt-0">
+            {operatorData.length > 0 ? renderChart(operatorData) : (
+                <div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm border-2 border-dashed rounded-lg text-center p-4">
+                    Nenhum operador com propostas pagas neste período.
                 </div>
             )}
           </TabsContent>
