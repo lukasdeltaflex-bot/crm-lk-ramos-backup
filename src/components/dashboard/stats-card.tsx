@@ -4,7 +4,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { LucideIcon, Zap, TrendingUp, AlertTriangle } from 'lucide-react';
+import { LucideIcon, Zap, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface StatsCardProps {
@@ -23,9 +23,9 @@ interface StatsCardProps {
 }
 
 /**
- * StatsCard Premium Executivo Compacto V28
- * Tamanho levemente aumentado para equilíbrio ideal.
- * Cor Neutra (Zinc) para Totais.
+ * StatsCard Premium Executivo V29
+ * Equilíbrio perfeito entre tamanho e densidade de informação.
+ * Cor Zinc para totais e semântica para status.
  */
 export function StatsCard({ 
     title, 
@@ -52,7 +52,6 @@ export function StatsCard({
             stroke: '#dc2626'
         };
 
-    // Cores Neutras exclusivas para Totais (Zinc)
     if (t === 'total digitado' || t === 'total de comissões')
         return {
             card: 'border-zinc-300 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/10',
