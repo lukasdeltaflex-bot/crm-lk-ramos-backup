@@ -8,17 +8,19 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, FileText, Users, CircleDollarSign, Cog, User, CalendarClock } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, CircleDollarSign, Cog, User, CalendarClock, BookOpen } from 'lucide-react';
 
 const links = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/customers', label: 'Clientes', icon: Users },
   { href: '/follow-ups', label: 'Retornos', icon: CalendarClock },
+  { href: '/propostas', label: 'Propostas', icon: FileText, hidden: true }, // Map legacy
   { href: '/proposals', label: 'Propostas', icon: FileText },
   { href: '/financial', label: 'Financeiro', icon: CircleDollarSign },
 ];
 
 const bottomLinks = [
+    { href: '/manual', label: 'Guia do Usuário', icon: BookOpen },
     { href: '/profile', label: 'Meu Perfil', icon: User },
     { href: '/settings', label: 'Configurações', icon: Cog },
 ]
@@ -29,7 +31,7 @@ export function SidebarNav() {
   return (
     <>
     <SidebarMenu>
-      {links.map((link) => (
+      {links.filter(l => !l.hidden).map((link) => (
         <SidebarMenuItem key={link.href}>
           <SidebarMenuButton
             asChild
