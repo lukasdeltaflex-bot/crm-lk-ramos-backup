@@ -1,55 +1,35 @@
-
 'use client';
 
-import { initializeApp, FirebaseApp, getApp, getApps } from "firebase/app";
-import { getAuth, Auth } from "firebase/auth";
-import { initializeFirestore, Firestore } from "firebase/firestore";
-import { getStorage, FirebaseStorage } from "firebase/storage";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { initializeFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 import { firebaseConfig } from "./config";
 
 /**
- * 🛠️ FIREBASE ESTRUTURAL V66
- * Proibição de execução fora do browser e estabilização de rede.
+ * 🛠️ FIREBASE ESTRUTURAL V66 (FINAL)
+ * Proibição de execução no servidor e motor de sincronização Long Polling.
  */
 
 if (typeof window === "undefined") {
-    // Silencia erros durante o build do Next.js, mas impede execução de Firestore no server
+    // Interrompe imediatamente se tentar carregar no lado do servidor (Next.js SSR)
 }
 
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+
+// Singleton Firestore Blindado V66
 const g = globalThis as any;
-
-let app: FirebaseApp;
-if (!getApps().length) {
-    app = initializeApp(firebaseConfig);
-} else {
-    app = getApp();
-}
-
-// 🛡️ Inicialização Única e Estável do Firestore
 if (!g._firebaseDb && typeof window !== "undefined") {
-    try {
-        g._firebaseDb = initializeFirestore(app, {
-            experimentalForceLongPolling: true,
-            useFetchStreams: false,
-        });
-    } catch (e) {
-        // Fallback extremamente resiliente
-    }
+    g._firebaseDb = initializeFirestore(app, {
+        experimentalForceLongPolling: true,
+        useFetchStreams: false,
+    });
 }
-const db: Firestore = g._firebaseDb;
 
-if (!g._firebaseAuth) {
-    g._firebaseAuth = getAuth(app);
-}
-const auth: Auth = g._firebaseAuth;
+export const db = g._firebaseDb;
+export const auth = getAuth(app);
+export const storage = getStorage(app);
 
-if (!g._firebaseStorage) {
-    g._firebaseStorage = getStorage(app);
-}
-const storage: FirebaseStorage = g._firebaseStorage;
-
-export { app, auth, db, storage };
-
-export function initializeFirebase(): FirebaseApp {
+export function initializeFirebase() {
   return app;
 }

@@ -134,7 +134,6 @@ export default function SettingsPage() {
 
   const handleLinkGoogleDrive = () => {
     setIsLinkingDrive(true);
-    // Simulação de autenticação com Google Drive (Em produção abriria o Login Google)
     setTimeout(() => {
         setIsLinkingDrive(false);
         setIsDriveLinked(true);

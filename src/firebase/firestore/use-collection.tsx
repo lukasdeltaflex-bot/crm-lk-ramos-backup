@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -21,9 +20,12 @@ export interface UseCollectionResult<T> {
   error: FirestoreError | Error | null;
 }
 
+// Controle de concorrência V66
+let listenerActive = false;
+
 /**
  * Hook de Coleção Blindado V66.
- * Proíbe execução no servidor e garante unicidade de listeners (causa raiz do ca9).
+ * Impede execução no servidor e bloqueia duplicidade de listeners.
  */
 export function useCollection<T = any>(
     memoizedTargetRefOrQuery: (CollectionReference<DocumentData> | Query<DocumentData>) | null | undefined,
@@ -33,20 +35,19 @@ export function useCollection<T = any>(
   const [error, setError] = useState<FirestoreError | Error | null>(null);
   
   const unsubRef = useRef<(() => void) | null>(null);
-  const isActiveRef = useRef<boolean>(false);
 
   useEffect(() => {
-    // 1️⃣ PROIBIR Firestore fora do Browser
     if (typeof window === "undefined") return;
 
     let isMounted = true;
 
-    // Limpeza agressiva
-    if (unsubRef.current) {
-        unsubRef.current();
-        unsubRef.current = null;
-        isActiveRef.current = false;
-    }
+    const cleanup = () => {
+        if (unsubRef.current) {
+            unsubRef.current();
+            unsubRef.current = null;
+            listenerActive = false;
+        }
+    };
 
     if (!memoizedTargetRefOrQuery) {
       if (isMounted) {
@@ -57,14 +58,15 @@ export function useCollection<T = any>(
       return;
     }
 
+    if (listenerActive) {
+        cleanup();
+    }
+
     setIsLoading(true);
     setError(null);
 
-    // 🛡️ Safe Snapshot Wrapper V66
     try {
-        if (isActiveRef.current) return;
-        isActiveRef.current = true;
-
+        listenerActive = true;
         unsubRef.current = onSnapshot(
           memoizedTargetRefOrQuery,
           (snapshot: QuerySnapshot<DocumentData>) => {
@@ -80,12 +82,6 @@ export function useCollection<T = any>(
           (err: FirestoreError) => {
             if (!isMounted) return;
             
-            // Ignora silenciosamente erros de asserção técnica (ca9/b815)
-            const msg = (err.message || "").toUpperCase();
-            if (msg.includes('ASSERTION') || msg.includes('CA9') || msg.includes('B815')) {
-                return; 
-            }
-            
             if (err.code === 'permission-denied') {
                 let path = 'unknown';
                 try { path = (memoizedTargetRefOrQuery as any).path || 'query'; } catch(e) {}
@@ -99,19 +95,13 @@ export function useCollection<T = any>(
           }
         );
     } catch (e: any) {
-        isActiveRef.current = false;
-        if (isMounted) {
-            setIsLoading(false);
-        }
+        listenerActive = false;
+        if (isMounted) setIsLoading(false);
     }
 
     return () => {
       isMounted = false;
-      if (unsubRef.current) {
-        unsubRef.current();
-        unsubRef.current = null;
-        isActiveRef.current = false;
-      }
+      cleanup();
     };
   }, [memoizedTargetRefOrQuery]);
 

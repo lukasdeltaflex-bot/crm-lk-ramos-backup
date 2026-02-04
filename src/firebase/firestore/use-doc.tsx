@@ -1,4 +1,3 @@
-
 'use client';
     
 import { useState, useEffect, useRef } from 'react';
@@ -20,9 +19,11 @@ export interface UseDocResult<T> {
   error: FirestoreError | Error | null;
 }
 
+// Controle de concorrência V66
+let docListenerActive = false;
+
 /**
  * Hook de Documento Blindado V66.
- * Proíbe execução no servidor e garante unicidade de listeners (causa raiz do ca9).
  */
 export function useDoc<T = any>(
   memoizedDocRef: DocumentReference<DocumentData> | null | undefined,
@@ -32,19 +33,19 @@ export function useDoc<T = any>(
   const [error, setError] = useState<FirestoreError | Error | null>(null);
   
   const unsubRef = useRef<(() => void) | null>(null);
-  const isActiveRef = useRef<boolean>(false);
 
   useEffect(() => {
-    // 1️⃣ PROIBIR Firestore fora do Browser
     if (typeof window === "undefined") return;
 
     let isMounted = true;
 
-    if (unsubRef.current) {
-        unsubRef.current();
-        unsubRef.current = null;
-        isActiveRef.current = false;
-    }
+    const cleanup = () => {
+        if (unsubRef.current) {
+            unsubRef.current();
+            unsubRef.current = null;
+            docListenerActive = false;
+        }
+    };
 
     if (!memoizedDocRef) {
       if (isMounted) {
@@ -55,14 +56,15 @@ export function useDoc<T = any>(
       return;
     }
 
+    if (docListenerActive) {
+        cleanup();
+    }
+
     setIsLoading(true);
     setError(null);
 
-    // 🛡️ Safe Snapshot Wrapper V66
     try {
-        if (isActiveRef.current) return;
-        isActiveRef.current = true;
-
+        docListenerActive = true;
         unsubRef.current = onSnapshot(
           memoizedDocRef,
           (snapshot: DocumentSnapshot<DocumentData>) => {
@@ -77,11 +79,6 @@ export function useDoc<T = any>(
           },
           (err: FirestoreError) => {
             if (!isMounted) return;
-
-            const msg = (err.message || "").toUpperCase();
-            if (msg.includes('ASSERTION') || msg.includes('CA9') || msg.includes('B815')) {
-                return; 
-            }
 
             if (err.code === 'permission-denied') {
                 const contextualError = new FirestorePermissionError({
@@ -98,19 +95,13 @@ export function useDoc<T = any>(
           }
         );
     } catch (e: any) {
-        isActiveRef.current = false;
-        if (isMounted) {
-            setIsLoading(false);
-        }
+        docListenerActive = false;
+        if (isMounted) setIsLoading(false);
     }
 
     return () => {
       isMounted = false;
-      if (unsubRef.current) {
-        unsubRef.current();
-        unsubRef.current = null;
-        isActiveRef.current = false;
-      }
+      cleanup();
     };
   }, [memoizedDocRef]);
 
