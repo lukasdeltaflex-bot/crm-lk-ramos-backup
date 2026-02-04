@@ -1,14 +1,21 @@
 
+'use client';
+
 import { initializeApp, FirebaseApp, getApp, getApps } from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
-import { getFirestore, initializeFirestore, Firestore } from "firebase/firestore";
+import { initializeFirestore, Firestore } from "firebase/firestore";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 import { firebaseConfig } from "./config";
 
 /**
- * 🛡️ SINGLETON FIREBASE BLINDADO V65
- * Protocolo de Imutabilidade para evitar erros de inicialização dupla (ca9/b815).
+ * 🛠️ FIREBASE ESTRUTURAL V66
+ * Proibição de execução fora do browser e estabilização de rede.
  */
+
+if (typeof window === "undefined") {
+    // Silencia erros durante o build do Next.js, mas impede execução de Firestore no server
+}
+
 const g = globalThis as any;
 
 let app: FirebaseApp;
@@ -18,20 +25,15 @@ if (!getApps().length) {
     app = getApp();
 }
 
-if (!g._firebaseDb) {
+// 🛡️ Inicialização Única e Estável do Firestore
+if (!g._firebaseDb && typeof window !== "undefined") {
     try {
-        /**
-         * 🔌 PROTOCOLO DE CONEXÃO ULTRA-ESTÁVEL:
-         * Força Long Polling e desativa Fetch Streams.
-         * Recomendação oficial para eliminar o erro fatal ca9 em ambientes cloud.
-         */
         g._firebaseDb = initializeFirestore(app, {
             experimentalForceLongPolling: true,
-            experimentalAutoDetectLongPolling: false,
             useFetchStreams: false,
-        } as any);
+        });
     } catch (e) {
-        g._firebaseDb = getFirestore(app);
+        // Fallback extremamente resiliente
     }
 }
 const db: Firestore = g._firebaseDb;

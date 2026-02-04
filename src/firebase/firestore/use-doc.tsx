@@ -21,8 +21,8 @@ export interface UseDocResult<T> {
 }
 
 /**
- * Hook de Documento com Listener de Segurança V65.
- * Previne falhas de estado inesperado (ca9) através do controle estrito de subscrição.
+ * Hook de Documento Blindado V66.
+ * Proíbe execução no servidor e garante unicidade de listeners (causa raiz do ca9).
  */
 export function useDoc<T = any>(
   memoizedDocRef: DocumentReference<DocumentData> | null | undefined,
@@ -31,16 +31,19 @@ export function useDoc<T = any>(
   const [isLoading, setIsLoading] = useState<boolean>(!!memoizedDocRef);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
   
-  // 🛡️ Monitor de Listener Único
   const unsubRef = useRef<(() => void) | null>(null);
+  const isActiveRef = useRef<boolean>(false);
 
   useEffect(() => {
+    // 1️⃣ PROIBIR Firestore fora do Browser
+    if (typeof window === "undefined") return;
+
     let isMounted = true;
 
-    // Limpeza agressiva de listeners anteriores
     if (unsubRef.current) {
         unsubRef.current();
         unsubRef.current = null;
+        isActiveRef.current = false;
     }
 
     if (!memoizedDocRef) {
@@ -55,7 +58,11 @@ export function useDoc<T = any>(
     setIsLoading(true);
     setError(null);
 
+    // 🛡️ Safe Snapshot Wrapper V66
     try {
+        if (isActiveRef.current) return;
+        isActiveRef.current = true;
+
         unsubRef.current = onSnapshot(
           memoizedDocRef,
           (snapshot: DocumentSnapshot<DocumentData>) => {
@@ -72,7 +79,7 @@ export function useDoc<T = any>(
             if (!isMounted) return;
 
             const msg = (err.message || "").toUpperCase();
-            if (msg.includes('ASSERTION') || msg.includes('CA9') || msg.includes('B815') || msg.includes('STATE')) {
+            if (msg.includes('ASSERTION') || msg.includes('CA9') || msg.includes('B815')) {
                 return; 
             }
 
@@ -91,6 +98,7 @@ export function useDoc<T = any>(
           }
         );
     } catch (e: any) {
+        isActiveRef.current = false;
         if (isMounted) {
             setIsLoading(false);
         }
@@ -101,6 +109,7 @@ export function useDoc<T = any>(
       if (unsubRef.current) {
         unsubRef.current();
         unsubRef.current = null;
+        isActiveRef.current = false;
       }
     };
   }, [memoizedDocRef]);

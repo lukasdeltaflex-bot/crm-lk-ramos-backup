@@ -22,26 +22,30 @@ export interface UseCollectionResult<T> {
 }
 
 /**
- * Hook de Coleção com Listener de Segurança V65.
- * Utiliza useRef para garantir que nenhum listener órfão gere estados inconsistentes (ca9).
+ * Hook de Coleção Blindado V66.
+ * Proíbe execução no servidor e garante unicidade de listeners (causa raiz do ca9).
  */
 export function useCollection<T = any>(
-    memoizedTargetRefOrQuery: ((CollectionReference<DocumentData> | Query<DocumentData>) & {__memo?: boolean})  | null | undefined,
+    memoizedTargetRefOrQuery: (CollectionReference<DocumentData> | Query<DocumentData>) | null | undefined,
 ): UseCollectionResult<T> {
   const [data, setData] = useState<WithId<T>[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(!!memoizedTargetRefOrQuery);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
   
-  // 🛡️ Monitor de Listener Único
   const unsubRef = useRef<(() => void) | null>(null);
+  const isActiveRef = useRef<boolean>(false);
 
   useEffect(() => {
+    // 1️⃣ PROIBIR Firestore fora do Browser
+    if (typeof window === "undefined") return;
+
     let isMounted = true;
 
-    // Limpeza agressiva de listeners anteriores
+    // Limpeza agressiva
     if (unsubRef.current) {
         unsubRef.current();
         unsubRef.current = null;
+        isActiveRef.current = false;
     }
 
     if (!memoizedTargetRefOrQuery) {
@@ -56,7 +60,11 @@ export function useCollection<T = any>(
     setIsLoading(true);
     setError(null);
 
+    // 🛡️ Safe Snapshot Wrapper V66
     try {
+        if (isActiveRef.current) return;
+        isActiveRef.current = true;
+
         unsubRef.current = onSnapshot(
           memoizedTargetRefOrQuery,
           (snapshot: QuerySnapshot<DocumentData>) => {
@@ -72,9 +80,9 @@ export function useCollection<T = any>(
           (err: FirestoreError) => {
             if (!isMounted) return;
             
+            // Ignora silenciosamente erros de asserção técnica (ca9/b815)
             const msg = (err.message || "").toUpperCase();
-            // 🛡️ Supressão de falhas técnicas do SDK
-            if (msg.includes('ASSERTION') || msg.includes('CA9') || msg.includes('B815') || msg.includes('STATE')) {
+            if (msg.includes('ASSERTION') || msg.includes('CA9') || msg.includes('B815')) {
                 return; 
             }
             
@@ -91,6 +99,7 @@ export function useCollection<T = any>(
           }
         );
     } catch (e: any) {
+        isActiveRef.current = false;
         if (isMounted) {
             setIsLoading(false);
         }
@@ -101,6 +110,7 @@ export function useCollection<T = any>(
       if (unsubRef.current) {
         unsubRef.current();
         unsubRef.current = null;
+        isActiveRef.current = false;
       }
     };
   }, [memoizedTargetRefOrQuery]);
