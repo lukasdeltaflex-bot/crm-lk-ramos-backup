@@ -23,9 +23,8 @@ interface StatsCardProps {
 }
 
 /**
- * StatsCard Premium Executivo V29
- * Equilíbrio perfeito entre tamanho e densidade de informação.
- * Cor Zinc para totais e semântica para status.
+ * StatsCard Premium Executivo V30
+ * Otimizado para alto contraste no Modo Escuro nos temas Zinc.
  */
 export function StatsCard({ 
     title, 
@@ -52,11 +51,13 @@ export function StatsCard({
             stroke: '#dc2626'
         };
 
+    // TEMAS NEUTROS (TOTAL DIGITADO / TOTAL COMISSÕES)
+    // Refinado para contraste máximo no Modo Escuro
     if (t === 'total digitado' || t === 'total de comissões')
         return {
-            card: 'border-zinc-300 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/10',
-            text: 'text-zinc-600 dark:text-zinc-400',
-            stroke: '#52525b'
+            card: 'border-zinc-300 dark:border-zinc-500/40 bg-zinc-50/50 dark:bg-zinc-900/40',
+            text: 'text-zinc-600 dark:text-zinc-100',
+            stroke: '#a1a1aa'
         };
     
     if (t.includes('andamento') || t.includes('esperada')) 
