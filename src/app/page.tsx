@@ -269,7 +269,6 @@ export default function DashboardPage() {
                     title="Total Digitado" 
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.totalDigitado)} 
                     icon={FileText} 
-                    percentage={100}
                     description="PRODUÇÃO MENSAL"
                 />
             </div>
@@ -278,7 +277,6 @@ export default function DashboardPage() {
                     title="Pendente" 
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.pendente)} 
                     icon={BadgePercent} 
-                    percentage={stats.percPendente}
                     description="VS PRODUÇÃO ATUAL"
                 />
             </div>
@@ -287,7 +285,6 @@ export default function DashboardPage() {
                     title="Em Andamento" 
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.emAndamento)} 
                     icon={Hourglass} 
-                    percentage={stats.percEmAndamento}
                     description="VS PRODUÇÃO ATUAL"
                 />
             </div>
@@ -299,7 +296,6 @@ export default function DashboardPage() {
                     title="Aguardando Saldo" 
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.aguardandoSaldo)} 
                     icon={Clock} 
-                    percentage={stats.percAguardandoSaldo}
                     description="VS PRODUÇÃO ATUAL"
                 />
             </div>
@@ -308,7 +304,6 @@ export default function DashboardPage() {
                     title="Saldo Pago" 
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.saldoPago)} 
                     icon={CheckCircle2} 
-                    percentage={stats.percSaldoPago}
                     description="VS PRODUÇÃO ATUAL"
                 />
             </div>
@@ -317,7 +312,6 @@ export default function DashboardPage() {
                     title="Reprovado" 
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.reprovado)} 
                     icon={XCircle} 
-                    percentage={stats.percReprovado}
                     description="DO TOTAL DIGITADO"
                 />
             </div>
