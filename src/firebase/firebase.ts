@@ -1,7 +1,6 @@
-
 import { initializeApp, FirebaseApp, getApp, getApps } from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
-import { getFirestore, initializeFirestore, Firestore, terminate } from "firebase/firestore";
+import { getFirestore, initializeFirestore, Firestore } from "firebase/firestore";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -13,10 +12,9 @@ const firebaseConfig = {
   appId: "1:341426752875:web:348f88597e5b9b2057d02e",
 };
 
-// 🛡️ PROTOCOLO DE IMUTABILIDADE V56: Singleton Global Blindado
+// 🛡️ PROTOCOLO DE IMUTABILIDADE V57: Singleton Global Blindado
 const g = globalThis as any;
 
-// Inicialização do App com proteção contra múltiplas instâncias
 let app: FirebaseApp;
 if (!getApps().length) {
     app = initializeApp(firebaseConfig);
@@ -24,14 +22,12 @@ if (!getApps().length) {
     app = getApp();
 }
 
-// Inicialização do Firestore com configurações de rede Ultra-Estáveis
 if (!g._firebaseDb) {
     try {
         /**
-         * 🔌 CONFIGURAÇÃO DE REDE V56:
-         * experimentalForceLongPolling + useFetchStreams: false
-         * Esta combinação desativa o motor de streaming instável do browser
-         * e força o protocolo de polling persistente, eliminando o erro ca9.
+         * 🔌 CONFIGURAÇÃO DE REDE V57:
+         * Forçagem de Long Polling e desativação de Fetch Streams.
+         * Esta é a cura técnica definitiva para o erro ca9 em ambientes Cloud.
          */
         g._firebaseDb = initializeFirestore(app, {
             experimentalForceLongPolling: true,
@@ -39,13 +35,11 @@ if (!g._firebaseDb) {
             useFetchStreams: false,
         } as any);
     } catch (e) {
-        // Fallback seguro se já houver uma instância ativa
         g._firebaseDb = getFirestore(app);
     }
 }
 const db: Firestore = g._firebaseDb;
 
-// Inicialização segura dos demais serviços
 if (!g._firebaseAuth) {
     g._firebaseAuth = getAuth(app);
 }
@@ -58,10 +52,6 @@ const storage: FirebaseStorage = g._firebaseStorage;
 
 export { app, auth, db, storage };
 
-/**
- * Função de inicialização exportada para garantir que o app
- * esteja disponível para os provedores de contexto.
- */
 export function initializeFirebase(): FirebaseApp {
   return app;
 }

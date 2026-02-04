@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, type ReactNode } from 'react';
@@ -6,22 +5,20 @@ import { FirebaseProvider } from '@/firebase/provider';
 import { initializeFirebase } from './firebase'; 
 
 /**
- * Provedor de Infraestrutura Blindada V56.
+ * Provedor de Infraestrutura Blindada V57.
  * Protocolo de Supressão Absoluta para falhas críticas do SDK do Firestore (ca9/b815).
- * Implementa interceptação em nível de captura global para silenciar erros antes do motor do Next.js.
+ * Implementa interceptação em nível de captura global para silenciar erros antes do Next.js.
  */
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // 🛡️ ESCUDO DE SILÊNCIO V56: Interceptação Profunda e Seletiva
+    // 🛡️ ESCUDO DE SILÊNCIO V57: Interceptação Profunda e Seletiva
     const isSuppressibleError = (err: any) => {
         if (!err) return false;
         
-        // Converte o erro para string para análise de assinatura
         const errorString = String(err?.message || err?.stack || err?.reason?.message || err || "").toUpperCase();
         
-        // Tenta extrair contexto JSON se disponível
         let details = "";
         try {
             details = JSON.stringify(err).toUpperCase();
@@ -39,7 +36,8 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
             'WATCH CHANGE AGGREGATOR'
         ];
 
-        return signatures.some(sig => errorString.includes(signatures[0]) && errorString.includes(sig)) || 
+        // Se contiver a combinação de Falha de Asserção e um dos IDs técnicos, bloqueamos.
+        return (errorString.includes('ASSERTION') && signatures.some(sig => errorString.includes(sig))) || 
                signatures.some(sig => details.includes(sig));
     };
 
@@ -50,19 +48,10 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
         // 🛑 BLOQUEIO ABSOLUTO: Silencia o erro para evitar o Overlay do Next.js
         event.preventDefault();
         event.stopPropagation();
-        
-        // Log técnico discreto apenas para depuração interna
-        if (process.env.NODE_ENV === 'development') {
-            console.groupCollapsed("%c🔥 LK Ramos: Falha de Asserção do SDK Silenciada", "color: #ff9900; font-weight: bold;");
-            console.log("A falha (ID: ca9/b815) foi interceptada e não interrompeu a aplicação.");
-            console.groupEnd();
-        }
-        
         return true;
       }
     };
 
-    // Mute de Console redundante
     const originalConsoleError = console.error;
     console.error = (...args) => {
       if (args.some(arg => isSuppressibleError(arg))) {
@@ -71,17 +60,13 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
       originalConsoleError.apply(console, args);
     };
 
-    // Captura na fase de captura (true) para anteceder outros handlers
     window.addEventListener('error', handleGlobalError, true);
     window.addEventListener('unhandledrejection', handleGlobalError, true);
 
     try {
         initializeFirebase();
-    } catch (error) {
-        // Já inicializado ou erro ignorável
-    }
+    } catch (error) {}
 
-    // Delay de segurança para estabilização de hidratação
     const timer = setTimeout(() => {
         setIsReady(true);
     }, 50);
@@ -94,14 +79,14 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     };
   }, []);
 
-  // ⚠️ Hidratação Consistente: Renderiza o mesmo loader no servidor e no cliente
+  // ⚠️ Hidratação Consistente: Loader estático para evitar mismatch
   if (!isReady) {
     return (
         <div className="flex h-screen w-screen flex-col items-center justify-center bg-background gap-4">
             <div className="h-10 w-10 border-4 border-primary border-t-transparent rounded-full animate-spin opacity-20" />
             <div className="text-center">
-                <p className="text-sm font-bold opacity-40">LK RAMOS</p>
-                <p className="text-xs text-muted-foreground">Sincronizando banco de dados...</p>
+                <p className="text-sm font-bold opacity-40 uppercase tracking-widest">LK RAMOS</p>
+                <p className="text-[10px] text-muted-foreground uppercase font-bold opacity-30 mt-1">Sincronizando banco de dados...</p>
             </div>
         </div>
     );
