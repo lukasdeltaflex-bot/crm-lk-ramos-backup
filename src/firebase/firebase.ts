@@ -12,14 +12,16 @@ import { firebaseConfig } from "./config";
  */
 
 if (typeof window === "undefined") {
-    // Interrompe imediatamente se tentar carregar no lado do servidor (Next.js SSR)
+    // 🛑 CRÍTICO: Firestore não pode rodar no servidor.
+    // Lançar erro aqui impede que o Next.js gere estados inconsistentes.
+    throw new Error("Firestore não pode rodar no server");
 }
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
 // Singleton Firestore Blindado V66
 const g = globalThis as any;
-if (!g._firebaseDb && typeof window !== "undefined") {
+if (!g._firebaseDb) {
     g._firebaseDb = initializeFirestore(app, {
         experimentalForceLongPolling: true,
         useFetchStreams: false,

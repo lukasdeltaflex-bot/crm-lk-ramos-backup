@@ -12,6 +12,8 @@ import type { Customer } from '@/lib/types';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, writeBatch, updateDoc, setDoc, query, where } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -277,7 +279,14 @@ const handleExportToPdf = async () => {
           title: 'Cliente Removido',
           description: 'Os dados do cliente foram anonimizados com sucesso.',
         });
-    } catch(error) {
+    } catch(error: any) {
+        if (error.code === 'permission-denied') {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: customerRef.path,
+                operation: 'update',
+                requestResourceData: anonymizedData
+            }));
+        }
         console.error('Error anonymizing customer:', error);
         toast({
             variant: 'destructive',
@@ -323,7 +332,14 @@ const handleExportToPdf = async () => {
         title: 'Clientes Removidos',
         description: `${selectedIds.length} cliente(s) foram anonimizados com sucesso.`,
       });
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === 'permission-denied') {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({
+              path: 'batch/customers',
+              operation: 'update',
+              requestResourceData: anonymizedData
+          }));
+      }
       console.error('Error anonymizing customers:', error);
       toast({
         variant: 'destructive',
@@ -355,7 +371,8 @@ const handleExportToPdf = async () => {
           ...selectedCustomer,
           ...data,
         };
-        await setDoc(doc(firestore, 'customers', selectedCustomer.id), customerToUpdate, { merge: true });
+        const docRef = doc(firestore, 'customers', selectedCustomer.id);
+        await setDoc(docRef, customerToUpdate, { merge: true });
         toast({
           title: 'Cliente Atualizado!',
           description: `O cliente ${data.name} foi atualizado com sucesso.`,
@@ -383,7 +400,14 @@ const handleExportToPdf = async () => {
         });
       }
       setIsDialog(false);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === 'permission-denied') {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({
+              path: 'customers',
+              operation: 'write',
+              requestResourceData: data
+          }));
+      }
       console.error('Error saving customer:', error);
       toast({
         variant: 'destructive',

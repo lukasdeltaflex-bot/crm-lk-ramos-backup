@@ -1,4 +1,3 @@
-
 'use client';
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -17,6 +16,8 @@ import {
 import { ProposalForm } from './proposal-form';
 import type { Proposal, Customer, ProposalStatus, UserSettings } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from '@/firebase';
 import { collection, doc, query, where, writeBatch, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -343,13 +344,20 @@ function ProposalsPageContent() {
 
   const handleDeleteProposal = React.useCallback(async (proposalId: string) => {
     if (!firestore) return;
+    const docRef = doc(firestore, 'loanProposals', proposalId);
     try {
-      await deleteDoc(doc(firestore, 'loanProposals', proposalId));
+      await deleteDoc(docRef);
       toast({
         title: 'Proposta Cancelada!',
         description: 'A proposta foi cancelada e removida com sucesso.',
       });
-    } catch (error) {
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'delete'
+            }));
+        }
         toast({
             variant: 'destructive',
             title: 'Erro ao cancelar',
@@ -372,13 +380,21 @@ function ProposalsPageContent() {
         dataToUpdate.datePaidToClient = currentDate;
     }
 
+    const docRef = doc(firestore, 'loanProposals', proposalId);
     try {
-      await updateDoc(doc(firestore, 'loanProposals', proposalId), dataToUpdate);
+      await updateDoc(docRef, dataToUpdate);
       toast({
           title: 'Status Atualizado!',
           description: `O status da proposta foi alterado para "${newStatus}".`,
       });
-    } catch (error) {
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'update',
+                requestResourceData: dataToUpdate
+            }));
+        }
         console.error('Error updating status:', error);
         toast({
             variant: 'destructive',
@@ -417,7 +433,14 @@ function ProposalsPageContent() {
         title: 'Status Atualizado em Massa!',
         description: `${selectedIds.length} proposta(s) foram atualizadas para "${newStatus}".`,
       });
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === 'permission-denied') {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({
+              path: 'batch/loanProposals',
+              operation: 'update',
+              requestResourceData: dataToUpdate
+          }));
+      }
       console.error('Error updating statuses in bulk:', error);
       toast({
         variant: 'destructive',
@@ -445,7 +468,13 @@ function ProposalsPageContent() {
           title: 'Propostas Canceladas!',
           description: `${selectedIds.length} proposta(s) foram canceladas com sucesso.`,
       });
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === 'permission-denied') {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({
+              path: 'batch/loanProposals',
+              operation: 'delete'
+          }));
+      }
       console.error('Error deleting proposals in bulk:', error);
       toast({
           variant: 'destructive',
@@ -510,7 +539,8 @@ function ProposalsPageContent() {
         };
 
       if (sheetMode === 'edit' && selectedProposal) {
-        await setDoc(doc(firestore, 'loanProposals', selectedProposal.id), proposalData, { merge: true });
+        const docRef = doc(firestore, 'loanProposals', selectedProposal.id);
+        await setDoc(docRef, proposalData, { merge: true });
         toast({ title: 'Proposta Atualizada!', description: `A proposta foi salva.` });
       } else {
         const newDocRef = doc(collection(firestore, 'loanProposals'));
@@ -519,7 +549,14 @@ function ProposalsPageContent() {
         toast({ title: 'Proposta Salva!', description: `A nova proposta foi criada.` });
       }
       setIsDialogOpen(false);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === 'permission-denied') {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({
+              path: 'loanProposals',
+              operation: 'write',
+              requestResourceData: data
+          }));
+      }
       console.error('Error saving proposal:', error);
       toast({ variant: 'destructive', title: 'Falha Técnica', description: 'Não foi possível salvar os dados no banco.' });
     } finally {
