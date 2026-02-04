@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, type ReactNode } from 'react';
@@ -5,7 +6,7 @@ import { FirebaseProvider } from '@/firebase/provider';
 import { initializeFirebase } from './firebase'; 
 
 /**
- * Provedor de Infraestrutura Blindada V63.
+ * Provedor de Infraestrutura Blindada V64.
  * Protocolo de Supressão Absoluta para falhas críticas do SDK do Firestore (ca9/b815).
  * Implementa intercepção profunda para silenciar erros de asserção interna antes do Next.js.
  */
@@ -13,7 +14,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // 🛡️ ESCUDO DE SILÊNCIO V63: Intercepção Profunda e Seletiva
+    // 🛡️ ESCUDO DE SILÊNCIO V64: Intercepção Profunda e Seletiva
     const isSuppressibleError = (err: any) => {
         if (!err) return false;
         
