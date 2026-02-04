@@ -23,22 +23,23 @@ interface CommissionStatusCellProps {
 export function CommissionStatusCell({ proposal, onStatusUpdate, onEdit }: CommissionStatusCellProps) {
     const { commissionStatus } = proposal;
 
-    const getStatusClass = (status: CommissionStatus) => {
+    const getStatusClass = (status?: CommissionStatus) => {
+        if (!status) return 'border-dashed border-muted-foreground/20 text-transparent group-hover:text-muted-foreground/40 bg-transparent';
         return cn('print:border-gray-400 print:text-black', {
-            'border-green-500 text-green-500': status === 'Paga',
-            'border-yellow-500 text-yellow-500': status === 'Pendente',
-            'border-orange-500 text-orange-500': status === 'Parcial',
+            'border-green-500 text-green-500 bg-green-50/50': status === 'Paga',
+            'border-yellow-500 text-yellow-500 bg-yellow-50/50': status === 'Pendente',
+            'border-orange-500 text-orange-500 bg-orange-50/50': status === 'Parcial',
         });
     };
     
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="w-full justify-start p-0 h-auto font-normal">
-                    <Badge variant="outline" className={getStatusClass(commissionStatus)}>
-                        {commissionStatus}
+                <Button variant="ghost" className="group w-full justify-start p-0 h-auto font-normal hover:bg-transparent">
+                    <Badge variant="outline" className={cn("min-w-[80px] h-6 justify-center transition-all", getStatusClass(commissionStatus))}>
+                        {commissionStatus || 'Definir'}
                     </Badge>
-                    <ChevronsUpDown className="h-4 w-4 ml-2 opacity-50 print:hidden" />
+                    <ChevronsUpDown className="h-3 w-3 ml-1 opacity-0 group-hover:opacity-40 transition-opacity print:hidden" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>

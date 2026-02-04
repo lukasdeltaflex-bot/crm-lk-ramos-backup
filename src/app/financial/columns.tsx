@@ -237,12 +237,9 @@ export const getColumns = (
     accessorKey: 'commissionStatus',
     header: 'Status Comissão',
     cell: ({ row }) => {
-      const proposal = row.original;
-      const { commissionStatus } = proposal;
-      if (!commissionStatus) return <div className="text-muted-foreground italic text-[10px]">Aguardando Averbação</div>;
       return (
         <CommissionStatusCell 
-            proposal={proposal} 
+            proposal={row.original} 
             onStatusUpdate={onStatusUpdate} 
             onEdit={onEdit} 
         />
