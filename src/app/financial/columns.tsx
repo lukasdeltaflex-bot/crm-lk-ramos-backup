@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ColumnDef, flexRender, Header } from '@tanstack/react-table';
@@ -21,6 +20,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TableHead } from '@/components/ui/table';
 import { CommissionStatusCell } from './commission-status-cell';
+import { StatusCell } from '@/app/proposals/status-cell';
 import Link from 'next/link';
 import type { DateRange } from 'react-day-picker';
 
@@ -334,6 +334,17 @@ export const getColumns = (
     header: 'Status Proposta',
     id: 'status',
     enableHiding: true,
+    cell: ({ row }) => {
+        const proposal = row.original;
+        return (
+            <div className="w-28">
+                <StatusCell 
+                    proposalId={proposal.id}
+                    currentStatus={proposal.status}
+                />
+            </div>
+        )
+    }
   },
   {
     id: 'actions',

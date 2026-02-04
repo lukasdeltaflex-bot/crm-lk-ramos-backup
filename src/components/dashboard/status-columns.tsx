@@ -7,6 +7,7 @@ import { Badge } from '../ui/badge';
 import { cn } from '@/lib/utils';
 import { format, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { StatusCell } from '@/app/proposals/status-cell';
 
 type ProposalWithCustomer = Proposal & { customer: { name: string } };
 
@@ -55,21 +56,14 @@ export const statusColumns: ColumnDef<ProposalWithCustomer>[] = [
     accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => {
-      const status = row.getValue('status') as string;
+      const proposal = row.original;
       return (
-        <Badge
-          variant="outline"
-          className={cn('w-full justify-center text-[10px]', {
-            'border-green-500 text-green-500': status === 'Pago',
-            'border-orange-500 text-orange-500': status === 'Saldo Pago',
-            'border-yellow-500 text-yellow-500': status === 'Em Andamento',
-            'border-blue-500 text-blue-500': status === 'Aguardando Saldo',
-            'border-red-500 text-red-500': status === 'Reprovado',
-            'border-purple-500 text-purple-500': status === 'Pendente',
-          })}
-        >
-          {status}
-        </Badge>
+        <div className="w-28">
+            <StatusCell
+                proposalId={proposal.id}
+                currentStatus={proposal.status}
+            />
+        </div>
       );
     },
   },
