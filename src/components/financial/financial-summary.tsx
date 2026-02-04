@@ -43,7 +43,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
 
-    // 1. BASE DE CÁLCULO: Produção Mensal (Digitado no período selecionado)
+    // 1. PRODUÇÃO MENSAL: Baseado na Data de Digitação (O que entrou de trabalho no período)
     const currentMonthProposals = allProposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
@@ -52,33 +52,38 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
 
     const totalPotentialCommission = currentMonthProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
 
-    // 2. Comissões Recebidas (O que foi digitado no mês e já pagou)
-    const commissionReceivedProposals = currentMonthProposals.filter(p => p.commissionStatus === 'Paga');
+    // 2. FLUXO DE CAIXA (COMISSÃO RECEBIDA): Baseado na Data de Pagamento da Comissão
+    // Agora conta qualquer proposta paga no período, mesmo que digitada meses atrás
+    const commissionReceivedProposals = allProposals.filter(p => {
+        if (p.commissionStatus !== 'Paga' || !p.commissionPaymentDate) return false;
+        const d = new Date(p.commissionPaymentDate);
+        return d >= fromDate && d <= effectiveToDate;
+    });
     const totalAmountPaid = commissionReceivedProposals.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
 
-    // 3. ACUMULADOS: Buscamos dados de 1 mês atrás até hoje para Pipeline
+    // 3. ACUMULADOS: Pipeline de Pendências
     const accumulatedProposals = allProposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
         return d >= startOfPipeline && d <= effectiveToDate;
     });
 
-    // Saldo a Receber (ACUMULADO - Averbados ou Pagos sem comissão)
-    const proposalsForSaldoAReceber = accumulatedProposals.filter(p => {
+    // Saldo a Receber (Averbados ou Pagos que ainda não pagaram comissão)
+    const proposalsForSaldoAReceber = allProposals.filter(p => {
         if (p.commissionStatus === 'Paga') return false;
-        const hasAverbacao = !!p.dateApproved;
         const status = p.status;
+        const hasAverbacao = !!p.dateApproved;
+        // Consideramos propostas que já foram pagas ao cliente ou estão averbadas
         return status === 'Pago' || (hasAverbacao && ['Em Andamento', 'Saldo Pago', 'Pendente'].includes(status));
     });
     const pendingAmount = proposalsForSaldoAReceber.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
 
-    // Alerta Crítico: Averbado há mais de 15 dias sem pagar comissão
     const isCriticalSaldo = proposalsForSaldoAReceber.some(p => {
         if (!p.dateApproved) return false;
         return differenceInDays(today, new Date(p.dateApproved)) > 15;
     });
 
-    // Comissão Esperada (ACUMULADO - Digitados sem averbação ainda)
+    // Comissão Esperada (Digitados que ainda não averbaram)
     const expectedCommissionProposals = accumulatedProposals.filter(p => {
         if (p.commissionStatus === 'Paga') return false;
         const isReprovado = p.status === 'Reprovado';
@@ -88,7 +93,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     });
     const expectedAmount = expectedCommissionProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
 
-    // Sparklines (Fluxo de Caixa dos últimos 30 dias)
+    // Sparklines (Últimos 15 dias para visualização de tendência)
     const getSparkline = (list: Proposal[], dateField: keyof Proposal) => {
         const days = Array.from({length: 15}, (_, i) => subDays(today, 14 - i));
         return days.map(day => {
@@ -99,7 +104,6 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
         });
     };
 
-    // Ticket Médio
     const getAvg = (val: number, list: any[]) => list.length > 0 ? val / list.length : 0;
     
     return {
@@ -132,7 +136,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
       title: "Total de Comissões",
       value: formatCurrency(totalPotentialCommission),
       icon: Coins,
-      description: "PRODUÇÃO MENSAL",
+      description: "PRODUÇÃO DO PERÍODO",
       subValue: `Ticket Médio: ${formatCurrency(metrics.avgTotal)}`,
       proposals: allProposalsInPeriod,
       spark: metrics.sparkTotal
@@ -141,8 +145,8 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
       title: "Comissão Recebida",
       value: formatCurrency(totalAmountPaid),
       icon: CheckCircle,
-      description: "FLUXO DE CAIXA",
-      subValue: `Média Recebida: ${formatCurrency(metrics.avgPaid)}`,
+      description: "DINHEIRO NO CAIXA",
+      subValue: `Eficiência: ${metrics.avgPaid > 0 ? ((totalAmountPaid / (totalPotentialCommission || 1)) * 100).toFixed(1) : '0'}%`,
       proposals: commissionReceivedProposals,
       spark: metrics.sparkPaid
     },
@@ -150,8 +154,8 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
       title: "Saldo a Receber",
       value: formatCurrency(pendingAmount),
       icon: Hourglass,
-      description: "PROPOSTAS AVERBADAS",
-      subValue: `Pendência Média: ${formatCurrency(metrics.avgPending)}`,
+      description: "FATURAMENTO PENDENTE",
+      subValue: `Averbados/Pagos S/ Comiss.`,
       proposals: proposalsForSaldoAReceber,
       spark: metrics.sparkPending,
       critical: metrics.isCriticalSaldo
@@ -160,8 +164,8 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
       title: "Comissão Esperada",
       value: formatCurrency(expectedAmount),
       icon: CircleDollarSign,
-      description: "PROPOSTAS DIGITADAS",
-      subValue: `Ticket Esperado: ${formatCurrency(metrics.avgExpected)}`,
+      description: "PIPELINE DIGITADO",
+      subValue: `Em processamento`,
       proposals: expectedCommissionProposals,
       spark: metrics.sparkExpected
     },
