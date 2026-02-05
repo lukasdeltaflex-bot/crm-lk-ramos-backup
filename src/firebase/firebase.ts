@@ -21,14 +21,14 @@ if (typeof window !== "undefined") {
         // Inicializa o App se necessário
         app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
         
-        // Inicializa instâncias de serviço
+        // Inicializa instâncias de serviço como Singletons estáveis
         db = getFirestore(app);
         auth = getAuth(app);
         storage = getStorage(app);
         
-        // Log de sanidade (apenas em dev ou quando houver erro)
-        if (!firebaseConfig.storageBucket) {
-            console.error("LK RAMOS AVISO: O campo 'storageBucket' está vazio no seu arquivo config.ts. Os uploads não funcionarão sem ele.");
+        // Log de sanidade técnico (apenas para diagnóstico de uploads)
+        if (!firebaseConfig.storageBucket || firebaseConfig.storageBucket === "") {
+            console.warn("LK RAMOS AVISO: O campo 'storageBucket' está ausente na configuração. Os anexos não funcionarão.");
         }
     } catch (error) {
         console.error("Falha crítica ao inicializar Firebase:", error);

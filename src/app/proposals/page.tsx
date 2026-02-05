@@ -376,12 +376,13 @@ function ProposalsPageContent() {
     };
 
     const currentDate = new Date().toISOString();
-    if (newStatus === 'Pago' || newStatus === 'Saldo Pago') {
+    // Regra refinada: Status Pago preenche averbação e pagamento.
+    if (newStatus === 'Pago') {
         dataToUpdate.dateApproved = currentDate;
         dataToUpdate.datePaidToClient = currentDate;
-    }
-
-    if (newStatus === 'Saldo Pago') {
+    } 
+    // Status Saldo Pago preenche EXCLUSIVAMENTE a chegada do saldo.
+    else if (newStatus === 'Saldo Pago') {
         dataToUpdate.debtBalanceArrivalDate = currentDate;
     }
 
@@ -422,12 +423,10 @@ function ProposalsPageContent() {
         status: newStatus,
     };
 
-    if (newStatus === 'Pago' || newStatus === 'Saldo Pago') {
+    if (newStatus === 'Pago') {
         dataToUpdate.dateApproved = currentDate;
         dataToUpdate.datePaidToClient = currentDate;
-    }
-
-    if (newStatus === 'Saldo Pago') {
+    } else if (newStatus === 'Saldo Pago') {
         dataToUpdate.debtBalanceArrivalDate = currentDate;
     }
 
@@ -611,8 +610,8 @@ function ProposalsPageContent() {
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel>Voltar</AlertDialogCancel>
                                 <AlertDialogAction onClick={handleBulkDelete}>Cancelar Propostas</AlertDialogAction>
+                                <AlertDialogCancel>Voltar</AlertDialogCancel>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>

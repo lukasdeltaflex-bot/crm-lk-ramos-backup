@@ -53,13 +53,14 @@ export function StatusCell({ proposalId, currentStatus, onStatusChange }: Status
     const now = new Date().toISOString();
     const dataToUpdate: any = { status: newStatus };
     
-    // Regra de Ouro LK Ramos: Marcar como pago atualiza datas automaticamente
-    if (newStatus === 'Pago' || newStatus === 'Saldo Pago') {
+    // Regra de Ouro LK Ramos: 
+    // Se for Pago, preenche averbação e pagamento.
+    if (newStatus === 'Pago') {
         dataToUpdate.dateApproved = now;
         dataToUpdate.datePaidToClient = now;
-    }
-
-    if (newStatus === 'Saldo Pago') {
+    } 
+    // Se for Saldo Pago, preenche EXCLUSIVAMENTE a chegada do saldo.
+    else if (newStatus === 'Saldo Pago') {
         dataToUpdate.debtBalanceArrivalDate = now;
     }
 

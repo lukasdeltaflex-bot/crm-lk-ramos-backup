@@ -181,7 +181,6 @@ export function ProposalForm({
     setIsClient(true);
   }, []);
 
-  // Gera um ID temporário imediatamente para novas propostas, permitindo uploads antes de salvar
   useEffect(() => {
     if (firestore && !proposal?.id && !tempProposalId) {
       setTempProposalId(doc(collection(firestore, 'loanProposals')).id);
@@ -259,17 +258,13 @@ export function ProposalForm({
     
     const today = format(new Date(), 'dd/MM/yyyy');
     
+    // Regra refinada: Saldo Pago para Portabilidade só preenche data de chegada do saldo.
     if (status === 'Saldo Pago' && product === 'Portabilidade') {
         if (!form.getValues('debtBalanceArrivalDate')) {
             setValue('debtBalanceArrivalDate', today, { shouldValidate: true });
         }
-        if (!form.getValues('dateApproved')) {
-            setValue('dateApproved', today, { shouldValidate: true });
-        }
-        if (!form.getValues('datePaidToClient')) {
-            setValue('datePaidToClient', today, { shouldValidate: true });
-        }
-    } else if (status === 'Pago' || status === 'Saldo Pago') {
+    } else if (status === 'Pago') {
+        // Status Pago continua preenchendo aprovação e pagamento para todos os produtos
         if (!form.getValues('dateApproved')) {
             setValue('dateApproved', today, { shouldValidate: true });
         }
