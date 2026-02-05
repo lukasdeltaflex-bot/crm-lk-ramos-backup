@@ -65,13 +65,13 @@ export function PartnerPerformanceCharts({ proposals }: PartnerPerformanceCharts
           <YAxis 
             dataKey="name" 
             type="category" 
-            width={100} 
+            width={140} 
             fontSize={11}
             fontWeight="bold"
             tickLine={false}
             axisLine={false}
             stroke="hsl(var(--muted-foreground))"
-            tickFormatter={(value) => value.length > 15 ? `${value.substring(0, 15)}...` : value}
+            tickFormatter={(value) => value.length > 25 ? `${value.substring(0, 25)}...` : value}
           />
           <Tooltip 
             cursor={{ fill: 'hsl(var(--muted)/0.5)' }}

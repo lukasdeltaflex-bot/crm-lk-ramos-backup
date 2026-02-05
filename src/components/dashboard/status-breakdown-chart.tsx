@@ -34,7 +34,7 @@ export function StatusBreakdownChart({ proposals }: StatusBreakdownChartProps) {
   return (
     <div className="h-[400px] w-full pt-4">
         <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} layout="vertical" margin={{ left: 0, right: 30 }}>
+            <BarChart data={data} layout="vertical" margin={{ left: 10, right: 30 }}>
             <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--muted-foreground)/0.1)" />
             <XAxis
                 type="number"
@@ -48,11 +48,11 @@ export function StatusBreakdownChart({ proposals }: StatusBreakdownChartProps) {
                 type="category"
                 dataKey="name"
                 stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
+                fontSize={11}
                 fontWeight="bold"
                 tickLine={false}
                 axisLine={false}
-                width={80}
+                width={140}
                 interval={0}
             />
              <Tooltip

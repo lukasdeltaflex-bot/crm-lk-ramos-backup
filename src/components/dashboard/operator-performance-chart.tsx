@@ -59,8 +59,8 @@ export function OperatorPerformanceChart({ proposals }: OperatorPerformanceChart
               <YAxis 
                 dataKey="name" 
                 type="category" 
-                width={80} 
-                fontSize={12}
+                width={140} 
+                fontSize={11}
                 tickLine={false}
                 axisLine={false}
               />
