@@ -286,12 +286,14 @@ export const getColumns = (
         // Extraímos metadados do filtro se for um objeto
         const filterId = typeof filterValue === 'object' ? filterValue?.id : filterValue;
         const hasDateFilter = typeof filterValue === 'object' ? !!filterValue?.hasDateFilter : false;
+        const hasGlobalFilter = typeof filterValue === 'object' ? !!filterValue?.hasGlobalFilter : false;
 
         // REGRA PARA ABA "TODOS"
         if (filterId === '__CUSTOM_FILTER_TODOS__') {
-            // Se for "Pago", mostramos apenas se for do mês vigente ou se houver busca por data
+            // Se for "Pago", mostramos apenas se for do mês vigente 
+            // OU se houver busca ativa (termo de pesquisa ou filtro de data)
             if (mainStatus === 'Pago') {
-                if (hasDateFilter) return true; // Deixa o filtro de data decidir
+                if (hasDateFilter || hasGlobalFilter) return true; // Deixa o filtro de busca/data decidir
 
                 const checkDateStr = row.original.datePaidToClient || row.original.dateDigitized;
                 if (!checkDateStr) return false;
@@ -308,7 +310,7 @@ export const getColumns = (
         // REGRA PARA ABA "PAGAS"
         if (filterId === 'Paga') {
             if (commissionStatus !== 'Paga') return false;
-            if (hasDateFilter) return true;
+            if (hasDateFilter || hasGlobalFilter) return true;
 
             const paymentDateStr = row.original.commissionPaymentDate;
             if (!paymentDateStr) return false;

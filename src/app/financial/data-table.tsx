@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -322,7 +321,8 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     
     // Objeto de contexto do filtro para passar metadados ao filterFn das colunas
     const filterContext = {
-        hasDateFilter: !!appliedDateRange
+        hasDateFilter: !!appliedDateRange,
+        hasGlobalFilter: !!globalFilter
     };
 
     if (statusFilter === 'Todos') {
@@ -340,7 +340,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         statusColumn?.setFilterValue({ id: statusFilter, ...filterContext });
         dateColumn?.setFilterValue(appliedDateRange);
     }
-  }, [statusFilter, appliedDateRange, table]);
+  }, [statusFilter, appliedDateRange, globalFilter, table]);
 
   const idToLabelMap: { [key: string]: string } = {
     customerName: 'Cliente',
