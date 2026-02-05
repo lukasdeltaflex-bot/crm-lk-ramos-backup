@@ -50,13 +50,17 @@ export function StatusCell({ proposalId, currentStatus, onStatusChange }: Status
     // Caso contrário (Dashboard ou Financeiro), atualizamos diretamente
     if (!firestore) return;
 
+    const now = new Date().toISOString();
     const dataToUpdate: any = { status: newStatus };
     
     // Regra de Ouro LK Ramos: Marcar como pago atualiza datas automaticamente
     if (newStatus === 'Pago' || newStatus === 'Saldo Pago') {
-        const now = new Date().toISOString();
         dataToUpdate.dateApproved = now;
         dataToUpdate.datePaidToClient = now;
+    }
+
+    if (newStatus === 'Saldo Pago') {
+        dataToUpdate.debtBalanceArrivalDate = now;
     }
 
     const docRef = doc(firestore, 'loanProposals', proposalId);

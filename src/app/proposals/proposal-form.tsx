@@ -202,6 +202,7 @@ export function ProposalForm({
   const netAmount = watch('netAmount');
   const product = watch('product');
   const selectedCustomerId = watch('customerId');
+  const status = watch('status');
 
   const selectedCustomer = useMemo(() => {
     return customers.find(c => c.id === selectedCustomerId);
@@ -253,6 +254,31 @@ export function ProposalForm({
         }
     }
   }, [commissionBase, commissionPercentage, grossAmount, netAmount, setValue, isReadOnly, form]);
+
+  useEffect(() => {
+    if (isReadOnly) return;
+    
+    const today = format(new Date(), 'dd/MM/yyyy');
+    
+    if (status === 'Saldo Pago' && product === 'Portabilidade') {
+        if (!form.getValues('debtBalanceArrivalDate')) {
+            setValue('debtBalanceArrivalDate', today, { shouldValidate: true });
+        }
+        if (!form.getValues('dateApproved')) {
+            setValue('dateApproved', today, { shouldValidate: true });
+        }
+        if (!form.getValues('datePaidToClient')) {
+            setValue('datePaidToClient', today, { shouldValidate: true });
+        }
+    } else if (status === 'Pago' || status === 'Saldo Pago') {
+        if (!form.getValues('dateApproved')) {
+            setValue('dateApproved', today, { shouldValidate: true });
+        }
+        if (!form.getValues('datePaidToClient')) {
+            setValue('datePaidToClient', today, { shouldValidate: true });
+        }
+    }
+  }, [status, product, setValue, isReadOnly, form]);
 
   const formatDateForForm = (dateString?: string) => {
     if (!dateString) return undefined;

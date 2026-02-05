@@ -371,14 +371,18 @@ function ProposalsPageContent() {
   const handleStatusChange = React.useCallback(async (proposalId: string, newStatus: ProposalStatus) => {
     if (!firestore) return;
     
-    const dataToUpdate: { status: ProposalStatus; dateApproved?: string; datePaidToClient?: string } = {
+    const dataToUpdate: any = {
         status: newStatus,
     };
 
+    const currentDate = new Date().toISOString();
     if (newStatus === 'Pago' || newStatus === 'Saldo Pago') {
-        const currentDate = new Date().toISOString();
         dataToUpdate.dateApproved = currentDate;
         dataToUpdate.datePaidToClient = currentDate;
+    }
+
+    if (newStatus === 'Saldo Pago') {
+        dataToUpdate.debtBalanceArrivalDate = currentDate;
     }
 
     const docRef = doc(firestore, 'loanProposals', proposalId);
@@ -412,15 +416,19 @@ function ProposalsPageContent() {
     if (selectedIds.length === 0) return;
     
     const batch = writeBatch(firestore);
+    const currentDate = new Date().toISOString();
     
-    const dataToUpdate: { status: ProposalStatus; dateApproved?: string; datePaidToClient?: string } = {
+    const dataToUpdate: any = {
         status: newStatus,
     };
 
     if (newStatus === 'Pago' || newStatus === 'Saldo Pago') {
-        const currentDate = new Date().toISOString();
         dataToUpdate.dateApproved = currentDate;
         dataToUpdate.datePaidToClient = currentDate;
+    }
+
+    if (newStatus === 'Saldo Pago') {
+        dataToUpdate.debtBalanceArrivalDate = currentDate;
     }
 
     selectedIds.forEach((id) => {
