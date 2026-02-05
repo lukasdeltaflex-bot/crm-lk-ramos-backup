@@ -21,7 +21,8 @@ import { FirestorePermissionError } from '@/firebase/errors';
 interface StatusCellProps {
   proposalId: string;
   currentStatus: ProposalStatus;
-  onStatusChange?: (proposalId: string, newStatus: ProposalStatus) => void;
+  product?: string;
+  onStatusChange?: (proposalId: string, newStatus: ProposalStatus, product?: string) => void;
 }
 
 const getStatusClass = (status: ProposalStatus) => {
@@ -35,32 +36,34 @@ const getStatusClass = (status: ProposalStatus) => {
   });
 };
 
-export function StatusCell({ proposalId, currentStatus, onStatusChange }: StatusCellProps) {
+export function StatusCell({ proposalId, currentStatus, product, onStatusChange }: StatusCellProps) {
   const firestore = useFirestore();
 
   const handleUpdate = (newStatus: ProposalStatus) => {
     if (newStatus === currentStatus) return;
 
-    // Se houver uma função de callback do pai (como na página de propostas), usamos ela
     if (onStatusChange) {
-        onStatusChange(proposalId, newStatus);
+        onStatusChange(proposalId, newStatus, product);
         return;
     }
 
-    // Caso contrário (Dashboard ou Financeiro), atualizamos diretamente
     if (!firestore) return;
 
     const now = new Date().toISOString();
     const dataToUpdate: any = { status: newStatus };
     
-    // Regra de Ouro LK Ramos: 
-    // Se for Pago, preenche averbação e pagamento.
+    const isPortability = product === 'Portabilidade';
+
+    // REGRA DE OURO LK RAMOS: 
+    // Se for Pago, preenche averbação (exceto Portabilidade) e pagamento.
     if (newStatus === 'Pago') {
-        dataToUpdate.dateApproved = now;
+        if (!isPortability) {
+            dataToUpdate.dateApproved = now;
+        }
         dataToUpdate.datePaidToClient = now;
     } 
-    // Se for Saldo Pago, preenche EXCLUSIVAMENTE a chegada do saldo.
-    else if (newStatus === 'Saldo Pago') {
+    // Se for Saldo Pago, preenche EXCLUSIVAMENTE a chegada do saldo em Portabilidade.
+    else if (newStatus === 'Saldo Pago' && isPortability) {
         dataToUpdate.debtBalanceArrivalDate = now;
     }
 

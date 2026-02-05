@@ -257,15 +257,16 @@ export function ProposalForm({
     if (isReadOnly) return;
     
     const today = format(new Date(), 'dd/MM/yyyy');
+    const isPortability = product === 'Portabilidade';
     
-    // Regra refinada: Saldo Pago para Portabilidade só preenche data de chegada do saldo.
-    if (status === 'Saldo Pago' && product === 'Portabilidade') {
+    // REGRA DE OURO LK RAMOS: Portabilidade nunca tem averbação automática.
+    if (status === 'Saldo Pago' && isPortability) {
         if (!form.getValues('debtBalanceArrivalDate')) {
             setValue('debtBalanceArrivalDate', today, { shouldValidate: true });
         }
     } else if (status === 'Pago') {
-        // Status Pago continua preenchendo aprovação e pagamento para todos os produtos
-        if (!form.getValues('dateApproved')) {
+        // Se for portabilidade, não preenchemos dateApproved automaticamente (regra manual)
+        if (!isPortability && !form.getValues('dateApproved')) {
             setValue('dateApproved', today, { shouldValidate: true });
         }
         if (!form.getValues('datePaidToClient')) {

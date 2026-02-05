@@ -368,7 +368,7 @@ function ProposalsPageContent() {
     }
   }, [firestore]);
 
-  const handleStatusChange = React.useCallback(async (proposalId: string, newStatus: ProposalStatus) => {
+  const handleStatusChange = React.useCallback(async (proposalId: string, newStatus: ProposalStatus, productType?: string) => {
     if (!firestore) return;
     
     const dataToUpdate: any = {
@@ -376,14 +376,20 @@ function ProposalsPageContent() {
     };
 
     const currentDate = new Date().toISOString();
-    // Regra refinada: Status Pago preenche averbação e pagamento.
+    
+    // REGRA DE OURO LK RAMOS: Portabilidade nunca tem averbação automática
+    const isPortability = productType === 'Portabilidade';
+
     if (newStatus === 'Pago') {
-        dataToUpdate.dateApproved = currentDate;
+        if (!isPortability) {
+            dataToUpdate.dateApproved = currentDate;
+        }
         dataToUpdate.datePaidToClient = currentDate;
     } 
-    // Status Saldo Pago preenche EXCLUSIVAMENTE a chegada do saldo.
     else if (newStatus === 'Saldo Pago') {
-        dataToUpdate.debtBalanceArrivalDate = currentDate;
+        if (isPortability) {
+            dataToUpdate.debtBalanceArrivalDate = currentDate;
+        }
     }
 
     const docRef = doc(firestore, 'loanProposals', proposalId);
@@ -419,19 +425,22 @@ function ProposalsPageContent() {
     const batch = writeBatch(firestore);
     const currentDate = new Date().toISOString();
     
-    const dataToUpdate: any = {
-        status: newStatus,
-    };
-
-    if (newStatus === 'Pago') {
-        dataToUpdate.dateApproved = currentDate;
-        dataToUpdate.datePaidToClient = currentDate;
-    } else if (newStatus === 'Saldo Pago') {
-        dataToUpdate.debtBalanceArrivalDate = currentDate;
-    }
-
     selectedIds.forEach((id) => {
       const docRef = doc(firestore, 'loanProposals', id);
+      const proposal = proposals?.find(p => p.id === id);
+      const isPortability = proposal?.product === 'Portabilidade';
+
+      const dataToUpdate: any = { status: newStatus };
+
+      if (newStatus === 'Pago') {
+          if (!isPortability) {
+              dataToUpdate.dateApproved = currentDate;
+          }
+          dataToUpdate.datePaidToClient = currentDate;
+      } else if (newStatus === 'Saldo Pago' && isPortability) {
+          dataToUpdate.debtBalanceArrivalDate = currentDate;
+      }
+
       batch.update(docRef, dataToUpdate);
     });
 
@@ -446,7 +455,7 @@ function ProposalsPageContent() {
           errorEmitter.emit('permission-error', new FirestorePermissionError({
               path: 'batch/loanProposals',
               operation: 'update',
-              requestResourceData: dataToUpdate
+              requestResourceData: { status: newStatus }
           }));
       }
       console.error('Error updating statuses in bulk:', error);
@@ -456,7 +465,7 @@ function ProposalsPageContent() {
         description: 'Ocorreu um erro ao atualizar o status das propostas.',
       });
     }
-  }, [firestore, rowSelection]);
+  }, [firestore, rowSelection, proposals]);
   
   const handleBulkDelete = React.useCallback(async () => {
     if (!firestore) return;
@@ -519,11 +528,9 @@ function ProposalsPageContent() {
             data.status === 'Saldo Pago' ||
             ((data.status === 'Em Andamento' || data.status === 'Pendente') && !!dateApproved);
         
-        // Se for elegível e não tiver status, coloca como Pendente (Saldo a Receber)
         if (isEligibleForFinancialTracking && (!commissionStatus || commissionStatus === '')) {
             commissionStatus = 'Pendente';
         } 
-        // Se NÃO for elegível (apenas Digitada), o status de comissão deve ser vazio para não poluir o financeiro
         else if (!isEligibleForFinancialTracking && (!commissionStatus || commissionStatus === 'Pendente')) {
             commissionStatus = '';
         }

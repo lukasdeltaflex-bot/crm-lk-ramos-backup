@@ -194,7 +194,7 @@ export const getColumns = (
     onEdit: (proposal: ProposalWithCustomer) => void,
     onView: (proposal: ProposalWithCustomer) => void,
     onDelete: (proposalId: string) => void,
-    onStatusChange: (proposalId: string, newStatus: ProposalStatus) => void,
+    onStatusChange: (proposalId: string, newStatus: ProposalStatus, product?: string) => void,
     onDuplicate: (proposal: ProposalWithCustomer) => void
     ): ColumnDef<ProposalWithCustomer>[] => [
   {
@@ -291,6 +291,7 @@ export const getColumns = (
         <StatusCell
           proposalId={proposal.id}
           currentStatus={proposal.status}
+          product={proposal.product}
           onStatusChange={onStatusChange}
         />
       );
