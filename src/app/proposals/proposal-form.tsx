@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,16 +22,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Info, Copy, Printer, ChevronsUpDown, Check, Download, FolderLock, Loader2, MessageSquareWarning } from 'lucide-react';
-import { format, parse } from 'date-fns';
+import { Info, Copy, Printer, ChevronsUpDown, Check, Download, FolderLock, Loader2, MessageSquareWarning, History, Send, MessageSquareQuote } from 'lucide-react';
+import { format, parse, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import * as configData from '@/lib/config-data';
-import type { Proposal, Customer, Attachment, UserSettings } from '@/lib/types';
+import type { Proposal, Customer, Attachment, UserSettings, ProposalHistoryEntry } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Tooltip,
   TooltipContent,
@@ -40,9 +40,10 @@ import {
 import { useEffect, useState, useMemo } from 'react';
 import { ProposalAttachmentUploader } from '@/components/proposals/proposal-attachment-uploader';
 import { useUser, useFirestore } from '@/firebase';
-import { doc, collection } from 'firebase/firestore';
+import { doc, collection, updateDoc, arrayUnion } from 'firebase/firestore';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Logo } from '@/components/logo';
+import { toast } from '@/hooks/use-toast';
 
 const attachmentSchema = z.object({
   name: z.string(),
@@ -171,6 +172,8 @@ export function ProposalForm({
   const firestore = useFirestore();
   const [tempProposalId, setTempProposalId] = useState<string | undefined>(undefined);
   const [isClient, setIsClient] = useState(false);
+  const [newHistoryEntry, setNewHistoryEntry] = useState('');
+  const [isAddingHistory, setIsAddingHistory] = useState(false);
 
   const productTypes = userSettings?.productTypes || configData.productTypes;
   const proposalStatuses = userSettings?.proposalStatuses || configData.proposalStatuses;
@@ -259,13 +262,11 @@ export function ProposalForm({
     const today = format(new Date(), 'dd/MM/yyyy');
     const isPortability = product === 'Portabilidade';
     
-    // REGRA DE OURO LK RAMOS: Portabilidade nunca tem averbação automática.
     if (status === 'Saldo Pago' && isPortability) {
         if (!form.getValues('debtBalanceArrivalDate')) {
             setValue('debtBalanceArrivalDate', today, { shouldValidate: true });
         }
     } else if (status === 'Pago') {
-        // Se for portabilidade, não preenchemos dateApproved automaticamente (regra manual)
         if (!isPortability && !form.getValues('dateApproved')) {
             setValue('dateApproved', today, { shouldValidate: true });
         }
@@ -340,6 +341,31 @@ export function ProposalForm({
 
   const handleAttachmentsChange = (attachments: Attachment[]) => {
     setValue('attachments', attachments, { shouldValidate: true });
+  };
+
+  const handleAddHistory = async () => {
+    if (!newHistoryEntry.trim() || !proposal?.id || !firestore) return;
+    
+    setIsAddingHistory(true);
+    const entry: ProposalHistoryEntry = {
+        id: crypto.randomUUID(),
+        date: new Date().toISOString(),
+        message: newHistoryEntry.trim(),
+        userName: user?.displayName || user?.email || 'Usuário'
+    };
+
+    try {
+        await updateDoc(doc(firestore, 'loanProposals', proposal.id), {
+            history: arrayUnion(entry)
+        });
+        setNewHistoryEntry('');
+        toast({ title: "Histórico Atualizado", description: "O trâmite foi registrado com sucesso." });
+    } catch (e) {
+        console.error("Error adding history:", e);
+        toast({ variant: "destructive", title: "Erro ao registrar", description: "Tente novamente." });
+    } finally {
+        setIsAddingHistory(false);
+    }
   };
 
   const isAttachmentSectionDisabled = !user || !selectedCustomerId || !currentProposalId;
@@ -838,6 +864,61 @@ export function ProposalForm({
                         </>
                     )}
                  </div>
+            </div>
+
+            <Separator />
+
+            {/* NOVA SEÇÃO: Histórico de Trâmites */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium flex items-center gap-2">
+                        <History className="h-5 w-5 text-primary" />
+                        Histórico de Trâmites
+                    </h3>
+                    <Badge variant="secondary" className="text-[10px] uppercase">Logs Operacionais</Badge>
+                </div>
+                
+                {proposal?.id && (
+                    <div className="space-y-4">
+                        <div className="flex gap-2">
+                            <Input 
+                                placeholder="Registrar novo trâmite ou atualização..." 
+                                value={newHistoryEntry}
+                                onChange={(e) => setNewHistoryEntry(e.target.value)}
+                                disabled={isAddingHistory}
+                                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddHistory())}
+                            />
+                            <Button type="button" size="sm" onClick={handleAddHistory} disabled={isAddingHistory || !newHistoryEntry.trim()}>
+                                {isAddingHistory ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                            </Button>
+                        </div>
+
+                        <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+                            {proposal.history && proposal.history.length > 0 ? (
+                                [...proposal.history].sort((a,b) => b.date.localeCompare(a.date)).map((entry) => (
+                                    <div key={entry.id} className="p-3 bg-muted/30 rounded-lg border border-border/50 relative group">
+                                        <div className="flex items-center justify-between mb-1.5">
+                                            <span className="text-[10px] font-black uppercase text-primary/70">{entry.userName}</span>
+                                            <span className="text-[9px] text-muted-foreground">{format(parseISO(entry.date), "dd/MM/yyyy HH:mm")}</span>
+                                        </div>
+                                        <p className="text-xs text-foreground leading-relaxed flex items-start gap-2">
+                                            <MessageSquareQuote className="h-3 w-3 mt-0.5 text-muted-foreground shrink-0" />
+                                            {entry.message}
+                                        </p>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-8 border-2 border-dashed rounded-xl bg-muted/5">
+                                    <History className="h-8 w-8 mx-auto mb-2 opacity-10" />
+                                    <p className="text-xs text-muted-foreground">Nenhum trâmite registrado.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+                {!proposal?.id && (
+                    <p className="text-xs text-muted-foreground italic">Salve a proposta primeiro para registrar o histórico de trâmites.</p>
+                )}
             </div>
 
             <Separator />

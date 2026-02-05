@@ -10,7 +10,7 @@ import { collection, query, where, doc, setDoc, deleteField } from 'firebase/fir
 import type { Proposal, Customer, CommissionStatus } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Eye, EyeOff, Printer, FileCheck2, FileDown, FileBadge, BarChart3, Calendar } from 'lucide-react';
+import { Eye, EyeOff, Printer, FileCheck2, FileDown, FileBadge, BarChart3, Calendar, Users2, TrendingUp, CircleDollarSign } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,10 +37,13 @@ import { toast } from '@/hooks/use-toast';
 import { format, startOfMonth, endOfMonth, parse, subMonths, getYear, getMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CommissionReconciliation } from '@/components/financial/commission-reconciliation';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, cn } from '@/lib/utils';
 import { ProposalsStatusTable } from '@/components/dashboard/proposals-status-table';
 import { PromoterEfficiencyReport } from '@/components/financial/promoter-efficiency-report';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 
 
 export type ProposalWithCustomer = Proposal & { customer: Customer | undefined };
@@ -68,6 +71,7 @@ export default function FinancialPage() {
   const [isReconciliationOpen, setIsReconciliationOpen] = React.useState(false);
   const [isEfficiencyOpen, setIsEfficiencyOpen] = React.useState(false);
   const [isReportDialogOpen, setIsReportDialogOpen] = React.useState(false);
+  const [isOperatorsDialogOpen, setIsOperatorsDialogOpen] = React.useState(false);
   
   const [reportMonth, setReportMonth] = React.useState(getMonth(new Date()).toString());
   const [reportYear, setReportYear] = React.useState(getYear(new Date()).toString());
@@ -95,8 +99,8 @@ export default function FinancialPage() {
   const { data: proposals, isLoading: proposalsLoading } = useCollection<Proposal>(proposalsQuery);
   const { data: customers, isLoading: customersLoading } = useCollection<Customer>(customersQuery);
 
-  const { proposalsWithCustomerData, summaryProposals, currentMonthRange } = React.useMemo(() => {
-    if (!proposals || !customers || !isClient) return { proposalsWithCustomerData: [], summaryProposals: [], currentMonthRange: { from: new Date(), to: new Date() } };
+  const { proposalsWithCustomerData, summaryProposals, currentMonthRange, operatorStats } = React.useMemo(() => {
+    if (!proposals || !customers || !isClient) return { proposalsWithCustomerData: [], summaryProposals: [], currentMonthRange: { from: new Date(), to: new Date() }, operatorStats: [] };
     
     const customersMap = new Map(customers.map(c => [c.id, c]));
     
@@ -113,10 +117,25 @@ export default function FinancialPage() {
       }))
       .filter(p => p.customer);
 
+    // Estatísticas de Operadores
+    const opMap: Record<string, { name: string; totalPaid: number; count: number; potential: number }> = {};
+    tableData.forEach(p => {
+        const op = p.operator || 'Sem Operador';
+        if (!opMap[op]) opMap[op] = { name: op, totalPaid: 0, count: 0, potential: 0 };
+        opMap[op].count++;
+        opMap[op].potential += (p.commissionValue || 0);
+        if (p.commissionStatus === 'Paga') {
+            opMap[op].totalPaid += (p.amountPaid || 0);
+        }
+    });
+
+    const stats = Object.values(opMap).sort((a,b) => b.potential - a.potential);
+
     return { 
       proposalsWithCustomerData: tableData as ProposalWithCustomer[], 
       summaryProposals: tableData as ProposalWithCustomer[],
-      currentMonthRange: { from: startOfCurrent, to: endOfCurrent }
+      currentMonthRange: { from: startOfCurrent, to: endOfCurrent },
+      operatorStats: stats
     };
   }, [proposals, customers, isClient]);
 
@@ -325,11 +344,63 @@ export default function FinancialPage() {
       <div className="flex items-center justify-between print:hidden">
         <PageHeader title="Controle Financeiro" />
         <div className="flex items-center gap-2">
+            <Dialog open={isOperatorsDialogOpen} onOpenChange={setIsOperatorsDialogOpen}>
+                <DialogTrigger asChild>
+                    <Button variant="outline" className="bg-primary/5 border-primary/20 text-primary">
+                        <Users2 className="mr-2 h-4 w-4" />
+                        Performance Operadores
+                    </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-3xl">
+                    <DialogHeader>
+                        <DialogTitle>Extrato de Comissões por Operador</DialogTitle>
+                        <DialogDescription>Acumulado total por colaborador na base de dados.</DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <ScrollArea className="h-[400px]">
+                            <div className="space-y-4 pr-4">
+                                {operatorStats.map((op) => (
+                                    <Card key={op.name} className="overflow-hidden border-border/50">
+                                        <div className="p-4 flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
+                                                    {op.name.charAt(0).toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-sm">{op.name}</p>
+                                                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{op.count} Propostas</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-6">
+                                                <div className="text-right">
+                                                    <p className="text-[10px] font-bold text-muted-foreground uppercase">Potencial</p>
+                                                    <p className="text-sm font-medium">{formatCurrency(op.potential)}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-[10px] font-bold text-green-600 uppercase">Recebido</p>
+                                                    <p className="text-sm font-bold text-green-600">{formatCurrency(op.totalPaid)}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="h-1.5 w-full bg-muted">
+                                            <div 
+                                                className="h-full bg-primary transition-all" 
+                                                style={{ width: `${Math.min((op.totalPaid / (op.potential || 1)) * 100, 100)}%` }}
+                                            />
+                                        </div>
+                                    </Card>
+                                ))}
+                            </div>
+                        </ScrollArea>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
             <Dialog open={isEfficiencyOpen} onOpenChange={setIsEfficiencyOpen}>
                 <DialogTrigger asChild>
                     <Button variant="outline">
                         <BarChart3 className="mr-2 h-4 w-4" />
-                        Relatório de Eficiência
+                        Eficiência Parceiros
                     </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-5xl h-[90vh] flex flex-col">
@@ -346,13 +417,13 @@ export default function FinancialPage() {
                 <DialogTrigger asChild>
                     <Button variant="outline">
                         <FileBadge className="mr-2 h-4 w-4" />
-                        Fechamento Mensal (PDF)
+                        Fechamento (PDF)
                     </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-sm">
                     <DialogHeader>
                         <DialogTitle>Configurar Fechamento</DialogTitle>
-                        <DialogDescription>Escolha o período do relatório de competência.</DialogDescription>
+                        <DialogDescription>Período de competência do relatório.</DialogDescription>
                     </DialogHeader>
                     <div className="grid grid-cols-2 gap-4 py-4">
                         <div className="space-y-2">
@@ -382,7 +453,7 @@ export default function FinancialPage() {
                         <Button variant="outline" onClick={() => setIsReportDialogOpen(false)}>Cancelar</Button>
                         <Button onClick={handleGenerateMonthlyReport}>
                             <FileDown className="mr-2 h-4 w-4" />
-                            Gerar Relatório
+                            Gerar PDF
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -417,7 +488,7 @@ export default function FinancialPage() {
                 <DialogTrigger asChild>
                     <Button variant="outline">
                         <FileCheck2 />
-                        Conciliar Relatórios
+                        Conciliar IA
                     </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-4xl">

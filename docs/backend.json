@@ -38,7 +38,19 @@
         "customerId": { "type": "string" },
         "proposalNumber": { "type": "string" },
         "status": { "type": "string" },
-        "observations": { "type": "string", "description": "Observações gerais ou motivo de reprova, especialmente para portabilidade." }
+        "observations": { "type": "string", "description": "Observações gerais ou motivo de reprova." },
+        "history": { 
+            "type": "array", 
+            "items": { 
+                "type": "object",
+                "properties": {
+                    "id": { "type": "string" },
+                    "date": { "type": "string", "format": "date-time" },
+                    "message": { "type": "string" },
+                    "userName": { "type": "string" }
+                }
+            }
+        }
       }
     },
     "FollowUp": {

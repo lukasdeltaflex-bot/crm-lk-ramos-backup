@@ -11,6 +11,13 @@ export type Attachment = {
   size: number;
 };
 
+export type ProposalHistoryEntry = {
+  id: string;
+  date: string; // ISO String
+  message: string;
+  userName?: string;
+};
+
 export type Customer = {
   id: string;
   numericId: number;
@@ -86,6 +93,7 @@ export type Proposal = {
   selectedBenefitNumber?: string;
   attachments?: Attachment[];
   observations?: string;
+  history?: ProposalHistoryEntry[];
 };
 
 export type UserSettings = {

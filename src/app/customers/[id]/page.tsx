@@ -9,8 +9,8 @@ import { doc, collection, query, where, updateDoc } from 'firebase/firestore';
 import type { Customer, Proposal, Attachment } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Phone, Mail, Calendar, FileText, CircleDollarSign, BadgePercent, MapPin, Hash, Copy, Printer, FileBadge, FolderLock } from 'lucide-react';
-import { format, parse } from 'date-fns';
+import { User, Phone, Mail, Calendar, FileText, CircleDollarSign, BadgePercent, MapPin, Hash, Copy, Printer, FileBadge, FolderLock, Sparkles, AlertTriangle } from 'lucide-react';
+import { format, parse, differenceInMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -23,6 +23,7 @@ import { isWhatsApp, getWhatsAppUrl } from '@/lib/utils';
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
 import { toast } from '@/hooks/use-toast';
 import { CustomerAttachmentUploader } from '@/components/customers/customer-attachment-uploader';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 
 const CopyButton = ({ text, label }: { text: string; label: string }) => {
@@ -249,6 +250,21 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
   const { data: customer, isLoading: isCustomerLoading } = useDoc<Customer>(customerDocRef);
   const { data: proposals, isLoading: areProposalsLoading } = useCollection<Proposal>(proposalsQuery);
 
+  const retentionOpportunity = React.useMemo(() => {
+    if (!proposals) return null;
+    const now = new Date();
+    // Procura por contratos Pagos com mais de 12 meses
+    const oldPaidProposal = proposals.find(p => {
+        if ((p.status === 'Pago' || p.status === 'Saldo Pago') && p.datePaidToClient) {
+            const paidDate = new Date(p.datePaidToClient);
+            return differenceInMonths(now, paidDate) >= 12;
+        }
+        return false;
+    });
+
+    return oldPaidProposal || null;
+  }, [proposals]);
+
   const handleDocumentsChange = async (docs: Attachment[]) => {
     if (!firestore || !customerId) return;
     try {
@@ -370,6 +386,19 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
                 LK RAMOS Gestão de Propostas - Gerado em: {format(new Date(), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
             </p>
         </div>
+
+        {/* ALERTA DE RETENÇÃO (Idade de Ouro) */}
+        {retentionOpportunity && (
+            <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800 animate-in slide-in-from-top duration-500">
+                <Sparkles className="h-5 w-5 text-amber-600" />
+                <AlertTitle className="text-amber-800 dark:text-amber-400 font-bold">Oportunidade de Retenção Identificada!</AlertTitle>
+                <AlertDescription className="text-amber-700 dark:text-amber-500 text-sm mt-1">
+                    Este cliente possui contratos liquidados/pagos há mais de 12 meses (Ex: Proposta {retentionOpportunity.proposalNumber}). 
+                    <strong> É o momento ideal para oferecer um Refinanciamento ou Portabilidade.</strong>
+                </AlertDescription>
+            </Alert>
+        )}
+
         <CustomerInfoCard customer={customer} onExportDossier={handleExportDossier} />
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
