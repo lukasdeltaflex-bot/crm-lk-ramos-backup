@@ -3,7 +3,7 @@
 import { ColumnDef, flexRender, Header } from '@tanstack/react-table';
 import type { Proposal, Customer, CommissionStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDown, MoreHorizontal, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUpDown, MoreHorizontal, GripVertical, ArrowUp, ArrowDown, Copy } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatCurrency } from '@/lib/utils';
 import { cn } from '@/lib/utils';
@@ -23,9 +23,29 @@ import { CommissionStatusCell } from './commission-status-cell';
 import { StatusCell } from '@/app/proposals/status-cell';
 import Link from 'next/link';
 import type { DateRange } from 'react-day-picker';
+import { toast } from '@/hooks/use-toast';
 
 
 type ProposalWithCustomer = Proposal & { customer: Customer };
+
+const CopyButton = ({ text, label }: { text: string | undefined; label: string }) => {
+    if (!text) return null;
+    const handleCopy = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        navigator.clipboard.writeText(text);
+        toast({
+            title: `${label} copiado!`,
+            description: `O valor "${text}" foi copiado para a área de transferência.`,
+        });
+    };
+    return (
+        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleCopy}>
+            <Copy className="h-3 w-3" />
+            <span className="sr-only">Copiar {label}</span>
+        </Button>
+    );
+};
 
 interface ActionsCellProps {
   row: { original: ProposalWithCustomer };
@@ -164,7 +184,15 @@ export const getColumns = (
     accessorKey: 'customer.cpf',
     header: 'CPF',
     id: 'customerCpf',
-    cell: ({row}) => row.original.customer.cpf,
+    cell: ({row}) => {
+        const cpf = row.original.customer.cpf;
+        return (
+            <div className="flex items-center gap-1">
+                <span>{cpf}</span>
+                <CopyButton text={cpf} label="CPF" />
+            </div>
+        );
+    },
   },
   {
     accessorKey: 'proposalNumber',
@@ -173,9 +201,12 @@ export const getColumns = (
     cell: ({ row }) => {
         const proposal = row.original;
         return (
-            <Link href={`/proposals?open=${proposal.id}`} className="text-primary hover:underline font-medium">
-                {proposal.proposalNumber}
-            </Link>
+            <div className="flex items-center gap-1">
+                <Link href={`/proposals?open=${proposal.id}`} className="text-primary hover:underline font-medium">
+                    {proposal.proposalNumber}
+                </Link>
+                <CopyButton text={proposal.proposalNumber} label="Número da Proposta" />
+            </div>
         )
     }
   },
