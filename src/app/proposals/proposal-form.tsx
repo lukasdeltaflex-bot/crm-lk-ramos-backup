@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,7 +35,8 @@ import {
     History, 
     Send, 
     MessageSquareQuote,
-    FileBadge
+    FileBadge,
+    Calendar as CalendarIcon
 } from 'lucide-react';
 import { format, parse, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -93,7 +93,7 @@ const proposalSchema = z.object({
   commissionValue: z.coerce.number().min(0, 'O valor da comissão é obrigatório.'),
 
   promoter: z.string().min(1, 'A promotora é obrigatória.'),
-  bank: z.string().min(1, 'O banco é obrigatória.'),
+  bank: z.string().min(1, 'O banco é obrigatório.'),
   bankOrigin: z.string().optional(),
   approvingBody: z.string().min(1, 'O órgão aprovador é obrigatório.'),
   operator: z.string().min(1, "O nome do operador é obrigatório."),

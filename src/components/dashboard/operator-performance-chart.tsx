@@ -59,10 +59,11 @@ export function OperatorPerformanceChart({ proposals }: OperatorPerformanceChart
               <YAxis 
                 dataKey="name" 
                 type="category" 
-                width={140} 
+                width={180} 
                 fontSize={11}
                 tickLine={false}
                 axisLine={false}
+                tickFormatter={(value) => value.length > 30 ? `${value.substring(0, 30)}...` : value}
               />
               <Tooltip 
                 cursor={{ fill: 'hsl(var(--muted)/0.5)' }}

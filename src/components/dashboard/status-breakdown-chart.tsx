@@ -52,8 +52,9 @@ export function StatusBreakdownChart({ proposals }: StatusBreakdownChartProps) {
                 fontWeight="bold"
                 tickLine={false}
                 axisLine={false}
-                width={140}
+                width={180}
                 interval={0}
+                tickFormatter={(value) => value.length > 25 ? `${value.substring(0, 25)}...` : value}
             />
              <Tooltip
                 cursor={{ fill: 'hsl(var(--muted)/0.1)' }}
