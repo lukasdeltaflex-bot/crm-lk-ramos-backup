@@ -23,10 +23,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Info, Copy, Printer, ChevronsUpDown, Check, Download, FolderLock, Loader2, MessageSquareWarning, History, Send, MessageSquareQuote } from 'lucide-react';
+import { 
+    Info, 
+    Copy, 
+    Printer, 
+    ChevronsUpDown, 
+    Check, 
+    Download, 
+    FolderLock, 
+    Loader2, 
+    MessageSquareWarning, 
+    History, 
+    Send, 
+    MessageSquareQuote,
+    FileBadge
+} from 'lucide-react';
 import { format, parse, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import * as configData from '@/lib/config-data';
 import type { Proposal, Customer, Attachment, UserSettings, ProposalHistoryEntry } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -368,6 +382,118 @@ export function ProposalForm({
     } finally {
         setIsAddingHistory(false);
     }
+  };
+
+  const handleExportCover = async () => {
+    if (!proposal || !selectedCustomer) {
+        toast({ 
+            variant: "destructive", 
+            title: "Dados insuficientes", 
+            description: "Selecione um cliente e salve a proposta antes de gerar a capa." 
+        });
+        return;
+    }
+
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+
+    const doc = new jsPDF();
+    const primaryColor = [30, 58, 138]; // Tom de azul executivo
+
+    // Título Principal Centralizado
+    doc.setFontSize(22);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "bold");
+    doc.text("CAPA DE PROPOSTA", 105, 25, { align: 'center' });
+    
+    doc.setDrawColor(200);
+    doc.line(14, 32, 196, 32);
+
+    // Bloco Cliente
+    doc.setFontSize(14);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.text("DADOS DO CLIENTE", 14, 45);
+    
+    autoTable(doc, {
+        startY: 48,
+        body: [
+            ['Nome Completo', selectedCustomer.name],
+            ['CPF', selectedCustomer.cpf],
+            ['Data de Nascimento', format(parse(selectedCustomer.birthDate, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy')],
+            ['Telefone Principal', selectedCustomer.phone],
+            ['Nº do Benefício', form.getValues('selectedBenefitNumber') || '-'],
+        ],
+        theme: 'plain',
+        styles: { fontSize: 11, cellPadding: 2 },
+        columnStyles: { 0: { fontStyle: 'bold', width: 50 } }
+    });
+
+    // Bloco Proposta
+    doc.setFontSize(14);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.text("DADOS DA OPERAÇÃO", 14, (doc as any).lastAutoTable.finalY + 15);
+    
+    autoTable(doc, {
+        startY: (doc as any).lastAutoTable.finalY + 18,
+        body: [
+            ['Número da Proposta', form.getValues('proposalNumber')],
+            ['Produto', form.getValues('product')],
+            ['Banco Digitado', form.getValues('bank')],
+            ['Tabela / Convênio', form.getValues('table')],
+            ['Prazo (Meses)', `${form.getValues('term')}x`],
+            ['Operador Responsável', form.getValues('operator')],
+            ['Status da Proposta', form.getValues('status')],
+        ],
+        theme: 'plain',
+        styles: { fontSize: 11, cellPadding: 2 },
+        columnStyles: { 0: { fontStyle: 'bold', width: 50 } }
+    });
+
+    // Bloco Financeiro
+    doc.setFontSize(14);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.text("VALORES E COMISSÃO", 14, (doc as any).lastAutoTable.finalY + 15);
+    
+    autoTable(doc, {
+        startY: (doc as any).lastAutoTable.finalY + 18,
+        head: [['Discriminação', 'Valor']],
+        body: [
+            ['Valor Bruto do Contrato', formatCurrency(Number(form.getValues('grossAmount')))],
+            ['Valor Líquido Liberado', formatCurrency(Number(form.getValues('netAmount')))],
+            ['Valor da Parcela Mensal', formatCurrency(Number(form.getValues('installmentAmount')))],
+            ['Comissão Prevista (R$)', formatCurrency(Number(form.getValues('commissionValue')))],
+        ],
+        theme: 'striped',
+        headStyles: { fillColor: primaryColor },
+        styles: { fontSize: 11, cellPadding: 3 }
+    });
+
+    // Observações
+    const obs = form.getValues('observations');
+    if (obs) {
+        doc.setFontSize(14);
+        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.text("OBSERVAÇÕES ADICIONAIS", 14, (doc as any).lastAutoTable.finalY + 15);
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(80);
+        const splitObs = doc.splitTextToSize(obs, 180);
+        doc.text(splitObs, 14, (doc as any).lastAutoTable.finalY + 22);
+    }
+
+    // Rodapé com data e assinatura
+    const pageHeight = doc.internal.pageSize.height;
+    doc.setDrawColor(150);
+    doc.line(40, pageHeight - 40, 170, pageHeight - 40);
+    doc.setFontSize(9);
+    doc.setTextColor(100);
+    doc.text("Assinatura do Operador", 105, pageHeight - 35, { align: 'center' });
+    
+    doc.setFontSize(8);
+    doc.text(`Documento gerado pelo sistema LK RAMOS em ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 105, pageHeight - 10, { align: 'center' });
+
+    doc.save(`Capa_Proposta_${form.getValues('proposalNumber')}_${selectedCustomer.name.split(' ')[0]}.pdf`);
+    toast({ title: "Capa Gerada!", description: "O documento PDF foi baixado com sucesso." });
   };
 
   const isAttachmentSectionDisabled = !user || !selectedCustomerId || !currentProposalId;
@@ -992,6 +1118,15 @@ export function ProposalForm({
                         </Button>
                         <Button type="button" variant="outline" onClick={() => window.print()} disabled={isSaving}>
                             <Printer /> Imprimir
+                        </Button>
+                        <Button 
+                            type="button" 
+                            variant="outline" 
+                            onClick={handleExportCover} 
+                            disabled={isSaving}
+                            className="bg-primary/5 border-primary/20 text-primary hover:bg-primary/10"
+                        >
+                            <FileBadge className="mr-2 h-4 w-4" /> Capa de Proposta (PDF)
                         </Button>
                     </>
                 )}
