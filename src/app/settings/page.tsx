@@ -34,6 +34,7 @@ import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
 
 const DRIVE_LINKED_KEY = 'lk-ramos-google-drive-linked-v1';
 
