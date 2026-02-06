@@ -62,6 +62,11 @@ export type ProposalStatus =
 
 export type CommissionStatus = 'Pendente' | 'Paga' | 'Parcial';
 
+export type BankConfig = {
+  name: string;
+  domain?: string;
+};
+
 export type Proposal = {
   id: string;
   ownerId: string;
@@ -102,6 +107,7 @@ export type UserSettings = {
   commissionStatuses: string[];
   approvingBodies: string[];
   banks: string[];
+  bankDomains?: Record<string, string>; // Mapeamento de Nome -> Domínio para ícones
   showBankLogos?: boolean;
 };
 

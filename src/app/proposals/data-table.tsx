@@ -66,7 +66,7 @@ import {
 import { ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, X, Search, Calendar as CalendarIcon } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { proposalStatuses } from '@/lib/config-data';
-import type { ProposalStatus, Proposal } from '@/lib/types';
+import type { ProposalStatus, Proposal, UserSettings } from '@/lib/types';
 import { DraggableHeader } from './columns';
 import type { ProposalWithCustomer } from './page';
 import { Separator } from '@/components/ui/separator';
@@ -86,7 +86,7 @@ interface DataTableProps {
   rowSelection: RowSelectionState;
   setRowSelection: React.Dispatch<React.SetStateAction<RowSelectionState>>;
   onBulkStatusChange: (newStatus: ProposalStatus) => void;
-  showBankLogos?: boolean;
+  userSettings: UserSettings | null;
 }
 
 export interface ProposalsDataTableHandle {
@@ -99,7 +99,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   rowSelection,
   setRowSelection,
   onBulkStatusChange,
-  showBankLogos = true,
+  userSettings,
 }, ref) => {
   const [sorting, setSorting] = React.useState<SortingState>([{ id: 'dateDigitized', desc: true }]);
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
@@ -302,7 +302,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
       pagination,
     },
     meta: {
-      showBankLogos,
+      userSettings,
     },
     globalFilterFn: (row, columnId, filterValue) => {
         const searchTerm = normalizeString(String(filterValue ?? ''));

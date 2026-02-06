@@ -733,7 +733,7 @@ function ProposalsPageContent() {
             rowSelection={rowSelection}
             setRowSelection={setRowSelection}
             onBulkStatusChange={handleBulkStatusChange}
-            showBankLogos={userSettings?.showBankLogos ?? true}
+            userSettings={userSettings || null}
         />
       )}
     </>

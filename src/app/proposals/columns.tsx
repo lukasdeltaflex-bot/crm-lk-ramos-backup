@@ -1,7 +1,8 @@
+
 'use client';
 
 import { ColumnDef, Header, Table } from '@tanstack/react-table';
-import type { Proposal, ProposalStatus } from '@/lib/types';
+import type { Proposal, ProposalStatus, UserSettings } from '@/lib/types';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -284,10 +285,13 @@ export const getColumns = (
     cell: ({ row, table }) => {
         const bankRaw = row.original.bank;
         const bank = cleanBankName(bankRaw);
-        const showLogos = (table.options.meta as any)?.showBankLogos ?? true;
+        const settings = (table.options.meta as any)?.userSettings as UserSettings;
+        const showLogos = settings?.showBankLogos ?? true;
+        const customDomain = settings?.bankDomains?.[bankRaw];
+        
         return (
             <div className="flex items-center gap-2">
-                <BankIcon bankName={bankRaw} showLogo={showLogos} />
+                <BankIcon bankName={bankRaw} domain={customDomain} showLogo={showLogos} />
                 <span className="truncate">{bank}</span>
             </div>
         )

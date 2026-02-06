@@ -4,30 +4,8 @@
 import { Landmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Mapeamento por Código ou por Nome para garantir compatibilidade
+// Mapeamento padrão para bancos conhecidos (Fallback)
 const domainMap: Record<string, string> = {
-  // Códigos (Legado)
-  '001': 'bb.com.br',
-  '104': 'caixa.gov.br',
-  '237': 'bradesco.com.br',
-  '341': 'itau.com.br',
-  '033': 'santander.com.br',
-  '260': 'nubank.com.br',
-  '077': 'bancointer.com.br',
-  '336': 'c6bank.com.br',
-  '623': 'bancopan.com.br',
-  '318': 'bancobmg.com.br',
-  '707': 'daycoval.com.br',
-  '121': 'agibank.com.br',
-  '041': 'banrisul.com.br',
-  '070': 'brb.com.br',
-  '389': 'mercantil.com.br',
-  '751': 'bancoparana.com.br',
-  '655': 'bv.com.br',
-  '422': 'safra.com.br',
-  '745': 'citibank.com.br',
-  '739': 'neon.com.br',
-  // Nomes (Novo Formato)
   'Banco do Brasil S.A.': 'bb.com.br',
   'Caixa Econômica Federal': 'caixa.gov.br',
   'Bradesco S.A.': 'bradesco.com.br',
@@ -52,31 +30,29 @@ const domainMap: Record<string, string> = {
 
 interface BankIconProps {
   bankName?: string;
+  domain?: string; // Domínio vindo das configurações do usuário
   className?: string;
   showLogo?: boolean;
 }
 
-export function BankIcon({ bankName, className, showLogo = true }: BankIconProps) {
+export function BankIcon({ bankName, domain, className, showLogo = true }: BankIconProps) {
   if (!showLogo || !bankName) {
     return <Landmark className={cn("h-4 w-4 text-muted-foreground/40", className)} />;
   }
   
-  // Tenta extrair código se houver " - " (formato antigo)
-  const parts = bankName.split(' - ');
-  const code = parts.length > 1 ? parts[0] : null;
-  const nameOnly = parts.length > 1 ? parts[1] : bankName;
+  // 1. Usa o domínio manual das configurações se existir
+  // 2. Senão usa o mapeamento interno
+  // 3. Senão tenta deduzir
+  const finalDomain = domain || domainMap[bankName] || null;
 
-  // Busca domínio por código ou pelo nome limpo
-  const domain = (code && domainMap[code]) || domainMap[nameOnly] || null;
-
-  if (!domain) {
+  if (!finalDomain) {
     return <Landmark className={cn("h-4 w-4 text-muted-foreground/40", className)} />;
   }
 
   return (
     <div className={cn("relative flex items-center justify-center overflow-hidden rounded bg-white border border-border/50 shrink-0", className || "h-5 w-5")}>
       <img
-        src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
+        src={`https://www.google.com/s2/favicons?domain=${finalDomain}&sz=64`}
         alt={bankName}
         className="h-full w-full object-contain p-0.5"
         onError={(e) => {

@@ -64,7 +64,7 @@ import {
 import { ChevronDown, X, Filter, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, Calendar as CalendarIcon } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { cn, formatCurrency, normalizeString } from '@/lib/utils';
-import type { CommissionStatus, Proposal, Customer } from '@/lib/types';
+import type { CommissionStatus, Proposal, Customer, UserSettings } from '@/lib/types';
 import { FinancialSummary } from '@/components/financial/financial-summary';
 import { DraggableHeader } from './columns';
 import { Separator } from '@/components/ui/separator';
@@ -86,7 +86,7 @@ interface DataTableProps {
   rowSelection: RowSelectionState;
   setRowSelection: React.Dispatch<React.SetStateAction<RowSelectionState>>;
   onShowDetails: (title: string, proposals: ProposalWithCustomer[]) => void;
-  showBankLogos?: boolean;
+  userSettings: UserSettings | null;
 }
 
 export interface FinancialDataTableHandle {
@@ -102,7 +102,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   rowSelection,
   setRowSelection,
   onShowDetails,
-  showBankLogos = true,
+  userSettings,
 }, ref) => {
   const [sorting, setSorting] = React.useState<SortingState>([{ id: 'commissionPaymentDate', desc: true }]);
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
@@ -277,7 +277,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     },
     meta: {
       isPrivacyMode,
-      showBankLogos,
+      userSettings,
     },
     globalFilterFn: (row, columnId, filterValue) => {
         const searchTerm = normalizeString(String(filterValue ?? ''));

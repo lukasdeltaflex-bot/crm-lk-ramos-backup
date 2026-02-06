@@ -1,3 +1,4 @@
+
 'use server';
 
 import { config } from 'dotenv';
@@ -15,3 +16,4 @@ import '@/ai/flows/generate-daily-summary-flow.ts';
 import '@/ai/flows/partial-commission-reminder-flow.ts';
 import '@/ai/flows/send-summary-email-flow.ts';
 import '@/ai/flows/generate-birthday-message-flow.ts';
+import '@/ai/flows/get-bank-domain-flow.ts';

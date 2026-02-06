@@ -19,8 +19,9 @@ import {
   banks as initialBanks,
   commissionStatuses as initialCommissionStatuses,
 } from '@/lib/config-data';
-import { ListChecks, Palette, UserCog, Database, FileDown, Loader2, CloudUpload, CheckCircle2, XCircle } from 'lucide-react';
+import { ListChecks, Palette, UserCog, Database, FileDown, Loader2, CloudUpload, CheckCircle2, XCircle, Bot } from 'lucide-react';
 import { EditableList } from '@/components/settings/editable-list';
+import { BankEditableList } from '@/components/settings/bank-editable-list';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
 import { doc, setDoc, collection, query, where } from 'firebase/firestore';
 import type { UserSettings, Customer, Proposal } from '@/lib/types';
@@ -75,6 +76,7 @@ export default function SettingsPage() {
   const [commissionStatuses, setCommissionStatuses] = useState([...initialCommissionStatuses]);
   const [approvingBodies, setApprovingBodies] = useState([...initialApprovingBodies]);
   const [banks, setBanks] = useState([...initialBanks]);
+  const [bankDomains, setBankDomains] = useState<Record<string, string>>({});
   const [showBankLogos, setShowBankLogos] = useState(true);
 
   useEffect(() => {
@@ -84,6 +86,7 @@ export default function SettingsPage() {
       setCommissionStatuses(userSettings.commissionStatuses || [...initialCommissionStatuses]);
       setApprovingBodies(userSettings.approvingBodies || [...initialApprovingBodies]);
       setBanks(userSettings.banks || [...initialBanks]);
+      setBankDomains(userSettings.bankDomains || {});
       setShowBankLogos(userSettings.showBankLogos ?? true);
     }
   }, [userSettings]);
@@ -96,6 +99,7 @@ export default function SettingsPage() {
             commissionStatuses,
             approvingBodies,
             banks,
+            bankDomains,
             showBankLogos,
         };
       try {
@@ -182,7 +186,17 @@ export default function SettingsPage() {
                         <EditableList title="Status da Proposta" items={proposalStatuses} setItems={(n) => { setProposalStatuses(n); updateSettings({ proposalStatuses: n }); }} />
                         <EditableList title="Status da Comissão" items={commissionStatuses} setItems={(n) => { setCommissionStatuses(n); updateSettings({ commissionStatuses: n }); }} />
                         <EditableList title="Órgãos Aprovadores" items={approvingBodies} setItems={(n) => { setApprovingBodies(n); updateSettings({ approvingBodies: n }); }} />
-                        <EditableList title="Bancos" items={banks} setItems={(n) => { setBanks(n); updateSettings({ banks: n }); }} />
+                        
+                        {/* Seção Inteligente de Bancos */}
+                        <BankEditableList 
+                            banks={banks} 
+                            bankDomains={bankDomains} 
+                            onUpdate={(newBanks, newDomains) => {
+                                setBanks(newBanks);
+                                setBankDomains(newDomains);
+                                updateSettings({ banks: newBanks, bankDomains: newDomains });
+                            }} 
+                        />
                         </Accordion>
                     )}
                     </CardContent>
