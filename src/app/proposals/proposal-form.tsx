@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -969,7 +968,7 @@ export function ProposalForm({
                         name="approvingBody"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Órgão Aprovador</CardLabel>
+                            <FormLabel>Órgão Aprovador</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly || isSaving}>
                                 <FormControl>
                                     <SelectTrigger>
