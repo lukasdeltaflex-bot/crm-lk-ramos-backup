@@ -1,10 +1,9 @@
-
 'use client';
 
 import { Landmark } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, cleanBankName } from '@/lib/utils';
 
-// Mapeamento padrão para bancos conhecidos (Fallback abrangente)
+// Mapeamento padrão para os nomes LIMPOS dos bancos
 const domainMap: Record<string, string> = {
   'Banco do Brasil S.A.': 'bb.com.br',
   'Caixa Econômica Federal': 'caixa.gov.br',
@@ -44,7 +43,7 @@ const domainMap: Record<string, string> = {
 
 interface BankIconProps {
   bankName?: string;
-  domain?: string; // Domínio vindo das configurações do usuário
+  domain?: string;
   className?: string;
   showLogo?: boolean;
 }
@@ -54,20 +53,24 @@ export function BankIcon({ bankName, domain, className, showLogo = true }: BankI
     return <Landmark className={cn("h-4 w-4 text-muted-foreground/40", className)} />;
   }
   
-  // 1. Usa o domínio manual das configurações se existir
-  // 2. Senão usa o mapeamento interno (fallback)
-  const finalDomain = domain || domainMap[bankName] || null;
+  // 1. Limpa o nome do banco para garantir o match (ex: "001 - Banco" -> "Banco")
+  const cleanedName = cleanBankName(bankName);
+
+  // 2. Tenta encontrar o domínio no mapa padrão ou usa o configurado manualmente
+  const finalDomain = domain || domainMap[cleanedName] || domainMap[bankName] || null;
 
   if (!finalDomain) {
     return <Landmark className={cn("h-4 w-4 text-muted-foreground/40", className)} />;
   }
 
+  // Usamos o serviço de favicon do Google para buscar o ícone oficial
   return (
     <div className={cn("relative flex items-center justify-center overflow-hidden rounded bg-white border border-border/50 shrink-0", className || "h-5 w-5")}>
       <img
         src={`https://www.google.com/s2/favicons?domain=${finalDomain}&sz=64`}
         alt={bankName}
         className="h-full w-full object-contain p-0.5"
+        loading="lazy"
         onError={(e) => {
           (e.target as any).style.display = 'none';
         }}

@@ -106,9 +106,14 @@ export function validateCPF(cpf: string): boolean {
 }
 
 /**
- * Removes the numerical code from a bank name if present (e.g., "001 - Banco do Brasil" -> "Banco do Brasil").
+ * Removes the numerical code from a bank name if present.
+ * Handles formats like "001 - Banco", "001-Banco", "001 Banco".
  */
 export function cleanBankName(name?: string): string {
   if (!name) return '';
-  return name.includes(' - ') ? name.split(' - ')[1] : name;
+  
+  // Remove padrões de código numérico no início (ex: "001 - ", "104-", "237 ")
+  const cleaned = name.replace(/^\d+[\s-]*[-]*[\s]*/, '').trim();
+  
+  return cleaned || name;
 }
