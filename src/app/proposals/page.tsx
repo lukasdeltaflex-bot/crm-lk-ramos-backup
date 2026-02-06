@@ -14,12 +14,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ProposalForm } from './proposal-form';
-import type { Proposal, Customer, ProposalStatus, UserSettings } from '@/lib/types';
+import type { Proposal, Customer, ProposalStatus, UserSettings, ProposalHistoryEntry } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from '@/firebase';
-import { collection, doc, query, where, writeBatch, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { collection, doc, query, where, writeBatch, setDoc, deleteDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -369,8 +369,11 @@ function ProposalsPageContent() {
   }, [firestore]);
 
   const handleStatusChange = React.useCallback(async (proposalId: string, newStatus: ProposalStatus, productType?: string) => {
-    if (!firestore) return;
+    if (!firestore || !user) return;
     
+    const proposal = proposals?.find(p => p.id === proposalId);
+    if (!proposal || proposal.status === newStatus) return;
+
     const dataToUpdate: any = {
         status: newStatus,
     };
@@ -391,6 +394,15 @@ function ProposalsPageContent() {
             dataToUpdate.debtBalanceArrivalDate = currentDate;
         }
     }
+
+    // Linha do Tempo Automática
+    const historyEntry: ProposalHistoryEntry = {
+        id: crypto.randomUUID(),
+        date: currentDate,
+        message: `Status alterado de "${proposal.status}" para "${newStatus}" (Automático)`,
+        userName: user.displayName || user.email || 'Sistema'
+    };
+    dataToUpdate.history = arrayUnion(historyEntry);
 
     const docRef = doc(firestore, 'loanProposals', proposalId);
     try {
@@ -414,10 +426,10 @@ function ProposalsPageContent() {
             description: 'Não foi possível alterar o status da proposta.',
         });
     }
-  }, [firestore]);
+  }, [firestore, proposals, user]);
 
   const handleBulkStatusChange = React.useCallback(async (newStatus: ProposalStatus) => {
-    if (!firestore) return;
+    if (!firestore || !user) return;
     const selectedIds = Object.keys(rowSelection);
     setRowSelection({});
     if (selectedIds.length === 0) return;
@@ -439,6 +451,16 @@ function ProposalsPageContent() {
           dataToUpdate.datePaidToClient = currentDate;
       } else if (newStatus === 'Saldo Pago' && isPortability) {
           dataToUpdate.debtBalanceArrivalDate = currentDate;
+      }
+
+      // Linha do Tempo Automática (Massa)
+      if (proposal && proposal.status !== newStatus) {
+          dataToUpdate.history = arrayUnion({
+              id: crypto.randomUUID(),
+              date: currentDate,
+              message: `Status alterado de "${proposal.status}" para "${newStatus}" (Massa/Automático)`,
+              userName: user.displayName || user.email || 'Sistema'
+          });
       }
 
       batch.update(docRef, dataToUpdate);
@@ -465,7 +487,7 @@ function ProposalsPageContent() {
         description: 'Ocorreu um erro ao atualizar o status das propostas.',
       });
     }
-  }, [firestore, rowSelection, proposals]);
+  }, [firestore, rowSelection, proposals, user]);
   
   const handleBulkDelete = React.useCallback(async () => {
     if (!firestore) return;
@@ -535,7 +557,7 @@ function ProposalsPageContent() {
             commissionStatus = '';
         }
 
-        const proposalData = {
+        const proposalData: any = {
             ...data,
             ownerId: user.uid,
             dateDigitized: toISO(data.dateDigitized) || new Date().toISOString(),
@@ -555,6 +577,18 @@ function ProposalsPageContent() {
 
       if (sheetMode === 'edit' && selectedProposal) {
         const docRef = doc(firestore, 'loanProposals', selectedProposal.id);
+        
+        // Linha do Tempo Automática na Edição via Formulário
+        if (data.status !== selectedProposal.status) {
+            const historyEntry: ProposalHistoryEntry = {
+                id: crypto.randomUUID(),
+                date: new Date().toISOString(),
+                message: `Status alterado de "${selectedProposal.status}" para "${data.status}" (Automático)`,
+                userName: user.displayName || user.email || 'Sistema'
+            };
+            proposalData.history = arrayUnion(historyEntry);
+        }
+
         await setDoc(docRef, proposalData, { merge: true });
         toast({ title: 'Proposta Atualizada!', description: `A proposta foi salva.` });
       } else {

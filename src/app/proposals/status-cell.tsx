@@ -11,9 +11,9 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { proposalStatuses } from '@/lib/config-data';
-import type { ProposalStatus } from '@/lib/types';
-import { useFirestore } from '@/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import type { ProposalStatus, ProposalHistoryEntry } from '@/lib/types';
+import { useFirestore, auth } from '@/firebase';
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -66,6 +66,18 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
     else if (newStatus === 'Saldo Pago' && isPortability) {
         dataToUpdate.debtBalanceArrivalDate = now;
     }
+
+    // Linha do Tempo Automática
+    const user = auth?.currentUser;
+    const userName = user?.displayName || user?.email || 'Sistema';
+
+    const historyEntry: ProposalHistoryEntry = {
+        id: crypto.randomUUID(),
+        date: now,
+        message: `Status alterado de "${currentStatus}" para "${newStatus}" (Automático)`,
+        userName: userName
+    };
+    dataToUpdate.history = arrayUnion(historyEntry);
 
     const docRef = doc(firestore, 'loanProposals', proposalId);
     updateDoc(docRef, dataToUpdate)
