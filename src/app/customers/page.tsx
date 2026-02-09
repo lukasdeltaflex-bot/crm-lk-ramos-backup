@@ -1,3 +1,4 @@
+
 'use client';
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -41,7 +42,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getAge } from '@/lib/utils';
+import { getAge, cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -117,7 +118,6 @@ function CustomersPageContent() {
       const status = customer.status || 'active';
       const age = getAge(customer.birthDate);
 
-      // REGRA UNIFICADA: Se status é inativo OU idade >= 75, vai para a aba de Inativos
       if (status === 'inactive' || age >= 75) {
         inactive.push(customer);
       } else {
@@ -504,16 +504,22 @@ const handleExportToPdf = async () => {
         </div>
       </div>
       <Tabs value={filter} onValueChange={setFilter} className="mb-4">
-        <TabsList>
-          <TabsTrigger value="active" className="gap-2">
+        <TabsList className="bg-muted/50">
+          <TabsTrigger 
+            value="active" 
+            className="gap-2 border border-transparent data-[state=active]:bg-green-100 data-[state=active]:text-green-700 data-[state=active]:border-green-300"
+          >
             <UserCheck className="h-4 w-4" />
             Ativos
-            <Badge variant="secondary" className="ml-1">{activeCustomers.length}</Badge>
+            <Badge variant="secondary" className="ml-1 bg-green-200/50 text-green-800">{activeCustomers.length}</Badge>
           </TabsTrigger>
-          <TabsTrigger value="inactive" className="gap-2">
+          <TabsTrigger 
+            value="inactive" 
+            className="gap-2 border border-transparent data-[state=active]:bg-zinc-100 data-[state=active]:text-zinc-700 data-[state=active]:border-zinc-300"
+          >
             <UserX className="h-4 w-4" />
             Inativos
-            <Badge variant="secondary" className="ml-1">{inactiveCustomers.length}</Badge>
+            <Badge variant="secondary" className="ml-1 bg-zinc-200/50 text-zinc-800">{inactiveCustomers.length}</Badge>
           </TabsTrigger>
         </TabsList>
       </Tabs>

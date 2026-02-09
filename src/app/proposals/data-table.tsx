@@ -78,7 +78,7 @@ import { cn } from '@/lib/utils';
 const STORAGE_KEY_VISIBILITY = 'lk-ramos-proposal-columns-visibility-v5';
 const STORAGE_KEY_ORDER = 'lk-ramos-proposal-columns-order-v5';
 const STORAGE_KEY_SIZING = 'lk-ramos-proposal-columns-sizing-v5';
-const STORAGE_KEY_PAGESIZE = 'lk-ramos-proposal-page-size-v1';
+const STORAGE_KEY_PAGESIZE = 'lk-ramos-proposal-financial-page-size-v1';
 
 interface DataTableProps {
   columns: ColumnDef<ProposalWithCustomer, unknown>[];
@@ -343,7 +343,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   React.useEffect(() => {
     const statusColumn = table.getColumn('status');
     if (statusFilter === 'Todos') {
-      // REGRA DE OURO: ABA TODOS NÃO FILTRA STATUS, PERMITE BUSCAR REPROVADOS
       statusColumn?.setFilterValue(undefined);
     } else {
       statusColumn?.setFilterValue([statusFilter]);
@@ -433,13 +432,13 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                 key={status} 
                                 value={status}
                                 className={cn(
-                                    "transition-all",
-                                    status === 'Pago' && "data-[state=active]:bg-green-600 data-[state=active]:text-white",
-                                    status === 'Saldo Pago' && "data-[state=active]:bg-orange-500 data-[state=active]:text-white",
-                                    status === 'Em Andamento' && "data-[state=active]:bg-yellow-500 data-[state=active]:text-black",
-                                    status === 'Aguardando Saldo' && "data-[state=active]:bg-blue-600 data-[state=active]:text-white",
-                                    status === 'Reprovado' && "data-[state=active]:bg-red-600 data-[state=active]:text-white",
-                                    status === 'Pendente' && "data-[state=active]:bg-purple-600 data-[state=active]:text-white",
+                                    "transition-all border border-transparent",
+                                    status === 'Pago' && "data-[state=active]:bg-green-100 data-[state=active]:text-green-700 data-[state=active]:border-green-300",
+                                    status === 'Saldo Pago' && "data-[state=active]:bg-orange-100 data-[state=active]:text-orange-700 data-[state=active]:border-orange-300",
+                                    status === 'Em Andamento' && "data-[state=active]:bg-yellow-100 data-[state=active]:text-yellow-700 data-[state=active]:border-yellow-300",
+                                    status === 'Aguardando Saldo' && "data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 data-[state=active]:border-blue-300",
+                                    status === 'Reprovado' && "data-[state=active]:bg-red-100 data-[state=active]:text-red-700 data-[state=active]:border-red-300",
+                                    status === 'Pendente' && "data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700 data-[state=active]:border-purple-300",
                                 )}
                             >
                                 {status}

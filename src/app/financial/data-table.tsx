@@ -73,7 +73,7 @@ import { proposalStatuses } from '@/lib/config-data';
 const STORAGE_KEY_VISIBILITY = 'lk-ramos-financial-columns-visibility-v2';
 const STORAGE_KEY_ORDER = 'lk-ramos-financial-columns-order-v2';
 const STORAGE_KEY_SIZING = 'lk-ramos-financial-columns-sizing-v2';
-const STORAGE_KEY_PAGESIZE = 'lk-ramos-financial-page-size-v1';
+const STORAGE_KEY_PAGESIZE = 'lk-ramos-financial-financial-page-size-v1';
 
 
 type ProposalWithCustomer = Proposal & { customer: Customer };
@@ -323,7 +323,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     const statusColumn = table.getColumn('commissionStatus');
     const dateColumn = table.getColumn('commissionPaymentDate');
     
-    // Objeto de contexto do filtro para passar metadados ao filterFn das colunas
     const filterContext = {
         hasDateFilter: !!appliedDateRange,
         hasGlobalFilter: !!globalFilter
@@ -385,9 +384,9 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                             <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as CommissionStatus | 'Todos')}>
                                 <TabsList className="bg-muted/50">
                                     <TabsTrigger value="Todos" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Todos</TabsTrigger>
-                                    <TabsTrigger value="Paga" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">Pagas</TabsTrigger>
-                                    <TabsTrigger value="Pendente" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-black">Pendentes</TabsTrigger>
-                                    <TabsTrigger value="Parcial" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">Parciais</TabsTrigger>
+                                    <TabsTrigger value="Paga" className="border border-transparent data-[state=active]:bg-green-100 data-[state=active]:text-green-700 data-[state=active]:border-green-300">Pagas</TabsTrigger>
+                                    <TabsTrigger value="Pendente" className="border border-transparent data-[state=active]:bg-yellow-100 data-[state=active]:text-yellow-700 data-[state=active]:border-yellow-300">Pendentes</TabsTrigger>
+                                    <TabsTrigger value="Parcial" className="border border-transparent data-[state=active]:bg-orange-100 data-[state=active]:text-orange-700 data-[state=active]:border-orange-300">Parciais</TabsTrigger>
                                 </TabsList>
                             </Tabs>
                             <div className="flex items-center gap-2 flex-wrap">
