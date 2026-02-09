@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/page-header';
 import { CustomerDataTable, type CustomerDataTableHandle } from './data-table';
 import { getColumns } from './columns';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Sparkles, Trash2, FileDown, UserCheck, UserX, Clock, Zap } from 'lucide-react';
+import { PlusCircle, Sparkles, Trash2, FileDown, UserCheck, UserX } from 'lucide-react';
 import { CustomerForm } from './customer-form';
 import type { Customer, Proposal } from '@/lib/types';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -45,7 +45,6 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getAge } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { differenceInMonths } from 'date-fns';
 
 type CustomerFormData = Partial<Omit<Customer, 'id' | 'ownerId'>>;
 
@@ -70,18 +69,10 @@ function CustomersPageContent() {
     return query(collection(firestore, 'customers'), where('ownerId', '==', user.uid));
   }, [firestore, user]);
 
-  const proposalsQuery = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    return query(collection(firestore, 'loanProposals'), where('ownerId', '==', user.uid));
-  }, [firestore, user]);
-
   const { data: customers, isLoading: isCustomersLoading } = useCollection<Customer>(customersQuery);
-  const { data: proposals, isLoading: isProposalsLoading } = useCollection<Proposal>(proposalsQuery);
 
   const [activeCustomers, setActiveCustomers] = React.useState<Customer[]>([]);
-  const [elderlyCustomers, setElderlyCustomers] = React.useState<Customer[]>([]);
   const [inactiveCustomers, setInactiveCustomers] = React.useState<Customer[]>([]);
-  const [radarCustomers, setRadarCustomers] = React.useState<Customer[]>([]);
 
   const handleNewCustomer = React.useCallback(() => {
     setSelectedCustomer(undefined);
@@ -121,50 +112,27 @@ function CustomersPageContent() {
 
   React.useEffect(() => {
     const active: Customer[] = [];
-    const elderly: Customer[] = [];
     const inactive: Customer[] = [];
-    const radar: Customer[] = [];
-
-    const now = new Date();
 
     nonAnonymizedCustomers.forEach(customer => {
       const status = customer.status || 'active';
       const age = getAge(customer.birthDate);
 
-      // Radar Logic: Possui contrato Pago há mais de 12 meses
-      const hasMaturedContract = proposals?.some(p => {
-          if (p.customerId !== customer.id) return false;
-          if (p.status !== 'Pago' && p.status !== 'Saldo Pago') return false;
-          if (!p.datePaidToClient) return false;
-          return differenceInMonths(now, new Date(p.datePaidToClient)) >= 12;
-      });
-
-      if (status === 'inactive') {
+      // REGRA UNIFICADA: Se status é inativo OU idade >= 75, vai para a aba de Inativos
+      if (status === 'inactive' || age >= 75) {
         inactive.push(customer);
       } else {
-        if (hasMaturedContract) {
-            radar.push(customer);
-        }
-        if (age >= 75) {
-            elderly.push(customer);
-        } else {
-            active.push(customer);
-        }
+        active.push(customer);
       }
     });
 
     setActiveCustomers(active);
-    setElderlyCustomers(elderly);
     setInactiveCustomers(inactive);
-    setRadarCustomers(radar);
-  }, [nonAnonymizedCustomers, proposals]);
+  }, [nonAnonymizedCustomers]);
 
   const displayedCustomers = React.useMemo(() => {
-    if (filter === 'active') return activeCustomers;
-    if (filter === 'elderly') return elderlyCustomers;
-    if (filter === 'radar') return radarCustomers;
-    return inactiveCustomers;
-  }, [filter, activeCustomers, elderlyCustomers, inactiveCustomers, radarCustomers]);
+    return filter === 'active' ? activeCustomers : inactiveCustomers;
+  }, [filter, activeCustomers, inactiveCustomers]);
 
 
   const handleExportToExcel = async () => {
@@ -543,19 +511,9 @@ const handleExportToPdf = async () => {
             Ativos
             <Badge variant="secondary" className="ml-1">{activeCustomers.length}</Badge>
           </TabsTrigger>
-          <TabsTrigger value="radar" className="gap-2">
-            <Zap className="h-4 w-4 text-orange-500 fill-orange-500" />
-            Radar de Vendas
-            <Badge variant="secondary" className="ml-1 bg-orange-100 text-orange-700">{radarCustomers.length}</Badge>
-          </TabsTrigger>
-          <TabsTrigger value="elderly" className="gap-2">
-            <Clock className="h-4 w-4" />
-            75+ Anos
-            <Badge variant="secondary" className="ml-1">{elderlyCustomers.length}</Badge>
-          </TabsTrigger>
           <TabsTrigger value="inactive" className="gap-2">
             <UserX className="h-4 w-4" />
-            Inativos
+            Inativos (Falecidos / 75+ Anos)
             <Badge variant="secondary" className="ml-1">{inactiveCustomers.length}</Badge>
           </TabsTrigger>
         </TabsList>
@@ -577,7 +535,7 @@ const handleExportToPdf = async () => {
         ref={tableRef}
         columns={columns} 
         data={displayedCustomers} 
-        isLoading={isCustomersLoading || isProposalsLoading}
+        isLoading={isCustomersLoading}
         rowSelection={rowSelection}
         setRowSelection={setRowSelection}
        />

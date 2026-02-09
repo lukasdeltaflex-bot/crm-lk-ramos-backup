@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useEffect, useMemo } from 'react';
 import { AppLayout } from '@/components/app-layout';
@@ -45,6 +46,7 @@ import {
 } from '@/components/ui/select';
 import { CommissionChart } from '@/components/dashboard/commission-chart';
 import { ProductBreakdownChart } from '@/components/dashboard/product-breakdown-chart';
+import { RadarWidget } from '@/components/dashboard/radar-widget';
 
 export default function DashboardPage() {
   const [startDateInput, setStartDateInput] = useState('');
@@ -151,7 +153,6 @@ export default function DashboardPage() {
     const getSparkline = (list: Proposal[]) => {
         const days = Array.from({length: 7}, (_, i) => subDays(effectiveToDate, 6 - i));
         return days.map(day => {
-            // Para Sparklines, pegamos o que foi digitado (totalDigitado) ou pago (no caso do main card)
             return list.filter(p => p.dateDigitized && isSameDay(new Date(p.dateDigitized), day))
                        .reduce((sum, p) => sum + p.grossAmount, 0);
         });
@@ -201,7 +202,7 @@ export default function DashboardPage() {
         pago,
         metaInfo: {
             totalDigitadoSpark: getSparkline(digitizedInPeriod),
-            pagoSpark: getSparkline(paidInPeriod), // Tendência de contratos pagos para o card principal
+            pagoSpark: getSparkline(paidInPeriod),
             pendenteSpark: getSparkline(accumulatedProposals.filter(p => p.status === 'Pendente')),
             emAndamentoSpark: getSparkline(accumulatedProposals.filter(p => p.status === 'Em Andamento')),
             aguardandoSpark: getSparkline(accumulatedProposals.filter(p => p.status === 'Aguardando Saldo')),
@@ -209,12 +210,12 @@ export default function DashboardPage() {
             reprovadoSpark: getSparkline(digitizedInPeriod.filter(p => p.status === 'Reprovado')),
             
             totalDigitadoHot: isHot(totalDigitado, 'Digitado'),
-            pagoHot: isHot(pago, 'Pago'), // Calor da produção real
+            pagoHot: isHot(pago, 'Pago'),
             pendenteHot: isHot(pendente, 'Pendente'),
             emAndamentoHot: isHot(emAndamento, 'Em Andamento'),
             
             topTotal: getTopOperator(digitizedInPeriod),
-            topPaid: getTopOperator(paidInPeriod), // Líder de produção real
+            topPaid: getTopOperator(paidInPeriod),
             topPendente: getTopOperator(accumulatedProposals.filter(p => p.status === 'Pendente')),
             topAndamento: getTopOperator(accumulatedProposals.filter(p => p.status === 'Em Andamento')),
             topAguardando: getTopOperator(accumulatedProposals.filter(p => p.status === 'Aguardando Saldo')),
@@ -390,20 +391,29 @@ export default function DashboardPage() {
                 <PartnerPerformanceCharts proposals={stats.proposals.todos} />
             </div>
             <div className="lg:col-span-1">
+                <RadarWidget 
+                    proposals={proposals || []}
+                    customers={customers || []}
+                    isLoading={proposalsLoading || customersLoading}
+                />
+            </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+                <RecentProposals 
+                    proposals={proposals || []}
+                    customers={customers || []}
+                    isLoading={proposalsLoading || customersLoading}
+                />
+            </div>
+            <div className="lg:col-span-1">
                 <DailySummary 
                     proposals={proposals || []}
                     customers={customers || []}
                     userProfile={userProfile || null}
                 />
             </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-8">
-            <RecentProposals 
-                proposals={proposals || []}
-                customers={customers || []}
-                isLoading={proposalsLoading || customersLoading}
-            />
         </div>
       </div>
 
