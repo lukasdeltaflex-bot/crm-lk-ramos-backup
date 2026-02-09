@@ -381,13 +381,11 @@ function ProposalsPageContent() {
 
     const currentDate = new Date().toISOString();
     
-    // REGRA DE OURO LK RAMOS: Portabilidade nunca tem averbação automática
+    // REGRA LK RAMOS: Portabilidade agora preenche averbação automática igual aos outros
     const isPortability = productType === 'Portabilidade';
 
     if (newStatus === 'Pago') {
-        if (!isPortability) {
-            dataToUpdate.dateApproved = currentDate;
-        }
+        dataToUpdate.dateApproved = currentDate;
         dataToUpdate.datePaidToClient = currentDate;
     } 
     else if (newStatus === 'Saldo Pago') {
@@ -446,9 +444,7 @@ function ProposalsPageContent() {
       const dataToUpdate: any = { status: newStatus };
 
       if (newStatus === 'Pago') {
-          if (!isPortability) {
-              dataToUpdate.dateApproved = currentDate;
-          }
+          dataToUpdate.dateApproved = currentDate;
           dataToUpdate.datePaidToClient = currentDate;
       } else if (newStatus === 'Saldo Pago' && isPortability) {
           dataToUpdate.debtBalanceArrivalDate = currentDate;

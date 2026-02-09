@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -54,12 +55,10 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
     
     const isPortability = product === 'Portabilidade';
 
-    // REGRA DE OURO LK RAMOS: 
-    // Se for Pago, preenche averbação (exceto Portabilidade) e pagamento.
+    // REGRA LK RAMOS: 
+    // Se for Pago, preenche averbação e pagamento para todos os produtos (incluindo Portabilidade)
     if (newStatus === 'Pago') {
-        if (!isPortability) {
-            dataToUpdate.dateApproved = now;
-        }
+        dataToUpdate.dateApproved = now;
         dataToUpdate.datePaidToClient = now;
     } 
     // Se for Saldo Pago, preenche EXCLUSIVAMENTE a chegada do saldo em Portabilidade.

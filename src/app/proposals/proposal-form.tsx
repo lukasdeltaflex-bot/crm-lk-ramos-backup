@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -286,7 +287,8 @@ export function ProposalForm({
             setValue('debtBalanceArrivalDate', today, { shouldValidate: true });
         }
     } else if (status === 'Pago') {
-        if (!isPortability && !form.getValues('dateApproved')) {
+        // Agora preenche averbação automática para todos, incluindo portabilidade
+        if (!form.getValues('dateApproved')) {
             setValue('dateApproved', today, { shouldValidate: true });
         }
         if (!form.getValues('datePaidToClient')) {
@@ -1078,6 +1080,7 @@ export function ProposalForm({
                     )}
                 </div>
                 <FormField
+                    variant="default"
                     control={form.control}
                     name="observations"
                     render={({ field }) => (
