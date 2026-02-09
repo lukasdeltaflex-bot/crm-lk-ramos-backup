@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -239,7 +238,7 @@ export default function SettingsPage() {
     { id: 'mono', label: 'Técnica (Mono)' },
     { id: 'arredondado', label: 'Suave (Rounded)' },
     { id: 'condensado', label: 'Focada (Narrow)' },
-    { id: 'sharp', label: 'Impacto (Sharp)' },
+    { id: 'business', label: 'Business (Clean)' },
     { id: 'elegante', label: 'Luxo (Elegant)' },
     { id: 'geometrico', label: 'Limpa (Geo)' },
     { id: 'tecnico', label: 'Industrial (Tech)' },
