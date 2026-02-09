@@ -163,7 +163,11 @@ export default function SettingsPage() {
 
   const handleMotionTest = () => {
     setIsMotionTestActive(true);
-    setTimeout(() => setIsMotionTestActive(false), 1500);
+    toast({ 
+        title: "Iniciando Teste de Ritmo", 
+        description: `Visualizando o modo de animação: ${animationStyle.toUpperCase()}` 
+    });
+    setTimeout(() => setIsMotionTestActive(false), 2000);
   };
 
   const handleGlobalBackup = async () => {
@@ -355,7 +359,7 @@ export default function SettingsPage() {
                                             <CardDescription className="text-[10px] uppercase tracking-wider">Aura & Ritmo Operacional</CardDescription>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
-                                            <p className="text-xs text-muted-foreground leading-relaxed">Este simulador reflete instantaneamente suas escolhas de Aura, Tipografia, Motion e Cores.</p>
+                                            <p className="text-xs text-muted-foreground leading-relaxed">Este simulador reflete instantaneamente suas escolhas de Aura, Tipografia, Motion e Cores. Clique nos botões para testar.</p>
                                             <div className="flex flex-wrap gap-2">
                                                 <Badge className="font-bold">Badge Principal</Badge>
                                                 {isMotionTestActive && (
@@ -372,14 +376,27 @@ export default function SettingsPage() {
                                         <div className="space-y-2">
                                             <Label className="text-[10px] uppercase font-black tracking-widest text-muted-foreground">Interação Dinâmica</Label>
                                             <div className="flex gap-2">
-                                                <Button size="sm" className={cn("font-bold transition-all", isMotionTestActive && "scale-110")}>Primário</Button>
-                                                <Button size="sm" variant="outline" className="font-bold">Contorno</Button>
+                                                <Button 
+                                                    size="sm" 
+                                                    className={cn("font-bold transition-all", isMotionTestActive && "scale-110")}
+                                                    onClick={() => toast({ title: "Teste de Clique", description: "O botão primário está seguindo seu novo branding perfeitamente." })}
+                                                >
+                                                    Primário
+                                                </Button>
+                                                <Button 
+                                                    size="sm" 
+                                                    variant="outline" 
+                                                    className="font-bold"
+                                                    onClick={() => toast({ title: "Teste de Clique", description: "O botão de contorno também foi personalizado." })}
+                                                >
+                                                    Contorno
+                                                </Button>
                                             </div>
                                         </div>
                                         <div className={cn(
-                                            "p-4 bg-primary/5 border border-primary/10 rounded-xl transition-all",
+                                            "p-4 bg-primary/5 border border-primary/10 rounded-xl transition-all cursor-pointer hover:bg-primary/10",
                                             isMotionTestActive && "translate-x-4 shadow-xl"
-                                        )}>
+                                        )} onClick={() => toast({ title: "Card Interativo", description: "Este é um exemplo de como seus cards reagirão." })}>
                                             <div className="flex items-center gap-3">
                                                 <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xs shadow-sm">LK</div>
                                                 <div>
@@ -523,7 +540,7 @@ export default function SettingsPage() {
                             </div>
                         </div>
                     </CardContent>
-                </Card>
+                 </Card>
             </TabsContent>
             <TabsContent value="data">
                 <Card>
