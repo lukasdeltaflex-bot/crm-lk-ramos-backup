@@ -20,7 +20,8 @@ import {
     FileBadge,
     Cloud,
     Wallet,
-    Eye
+    Eye,
+    Settings2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -39,7 +40,7 @@ export default function ManualPage() {
                     </CardTitle>
                     <CardDescription>
                         Este guia foi projetado para transformar você em um mestre na operação do LK RAMOS. 
-                        Siga os passos abaixo para dominar cada funcionalidade.
+                        Siga os passos abaixo para dominar cada funcionalidade de última geração.
                     </CardDescription>
                 </CardHeader>
             </Card>
@@ -50,17 +51,17 @@ export default function ManualPage() {
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-blue-100 text-blue-600"><LayoutDashboard className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold">1. Dashboard: A Torre de Comando</p>
-                                <p className="text-xs text-muted-foreground">Volume de produção e Radar de Vendas</p>
+                                <p className="font-bold">1. Dashboard Harmonizado & Simétrico</p>
+                                <p className="text-xs text-muted-foreground">Radar de Vendas e Inteligência Diária</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
-                        <p>O Dashboard é sua ferramenta de decisão rápida, organizado em uma hierarquia estratégica.</p>
+                        <p>O Dashboard foi desenhado para ser sua torre de controle com simetria absoluta.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Radar de Vendas (<Zap className="inline h-3 w-3 text-orange-500" />)</strong>: Mostra clientes com contratos pagos há mais de 12 meses. Mesmo vazio, o card mantém a simetria do layout.</li>
-                            <li><strong>Inteligência Diária</strong>: Consolida aniversários, retornos e pendências críticas do dia.</li>
-                            <li><strong>Rankings de Performance</strong>: Área central expandida para análise de rentabilidade por banco, promotora e operador.</li>
+                            <li><strong>Radar de Vendas (<Zap className="inline h-3 w-3 text-orange-500" />)</strong>: Monitora automaticamente clientes com contratos pagos há mais de 12 meses. O card é fixo para manter a harmonia visual, mostrando "Radar Limpo" quando não há retenções.</li>
+                            <li><strong>Inteligência Diária</strong>: Localizado ao lado do Radar, consolida aniversários e retornos agendados para que você nunca perca uma oportunidade de contato.</li>
+                            <li><strong>Monitoramento de Esteira</strong>: A tabela de últimas propostas ocupa toda a largura para proporcionar uma leitura confortável e executiva dos status.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
@@ -70,17 +71,17 @@ export default function ManualPage() {
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-red-100 text-red-600"><Wallet className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold">2. Controle de Despesas & Lucro Real (DRE)</p>
-                                <p className="text-xs text-muted-foreground">Saiba quanto sobra no seu bolso</p>
+                                <p className="font-bold">2. Controle Financeiro & DRE (Lucro Real)</p>
+                                <p className="text-xs text-muted-foreground">Gestão de gastos e apuração de lucro líquido</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
-                        <p>Não basta faturar, é preciso ter lucro. O LK RAMOS ajuda você a enxergar a saúde real da sua empresa.</p>
+                        <p>Saiba exatamente quanto sobra no seu bolso após pagar todas as despesas operacionais.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Lançamento de Gastos</strong>: Na aba "Despesas" do Financeiro, registre aluguel, luz, internet e principalmente o investimento em Tráfego Pago.</li>
-                            <li><strong>Cálculo Automático</strong>: O sistema subtrai as despesas das comissões recebidas e exibe o **Lucro Líquido Real** em destaque.</li>
-                            <li><strong>Visão Mensal</strong>: Os cálculos respeitam o filtro de período selecionado no topo da página.</li>
+                            <li><strong>Lançamento de Despesas</strong>: Na aba "Despesas" do Financeiro, registre seus custos (Tráfego Pago, Aluguel, Sistema, etc.).</li>
+                            <li><strong>Cálculo Automático</strong>: O sistema subtrai as despesas das comissões recebidas e exibe o <strong>Lucro Líquido Real</strong> em destaque no resumo.</li>
+                            <li><strong>Customização total (<Settings2 className="inline h-3 w-3" />)</strong>: Em Configurações, você pode criar suas próprias categorias de gastos para adaptar o DRE ao seu modelo de negócio.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
@@ -91,16 +92,16 @@ export default function ManualPage() {
                             <div className="p-2 rounded-lg bg-zinc-100 text-zinc-600"><Eye className="h-5 w-5" /></div>
                             <div className="text-left">
                                 <p className="font-bold">3. Visualizador de Documentos Inteligente</p>
-                                <p className="text-xs text-muted-foreground">Conferência rápida sem downloads</p>
+                                <p className="text-xs text-muted-foreground">Conferência instantânea sem downloads</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
-                        <p>Agilize sua conferência de propostas e mantenha seu computador limpo.</p>
+                        <p>Agilize sua conferência de propostas e mantenha seu computador limpo e seguro.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Ícone de Visualização</strong>: Em qualquer anexo (ficha do cliente ou proposta), clique no ícone de "Olho".</li>
-                            <li><strong>Modo Flutuante</strong>: O documento abre em uma janela segura sobreposta ao sistema.</li>
-                            <li><strong>Privacidade</strong>: Evite baixar documentos confidenciais de clientes no seu disco rígido pessoal.</li>
+                            <li><strong>Acesso Rápido</strong>: Em qualquer anexo de cliente ou proposta, clique no ícone de "Olho".</li>
+                            <li><strong>Visualização Segura</strong>: O documento abre em um modal flutuante dentro do sistema. Você confere o RG, CPF ou Contrato sem precisar baixar o arquivo.</li>
+                            <li><strong>Privacidade</strong>: Ideal para manter a conformidade com a LGPD, evitando que dados sensíveis fiquem salvos em pastas de download de computadores compartilhados.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
@@ -116,11 +117,11 @@ export default function ManualPage() {
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
-                        <p>Controle absoluto sobre o dinheiro em movimento.</p>
+                        <p>Controle absoluto sobre o dinheiro em movimento com zero esforço repetitivo.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Automação de Datas</strong>: Ao marcar como **Pago**, o sistema preenche a Averbação e Pagamento automaticamente.</li>
-                            <li><strong>Histórico de Trâmites</strong>: Cada mudança de status gera um log automático.</li>
-                            <li><strong>Capa de Proposta (PDF)</strong>: Gere o documento oficial da operação com visual executivo para impressão.</li>
+                            <li><strong>Automação de Datas</strong>: Ao marcar uma proposta como <strong>Pago</strong>, o sistema preenche as datas de Averbação e Pagamento automaticamente para você.</li>
+                            <li><strong>Logs de Trâmite</strong>: Cada mudança de status ou anotação gera um registro histórico com data e usuário, criando uma trilha de auditoria completa.</li>
+                            <li><strong>Capa de Proposta (PDF)</strong>: Gere um documento oficial da operação com visual executivo, pronto para impressão ou envio.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
@@ -128,18 +129,18 @@ export default function ManualPage() {
                 <AccordionItem value="limits" className="border rounded-xl bg-card px-4 shadow-sm">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-orange-100 text-orange-600"><Cloud className="h-5 w-5" /></div>
+                            <div className="p-2 rounded-lg bg-zinc-100 text-zinc-600"><Cloud className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold">5. Infraestrutura Profissional</p>
-                                <p className="text-xs text-muted-foreground">Segurança Google Cloud</p>
+                                <p className="font-bold">5. Segurança & Infraestrutura Google</p>
+                                <p className="text-xs text-muted-foreground">Dados protegidos na nuvem</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
-                        <p>O seu sistema utiliza infraestrutura de nuvem profissional (Firebase).</p>
+                        <p>Seus dados estão protegidos pela mesma infraestrutura que sustenta o Google.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Banco de Dados</strong>: Suporta até 50.000 leituras diárias gratuitamente.</li>
-                            <li><strong>Anexos</strong>: Você possui 5 GB de armazenamento gratuito para documentos de clientes.</li>
+                            <li><strong>Backups em Tempo Real</strong>: Cada alteração é salva instantaneamente na nuvem do Firebase.</li>
+                            <li><strong>Armazenamento de Anexos</strong>: Você possui 5 GB de espaço gratuito para documentos de clientes, gerenciados com criptografia de ponta.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
@@ -149,14 +150,17 @@ export default function ManualPage() {
         <div className="lg:col-span-1 space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground">Links Rápidos</CardTitle>
+                    <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground">Ações de Elite</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                     <Button variant="outline" className="w-full justify-start text-xs h-8" asChild>
-                        <a href="/customers?action=new"><Bot className="mr-2 h-3 w-3" /> Cadastro via IA</a>
+                        <a href="/customers?action=new"><Bot className="mr-2 h-3 w-3 text-blue-500" /> Cadastro via IA</a>
                     </Button>
                     <Button variant="outline" className="w-full justify-start text-xs h-8" asChild>
-                        <a href="/financial"><CircleDollarSign className="mr-2 h-3 w-3" /> Controle de Caixa</a>
+                        <a href="/financial"><CircleDollarSign className="mr-2 h-3 w-3 text-green-500" /> Controle de Caixa</a>
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start text-xs h-8" asChild>
+                        <a href="/settings"><Settings2 className="mr-2 h-3 w-3 text-orange-500" /> Personalizar DRE</a>
                     </Button>
                 </CardContent>
             </Card>
