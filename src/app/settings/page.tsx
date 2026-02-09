@@ -44,7 +44,8 @@ import {
     MoveHorizontal,
     Apple,
     Briefcase,
-    Crown
+    Crown,
+    MousePointer2
 } from 'lucide-react';
 import { EditableList } from '@/components/settings/editable-list';
 import { BankEditableList } from '@/components/settings/bank-editable-list';
@@ -88,6 +89,8 @@ export default function SettingsPage() {
   const [isLinkingDrive, setIsLinkingDrive] = useState(false);
   const [isDriveLinked, setIsDriveLinked] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [motionPreviewKey, setMotionPreviewKey] = useState(0);
+  const [isMotionTestActive, setIsMotionTestActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -164,6 +167,12 @@ export default function SettingsPage() {
 
   const handleRemoveLogo = async () => {
     await updateSettings({ customLogoURL: '' });
+  };
+
+  const handleMotionTest = () => {
+    setIsMotionTestActive(true);
+    setMotionPreviewKey(prev => prev + 1);
+    setTimeout(() => setIsMotionTestActive(false), 1000);
   };
 
   const applyPreset = (presetName: 'apple' | 'bloomberg' | 'gold') => {
@@ -367,13 +376,18 @@ export default function SettingsPage() {
 
                         {/* NOVO: SIMULADOR DE DESIGN REATIVO */}
                         <div className="space-y-4">
-                            <div className="flex items-center gap-2">
-                                <Eye className="h-4 w-4 text-primary" />
-                                <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Laboratório de Visualização</h4>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Eye className="h-4 w-4 text-primary" />
+                                    <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Laboratório de Visualização</h4>
+                                </div>
+                                <Button size="sm" variant="outline" className="h-8 font-bold text-[10px] uppercase" onClick={handleMotionTest}>
+                                    <MousePointer2 className="mr-2 h-3 w-3" /> Testar Interação & Ritmo
+                                </Button>
                             </div>
                             
                             <div className={cn(
-                                "relative p-8 rounded-2xl border bg-background overflow-hidden min-h-[300px] flex items-center justify-center transition-all duration-500",
+                                "relative p-8 rounded-2xl border bg-background overflow-hidden min-h-[350px] flex items-center justify-center transition-all duration-500",
                                 `texture-${backgroundTexture} texture-preview-bg`,
                                 `anim-${animationStyle}`,
                                 `font-${fontStyle}`
@@ -381,45 +395,53 @@ export default function SettingsPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl relative z-10">
                                     <Card className={cn(
                                         "shadow-lg transition-all duration-500 texture-preview-box",
-                                        `style-${containerStyle}`
+                                        `style-${containerStyle}`,
+                                        isMotionTestActive && "translate-y-[-10px] scale-[1.02]"
                                     )}>
                                         <CardHeader className="pb-2">
                                             <CardTitle className="text-sm font-bold flex items-center gap-2">
-                                                <Zap className="h-4 w-4 text-primary" /> Exemplo de Card
+                                                <Zap className="h-4 w-4 text-primary" /> Demonstração de Design
                                             </CardTitle>
-                                            <CardDescription className="text-[10px] uppercase">Demonstração de Aura</CardDescription>
+                                            <CardDescription className="text-[10px] uppercase">Aura & Ritmo Operacional</CardDescription>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
-                                            <p className="text-xs text-muted-foreground">Este exemplo reflete suas mudanças de Cor, Aura, Arredondamento, Fonte e Animação.</p>
+                                            <p className="text-xs text-muted-foreground">Este simulador reflete instantaneamente suas escolhas de Aura, Tipografia, Motion e Cores.</p>
                                             <div className="flex flex-wrap gap-2">
-                                                <Badge className="font-bold">Badge Ativo</Badge>
-                                                <Badge variant="outline" className="border-primary text-primary font-bold">Destaque</Badge>
+                                                <Badge className="font-bold">Badge Principal</Badge>
+                                                {isMotionTestActive && (
+                                                    <Badge variant="outline" className="border-primary text-primary font-bold animate-in zoom-in duration-300">
+                                                        Novo Trâmite!
+                                                    </Badge>
+                                                )}
                                             </div>
-                                            <Progress value={65} className="h-1.5" />
+                                            <Progress value={isMotionTestActive ? 90 : 65} className="h-1.5 transition-all duration-1000" />
                                         </CardContent>
                                     </Card>
 
                                     <div className="space-y-4 flex flex-col justify-center">
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] uppercase font-black tracking-widest text-muted-foreground">Botões e Interação</Label>
+                                            <Label className="text-[10px] uppercase font-black tracking-widest text-muted-foreground">Interação Dinâmica</Label>
                                             <div className="flex gap-2">
                                                 <Button size="sm" className="font-bold">Primário</Button>
                                                 <Button size="sm" variant="outline" className="font-bold">Contorno</Button>
                                             </div>
                                         </div>
-                                        <div className="p-4 bg-primary/5 border border-primary/10 rounded-xl">
+                                        <div className={cn(
+                                            "p-4 bg-primary/5 border border-primary/10 rounded-xl transition-all duration-500",
+                                            isMotionTestActive && "translate-x-2"
+                                        )}>
                                             <div className="flex items-center gap-3">
                                                 <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xs shadow-sm">LK</div>
                                                 <div>
                                                     <p className="text-xs font-bold">Interface Premium</p>
-                                                    <p className="text-[9px] text-muted-foreground uppercase font-black">Performance Máxima</p>
+                                                    <p className="text-[9px] text-muted-foreground uppercase font-black">Performance Industrial</p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <p className="text-[10px] text-center text-muted-foreground italic">O simulador acima reflete instantaneamente suas mudanças.</p>
+                            <p className="text-[10px] text-center text-muted-foreground italic">Use o botão "Testar Interação" acima para sentir o ritmo das animações escolhidas.</p>
                         </div>
 
                         <Separator />
@@ -464,26 +486,36 @@ export default function SettingsPage() {
 
                         <Separator />
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2">
-                                    <Type className="h-4 w-4 text-primary" />
-                                    <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Estúdio de Tipografia</h4>
-                                </div>
-                                <RadioGroup value={fontStyle} onValueChange={setFontStyle} className="grid grid-cols-3 gap-2">
-                                    {[
-                                        { id: 'moderno', label: 'Moderna' },
-                                        { id: 'classico', label: 'Clássica' },
-                                        { id: 'mono', label: 'Mono' }
-                                    ].map((f) => (
-                                        <Label key={f.id} htmlFor={`f-${f.id}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold transition-all", fontStyle === f.id ? "border-primary bg-primary/5" : "border-muted hover:border-primary/30")}>
-                                            <RadioGroupItem value={f.id} id={`f-${f.id}`} className="sr-only" />
-                                            {f.label}
-                                        </Label>
-                                    ))}
-                                </RadioGroup>
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-2">
+                                <Type className="h-4 w-4 text-primary" />
+                                <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Estúdio de Tipografia (Fontes)</h4>
                             </div>
+                            <RadioGroup value={fontStyle} onValueChange={setFontStyle} className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                {[
+                                    { id: 'moderno', label: 'Moderna (Sans)' },
+                                    { id: 'classico', label: 'Clássica (Serif)' },
+                                    { id: 'mono', label: 'Técnica (Mono)' },
+                                    { id: 'arredondado', label: 'Suave (Rounded)' },
+                                    { id: 'condensado', label: 'Focada (Narrow)' },
+                                    { id: 'sharp', label: 'Impacto (Sharp)' },
+                                    { id: 'elegante', label: 'Luxo (Elegant)' },
+                                    { id: 'geometrico', label: 'Limpa (Geo)' }
+                                ].map((f) => (
+                                    <Label key={f.id} htmlFor={`f-${f.id}`} className={cn("flex items-center justify-center rounded-md border-2 p-4 cursor-pointer text-xs font-bold transition-all text-center", fontStyle === f.id ? "border-primary bg-primary/5" : "border-muted hover:border-primary/30")}>
+                                        <RadioGroupItem value={f.id} id={`f-${f.id}`} className="sr-only" />
+                                        <div className="flex flex-col gap-1">
+                                            <span className={cn("text-lg", `font-${f.id}`)}>Aa</span>
+                                            <span>{f.label}</span>
+                                        </div>
+                                    </Label>
+                                ))}
+                            </RadioGroup>
+                        </div>
 
+                        <Separator />
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2">
                                     <MoveHorizontal className="h-4 w-4 text-primary" />
@@ -502,12 +534,7 @@ export default function SettingsPage() {
                                     ))}
                                 </RadioGroup>
                             </div>
-                        </div>
 
-                        <Separator />
-
-                        {/* 4. TEXTURAS E SIDEBAR */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2">
                                     <Database className="h-4 w-4 text-primary" />
@@ -527,7 +554,11 @@ export default function SettingsPage() {
                                     ))}
                                 </RadioGroup>
                             </div>
+                        </div>
 
+                        <Separator />
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2">
                                     <Layout className="h-4 w-4 text-primary" />
@@ -542,16 +573,14 @@ export default function SettingsPage() {
                                     ))}
                                 </RadioGroup>
                             </div>
-                        </div>
 
-                        <Separator />
-
-                        <div className="flex items-center justify-between p-4 border rounded-xl bg-muted/30">
-                            <div className="space-y-1">
-                                <p className="text-sm font-bold">Logotipos dos Bancos</p>
-                                <p className="text-xs text-muted-foreground">Exibe o ícone visual de cada banco nas tabelas e formulários.</p>
+                            <div className="flex items-center justify-between p-4 border rounded-xl bg-muted/30">
+                                <div className="space-y-1">
+                                    <p className="text-sm font-bold">Logotipos dos Bancos</p>
+                                    <p className="text-xs text-muted-foreground">Exibe o ícone visual de cada banco nas tabelas e formulários.</p>
+                                </div>
+                                <Switch checked={showBankLogos} onCheckedChange={(val) => { setShowBankLogos(val); updateSettings({ showBankLogos: val }); }} />
                             </div>
-                            <Switch checked={showBankLogos} onCheckedChange={(val) => { setShowBankLogos(val); updateSettings({ showBankLogos: val }); }} />
                         </div>
                     </CardContent>
                 </Card>

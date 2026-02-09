@@ -96,7 +96,7 @@
 /* Sidebar Contrast Fix */
 :root.sidebar-dark .sidebar-menu-button[data-active=true] {
     background-color: hsl(var(--sidebar-primary));
-    color: hsl(var(--sidebar-primary-foreground));
+    color: hsl(var(--sidebar-primary-foreground)) !important;
 }
 
 /* 🧪 AURA VISUAL (CONTAINERS) */
@@ -157,13 +157,14 @@
 }
 
 /* ✍️ TYPOGRAPHY STUDIO */
-:root.font-classico {
-    --font-sans: Georgia, Cambria, "Times New Roman", Times, serif;
-}
-
-:root.font-mono {
-    --font-sans: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-}
+:root.font-moderno { --font-sans: 'Inter', system-ui, sans-serif; }
+:root.font-classico { --font-sans: Georgia, Cambria, "Times New Roman", Times, serif; }
+:root.font-mono { --font-sans: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+:root.font-arredondado { --font-sans: 'Quicksand', 'Segoe UI', system-ui, rounded, sans-serif; }
+:root.font-condensado { --font-sans: 'Roboto Condensed', 'Arial Narrow', sans-serif; }
+:root.font-sharp { --font-sans: 'Impact', 'Arial Black', sans-serif; }
+:root.font-elegante { --font-sans: 'Optima', 'Candara', Calibri, sans-serif; }
+:root.font-geometrico { --font-sans: 'Futura', 'Trebuchet MS', sans-serif; }
 
 /* Theme Color Overrides */
 :root.theme-zinc, [class*="theme-zinc"] { --primary: 240 5.9% 10%; --ring: 240 5.9% 10%; }
@@ -226,7 +227,7 @@
 /* Nova Gama Ultra Elite */
 :root.theme-crimson, [class*="theme-crimson"] { --primary: 348 83% 47%; --ring: 348 83% 47%; }
 :root.theme-obsidian, [class*="theme-obsidian"] { --primary: 240 10% 10%; --ring: 240 10% 10%; }
-:root.theme-nordic, [class*="theme-nordic"] { --primary: 210 20% 40%; --ring: 210 20% 40%; }
+:root.theme-nordic, [class*="theme-nordic"] { --primary: 210 20% 40%; --ring: 210 20% 45%; }
 :root.theme-volcano, [class*="theme-volcano"] { --primary: 10 80% 45%; --ring: 10 80% 45%; }
 :root.theme-titanium, [class*="theme-titanium"] { --primary: 210 5% 30%; --ring: 210 5% 30%; }
 :root.theme-espresso, [class*="theme-espresso"] { --primary: 15 20% 15%; --ring: 15 20% 15%; }

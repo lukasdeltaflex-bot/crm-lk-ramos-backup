@@ -55,7 +55,7 @@ export default function ManualPage() {
                             <div className="p-2 rounded-lg bg-purple-100 text-purple-600"><Palette className="h-5 w-5" /></div>
                             <div className="text-left">
                                 <p className="font-bold">1. Estúdio de Branding & Laboratório Visual</p>
-                                <p className="text-xs text-muted-foreground">Logo próprio, estilos de aura, tipografia e presets</p>
+                                <p className="text-xs text-muted-foreground">Logo próprio, estilos de aura, tipografia expandida e presets</p>
                             </div>
                         </div>
                     </AccordionTrigger>
@@ -64,8 +64,9 @@ export default function ManualPage() {
                         <ul className="list-disc pl-5 space-y-2">
                             <li><strong>Branding Próprio</strong>: Em Configurações, suba sua logomarca. Ela aparecerá no menu e em todos os relatórios PDF oficiais.</li>
                             <li><strong>Presets de Grife</strong>: Use os botões de "Um Clique" para aplicar estilos como **Apple** (Clean), **Bloomberg** (Financeiro) ou **Gold** (Premium) instantaneamente.</li>
-                            <li><strong>Laboratório de Visualização</strong>: O simulador interativo mostra como os botões e cards ficam com cada combinação antes de você decidir.</li>
-                            <li><strong>Tipografia & Motion</strong>: Escolha entre fontes Modernas, Clássicas ou Mono, e ajuste o ritmo do sistema (Estático, Sutil ou Cinematográfico).</li>
+                            <li><strong>Laboratório de Visualização</strong>: O simulador interativo mostra como os botões e cards ficam com cada combinação. Use o botão <strong>"Testar Interação"</strong> para ver o ritmo das animações.</li>
+                            <li><strong>Estúdio de Tipografia</strong>: Escolha entre 8 estilos de fontes, desde as Modernas e Arredondadas até as Elegantes e Técnicas.</li>
+                            <li><strong>Motion Design</strong>: Ajuste o ritmo do sistema entre Estático (sem transições), Sutil ou Cinematográfico (luxo).</li>
                             <li><strong>Aura Visual & Texturas</strong>: Escolha entre **Glassmorphism**, **Profundo** ou **Minimalista**, e adicione texturas de fundo como Pontos ou Grelhas.</li>
                         </ul>
                     </AccordionContent>
