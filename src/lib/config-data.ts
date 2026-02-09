@@ -5,6 +5,7 @@ export const productTypes: readonly ProductType[] = ['Margem', 'Margem CLT', 'Sa
 export const proposalStatuses: readonly ProposalStatus[] = ['Em Andamento', 'Aguardando Saldo', 'Pago', 'Saldo Pago', 'Pendente', 'Reprovado'];
 export const commissionStatuses: readonly CommissionStatus[] = ['Pendente', 'Paga', 'Parcial'];
 export const approvingBodies: readonly string[] = ['INSS', 'SPPREV', 'Federal', 'SIAPE', 'USP', 'GOVERNO', 'CLT', 'Outro'];
+export const expenseCategories: readonly string[] = ['Aluguel', 'Internet', 'Telefonia', 'Tráfego Pago', 'Salários', 'Impostos', 'Outros'];
 
 export const banks: readonly string[] = [
   "Banco do Brasil S.A.",

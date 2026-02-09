@@ -111,6 +111,7 @@ export type UserSettings = {
   commissionStatuses: string[];
   approvingBodies: string[];
   banks: string[];
+  expenseCategories: string[];
   bankDomains?: Record<string, string>; // Mapeamento de Nome -> Domínio para ícones
   showBankLogos?: boolean;
 };
@@ -142,13 +143,11 @@ export type FollowUp = {
   notes?: string;
 };
 
-export type ExpenseCategory = 'Aluguel' | 'Internet' | 'Telefonia' | 'Tráfego Pago' | 'Salários' | 'Impostos' | 'Outros';
-
 export type Expense = {
   id: string;
   ownerId: string;
   description: string;
   amount: number;
   date: string; // YYYY-MM-DD
-  category: ExpenseCategory;
+  category: string;
 };

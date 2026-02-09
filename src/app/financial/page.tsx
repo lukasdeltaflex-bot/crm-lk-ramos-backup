@@ -47,6 +47,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ExpenseForm } from '@/components/financial/expense-form';
 import { ExpenseTable } from '@/components/financial/expense-table';
+import { expenseCategories as initialExpenseCategories } from '@/lib/config-data';
 
 
 export type ProposalWithCustomer = Proposal & { customer: Customer | undefined };
@@ -641,6 +642,7 @@ export default function FinancialPage() {
             </DialogHeader>
             <ExpenseForm 
                 expense={selectedExpense}
+                categories={userSettings?.expenseCategories || initialExpenseCategories}
                 onSubmit={handleExpenseSubmit}
             />
         </DialogContent>

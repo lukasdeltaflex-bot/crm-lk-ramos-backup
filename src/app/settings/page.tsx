@@ -18,8 +18,9 @@ import {
   approvingBodies as initialApprovingBodies,
   banks as initialBanks,
   commissionStatuses as initialCommissionStatuses,
+  expenseCategories as initialExpenseCategories,
 } from '@/lib/config-data';
-import { ListChecks, Palette, UserCog, Database, FileDown, Loader2, CloudUpload, CheckCircle2, XCircle, Bot } from 'lucide-react';
+import { ListChecks, Palette, UserCog, Database, FileDown, Loader2, CloudUpload, CheckCircle2, XCircle, Bot, Wallet } from 'lucide-react';
 import { EditableList } from '@/components/settings/editable-list';
 import { BankEditableList } from '@/components/settings/bank-editable-list';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
@@ -75,6 +76,7 @@ export default function SettingsPage() {
   const [proposalStatuses, setProposalStatuses] = useState([...initialProposalStatuses]);
   const [commissionStatuses, setCommissionStatuses] = useState([...initialCommissionStatuses]);
   const [approvingBodies, setApprovingBodies] = useState([...initialApprovingBodies]);
+  const [expenseCategories, setExpenseCategories] = useState([...initialExpenseCategories]);
   const [banks, setBanks] = useState([...initialBanks]);
   const [bankDomains, setBankDomains] = useState<Record<string, string>>({});
   const [showBankLogos, setShowBankLogos] = useState(true);
@@ -85,6 +87,7 @@ export default function SettingsPage() {
       setProposalStatuses(userSettings.proposalStatuses || [...initialProposalStatuses]);
       setCommissionStatuses(userSettings.commissionStatuses || [...initialCommissionStatuses]);
       setApprovingBodies(userSettings.approvingBodies || [...initialApprovingBodies]);
+      setExpenseCategories(userSettings.expenseCategories || [...initialExpenseCategories]);
       setBanks(userSettings.banks || [...initialBanks]);
       setBankDomains(userSettings.bankDomains || {});
       setShowBankLogos(userSettings.showBankLogos ?? true);
@@ -98,6 +101,7 @@ export default function SettingsPage() {
             proposalStatuses,
             commissionStatuses,
             approvingBodies,
+            expenseCategories,
             banks,
             bankDomains,
             showBankLogos,
@@ -186,6 +190,7 @@ export default function SettingsPage() {
                         <EditableList title="Status da Proposta" items={proposalStatuses} setItems={(n) => { setProposalStatuses(n); updateSettings({ proposalStatuses: n }); }} />
                         <EditableList title="Status da Comissão" items={commissionStatuses} setItems={(n) => { setCommissionStatuses(n); updateSettings({ commissionStatuses: n }); }} />
                         <EditableList title="Órgãos Aprovadores" items={approvingBodies} setItems={(n) => { setApprovingBodies(n); updateSettings({ approvingBodies: n }); }} />
+                        <EditableList title="Categorias de Despesas (DRE)" items={expenseCategories} setItems={(n) => { setExpenseCategories(n); updateSettings({ expenseCategories: n }); }} />
                         
                         {/* Seção Inteligente de Bancos */}
                         <BankEditableList 

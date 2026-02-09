@@ -22,11 +22,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { format, parse } from 'date-fns';
-import type { Expense, ExpenseCategory } from '@/lib/types';
+import type { Expense } from '@/lib/types';
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
-
-const categories: ExpenseCategory[] = ['Aluguel', 'Internet', 'Telefonia', 'Tráfego Pago', 'Salários', 'Impostos', 'Outros'];
 
 const expenseSchema = z.object({
   description: z.string().min(3, 'A descrição deve ter pelo menos 3 caracteres.'),
@@ -41,18 +39,19 @@ type ExpenseFormValues = z.infer<typeof expenseSchema>;
 
 interface ExpenseFormProps {
   expense?: Expense;
+  categories: string[];
   onSubmit: (data: ExpenseFormValues) => void;
   isSaving?: boolean;
 }
 
-export function ExpenseForm({ expense, onSubmit, isSaving = false }: ExpenseFormProps) {
+export function ExpenseForm({ expense, categories, onSubmit, isSaving = false }: ExpenseFormProps) {
   const form = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseSchema),
     defaultValues: {
       description: '',
       amount: 0,
       date: format(new Date(), 'yyyy-MM-dd'),
-      category: 'Outros',
+      category: categories[0] || 'Outros',
     },
   });
 
