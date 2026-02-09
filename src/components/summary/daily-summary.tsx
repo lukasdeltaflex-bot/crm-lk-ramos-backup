@@ -300,26 +300,9 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
     setIsBdayModalOpen(false);
   };
 
-  if (!isClient) {
-    return (
-        <Card className="border-border/50 shadow-lg rounded-xl overflow-hidden">
-            <CardHeader className="bg-muted/10">
-                <CardTitle className="flex items-center gap-2 font-bold"><Bot className="text-primary" /> Resumo Diário</CardTitle>
-                <CardDescription className="text-[10px] font-bold uppercase tracking-widest opacity-60">Analisando dados...</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-                <div className="space-y-4">
-                    <Skeleton className="h-20 w-full rounded-xl" />
-                    <Skeleton className="h-20 w-full rounded-xl" />
-                </div>
-            </CardContent>
-        </Card>
-    );
-  }
-  
   return (
     <>
-    <Card className="h-full flex flex-col border-border/50 shadow-lg rounded-xl overflow-hidden bg-card">
+    <Card className="h-full flex flex-col border-border/50 shadow-lg overflow-hidden bg-card">
       <CardHeader className="flex flex-row items-center justify-between pb-4 bg-muted/10 border-b border-border/30">
         <div className='space-y-1'>
             <CardTitle className="text-lg font-bold flex items-center gap-2">
@@ -345,9 +328,9 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
             Resumo E-mail
         </Button>
       </CardHeader>
-      <CardContent className="flex-1 overflow-hidden pt-6">
+      <CardContent className="flex-1 overflow-hidden pt-6 pb-0">
         {!hasVisibleAlerts ? (
-            <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground p-8 border-2 border-dashed border-border/50 rounded-xl bg-muted/5">
+            <div className="flex h-[400px] flex-col items-center justify-center text-center text-muted-foreground p-8 border-2 border-dashed border-border/50 rounded-xl bg-muted/5">
                 <Info className="h-10 w-10 mb-4 opacity-20" />
                 <p className="font-bold text-sm text-foreground/80">Tudo em dia!</p>
                 <p className="text-[11px] opacity-60 mt-1">Nenhuma pendência ou alerta estratégico para agora.</p>
@@ -510,6 +493,11 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
             </ScrollArea>
         )}
       </CardContent>
+      <div className="px-6 py-3 border-t border-border/10 bg-muted/5">
+          <p className="text-[9px] text-center text-muted-foreground/50 font-bold uppercase tracking-tighter">
+              Central de notificações e alertas inteligentes
+          </p>
+      </div>
     </Card>
 
     <Dialog open={isBdayModalOpen} onOpenChange={setIsBdayModalOpen}>

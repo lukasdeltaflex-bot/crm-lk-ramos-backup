@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -54,12 +53,12 @@ export default function ManualPage() {
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
-                        <p>O Dashboard é sua ferramenta de decisão rápida, agora com layout otimizado.</p>
+                        <p>O Dashboard é sua ferramenta de decisão rápida, organizado em uma hierarquia estratégica.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Radar de Vendas (<Zap className="inline h-3 w-3 text-orange-500" />)</strong>: Localizado em destaque no Dashboard, mostra clientes com contratos pagos há mais de 12 meses. É sua principal lista de prospecção diária de Refinanciamento.</li>
-                            <li><strong>Inteligência Diária</strong>: Localizada ao lado do Radar, avisa sobre aniversários, retornos e pendências estratégicas do dia.</li>
-                            <li><strong>Rankings de Performance</strong>: Agora em área expandida para facilitar a análise de quais bancos, promotoras e operadores trazem mais rentabilidade.</li>
-                            <li><strong>Esteira de Propostas</strong>: Tabela em largura total no final da página para um monitoramento confortável dos últimos registros.</li>
+                            <li><strong>Radar de Vendas (<Zap className="inline h-3 w-3 text-orange-500" />)</strong>: Localizado em posição de destaque, mostra clientes com contratos pagos há mais de 12 meses. O widget agora é fixo e simétrico para garantir uma visualização harmoniosa.</li>
+                            <li><strong>Inteligência Diária</strong>: Localizada ao lado do Radar, consolida aniversários, retornos e pendências críticas do dia. Ambos os widgets possuem a mesma altura para uma interface limpa.</li>
+                            <li><strong>Rankings de Performance</strong>: Área central expandida para análise de rentabilidade por banco, promotora e operador.</li>
+                            <li><strong>Esteira de Propostas</strong>: Tabela em largura total no final da página para monitoramento confortável dos últimos registros.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
@@ -77,7 +76,7 @@ export default function ManualPage() {
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
                         <p>Gerencie sua base com agilidade e precisão técnica.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Aba Inativos</strong>: Unifica clientes que foram desativados manualmente e clientes que atingiram a idade limite (75 anos ou mais). Clientes nesta aba não geram alertas de cobrança, aniversário ou radar de vendas.</li>
+                            <li><strong>Aba Inativos</strong>: Unifica clientes que foram desativados manualmente e clientes que atingiram a idade limite (75 anos ou mais). Esta simplificação mantém seu radar focado apenas em quem pode operar.</li>
                             <li><strong>Cadastro via IA</strong>: Use o botão "Novo Cliente com IA" para extrair dados de textos do WhatsApp em segundos.</li>
                             <li><strong>Identificação de Gênero</strong>: Campo específico para tratamento personalizado no atendimento.</li>
                             <li><strong>Botão Copiar</strong>: Facilite o uso do CPF, Telefone e E-mail em outros sites com os ícones de cópia rápida.</li>
