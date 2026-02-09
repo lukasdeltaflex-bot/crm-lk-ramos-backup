@@ -1,3 +1,4 @@
+
 'use client';
 import React from 'react';
 import { useParams } from 'next/navigation';
@@ -8,7 +9,7 @@ import { doc, collection, query, where, updateDoc } from 'firebase/firestore';
 import type { Customer, Proposal, Attachment } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Phone, Mail, Calendar, FileText, CircleDollarSign, BadgePercent, MapPin, Hash, Copy, Printer, FileBadge, FolderLock, Sparkles, AlertTriangle, UserRound } from 'lucide-react';
+import { User, Phone, Mail, Calendar, FileText, CircleDollarSign, BadgePercent, MapPin, Hash, Copy, Printer, FileBadge, FolderLock, Sparkles, AlertTriangle, UserRound, UserX, UserCheck } from 'lucide-react';
 import { format, parse, differenceInMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
 import { toast } from '@/hooks/use-toast';
 import { CustomerAttachmentUploader } from '@/components/customers/customer-attachment-uploader';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 
 
 const CopyButton = ({ text, label }: { text: string; label: string }) => {
@@ -44,7 +46,15 @@ const CopyButton = ({ text, label }: { text: string; label: string }) => {
     );
 }
 
-const CustomerInfoCard = ({ customer, onExportDossier }: { customer: Customer; onExportDossier: () => void }) => {
+const CustomerInfoCard = ({ 
+    customer, 
+    onExportDossier, 
+    onToggleStatus 
+}: { 
+    customer: Customer; 
+    onExportDossier: () => void;
+    onToggleStatus: () => void;
+}) => {
     const [age, setAge] = React.useState<number | null>(null);
 
     React.useEffect(() => {
@@ -53,18 +63,35 @@ const CustomerInfoCard = ({ customer, onExportDossier }: { customer: Customer; o
 
     const isWhatsAppNumber1 = isWhatsApp(customer.phone);
     const isWhatsAppNumber2 = customer.phone2 ? isWhatsApp(customer.phone2) : false;
+    const isInactive = customer.status === 'inactive';
     
     return (
-        <Card>
+        <Card className={isInactive ? "opacity-80 bg-zinc-50 dark:bg-zinc-900/40" : ""}>
             <CardHeader>
-                <div className='flex items-center justify-between'>
+                <div className='flex items-center justify-between flex-wrap gap-4'>
                     <div className='flex items-center gap-4'>
                          <User className="h-8 w-8 text-muted-foreground" />
-                        <div>
-                            <CardTitle>{customer.name}</CardTitle>
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-3">
+                                <CardTitle>{customer.name}</CardTitle>
+                                <Badge variant={isInactive ? "secondary" : "default"} className={isInactive ? "bg-zinc-200 text-zinc-700" : "bg-green-500"}>
+                                    {isInactive ? "Inativo" : "Ativo"}
+                                </Badge>
+                            </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-2 print:hidden">
+                        <Button 
+                            variant="outline" 
+                            className={isInactive ? "text-green-600 border-green-200" : "text-destructive border-destructive/20"}
+                            onClick={onToggleStatus}
+                        >
+                            {isInactive ? (
+                                <><UserCheck className="mr-2 h-4 w-4" /> Reativar Cliente</>
+                            ) : (
+                                <><UserX className="mr-2 h-4 w-4" /> Tornar Inativo</>
+                            )}
+                        </Button>
                         <Button variant="outline" onClick={onExportDossier}>
                             <FileBadge className="mr-2 h-4 w-4" />
                             Dossiê (PDF)
@@ -269,6 +296,22 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
     return oldPaidProposal || null;
   }, [proposals]);
 
+  const handleToggleStatus = async () => {
+    if (!firestore || !customerId || !customer) return;
+    const newStatus = customer.status === 'inactive' ? 'active' : 'inactive';
+    try {
+        await updateDoc(doc(firestore, 'customers', customerId), {
+            status: newStatus
+        });
+        toast({ 
+            title: newStatus === 'active' ? "Cliente Reativado" : "Cliente Inativado", 
+            description: `O status de ${customer.name} foi alterado para ${newStatus === 'active' ? 'Ativo' : 'Inativo'}.` 
+        });
+    } catch (e) {
+        toast({ variant: "destructive", title: "Erro ao atualizar status", description: "Tente novamente." });
+    }
+  };
+
   const handleDocumentsChange = async (docs: Attachment[]) => {
     if (!firestore || !customerId) return;
     try {
@@ -311,6 +354,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
         body: [
             ['Nome Completo', customer.name],
             ['CPF', customer.cpf],
+            ['Status', customer.status === 'inactive' ? 'Inativo' : 'Ativo'],
             ['Gênero', customer.gender || 'Não informado'],
             ['Nascimento', format(parse(customer.birthDate, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy')],
             ['Telefone', customer.phone],
@@ -393,7 +437,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
         </div>
 
         {/* ALERTA DE RETENÇÃO (Idade de Ouro) */}
-        {retentionOpportunity && (
+        {retentionOpportunity && customer.status !== 'inactive' && (
             <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800 animate-in slide-in-from-top duration-500">
                 <Sparkles className="h-5 w-5 text-amber-600" />
                 <AlertTitle className="text-amber-800 dark:text-amber-400 font-bold">Oportunidade de Retenção Identificada!</AlertTitle>
@@ -404,7 +448,11 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
             </Alert>
         )}
 
-        <CustomerInfoCard customer={customer} onExportDossier={handleExportDossier} />
+        <CustomerInfoCard 
+            customer={customer} 
+            onExportDossier={handleExportDossier} 
+            onToggleStatus={handleToggleStatus}
+        />
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">

@@ -1,3 +1,4 @@
+
 'use client';
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -6,7 +7,7 @@ import { PageHeader } from '@/components/page-header';
 import { CustomerDataTable, type CustomerDataTableHandle } from './data-table';
 import { getColumns } from './columns';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Sparkles, Trash2, FileDown } from 'lucide-react';
+import { PlusCircle, Sparkles, Trash2, FileDown, UserCheck, UserX, Clock } from 'lucide-react';
 import { CustomerForm } from './customer-form';
 import type { Customer } from '@/lib/types';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -71,6 +72,7 @@ function CustomersPageContent() {
   const { data: customers, isLoading } = useCollection<Customer>(customersQuery);
 
   const [activeCustomers, setActiveCustomers] = React.useState<Customer[]>([]);
+  const [elderlyCustomers, setElderlyCustomers] = React.useState<Customer[]>([]);
   const [inactiveCustomers, setInactiveCustomers] = React.useState<Customer[]>([]);
 
   const handleNewCustomer = React.useCallback(() => {
@@ -111,21 +113,32 @@ function CustomersPageContent() {
 
   React.useEffect(() => {
     const active: Customer[] = [];
+    const elderly: Customer[] = [];
     const inactive: Customer[] = [];
 
     nonAnonymizedCustomers.forEach(customer => {
-      if (getAge(customer.birthDate) >= 75) {
+      const status = customer.status || 'active';
+      const age = getAge(customer.birthDate);
+
+      if (status === 'inactive') {
         inactive.push(customer);
+      } else if (age >= 75) {
+        elderly.push(customer);
       } else {
         active.push(customer);
       }
     });
 
     setActiveCustomers(active);
+    setElderlyCustomers(elderly);
     setInactiveCustomers(inactive);
   }, [nonAnonymizedCustomers]);
 
-  const displayedCustomers = filter === 'active' ? activeCustomers : inactiveCustomers;
+  const displayedCustomers = React.useMemo(() => {
+    if (filter === 'active') return activeCustomers;
+    if (filter === 'elderly') return elderlyCustomers;
+    return inactiveCustomers;
+  }, [filter, activeCustomers, elderlyCustomers, inactiveCustomers]);
 
 
   const handleExportToExcel = async () => {
@@ -395,6 +408,7 @@ const handleExportToPdf = async () => {
           id: newDocRef.id,
           numericId: nextNumericId,
           ownerId: user.uid,
+          status: data.status || 'active',
         };
         await setDoc(newDocRef, newCustomerWithId);
         toast({
@@ -498,13 +512,20 @@ const handleExportToPdf = async () => {
       </div>
       <Tabs value={filter} onValueChange={setFilter} className="mb-4">
         <TabsList>
-          <TabsTrigger value="active">
-            Clientes Ativos
-            <Badge variant="secondary" className="ml-2">{activeCustomers.length}</Badge>
+          <TabsTrigger value="active" className="gap-2">
+            <UserCheck className="h-4 w-4" />
+            Ativos
+            <Badge variant="secondary" className="ml-1">{activeCustomers.length}</Badge>
           </TabsTrigger>
-          <TabsTrigger value="inactive">
-            Clientes com 75+ anos
-            <Badge variant="secondary" className="ml-2">{inactiveCustomers.length}</Badge>
+          <TabsTrigger value="elderly" className="gap-2">
+            <Clock className="h-4 w-4" />
+            75+ Anos
+            <Badge variant="secondary" className="ml-1">{elderlyCustomers.length}</Badge>
+          </TabsTrigger>
+          <TabsTrigger value="inactive" className="gap-2">
+            <UserX className="h-4 w-4" />
+            Inativos
+            <Badge variant="secondary" className="ml-1">{inactiveCustomers.length}</Badge>
           </TabsTrigger>
         </TabsList>
       </Tabs>

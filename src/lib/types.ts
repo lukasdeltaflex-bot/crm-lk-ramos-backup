@@ -18,12 +18,15 @@ export type ProposalHistoryEntry = {
   userName?: string;
 };
 
+export type CustomerStatus = 'active' | 'inactive';
+
 export type Customer = {
   id: string;
   numericId: number;
   name: string;
   cpf: string;
   gender?: 'Masculino' | 'Feminino';
+  status?: CustomerStatus;
   benefits?: Benefit[];
   phone: string;
   phone2?: string;

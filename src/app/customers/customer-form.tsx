@@ -15,21 +15,14 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CalendarIcon, Sparkles, AlertCircle, Loader2, PlusCircle, Trash2, FileText as FileIcon } from 'lucide-react';
-import { Calendar } from '@/components/ui/calendar';
+import { Sparkles, AlertCircle, Loader2, PlusCircle, Trash2, FileText as FileIcon, UserCheck, UserX } from 'lucide-react';
 import { format, parse } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { cn, getAge, validateCPF } from '@/lib/utils';
 import type { Customer, Benefit, Attachment } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -63,6 +56,7 @@ const customerSchema = z.object({
     message: "CPF inválido. Verifique se há erro de digitação.",
   }),
   gender: z.enum(['Masculino', 'Feminino']).optional(),
+  status: z.enum(['active', 'inactive']).default('active'),
   benefits: z.array(benefitSchema).optional(),
   phone: z.string().min(10, 'O telefone é obrigatório.'),
   phone2: z.string().optional(),
@@ -122,6 +116,7 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
       name: '',
       cpf: '',
       gender: undefined,
+      status: 'active',
       benefits: [],
       phone: '',
       phone2: '',
@@ -172,6 +167,7 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
             name: '',
             cpf: '',
             gender: undefined as any,
+            status: 'active' as const,
             benefits: [],
             phone: '',
             phone2: '',
@@ -206,6 +202,7 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
             benefits: source.benefits || [],
             birthDate: formattedBirthDate,
             documents: source.documents || [],
+            status: source.status || 'active',
           };
         }
         return initial;
@@ -327,7 +324,34 @@ export function CustomerForm({ customer, defaultValues, onSubmit, isSaving = fal
         <ScrollArea className="h-[75vh] pr-4">
           <div className="space-y-8">
             <div className='space-y-4'>
-                <h3 className="text-lg font-medium">Dados Pessoais</h3>
+                <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">Dados Pessoais</h3>
+                    <FormField
+                      control={form.control}
+                      name="status"
+                      render={({ field }) => (
+                        <FormItem className="w-40">
+                          <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger className={cn(
+                                "h-8 text-xs font-bold uppercase border-2",
+                                field.value === 'active' ? "border-green-500/20 text-green-600 bg-green-50" : "border-zinc-500/20 text-zinc-600 bg-zinc-50"
+                              )}>
+                                <div className="flex items-center gap-2">
+                                    {field.value === 'active' ? <UserCheck className="h-3 w-3" /> : <UserX className="h-3 w-3" />}
+                                    <SelectValue placeholder="Status" />
+                                </div>
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="active">Ativo</SelectItem>
+                              <SelectItem value="inactive">Inativo</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )}
+                    />
+                </div>
                 <FormField
                 control={form.control}
                 name="name"
