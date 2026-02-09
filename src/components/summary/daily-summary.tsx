@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -113,17 +112,19 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
     const todayIso = format(now, 'yyyy-MM-dd');
     const customerMap = new Map(customers.map(c => [c.id, c]));
 
+    // Alertas de Aniversário: Apenas para clientes ATIVOS que farão 75 em breve ou hoje
     const birthdayAlerts = customers
-        .filter(c => getAge(c.birthDate) >= 74 && c.status !== 'inactive')
+        .filter(c => c.status !== 'inactive' && getAge(c.birthDate) >= 74 && getAge(c.birthDate) < 75)
         .map(c => ({ 
             id: `birthday-${c.id}`,
             customerId: c.id,
             customerName: c.name, 
-            age: getAge(c.birthDate) >= 75 ? getAge(c.birthDate) : 75
+            age: 75
         }));
 
+    // Radar de Vendas: Apenas para clientes ATIVOS (menos de 75 anos)
     const radarAlerts = customers
-        .filter(c => c.status !== 'inactive')
+        .filter(c => c.status !== 'inactive' && getAge(c.birthDate) < 75)
         .filter(c => {
             return proposals.some(p => {
                 if (p.customerId !== c.id) return false;
@@ -402,7 +403,7 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
                     {visibleBirthdayAlerts.length > 0 && (
                         <div className="space-y-2">
                             <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-pink-500/80 flex items-center gap-2">
-                                <Cake className="h-3 w-3 text-pink-500" /> Aniversariantes do Dia
+                                <Cake className="h-3 w-3 text-pink-500" /> Alerta de Idade (Próximo 75 Anos)
                             </h3>
                             <div className="grid gap-2">
                                 {visibleBirthdayAlerts.map(alert => (
@@ -411,7 +412,7 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
                                         id={alert.id}
                                         icon={<Cake className="h-4 w-4 text-pink-500" />}
                                         title={alert.customerName}
-                                        description={`Cliente completa ${alert.age} anos hoje! Deseje parabéns.`}
+                                        description={`Cliente completará ${alert.age} anos em breve. Verifique as políticas de crédito vigentes para esta faixa etária.`}
                                         onDismiss={handleDismiss}
                                         action={
                                             <Button 

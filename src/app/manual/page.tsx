@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -18,10 +17,6 @@ import {
     ShieldCheck, 
     Landmark,
     FileBadge,
-    History,
-    UserX,
-    Copy,
-    CalendarCheck,
     Cloud
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -60,7 +55,7 @@ export default function ManualPage() {
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
                         <p>O Dashboard é sua ferramenta de decisão rápida.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Radar de Vendas (<Zap className="inline h-3 w-3 text-orange-500" />)</strong>: Localizado agora no Dashboard, mostra clientes com contratos pagos há mais de 12 meses. É sua principal lista de prospecção diária.</li>
+                            <li><strong>Radar de Vendas (<Zap className="inline h-3 w-3 text-orange-500" />)</strong>: Localizado agora no Dashboard, mostra clientes com contratos pagos há mais de 12 meses. É sua principal lista de prospecção diária de Refinanciamento.</li>
                             <li><strong>Metas Mensais</strong>: O progresso é atualizado em tempo real com contratos "Pagos".</li>
                             <li><strong>Inteligência Diária</strong>: O resumo à direita avisa sobre aniversários, retornos e oportunidades de retenção identificadas no dia.</li>
                         </ul>
@@ -73,15 +68,16 @@ export default function ManualPage() {
                             <div className="p-2 rounded-lg bg-green-100 text-green-600"><Users className="h-5 w-5" /></div>
                             <div className="text-left">
                                 <p className="font-bold">2. Gestão de Clientes & Ciclo de Vida</p>
-                                <p className="text-xs text-muted-foreground">Ativos e Inativos unificados</p>
+                                <p className="text-xs text-muted-foreground">Foco na base produtiva</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
                         <p>Gerencie sua base com agilidade e precisão técnica.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Aba Inativos</strong>: Unifica clientes que foram desativados manualmente e clientes que atingiram a idade limite (75+ anos). Clientes nesta aba não geram alertas de cobrança ou aniversário.</li>
+                            <li><strong>Aba Inativos</strong>: Unifica clientes que foram desativados manualmente e clientes que atingiram a idade limite (75 anos ou mais). Clientes nesta aba não geram alertas de cobrança, aniversário ou radar de vendas.</li>
                             <li><strong>Cadastro via IA</strong>: Use o botão "Novo Cliente com IA" para extrair dados de textos do WhatsApp em segundos.</li>
+                            <li><strong>Identificação de Gênero</strong>: Campo específico para tratamento personalizado no atendimento.</li>
                             <li><strong>Botão Copiar</strong>: Facilite o uso do CPF, Telefone e E-mail em outros sites com os ícones de cópia rápida.</li>
                         </ul>
                     </AccordionContent>
@@ -119,7 +115,7 @@ export default function ManualPage() {
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
                         <p>Controle absoluto sobre o dinheiro em movimento.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Automação de Datas</strong>: Ao marcar como **Pago** (incluindo Portabilidade), o sistema preenche a Averbação automaticamente.</li>
+                            <li><strong>Automação de Datas</strong>: Ao marcar como **Pago** (incluindo Portabilidade), o sistema preenche a Averbação e Pagamento automaticamente.</li>
                             <li><strong>Histórico de Trâmites</strong>: Cada mudança de status gera um log automático. Você também pode registrar chamadas e pendências manualmente.</li>
                             <li><strong>Capa de Proposta (PDF)</strong>: Gere o documento oficial da operação com visual executivo para impressão.</li>
                         </ul>
@@ -157,8 +153,9 @@ export default function ManualPage() {
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Logotipos Inteligentes</strong>: O sistema detecta o ícone oficial do banco via IA.</li>
-                            <li><strong>Temas de Cor</strong>: Em <strong>Configurações &gt; Aparência</strong>, mude a cor principal para combinar com sua marca.</li>
+                            <li><strong>Logotipos Inteligentes</strong>: O sistema exibe o ícone oficial do banco automaticamente. Se você adicionar um banco novo, a IA pesquisa o site dele para encontrar o logo.</li>
+                            <li><strong>Limpeza de Nomes</strong>: O sistema limpa os nomes dos bancos para deixar apenas o texto comercial, removendo códigos numéricos.</li>
+                            <li><strong>Temas de Cor</strong>: Em <strong>Configurações &gt; Aparência</strong>, você pode trocar a cor principal do sistema para combinar com sua marca.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
@@ -174,9 +171,11 @@ export default function ManualPage() {
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
+                        <p>O seu sistema utiliza infraestrutura de nuvem profissional do Google.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Banco de Dados</strong>: 50.000 leituras/dia.</li>
-                            <li><strong>Anexos</strong>: 5 GB de armazenamento gratuito.</li>
+                            <li><strong>Banco de Dados (Firestore)</strong>: Suporta até 50.000 leituras diárias gratuitamente.</li>
+                            <li><strong>Anexos (Storage)</strong>: Você possui 5 GB de armazenamento gratuito para documentos de clientes.</li>
+                            <li><strong>Disponibilidade</strong>: O sistema fica online 24h por dia com backup automático nos servidores do Google.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>

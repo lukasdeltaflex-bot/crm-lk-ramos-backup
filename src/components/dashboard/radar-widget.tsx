@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useMemo } from 'react';
@@ -8,7 +7,7 @@ import { Zap, ChevronRight, User, TrendingUp } from 'lucide-react';
 import type { Customer, Proposal } from '@/lib/types';
 import { differenceInMonths } from 'date-fns';
 import Link from 'next/link';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, getAge } from '@/lib/utils';
 import { Badge } from '../ui/badge';
 
 interface RadarWidgetProps {
@@ -22,11 +21,10 @@ export function RadarWidget({ proposals, customers, isLoading }: RadarWidgetProp
     if (!proposals || !customers) return [];
     
     const now = new Date();
-    const customerMap = new Map(customers.map(c => [c.id, c]));
     
-    // Filtra clientes ativos que têm contratos pagos há mais de 12 meses
+    // Filtra clientes ATIVOS (Status Ativo e Idade < 75) que têm contratos pagos há mais de 12 meses
     const opportunities = customers
-      .filter(c => c.status !== 'inactive')
+      .filter(c => c.status !== 'inactive' && getAge(c.birthDate) < 75)
       .map(customer => {
         const maturedProposals = proposals.filter(p => {
           if (p.customerId !== customer.id) return false;
@@ -38,7 +36,7 @@ export function RadarWidget({ proposals, customers, isLoading }: RadarWidgetProp
         if (maturedProposals.length === 0) return null;
 
         // Pega a proposta mais antiga para mostrar o tempo de maturação
-        const oldest = maturedProposals.sort((a,b) => a.datePaidToClient!.localeCompare(b.datePaidToClient!))[0];
+        const oldest = [...maturedProposals].sort((a,b) => a.datePaidToClient!.localeCompare(b.datePaidToClient!))[0];
         const months = differenceInMonths(now, new Date(oldest.datePaidToClient!));
 
         return {
@@ -98,7 +96,7 @@ export function RadarWidget({ proposals, customers, isLoading }: RadarWidgetProp
         )}
         <div className="pt-2">
             <p className="text-[9px] text-center text-orange-600/50 font-bold uppercase tracking-tighter">
-                Clientes com contratos pagos há mais de 1 ano
+                Clientes ativos com contratos pagos há mais de 1 ano
             </p>
         </div>
       </CardContent>

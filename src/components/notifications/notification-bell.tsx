@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -17,7 +16,7 @@ import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebas
 import { collection, query, where } from 'firebase/firestore';
 import type { Customer, Proposal, FollowUp } from '@/lib/types';
 import { differenceInDays, format, differenceInMonths } from 'date-fns';
-import { getWhatsAppUrl, calculateBusinessDays } from '@/lib/utils';
+import { getWhatsAppUrl, calculateBusinessDays, getAge } from '@/lib/utils';
 import Link from 'next/link';
 import { generateBirthdayMessage } from '@/ai/flows/generate-birthday-message-flow';
 import { toast } from '@/hooks/use-toast';
@@ -79,10 +78,14 @@ export function NotificationBell() {
     const todayStr = format(now, 'MM-dd');
     const todayIso = format(now, 'yyyy-MM-dd');
 
-    // Aniversários hoje
+    // Notificações para clientes ATIVOS
     customers?.forEach(c => {
-      if (c.status === 'inactive') return;
+      const age = getAge(c.birthDate);
+      const isInactive = c.status === 'inactive' || age >= 75;
       
+      if (isInactive) return;
+      
+      // Aniversários hoje (Apenas se ainda for Ativo)
       if (c.birthDate && c.birthDate.substring(5) === todayStr) {
         alerts.push({
           id: `bday-${c.id}-${todayStr}`,
@@ -94,7 +97,7 @@ export function NotificationBell() {
         });
       }
 
-      // RADAR DE VENDAS: Retenção (Paid > 12 months)
+      // RADAR DE VENDAS: Retenção (Apenas se ainda for Ativo)
       const hasMatured = proposals?.some(p => {
           if (p.customerId !== c.id) return false;
           if (p.status !== 'Pago' && p.status !== 'Saldo Pago') return false;
@@ -126,7 +129,7 @@ export function NotificationBell() {
         }
     });
 
-    // Comissões atrasadas (> 7 dias)
+    // Pendências Financeiras
     proposals?.forEach(p => {
       if ((p.status === 'Pago' || p.status === 'Saldo Pago') && p.commissionStatus === 'Pendente' && p.datePaidToClient) {
         const days = differenceInDays(now, new Date(p.datePaidToClient));

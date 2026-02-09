@@ -1,4 +1,3 @@
-
 'use client';
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -9,7 +8,7 @@ import { getColumns } from './columns';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Sparkles, Trash2, FileDown, UserCheck, UserX } from 'lucide-react';
 import { CustomerForm } from './customer-form';
-import type { Customer, Proposal } from '@/lib/types';
+import type { Customer } from '@/lib/types';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, writeBatch, updateDoc, setDoc, query, where } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
