@@ -1,12 +1,13 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Bot, Send, BellRing, Clock, BadgePercent, X, Info, Loader2, CalendarClock, Cake, MessageSquareText, Hourglass, Coins } from 'lucide-react';
+import { Bot, Send, BellRing, Clock, BadgePercent, X, Info, Loader2, CalendarClock, Cake, MessageSquareText, Hourglass, Coins, Zap } from 'lucide-react';
 import type { Customer, Proposal, UserProfile, FollowUp } from '@/lib/types';
 import { Skeleton } from '../ui/skeleton';
-import { differenceInDays, format } from 'date-fns';
+import { differenceInDays, format, differenceInMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { calculateBusinessDays, getAge, cn, getWhatsAppUrl } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -17,6 +18,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import Link from 'next/link';
 
 interface DailySummaryProps {
   proposals: Proposal[];
@@ -105,19 +107,35 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
   };
 
   const alertData = useMemo(() => {
-    if (!isClient || !proposals || !customers) return { birthdayAlerts: [], followUpReminders: [], commissionReminders: [], debtBalanceReminders: [], partialCommissionReminders: [], manualFollowUps: [] };
+    if (!isClient || !proposals || !customers) return { birthdayAlerts: [], followUpReminders: [], commissionReminders: [], debtBalanceReminders: [], partialCommissionReminders: [], manualFollowUps: [], radarAlerts: [] };
 
     const now = new Date();
     const todayIso = format(now, 'yyyy-MM-dd');
     const customerMap = new Map(customers.map(c => [c.id, c]));
 
     const birthdayAlerts = customers
-        .filter(c => getAge(c.birthDate) >= 74)
+        .filter(c => getAge(c.birthDate) >= 74 && c.status !== 'inactive')
         .map(c => ({ 
             id: `birthday-${c.id}`,
             customerId: c.id,
             customerName: c.name, 
             age: getAge(c.birthDate) >= 75 ? getAge(c.birthDate) : 75
+        }));
+
+    const radarAlerts = customers
+        .filter(c => c.status !== 'inactive')
+        .filter(c => {
+            return proposals.some(p => {
+                if (p.customerId !== c.id) return false;
+                if (p.status !== 'Pago' && p.status !== 'Saldo Pago') return false;
+                if (!p.datePaidToClient) return false;
+                return differenceInMonths(now, new Date(p.datePaidToClient)) >= 12;
+            });
+        })
+        .map(c => ({
+            id: `radar-${c.id}`,
+            customerName: c.name,
+            customerId: c.id
         }));
 
     const followUpReminders = proposals
@@ -181,7 +199,7 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
             isToday: f.dueDate === todayIso
         }));
 
-    return { birthdayAlerts, followUpReminders, commissionReminders, debtBalanceReminders, partialCommissionReminders, manualFollowUps };
+    return { birthdayAlerts, followUpReminders, commissionReminders, debtBalanceReminders, partialCommissionReminders, manualFollowUps, radarAlerts };
   }, [proposals, customers, followUps, isClient]);
   
   const visibleBirthdayAlerts = alertData.birthdayAlerts.filter(a => !dismissedItems.includes(a.id));
@@ -190,6 +208,7 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
   const visibleDebtBalanceReminders = alertData.debtBalanceReminders.filter(r => !dismissedItems.includes(r.id));
   const visiblePartialCommissionReminders = alertData.partialCommissionReminders.filter(r => !dismissedItems.includes(r.id));
   const visibleManualFollowUps = alertData.manualFollowUps.filter(f => !dismissedItems.includes(f.id));
+  const visibleRadarAlerts = alertData.radarAlerts.filter(r => !dismissedItems.includes(r.id));
 
   const hasVisibleAlerts = 
     visibleBirthdayAlerts.length > 0 ||
@@ -197,7 +216,8 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
     visibleCommissionReminders.length > 0 ||
     visibleDebtBalanceReminders.length > 0 ||
     visiblePartialCommissionReminders.length > 0 ||
-    visibleManualFollowUps.length > 0;
+    visibleManualFollowUps.length > 0 ||
+    visibleRadarAlerts.length > 0;
 
   const handleSendEmail = async () => {
     if (!userProfile || !userProfile.email) {
@@ -334,6 +354,32 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
         ) : (
             <ScrollArea className="h-[400px] w-full">
                 <div className="space-y-5 pr-4 pb-6">
+                    {visibleRadarAlerts.length > 0 && (
+                        <div className="space-y-2">
+                            <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-600 flex items-center gap-2">
+                                <Zap className="h-3 w-3 fill-orange-600" /> Radar de Vendas (Retenção)
+                            </h3>
+                            <div className="grid gap-2">
+                                {visibleRadarAlerts.map(r => (
+                                    <SummaryAlertItem 
+                                        key={r.id}
+                                        id={r.id}
+                                        icon={<Zap className="h-4 w-4 text-orange-500 fill-orange-500" />}
+                                        title={r.customerName}
+                                        description="Cliente com contrato pago há mais de 12 meses. Oportunidade de Refinanciamento ou Portabilidade."
+                                        onDismiss={handleDismiss}
+                                        action={
+                                            <Link href={`/customers/${r.customerId}`}>
+                                                <Button size="sm" variant="outline" className="h-7 text-[10px] font-bold border-orange-200 text-orange-700 hover:bg-orange-50">
+                                                    Abrir Ficha do Cliente
+                                                </Button>
+                                            </Link>
+                                        }
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    )}
                     {visibleManualFollowUps.length > 0 && (
                         <div className="space-y-2">
                             <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/80 flex items-center gap-2">
@@ -355,7 +401,7 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
                     )}
                     {visibleBirthdayAlerts.length > 0 && (
                         <div className="space-y-2">
-                            <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/80 flex items-center gap-2">
+                            <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-pink-500/80 flex items-center gap-2">
                                 <Cake className="h-3 w-3 text-pink-500" /> Aniversariantes do Dia
                             </h3>
                             <div className="grid gap-2">
@@ -385,7 +431,7 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
                     )}
                     {visibleDebtBalanceReminders.length > 0 && (
                         <div className="space-y-2">
-                            <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/80 flex items-center gap-2">
+                            <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-destructive/80 flex items-center gap-2">
                                 <Hourglass className="h-3 w-3 text-destructive" /> Alertas de Saldo Devedor
                             </h3>
                             <div className="grid gap-2">
@@ -404,7 +450,7 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
                     )}
                     {visibleFollowUpReminders.length > 0 && (
                         <div className="space-y-2">
-                            <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/80 flex items-center gap-2">
+                            <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-500/80 flex items-center gap-2">
                                 <Clock className="h-3 w-3 text-orange-500" /> Esteiras em Atraso
                             </h3>
                             <div className="grid gap-2">

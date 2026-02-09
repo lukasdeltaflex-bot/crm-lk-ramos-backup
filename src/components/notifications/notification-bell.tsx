@@ -1,7 +1,8 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Bell, Cake, BadgePercent, X, CalendarClock, Bot, Loader2, MessageSquareText, Hourglass, Coins } from 'lucide-react';
+import { Bell, Cake, BadgePercent, X, CalendarClock, Bot, Loader2, MessageSquareText, Hourglass, Coins, Zap } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
 import type { Customer, Proposal, FollowUp } from '@/lib/types';
-import { differenceInDays, format } from 'date-fns';
+import { differenceInDays, format, differenceInMonths } from 'date-fns';
 import { getWhatsAppUrl, calculateBusinessDays } from '@/lib/utils';
 import Link from 'next/link';
 import { generateBirthdayMessage } from '@/ai/flows/generate-birthday-message-flow';
@@ -73,13 +74,15 @@ export function NotificationBell() {
   const notifications = React.useMemo(() => {
     if (!isClient) return [];
     
-    const alerts: { id: string; title: string; type: 'birthday' | 'commission' | 'followup' | 'debt' | 'partial'; date: string; link: string; customerId?: string }[] = [];
+    const alerts: { id: string; title: string; type: 'birthday' | 'commission' | 'followup' | 'debt' | 'partial' | 'radar'; date: string; link: string; customerId?: string }[] = [];
     const now = new Date();
     const todayStr = format(now, 'MM-dd');
     const todayIso = format(now, 'yyyy-MM-dd');
 
     // Aniversários hoje
     customers?.forEach(c => {
+      if (c.status === 'inactive') return;
+      
       if (c.birthDate && c.birthDate.substring(5) === todayStr) {
         alerts.push({
           id: `bday-${c.id}-${todayStr}`,
@@ -89,6 +92,24 @@ export function NotificationBell() {
           link: `/customers/${c.id}`,
           customerId: c.id
         });
+      }
+
+      // RADAR DE VENDAS: Retenção (Paid > 12 months)
+      const hasMatured = proposals?.some(p => {
+          if (p.customerId !== c.id) return false;
+          if (p.status !== 'Pago' && p.status !== 'Saldo Pago') return false;
+          if (!p.datePaidToClient) return false;
+          return differenceInMonths(now, new Date(p.datePaidToClient)) >= 12;
+      });
+
+      if (hasMatured) {
+          alerts.push({
+              id: `radar-notif-${c.id}`,
+              title: `Radar: ${c.name}`,
+              type: 'radar',
+              date: 'Contrato Maduro',
+              link: `/customers/${c.id}`
+          });
       }
     });
 
@@ -245,6 +266,7 @@ export function NotificationBell() {
                         <DropdownMenuItem className="cursor-pointer p-3">
                         <div className="flex items-start gap-3">
                             {n.type === 'birthday' && <Cake className="h-4 w-4 text-pink-500 mt-1" />}
+                            {n.type === 'radar' && <Zap className="h-4 w-4 text-orange-500 fill-orange-500 mt-1" />}
                             {n.type === 'commission' && <BadgePercent className="h-4 w-4 text-orange-500 mt-1" />}
                             {n.type === 'followup' && <CalendarClock className="h-4 w-4 text-blue-500 mt-1" />}
                             {n.type === 'debt' && <Hourglass className="h-4 w-4 text-destructive mt-1" />}
