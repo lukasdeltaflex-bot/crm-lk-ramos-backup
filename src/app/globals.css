@@ -67,7 +67,26 @@
   }
 }
 
-/* Theme Color Overrides - Alta Especificidade para Garantir o Modo Claro */
+/* Radius Control */
+:root.radius-executivo { --radius: 0.1rem; }
+:root.radius-moderno { --radius: 0.5rem; }
+:root.radius-suave { --radius: 1rem; }
+
+/* Sidebar Control */
+:root.sidebar-dark {
+    --sidebar-background: 220 13% 8%;
+    --sidebar-foreground: 210 20% 98%;
+    --sidebar-border: 215 27.9% 25%;
+    --sidebar-accent: 215 27.9% 16.9%;
+}
+:root.sidebar-light {
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222.2 47.4% 11.2%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-accent: 210 40% 96.1%;
+}
+
+/* Theme Color Overrides */
 :root.theme-zinc, [class*="theme-zinc"] { --primary: 240 5.9% 10%; --ring: 240 5.9% 10%; }
 :root.theme-slate, [class*="theme-slate"] { --primary: 215 25% 27%; --ring: 215 25% 27%; }
 :root.theme-blue, [class*="theme-blue"] { --primary: 217.2 91.2% 59.8%; --ring: 217.2 91.2% 59.8%; }
@@ -88,6 +107,18 @@
 :root.theme-violet, [class*="theme-violet"] { --primary: 262.1 83.3% 57.8%; --ring: 262.1 83.3% 57.8%; }
 :root.theme-lavender, [class*="theme-lavender"] { --primary: 250 60% 60%; --ring: 250 60% 60%; }
 :root.theme-gray, [class*="theme-gray"] { --primary: 220 9% 46%; --ring: 220 9% 46%; }
+
+/* Novas Cores Premium */
+:root.theme-midnight, [class*="theme-midnight"] { --primary: 222 47% 11%; --ring: 222 47% 11%; }
+:root.theme-forest, [class*="theme-forest"] { --primary: 145 63% 22%; --ring: 145 63% 22%; }
+:root.theme-charcoal, [class*="theme-charcoal"] { --primary: 210 10% 20%; --ring: 210 10% 20%; }
+:root.theme-wine, [class*="theme-wine"] { --primary: 345 60% 25%; --ring: 345 60% 25%; }
+:root.theme-coffee, [class*="theme-coffee"] { --primary: 25 30% 20%; --ring: 25 30% 20%; }
+:root.theme-gold, [class*="theme-gold"] { --primary: 45 80% 40%; --ring: 45 80% 40%; }
+:root.theme-indigo, [class*="theme-indigo"] { --primary: 243 75% 59%; --ring: 243 75% 59%; }
+:root.theme-amber, [class*="theme-amber"] { --primary: 38 92% 50%; --ring: 38 92% 50%; }
+:root.theme-teal, [class*="theme-teal"] { --primary: 173 80% 40%; --ring: 173 80% 40%; }
+:root.theme-bronze, [class*="theme-bronze"] { --primary: 30 40% 40%; --ring: 30 40% 40%; }
 
 @layer base {
   * { @apply border-border; }

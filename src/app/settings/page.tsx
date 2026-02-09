@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -20,7 +19,7 @@ import {
   commissionStatuses as initialCommissionStatuses,
   expenseCategories as initialExpenseCategories,
 } from '@/lib/config-data';
-import { ListChecks, Palette, UserCog, Database, FileDown, Loader2, CloudUpload, CheckCircle2, XCircle, Bot, Wallet } from 'lucide-react';
+import { ListChecks, Palette, UserCog, Database, FileDown, Loader2, CloudUpload, CheckCircle2, XCircle, Bot, Wallet, Shapes, Monitor } from 'lucide-react';
 import { EditableList } from '@/components/settings/editable-list';
 import { BankEditableList } from '@/components/settings/bank-editable-list';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
@@ -37,12 +36,17 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { useTheme } from '@/components/theme-provider';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 const DRIVE_LINKED_KEY = 'lk-ramos-google-drive-linked-v1';
 
 export default function SettingsPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const { radius, setRadius, sidebarStyle, setSidebarStyle } = useTheme();
+  
   const [isExporting, setIsExporting] = useState(false);
   const [isLinkingDrive, setIsLinkingDrive] = useState(false);
   const [isDriveLinked, setIsDriveLinked] = useState(false);
@@ -192,7 +196,6 @@ export default function SettingsPage() {
                         <EditableList title="Órgãos Aprovadores" items={approvingBodies} setItems={(n) => { setApprovingBodies(n); updateSettings({ approvingBodies: n }); }} />
                         <EditableList title="Categorias de Despesas (DRE)" items={expenseCategories} setItems={(n) => { setExpenseCategories(n); updateSettings({ expenseCategories: n }); }} />
                         
-                        {/* Seção Inteligente de Bancos */}
                         <BankEditableList 
                             banks={banks} 
                             bankDomains={bankDomains} 
@@ -210,17 +213,105 @@ export default function SettingsPage() {
             <TabsContent value="appearance">
                  <Card>
                     <CardHeader>
-                        <CardTitle>Aparência</CardTitle>
-                        <CardDescription>Personalize o visual do seu ambiente de trabalho.</CardDescription>
+                        <CardTitle>Design e Estilo</CardTitle>
+                        <CardDescription>Personalize o visual do seu ambiente de trabalho de elite.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-8">
+                    <CardContent className="space-y-10">
                         <ThemeColors />
                         
                         <Separator />
 
-                        <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <Shapes className="h-4 w-4 text-primary" />
+                                    <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Arredondamento</h4>
+                                </div>
+                                <RadioGroup value={radius} onValueChange={setRadius} className="grid grid-cols-3 gap-2">
+                                    <Label
+                                        htmlFor="r-executivo"
+                                        className={cn(
+                                            "flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer",
+                                            radius === 'executivo' && "border-primary"
+                                        )}
+                                    >
+                                        <RadioGroupItem value="executivo" id="r-executivo" className="sr-only" />
+                                        <div className="h-2 w-full bg-muted rounded-[1px] mb-2" />
+                                        <span className="text-xs font-bold">Executivo</span>
+                                    </Label>
+                                    <Label
+                                        htmlFor="r-moderno"
+                                        className={cn(
+                                            "flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer",
+                                            radius === 'moderno' && "border-primary"
+                                        )}
+                                    >
+                                        <RadioGroupItem value="moderno" id="r-moderno" className="sr-only" />
+                                        <div className="h-2 w-full bg-muted rounded-[6px] mb-2" />
+                                        <span className="text-xs font-bold">Moderno</span>
+                                    </Label>
+                                    <Label
+                                        htmlFor="r-suave"
+                                        className={cn(
+                                            "flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer",
+                                            radius === 'suave' && "border-primary"
+                                        )}
+                                    >
+                                        <RadioGroupItem value="suave" id="r-suave" className="sr-only" />
+                                        <div className="h-2 w-full bg-muted rounded-[12px] mb-2" />
+                                        <span className="text-xs font-bold">Suave</span>
+                                    </Label>
+                                </RadioGroup>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <Monitor className="h-4 w-4 text-primary" />
+                                    <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Barra Lateral</h4>
+                                </div>
+                                <RadioGroup value={sidebarStyle} onValueChange={setSidebarStyle} className="grid grid-cols-3 gap-2">
+                                    <Label
+                                        htmlFor="s-default"
+                                        className={cn(
+                                            "flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer",
+                                            sidebarStyle === 'default' && "border-primary"
+                                        )}
+                                    >
+                                        <RadioGroupItem value="default" id="s-default" className="sr-only" />
+                                        <div className="h-8 w-4 bg-muted/50 rounded mr-auto" />
+                                        <span className="text-[10px] font-bold mt-2">Padrão</span>
+                                    </Label>
+                                    <Label
+                                        htmlFor="s-dark"
+                                        className={cn(
+                                            "flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer",
+                                            sidebarStyle === 'dark' && "border-primary"
+                                        )}
+                                    >
+                                        <RadioGroupItem value="dark" id="s-dark" className="sr-only" />
+                                        <div className="h-8 w-4 bg-zinc-900 rounded mr-auto" />
+                                        <span className="text-[10px] font-bold mt-2">Escura</span>
+                                    </Label>
+                                    <Label
+                                        htmlFor="s-light"
+                                        className={cn(
+                                            "flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer",
+                                            sidebarStyle === 'light' && "border-primary"
+                                        )}
+                                    >
+                                        <RadioGroupItem value="light" id="s-light" className="sr-only" />
+                                        <div className="h-8 w-4 bg-white border rounded mr-auto" />
+                                        <span className="text-[10px] font-bold mt-2">Clara</span>
+                                    </Label>
+                                </RadioGroup>
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        <div className="flex items-center justify-between p-4 border rounded-xl bg-muted/30">
                             <div className="space-y-1">
-                                <p className="text-sm font-medium">Logotipos dos Bancos</p>
+                                <p className="text-sm font-bold">Logotipos dos Bancos</p>
                                 <p className="text-xs text-muted-foreground">Exibe o ícone visual de cada banco nas tabelas e formulários.</p>
                             </div>
                             <Switch 
