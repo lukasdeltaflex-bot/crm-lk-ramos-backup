@@ -126,6 +126,30 @@
 :root.theme-teal, [class*="theme-teal"] { --primary: 173 80% 40%; --ring: 173 80% 40%; }
 :root.theme-bronze, [class*="theme-bronze"] { --primary: 30 40% 40%; --ring: 30 40% 40%; }
 
+/* Lote de Cores Extras */
+:root.theme-royal-blue, [class*="theme-royal-blue"] { --primary: 225 73% 45%; --ring: 225 73% 45%; }
+:root.theme-cherry, [class*="theme-cherry"] { --primary: 350 85% 40%; --ring: 350 85% 40%; }
+:root.theme-forest-bright, [class*="theme-forest-bright"] { --primary: 145 80% 35%; --ring: 145 80% 35%; }
+:root.theme-deep-purple, [class*="theme-deep-purple"] { --primary: 275 80% 35%; --ring: 275 80% 35%; }
+:root.theme-mustard, [class*="theme-mustard"] { --primary: 45 95% 45%; --ring: 45 95% 45%; }
+:root.theme-rust, [class*="theme-rust"] { --primary: 15 75% 45%; --ring: 15 75% 45%; }
+:root.theme-arctic, [class*="theme-arctic"] { --primary: 195 90% 45%; --ring: 195 90% 45%; }
+:root.theme-lime, [class*="theme-lime"] { --primary: 85 90% 40%; --ring: 85 90% 40%; }
+:root.theme-graphite, [class*="theme-graphite"] { --primary: 215 15% 35%; --ring: 215 15% 35%; }
+:root.theme-copper, [class*="theme-copper"] { --primary: 25 65% 45%; --ring: 25 65% 45%; }
+
+/* Novíssimas Cores de Elite */
+:root.theme-ocean, [class*="theme-ocean"] { --primary: 210 100% 25%; --ring: 210 100% 25%; }
+:root.theme-berry, [class*="theme-berry"] { --primary: 330 80% 40%; --ring: 330 80% 40%; }
+:root.theme-olive, [class*="theme-olive"] { --primary: 80 50% 35%; --ring: 80 50% 35%; }
+:root.theme-terracotta, [class*="theme-terracotta"] { --primary: 15 65% 50%; --ring: 15 65% 50%; }
+:root.theme-electric, [class*="theme-electric"] { --primary: 230 100% 60%; --ring: 230 100% 60%; }
+:root.theme-ruby, [class*="theme-ruby"] { --primary: 355 100% 45%; --ring: 355 100% 45%; }
+:root.theme-emerald-vivid, [class*="theme-emerald-vivid"] { --primary: 150 100% 40%; --ring: 150 100% 40%; }
+:root.theme-amethyst, [class*="theme-amethyst"] { --primary: 275 70% 55%; --ring: 275 70% 55%; }
+:root.theme-silver, [class*="theme-silver"] { --primary: 210 15% 65%; --ring: 210 15% 65%; }
+:root.theme-sand, [class*="theme-sand"] { --primary: 40 50% 65%; --ring: 40 50% 65%; }
+
 @layer base {
   * { @apply border-border; }
   body { 
