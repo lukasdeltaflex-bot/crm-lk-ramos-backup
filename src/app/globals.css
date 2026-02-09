@@ -73,7 +73,7 @@
 :root.radius-moderno { --radius: 0.5rem; }
 :root.radius-suave { --radius: 1rem; }
 
-/* Sidebar Control - FIXED CONTRAST */
+/* Sidebar Control */
 :root.sidebar-dark {
     --sidebar-background: 220 13% 8%;
     --sidebar-foreground: 210 20% 98%;
@@ -93,11 +93,38 @@
     --sidebar-primary-foreground: 210 40% 98%;
 }
 
-/* Sidebar Item Active Fix */
-:root.sidebar-dark .group\/menu-item [data-active=true] {
-    background-color: hsl(var(--sidebar-accent)) !important;
-    color: #ffffff !important;
+/* Container Style Aura */
+:root.style-glass .card, :root.style-glass .sidebar, :root.style-glass .popover-content {
+    background-color: hsl(var(--background) / 0.6) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border-color: hsl(var(--primary) / 0.1) !important;
 }
+:root.style-deep .card {
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+}
+:root.style-flat .card {
+    box-shadow: none !important;
+    border-width: 1.5px !important;
+}
+
+/* Background Textures */
+:root.texture-dots {
+    background-image: radial-gradient(hsl(var(--primary) / 0.08) 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+:root.texture-grid {
+    background-image: linear-gradient(hsl(var(--primary) / 0.05) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary) / 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+:root.texture-lines {
+    background-image: repeating-linear-gradient(45deg, hsl(var(--primary) / 0.03), hsl(var(--primary) / 0.03) 1px, transparent 1px, transparent 10px);
+}
+
+/* Intensity Control */
+:root.intensity-sobrio { --primary: var(--primary); }
+:root.intensity-vibrante .theme-blue { --primary: 217.2 91.2% 50.8%; }
+/* Adicione regras de saturação se desejar refinamento visual extremo */
 
 /* Theme Color Overrides */
 :root.theme-zinc, [class*="theme-zinc"] { --primary: 240 5.9% 10%; --ring: 240 5.9% 10%; }

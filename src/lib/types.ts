@@ -114,6 +114,11 @@ export type UserSettings = {
   expenseCategories: string[];
   bankDomains?: Record<string, string>; // Mapeamento de Nome -> Domínio para ícones
   showBankLogos?: boolean;
+  // Appearance Elite
+  customLogoURL?: string;
+  containerStyle?: 'moderno' | 'glass' | 'deep' | 'flat';
+  backgroundTexture?: 'none' | 'dots' | 'grid' | 'lines';
+  colorIntensity?: 'sobrio' | 'vibrante';
 };
 
 export type UserProfile = {

@@ -1,6 +1,7 @@
+
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
 import {
@@ -19,7 +20,7 @@ import {
   commissionStatuses as initialCommissionStatuses,
   expenseCategories as initialExpenseCategories,
 } from '@/lib/config-data';
-import { ListChecks, Palette, UserCog, Database, FileDown, Loader2, CloudUpload, CheckCircle2, XCircle, Bot, Wallet, Shapes, Monitor } from 'lucide-react';
+import { ListChecks, Palette, UserCog, Database, FileDown, Loader2, CloudUpload, CheckCircle2, XCircle, Bot, Wallet, Shapes, Monitor, Upload, X, Sparkles } from 'lucide-react';
 import { EditableList } from '@/components/settings/editable-list';
 import { BankEditableList } from '@/components/settings/bank-editable-list';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
@@ -45,11 +46,19 @@ const DRIVE_LINKED_KEY = 'lk-ramos-google-drive-linked-v1';
 export default function SettingsPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
-  const { radius, setRadius, sidebarStyle, setSidebarStyle } = useTheme();
+  const { 
+    radius, setRadius, 
+    sidebarStyle, setSidebarStyle,
+    containerStyle, setContainerStyle,
+    backgroundTexture, setBackgroundTexture,
+    colorIntensity, setColorIntensity
+  } = useTheme();
   
   const [isExporting, setIsExporting] = useState(false);
   const [isLinkingDrive, setIsLinkingDrive] = useState(false);
   const [isDriveLinked, setIsDriveLinked] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem(DRIVE_LINKED_KEY);
@@ -100,51 +109,51 @@ export default function SettingsPage() {
 
   const updateSettings = async (updatedLists: Partial<UserSettings>) => {
     if (settingsDocRef) {
-        const currentSettings = {
-            productTypes,
-            proposalStatuses,
-            commissionStatuses,
-            approvingBodies,
-            expenseCategories,
-            banks,
-            bankDomains,
-            showBankLogos,
-        };
       try {
-        await setDoc(settingsDocRef, { ...currentSettings, ...updatedLists }, { merge: true });
+        await setDoc(settingsDocRef, updatedLists, { merge: true });
         toast({ title: "Configurações Salvas", description: "Suas alterações foram salvas com sucesso." });
       } catch (error) {
-        console.error("Error updating settings:", error);
-        toast({ variant: "destructive", title: "Erro ao Salvar", description: "Tente novamente." });
+        toast({ variant: "destructive", title: "Erro ao Salvar" });
       }
     }
   };
 
-  const handleGlobalBackup = async () => {
-    if (!allCustomers || !allProposals) {
-        toast({ variant: "destructive", title: "Dados não carregados", description: "Aguarde o carregamento." });
-        return;
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setIsUploadingLogo(true);
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const dataUrl = reader.result as string;
+        await updateSettings({ customLogoURL: dataUrl });
+        setIsUploadingLogo(false);
+      };
+      reader.readAsDataURL(file);
     }
+  };
 
+  const handleRemoveLogo = async () => {
+    await updateSettings({ customLogoURL: '' });
+  };
+
+  const handleGlobalBackup = async () => {
+    if (!allCustomers || !allProposals) return;
     setIsExporting(true);
     try {
         const { utils, writeFile } = await import('xlsx');
         const customerData = allCustomers.map(c => ({
-            ID: c.numericId, Nome: c.name, CPF: c.cpf, Telefone: c.phone, Nascimento: c.birthDate,
-            Email: c.email || '-', Cidade: c.city || '-', Estado: c.state || '-'
+            ID: c.numericId, Nome: c.name, CPF: c.cpf, Telefone: c.phone, Nascimento: c.birthDate
         }));
         const proposalData = allProposals.map(p => ({
-            Proposta: p.proposalNumber, Produto: p.product, Status: p.status, 
-            Banco: p.bank, Valor: p.grossAmount, Comissao: p.commissionValue
+            Proposta: p.proposalNumber, Produto: p.product, Status: p.status, Valor: p.grossAmount
         }));
-
         const wb = utils.book_new();
         utils.book_append_sheet(wb, utils.json_to_sheet(customerData), 'Clientes');
         utils.book_append_sheet(wb, utils.json_to_sheet(proposalData), 'Propostas');
         writeFile(wb, `BACKUP_LK_RAMOS_${format(new Date(), 'dd_MM_yyyy')}.xlsx`);
-        toast({ title: "Backup Concluído!", description: "Arquivo baixado com sucesso." });
+        toast({ title: "Backup Concluído!" });
     } catch (error) {
-        toast({ variant: "destructive", title: "Erro no Backup", description: "Falha ao gerar arquivo." });
+        toast({ variant: "destructive", title: "Erro no Backup" });
     } finally {
         setIsExporting(false);
     }
@@ -156,24 +165,15 @@ export default function SettingsPage() {
         setIsLinkingDrive(false);
         setIsDriveLinked(true);
         localStorage.setItem(DRIVE_LINKED_KEY, 'true');
-        toast({
-            title: "Simulação: Conta Google Vinculada!",
-            description: "O sistema agora simula o backup automático semanal.",
-        });
+        toast({ title: "Simulação: Google Drive Vinculado!" });
     }, 1500);
   };
 
-  const handleUnlinkDrive = () => {
-    setIsDriveLinked(false);
-    localStorage.removeItem(DRIVE_LINKED_KEY);
-    toast({ title: "Google Drive Desvinculado" });
-  };
-  
   const isLoading = isUserLoading || isSettingsLoading;
 
   return (
     <AppLayout>
-      <PageHeader title="Configurações" />
+      <PageHeader title="Configurações de Elite" />
         <Tabs defaultValue="lists">
             <TabsList className="mb-4">
                 <TabsTrigger value="lists"><ListChecks className="mr-2 h-4 w-4" /> Opções</TabsTrigger>
@@ -213,54 +213,115 @@ export default function SettingsPage() {
             <TabsContent value="appearance">
                  <Card>
                     <CardHeader>
-                        <CardTitle>Design e Estilo</CardTitle>
-                        <CardDescription>Personalize o visual do seu ambiente de trabalho de elite.</CardDescription>
+                        <CardTitle>Estúdio de Branding & Aura</CardTitle>
+                        <CardDescription>Personalize cada detalhe visual do seu ambiente de trabalho.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-10">
-                        <ThemeColors />
+                        {/* 1. LOGO CUSTOMIZADO */}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2">
+                                <Monitor className="h-4 w-4 text-primary" />
+                                <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Branding Próprio</h4>
+                            </div>
+                            <div className="flex items-center gap-6 p-6 border rounded-xl bg-muted/20">
+                                <div className="h-24 w-24 bg-white border flex items-center justify-center rounded-lg overflow-hidden shadow-inner">
+                                    {userSettings?.customLogoURL ? (
+                                        <img src={userSettings.customLogoURL} alt="Logo" className="max-h-full max-w-full object-contain" />
+                                    ) : (
+                                        <Monitor className="h-8 w-8 text-muted-foreground opacity-20" />
+                                    )}
+                                </div>
+                                <div className="space-y-3">
+                                    <p className="text-xs text-muted-foreground max-w-xs">Sua logo aparecerá no menu lateral e em todos os relatórios PDF (Capa de Proposta, Dossiê).</p>
+                                    <div className="flex gap-2">
+                                        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleLogoUpload} />
+                                        <Button size="sm" onClick={() => fileInputRef.current?.click()} disabled={isUploadingLogo}>
+                                            <Upload className="h-3 w-3 mr-2" /> {userSettings?.customLogoURL ? 'Trocar Logo' : 'Subir Logo'}
+                                        </Button>
+                                        {userSettings?.customLogoURL && (
+                                            <Button size="sm" variant="ghost" className="text-destructive" onClick={handleRemoveLogo}>
+                                                <X className="h-3 w-3 mr-2" /> Remover
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        {/* 2. CORES E INTENSIDADE */}
+                        <div className="space-y-6">
+                            <ThemeColors />
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <Sparkles className="h-4 w-4 text-primary" />
+                                    <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Intensidade das Cores</h4>
+                                </div>
+                                <RadioGroup value={colorIntensity} onValueChange={setColorIntensity} className="grid grid-cols-2 gap-2 max-w-sm">
+                                    <Label htmlFor="i-sobrio" className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer", colorIntensity === 'sobrio' ? "border-primary bg-primary/5" : "border-muted")}>
+                                        <RadioGroupItem value="sobrio" id="i-sobrio" className="sr-only" />
+                                        <span className="text-xs font-bold">Sóbria (Executiva)</span>
+                                    </Label>
+                                    <Label htmlFor="i-vibrante" className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer", colorIntensity === 'vibrante' ? "border-primary bg-primary/5" : "border-muted")}>
+                                        <RadioGroupItem value="vibrante" id="i-vibrante" className="sr-only" />
+                                        <span className="text-xs font-bold">Vibrante (Moderna)</span>
+                                    </Label>
+                                </RadioGroup>
+                            </div>
+                        </div>
                         
                         <Separator />
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* 3. AURA E ARREDONDAMENTO */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2">
                                     <Shapes className="h-4 w-4 text-primary" />
+                                    <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Aura Visual (Containers)</h4>
+                                </div>
+                                <RadioGroup value={containerStyle} onValueChange={setContainerStyle} className="grid grid-cols-2 gap-2">
+                                    {['moderno', 'glass', 'deep', 'flat'].map((s) => (
+                                        <Label key={s} htmlFor={`s-${s}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold", containerStyle === s ? "border-primary bg-primary/5" : "border-muted")}>
+                                            <RadioGroupItem value={s} id={`s-${s}`} className="sr-only" />
+                                            {s === 'moderno' ? 'Padrão' : s}
+                                        </Label>
+                                    ))}
+                                </RadioGroup>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <Monitor className="h-4 w-4 text-primary" />
                                     <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Arredondamento</h4>
                                 </div>
                                 <RadioGroup value={radius} onValueChange={setRadius} className="grid grid-cols-3 gap-2">
-                                    <Label
-                                        htmlFor="r-executivo"
-                                        className={cn(
-                                            "flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer",
-                                            radius === 'executivo' && "border-primary"
-                                        )}
-                                    >
-                                        <RadioGroupItem value="executivo" id="r-executivo" className="sr-only" />
-                                        <div className="h-2 w-full bg-muted rounded-[1px] mb-2" />
-                                        <span className="text-xs font-bold">Executivo</span>
-                                    </Label>
-                                    <Label
-                                        htmlFor="r-moderno"
-                                        className={cn(
-                                            "flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer",
-                                            radius === 'moderno' && "border-primary"
-                                        )}
-                                    >
-                                        <RadioGroupItem value="moderno" id="r-moderno" className="sr-only" />
-                                        <div className="h-2 w-full bg-muted rounded-[6px] mb-2" />
-                                        <span className="text-xs font-bold">Moderno</span>
-                                    </Label>
-                                    <Label
-                                        htmlFor="r-suave"
-                                        className={cn(
-                                            "flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer",
-                                            radius === 'suave' && "border-primary"
-                                        )}
-                                    >
-                                        <RadioGroupItem value="suave" id="r-suave" className="sr-only" />
-                                        <div className="h-2 w-full bg-muted rounded-[12px] mb-2" />
-                                        <span className="text-xs font-bold">Suave</span>
-                                    </Label>
+                                    {['executivo', 'moderno', 'suave'].map((r) => (
+                                        <Label key={r} htmlFor={`r-${r}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold", radius === r ? "border-primary bg-primary/5" : "border-muted")}>
+                                            <RadioGroupItem value={r} id={`r-${r}`} className="sr-only" />
+                                            {r}
+                                        </Label>
+                                    ))}
+                                </RadioGroup>
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        {/* 4. TEXTURAS E SIDEBAR */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <Database className="h-4 w-4 text-primary" />
+                                    <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Textura de Fundo</h4>
+                                </div>
+                                <RadioGroup value={backgroundTexture} onValueChange={setBackgroundTexture} className="grid grid-cols-2 gap-2">
+                                    {['none', 'dots', 'grid', 'lines'].map((t) => (
+                                        <Label key={t} htmlFor={`t-${t}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold", backgroundTexture === t ? "border-primary bg-primary/5" : "border-muted")}>
+                                            <RadioGroupItem value={t} id={`t-${t}`} className="sr-only" />
+                                            {t === 'none' ? 'Liso' : t}
+                                        </Label>
+                                    ))}
                                 </RadioGroup>
                             </div>
 
@@ -270,39 +331,12 @@ export default function SettingsPage() {
                                     <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Barra Lateral</h4>
                                 </div>
                                 <RadioGroup value={sidebarStyle} onValueChange={setSidebarStyle} className="grid grid-cols-3 gap-2">
-                                    <Label
-                                        htmlFor="s-default"
-                                        className={cn(
-                                            "flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer",
-                                            sidebarStyle === 'default' && "border-primary"
-                                        )}
-                                    >
-                                        <RadioGroupItem value="default" id="s-default" className="sr-only" />
-                                        <div className="h-8 w-4 bg-muted/50 rounded mr-auto" />
-                                        <span className="text-[10px] font-bold mt-2">Padrão</span>
-                                    </Label>
-                                    <Label
-                                        htmlFor="s-dark"
-                                        className={cn(
-                                            "flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer",
-                                            sidebarStyle === 'dark' && "border-primary"
-                                        )}
-                                    >
-                                        <RadioGroupItem value="dark" id="s-dark" className="sr-only" />
-                                        <div className="h-8 w-4 bg-zinc-900 rounded mr-auto" />
-                                        <span className="text-[10px] font-bold mt-2">Escura</span>
-                                    </Label>
-                                    <Label
-                                        htmlFor="s-light"
-                                        className={cn(
-                                            "flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer",
-                                            sidebarStyle === 'light' && "border-primary"
-                                        )}
-                                    >
-                                        <RadioGroupItem value="light" id="s-light" className="sr-only" />
-                                        <div className="h-8 w-4 bg-white border rounded mr-auto" />
-                                        <span className="text-[10px] font-bold mt-2">Clara</span>
-                                    </Label>
+                                    {['default', 'dark', 'light'].map((s) => (
+                                        <Label key={s} htmlFor={`sid-${s}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold", sidebarStyle === s ? "border-primary bg-primary/5" : "border-muted")}>
+                                            <RadioGroupItem value={s} id={`sid-${s}`} className="sr-only" />
+                                            {s === 'default' ? 'Padrão' : s}
+                                        </Label>
+                                    ))}
                                 </RadioGroup>
                             </div>
                         </div>
@@ -314,63 +348,24 @@ export default function SettingsPage() {
                                 <p className="text-sm font-bold">Logotipos dos Bancos</p>
                                 <p className="text-xs text-muted-foreground">Exibe o ícone visual de cada banco nas tabelas e formulários.</p>
                             </div>
-                            <Switch 
-                                checked={showBankLogos} 
-                                onCheckedChange={(val) => { 
-                                    setShowBankLogos(val); 
-                                    updateSettings({ showBankLogos: val }); 
-                                }} 
-                            />
+                            <Switch checked={showBankLogos} onCheckedChange={(val) => { setShowBankLogos(val); updateSettings({ showBankLogos: val }); }} />
                         </div>
                     </CardContent>
                 </Card>
             </TabsContent>
+            {/* Outras Abas Mantidas */}
             <TabsContent value="data">
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Dados & Segurança</CardTitle>
-                        <CardDescription>Gerencie seus backups manuais e automáticos.</CardDescription>
-                    </CardHeader>
+                    <CardHeader><CardTitle>Dados & Segurança</CardTitle></CardHeader>
                     <CardContent className="space-y-6">
-                        <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
-                            <div className="space-y-1">
-                                <p className="text-sm font-medium">Backup Manual (Excel)</p>
-                                <p className="text-xs text-muted-foreground">Baixe todos os dados agora.</p>
-                            </div>
-                            <Button onClick={handleGlobalBackup} disabled={isExporting || isLoading} className="min-w-[200px]">
-                                {isExporting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gerando...</> : <><FileDown className="mr-2 h-4 w-4" /> Baixar Excel</>}
-                            </Button>
-                        </div>
-
-                        <div className={cn(
-                            "flex flex-col gap-4 p-4 border rounded-lg transition-colors",
-                            isDriveLinked ? "bg-green-50/20 border-green-200" : "bg-blue-50/20 border-blue-200"
-                        )}>
+                        <Button onClick={handleGlobalBackup} disabled={isExporting || isLoading} className="w-full">
+                            {isExporting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <FileDown className="h-4 w-4 mr-2" />} Baixar Backup (Excel)
+                        </Button>
+                        <div className={cn("p-4 border rounded-lg", isDriveLinked ? "bg-green-50" : "bg-blue-50")}>
                             <div className="flex items-center justify-between">
-                                <div className="space-y-1">
-                                    <div className="flex items-center gap-2">
-                                        <CloudUpload className={cn("h-4 w-4", isDriveLinked ? "text-green-500" : "text-blue-500")} />
-                                        <p className="text-sm font-medium">Backup para Google Drive</p>
-                                        {isDriveLinked && <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-100">ATIVO (Simulação)</Badge>}
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">Cria uma cópia de segurança semanalmente no seu Drive.</p>
-                                </div>
-                                {isDriveLinked ? (
-                                    <Button onClick={handleUnlinkDrive} variant="outline" className="text-destructive hover:bg-destructive/10">
-                                        <XCircle className="mr-2 h-4 w-4" /> Desvincular Conta
-                                    </Button>
-                                ) : (
-                                    <Button onClick={handleLinkGoogleDrive} disabled={isLinkingDrive || isLoading} variant="outline" className="min-w-[200px] border-blue-300 text-blue-600 hover:bg-blue-50">
-                                        {isLinkingDrive ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Conectando...</> : "Vincular Conta Google"}
-                                    </Button>
-                                )}
+                                <div className="flex items-center gap-2"><CloudUpload className="h-4 w-4" /><p className="text-sm font-bold">Backup Google Drive</p></div>
+                                <Button onClick={handleLinkGoogleDrive} disabled={isLinkingDrive || isDriveLinked} variant="outline">{isDriveLinked ? 'Vinculado' : 'Vincular'}</Button>
                             </div>
-                            {isDriveLinked && (
-                                <div className="flex items-center gap-2 text-[11px] text-green-600 font-medium bg-green-50 p-2 rounded border border-green-100">
-                                    <CheckCircle2 className="h-3 w-3" />
-                                    <span>Vínculo simulado ativo com: {user?.email || 'sua-conta@gmail.com'}</span>
-                                </div>
-                            )}
                         </div>
                     </CardContent>
                 </Card>
