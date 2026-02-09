@@ -23,13 +23,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { CustomerAiForm } from '@/components/customers/customer-ai-form';
 import type { ExtractCustomerDataOutput } from '@/ai/flows/extract-customer-data-flow';
@@ -262,6 +262,7 @@ const handleExportToPdf = async () => {
       phone2: '',
       email: 'removido@removido.com',
       observations: `Dados do cliente anonimizados em ${new Date().toISOString()}`,
+      gender: undefined,
       cep: '',
       street: '',
       number: '',
@@ -312,6 +313,7 @@ const handleExportToPdf = async () => {
         phone2: '',
         email: 'removido@removido.com',
         observations: `Dados do cliente anonimizados em ${new Date().toISOString()}`,
+        gender: undefined,
         cep: '',
         street: '',
         number: '',
