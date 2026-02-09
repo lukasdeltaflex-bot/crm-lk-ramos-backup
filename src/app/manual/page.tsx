@@ -21,7 +21,10 @@ import {
     Cloud,
     Wallet,
     Eye,
-    Settings2
+    Settings2,
+    Palette,
+    Shapes,
+    Monitor
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -81,7 +84,27 @@ export default function ManualPage() {
                         <ul className="list-disc pl-5 space-y-2">
                             <li><strong>Lançamento de Despesas</strong>: Na aba "Despesas" do Financeiro, registre seus custos (Tráfego Pago, Aluguel, Sistema, etc.).</li>
                             <li><strong>Cálculo Automático</strong>: O sistema subtrai as despesas das comissões recebidas e exibe o <strong>Lucro Líquido Real</strong> em destaque no resumo.</li>
-                            <li><strong>Customização total (<Settings2 className="inline h-3 w-3" />)</strong>: Em Configurações, você pode criar suas próprias categorias de gastos para adaptar o DRE ao seu modelo de negócio.</li>
+                            <li><strong>Customização de Categorias</strong>: Em Configurações, você pode criar suas próprias categorias de gastos para adaptar o DRE ao seu modelo de negócio.</li>
+                        </ul>
+                    </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="appearance" className="border rounded-xl bg-card px-4 shadow-sm">
+                    <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-purple-100 text-purple-600"><Palette className="h-5 w-5" /></div>
+                            <div className="text-left">
+                                <p className="font-bold">3. Personalização de Aparência Premium</p>
+                                <p className="text-xs text-muted-foreground">Cores, arredondamento e estilo de barra lateral</p>
+                            </div>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
+                        <p>Adapte o sistema LK RAMOS à identidade visual da sua empresa.</p>
+                        <ul className="list-disc pl-5 space-y-2">
+                            <li><strong>Paleta Estendida</strong>: Mais de 30 opções de cores, incluindo tons executivos como <em>Midnight</em>, <em>Charcoal</em> e <em>Wine</em>.</li>
+                            <li><strong>Arredondamento (Radius)</strong>: Escolha entre o estilo <strong>Executivo</strong> (bordas retas), <strong>Moderno</strong> (padrão) ou <strong>Suave</strong> (bem arredondado).</li>
+                            <li><strong>Contraste de Sidebar</strong>: Defina se o menu lateral deve ser sempre Escuro, sempre Claro ou acompanhar o tema geral.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
@@ -91,7 +114,7 @@ export default function ManualPage() {
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-zinc-100 text-zinc-600"><Eye className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold">3. Visualizador de Documentos Inteligente</p>
+                                <p className="font-bold">4. Visualizador de Documentos Inteligente</p>
                                 <p className="text-xs text-muted-foreground">Conferência instantânea sem downloads</p>
                             </div>
                         </div>
@@ -101,7 +124,7 @@ export default function ManualPage() {
                         <ul className="list-disc pl-5 space-y-2">
                             <li><strong>Acesso Rápido</strong>: Em qualquer anexo de cliente ou proposta, clique no ícone de "Olho".</li>
                             <li><strong>Visualização Segura</strong>: O documento abre em um modal flutuante dentro do sistema. Você confere o RG, CPF ou Contrato sem precisar baixar o arquivo.</li>
-                            <li><strong>Privacidade</strong>: Ideal para manter a conformidade com a LGPD, evitando que dados sensíveis fiquem salvos em pastas de download de computadores compartilhados.</li>
+                            <li><strong>Privacidade</strong>: Ideal para manter a conformidade com a LGPD, evitando que dados sensíveis fiquem salvos em pastas de download.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
@@ -111,7 +134,7 @@ export default function ManualPage() {
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-orange-100 text-orange-600"><TrendingUp className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold">4. Esteira de Propostas & Automação</p>
+                                <p className="font-bold">5. Esteira de Propostas & Automação</p>
                                 <p className="text-xs text-muted-foreground">Linha do tempo e preenchimento inteligente</p>
                             </div>
                         </div>
@@ -131,7 +154,7 @@ export default function ManualPage() {
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-zinc-100 text-zinc-600"><Cloud className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold">5. Segurança & Infraestrutura Google</p>
+                                <p className="font-bold">6. Segurança & Infraestrutura Google</p>
                                 <p className="text-xs text-muted-foreground">Dados protegidos na nuvem</p>
                             </div>
                         </div>
@@ -140,7 +163,7 @@ export default function ManualPage() {
                         <p>Seus dados estão protegidos pela mesma infraestrutura que sustenta o Google.</p>
                         <ul className="list-disc pl-5 space-y-2">
                             <li><strong>Backups em Tempo Real</strong>: Cada alteração é salva instantaneamente na nuvem do Firebase.</li>
-                            <li><strong>Armazenamento de Anexos</strong>: Você possui 5 GB de espaço gratuito para documentos de clientes, gerenciados com criptografia de ponta.</li>
+                            <li><strong>Armazenamento de Anexos</strong>: Gestão de documentos com criptografia de ponta a ponta.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
@@ -154,13 +177,16 @@ export default function ManualPage() {
                 </CardHeader>
                 <CardContent className="space-y-2">
                     <Button variant="outline" className="w-full justify-start text-xs h-8" asChild>
+                        <a href="/settings?tab=appearance"><Palette className="mr-2 h-3 w-3 text-purple-500" /> Trocar Estética</a>
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start text-xs h-8" asChild>
+                        <a href="/financial?tab=expenses"><Wallet className="mr-2 h-3 w-3 text-red-500" /> Lançar Despesa</a>
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start text-xs h-8" asChild>
                         <a href="/customers?action=new"><Bot className="mr-2 h-3 w-3 text-blue-500" /> Cadastro via IA</a>
                     </Button>
                     <Button variant="outline" className="w-full justify-start text-xs h-8" asChild>
                         <a href="/financial"><CircleDollarSign className="mr-2 h-3 w-3 text-green-500" /> Controle de Caixa</a>
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start text-xs h-8" asChild>
-                        <a href="/settings"><Settings2 className="mr-2 h-3 w-3 text-orange-500" /> Personalizar DRE</a>
                     </Button>
                 </CardContent>
             </Card>
