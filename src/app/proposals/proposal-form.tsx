@@ -854,17 +854,18 @@ export function ProposalForm({
                             <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly || isSaving}>
                                 <FormControl>
                                     <SelectTrigger>
-                                        <div className="flex items-center gap-2 overflow-hidden">
-                                            <BankIcon bankName={field.value} showLogo={showLogos} />
-                                            <SelectValue placeholder="Selecione um banco" />
-                                        </div>
+                                        <SelectValue placeholder="Selecione um banco" />
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
                                     {banks.map((bank) => (
                                     <SelectItem key={bank} value={bank}>
                                         <div className="flex items-center gap-2">
-                                            <BankIcon bankName={bank} showLogo={showLogos} />
+                                            <BankIcon 
+                                                bankName={bank} 
+                                                domain={userSettings?.bankDomains?.[bank]} 
+                                                showLogo={showLogos} 
+                                            />
                                             <span>{cleanBankName(bank)}</span>
                                         </div>
                                     </SelectItem>
@@ -885,17 +886,18 @@ export function ProposalForm({
                                 <Select onValueChange={field.onChange} defaultValue={field.value || ''} value={field.value || ''} disabled={isReadOnly || isSaving}>
                                 <FormControl>
                                     <SelectTrigger>
-                                        <div className="flex items-center gap-2 overflow-hidden">
-                                            <BankIcon bankName={field.value} showLogo={showLogos} />
-                                            <SelectValue placeholder="Selecione um banco" />
-                                        </div>
+                                        <SelectValue placeholder="Selecione um banco" />
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
                                     {banks.map((bank) => (
                                     <SelectItem key={bank} value={bank}>
                                         <div className="flex items-center gap-2">
-                                            <BankIcon bankName={bank} showLogo={showLogos} />
+                                            <BankIcon 
+                                                bankName={bank} 
+                                                domain={userSettings?.bankDomains?.[bank]} 
+                                                showLogo={showLogos} 
+                                            />
                                             <span>{cleanBankName(bank)}</span>
                                         </div>
                                     </SelectItem>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -108,6 +109,7 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
 
                     // Limpa o nome do banco para exibição
                     const cleanBank = cleanBankName(proposal.bank);
+                    const customDomain = userSettings?.bankDomains?.[proposal.bank];
 
                     return (
                         <TableRow key={proposal.id} className="hover:bg-primary/[0.02] border-b border-border/30 transition-all group">
@@ -129,7 +131,7 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
                             <TableCell className="px-6 py-5">
                                 <div className="flex flex-col gap-1.5">
                                     <div className="flex items-center gap-2">
-                                        <BankIcon bankName={proposal.bank} showLogo={showLogos} className="h-4 w-4" />
+                                        <BankIcon bankName={proposal.bank} domain={customDomain} showLogo={showLogos} className="h-4 w-4" />
                                         <span className="text-[10px] font-bold text-muted-foreground truncate max-w-[120px]">{cleanBank}</span>
                                     </div>
                                     <Badge variant="secondary" className="bg-muted/50 text-muted-foreground font-bold text-[9px] border-none px-2 py-0 w-fit">

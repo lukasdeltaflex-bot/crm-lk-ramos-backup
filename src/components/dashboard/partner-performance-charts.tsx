@@ -1,12 +1,15 @@
+
 'use client';
 
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { formatCurrency, cleanBankName } from '@/lib/utils';
-import type { Proposal } from '@/lib/types';
+import type { Proposal, UserSettings } from '@/lib/types';
 import { useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BankIcon } from '@/components/bank-icon';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 interface PartnerPerformanceChartsProps {
   proposals: Proposal[];
@@ -15,9 +18,10 @@ interface PartnerPerformanceChartsProps {
 /**
  * Componente customizado para o eixo Y que exibe o ícone do banco e o nome limpo.
  */
-const CustomYAxisTick = ({ x, y, payload, type }: any) => {
+const CustomYAxisTick = ({ x, y, payload, type, bankDomains, showLogos }: any) => {
   if (type === 'banks') {
     const cleanedName = cleanBankName(payload.value);
+    const domain = bankDomains?.[payload.value];
     return (
       <g transform={`translate(${x},${y})`}>
         <foreignObject x={-185} y={-10} width={180} height={20}>
@@ -26,7 +30,7 @@ const CustomYAxisTick = ({ x, y, payload, type }: any) => {
               {cleanedName}
             </span>
             <div className="shrink-0">
-                <BankIcon bankName={payload.value} className="h-3.5 w-3.5" />
+                <BankIcon bankName={payload.value} domain={domain} showLogo={showLogos} className="h-3.5 w-3.5" />
             </div>
           </div>
         </foreignObject>
@@ -50,6 +54,18 @@ const CustomYAxisTick = ({ x, y, payload, type }: any) => {
 };
 
 export function PartnerPerformanceCharts({ proposals }: PartnerPerformanceChartsProps) {
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const settingsDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'userSettings', user.uid);
+  }, [firestore, user]);
+
+  const { data: userSettings } = useDoc<UserSettings>(settingsDocRef);
+  const showLogos = userSettings?.showBankLogos ?? true;
+  const bankDomains = userSettings?.bankDomains || {};
+
   const bankData = useMemo(() => {
     const dataMap: Record<string, number> = {};
     proposals.forEach(p => {
@@ -106,7 +122,7 @@ export function PartnerPerformanceCharts({ proposals }: PartnerPerformanceCharts
             width={180} 
             tickLine={false}
             axisLine={false}
-            tick={<CustomYAxisTick type={type} />}
+            tick={<CustomYAxisTick type={type} bankDomains={bankDomains} showLogos={showLogos} />}
           />
           <Tooltip 
             cursor={{ fill: 'hsl(var(--muted)/0.1)' }}
