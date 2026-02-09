@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export function ManualPage() {
+export default function ManualPage() {
   return (
     <AppLayout>
       <PageHeader title="Manual de Operação LK RAMOS" />
@@ -101,7 +101,7 @@ export function ManualPage() {
                         <p>Mantenha a saúde financeira da sua operação sob controle total.</p>
                         <ul className="list-disc pl-5 space-y-2">
                             <li><strong>Lançamento de Despesas</strong>: Registre custos operacionais e gerencie a situação (Pago/Pendente).</li>
-                            <li><strong>Categorias de Elite</strong>: Crie categorias próprias (Ex: Marketing, Salários) em Configurações > Opções.</li>
+                            <li><strong>Categorias de Elite</strong>: Crie categorias próprias (Ex: Marketing, Salários) em Configurações &gt; Opções.</li>
                             <li><strong>Conciliação com IA</strong>: Processe relatórios de pagamento colando apenas o texto do banco para baixar comissões automaticamente.</li>
                         </ul>
                     </AccordionContent>
