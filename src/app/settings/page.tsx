@@ -39,7 +39,8 @@ import {
     Apple,
     Briefcase,
     Crown,
-    MousePointer2
+    MousePointer2,
+    Shapes
 } from 'lucide-react';
 import { EditableList } from '@/components/settings/editable-list';
 import { BankEditableList } from '@/components/settings/bank-editable-list';
@@ -164,7 +165,6 @@ export default function SettingsPage() {
 
   const handleMotionTest = () => {
     setIsMotionTestActive(true);
-    // Dispara uma sequência de animações no simulador
     setTimeout(() => setIsMotionTestActive(false), 1500);
   };
 
@@ -278,7 +278,6 @@ export default function SettingsPage() {
                         <CardDescription>Personalize cada detalhe visual do seu ambiente de trabalho.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-10">
-                        {/* 0. PRESETS DE GRIFE */}
                         <div className="space-y-4">
                             <div className="flex items-center gap-2">
                                 <Crown className="h-4 w-4 text-primary" />
@@ -311,7 +310,6 @@ export default function SettingsPage() {
 
                         <Separator />
 
-                        {/* 1. LOGO CUSTOMIZADO */}
                         <div className="space-y-4">
                             <div className="flex items-center gap-2">
                                 <Monitor className="h-4 w-4 text-primary" />
@@ -344,7 +342,6 @@ export default function SettingsPage() {
 
                         <Separator />
 
-                        {/* 2. CORES E INTENSIDADE */}
                         <div className="space-y-6">
                             <ThemeColors />
                             <div className="space-y-4">
@@ -367,7 +364,6 @@ export default function SettingsPage() {
                         
                         <Separator />
 
-                        {/* LABORATÓRIO DE VISUALIZAÇÃO REATIVO */}
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
@@ -379,7 +375,6 @@ export default function SettingsPage() {
                                 </Button>
                             </div>
                             
-                            {/* O simulador agora aplica as classes de fonte e animação localmente para visualização */}
                             <div className={cn(
                                 "relative p-8 rounded-2xl border bg-background overflow-hidden min-h-[350px] flex items-center justify-center transition-all",
                                 `texture-${backgroundTexture} texture-preview-bg`,
@@ -440,7 +435,6 @@ export default function SettingsPage() {
 
                         <Separator />
 
-                        {/* 3. AURA, ARREDONDAMENTO, FONTE E ANIMAÇÃO */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2">
@@ -499,7 +493,7 @@ export default function SettingsPage() {
                                     <Label key={f.id} htmlFor={`f-${f.id}`} className={cn("flex items-center justify-center rounded-md border-2 p-4 cursor-pointer text-xs font-bold transition-all text-center", fontStyle === f.id ? "border-primary bg-primary/5" : "border-muted hover:border-primary/30")}>
                                         <RadioGroupItem value={f.id} id={`f-${f.id}`} className="sr-only" />
                                         <div className="flex flex-col gap-1">
-                                            <span className={cn("text-xl", `font-${f.id}`)} style={{ fontFamily: `var(--font-${f.id})` }}>Aa</span>
+                                            <span className={cn("text-xl", `font-${f.id}`)}>Aa</span>
                                             <span>{f.label}</span>
                                         </div>
                                     </Label>
