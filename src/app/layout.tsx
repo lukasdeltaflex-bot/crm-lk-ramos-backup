@@ -34,13 +34,13 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
-        <InteractionFixer />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
+          <InteractionFixer />
           <FirebaseClientProvider>
             {children}
           </FirebaseClientProvider>
