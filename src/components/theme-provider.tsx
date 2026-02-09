@@ -10,7 +10,8 @@ const COLOR_THEMES = [
   "mint", "lavender", "peach", "slate", "midnight", "forest", "charcoal", "wine", 
   "coffee", "gold", "indigo", "amber", "teal", "bronze", "royal-blue", "cherry",
   "forest-bright", "deep-purple", "mustard", "rust", "arctic", "lime", "graphite", "copper",
-  "ocean", "berry", "olive", "terracotta", "electric", "ruby", "emerald-vivid", "amethyst", "silver", "sand"
+  "ocean", "berry", "olive", "terracotta", "electric", "ruby", "emerald-vivid", "amethyst", "silver", "sand",
+  "crimson", "obsidian", "nordic", "volcano", "titanium", "espresso", "sage", "claret", "royal-gold", "industrial"
 ];
 
 const RADIUS_OPTIONS = ["executivo", "moderno", "suave"];

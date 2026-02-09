@@ -92,6 +92,12 @@
     --sidebar-primary-foreground: 210 40% 98%;
 }
 
+/* Sidebar Item Active Fix */
+:root.sidebar-dark .group\/menu-item [data-active=true] {
+    background-color: hsl(var(--sidebar-accent)) !important;
+    color: #ffffff !important;
+}
+
 /* Theme Color Overrides */
 :root.theme-zinc, [class*="theme-zinc"] { --primary: 240 5.9% 10%; --ring: 240 5.9% 10%; }
 :root.theme-slate, [class*="theme-slate"] { --primary: 215 25% 27%; --ring: 215 25% 27%; }
@@ -114,7 +120,7 @@
 :root.theme-lavender, [class*="theme-lavender"] { --primary: 250 60% 60%; --ring: 250 60% 60%; }
 :root.theme-gray, [class*="theme-gray"] { --primary: 220 9% 46%; --ring: 220 9% 46%; }
 
-/* Novas Cores Premium */
+/* Cores Premium */
 :root.theme-midnight, [class*="theme-midnight"] { --primary: 222 47% 11%; --ring: 222 47% 11%; }
 :root.theme-forest, [class*="theme-forest"] { --primary: 145 63% 22%; --ring: 145 63% 22%; }
 :root.theme-charcoal, [class*="theme-charcoal"] { --primary: 210 10% 20%; --ring: 210 10% 20%; }
@@ -138,7 +144,7 @@
 :root.theme-graphite, [class*="theme-graphite"] { --primary: 215 15% 35%; --ring: 215 15% 35%; }
 :root.theme-copper, [class*="theme-copper"] { --primary: 25 65% 45%; --ring: 25 65% 45%; }
 
-/* Novíssimas Cores de Elite */
+/* Cores de Elite */
 :root.theme-ocean, [class*="theme-ocean"] { --primary: 210 100% 25%; --ring: 210 100% 25%; }
 :root.theme-berry, [class*="theme-berry"] { --primary: 330 80% 40%; --ring: 330 80% 40%; }
 :root.theme-olive, [class*="theme-olive"] { --primary: 80 50% 35%; --ring: 80 50% 35%; }
@@ -150,6 +156,18 @@
 :root.theme-silver, [class*="theme-silver"] { --primary: 210 15% 65%; --ring: 210 15% 65%; }
 :root.theme-sand, [class*="theme-sand"] { --primary: 40 50% 65%; --ring: 40 50% 65%; }
 
+/* Nova Gama Ultra Elite */
+:root.theme-crimson, [class*="theme-crimson"] { --primary: 348 83% 47%; --ring: 348 83% 47%; }
+:root.theme-obsidian, [class*="theme-obsidian"] { --primary: 240 10% 10%; --ring: 240 10% 10%; }
+:root.theme-nordic, [class*="theme-nordic"] { --primary: 210 20% 40%; --ring: 210 20% 40%; }
+:root.theme-volcano, [class*="theme-volcano"] { --primary: 10 80% 45%; --ring: 10 80% 45%; }
+:root.theme-titanium, [class*="theme-titanium"] { --primary: 210 5% 30%; --ring: 210 5% 30%; }
+:root.theme-espresso, [class*="theme-espresso"] { --primary: 15 20% 15%; --ring: 15 20% 15%; }
+:root.theme-sage, [class*="theme-sage"] { --primary: 120 15% 45%; --ring: 120 15% 45%; }
+:root.theme-claret, [class*="theme-claret"] { --primary: 345 60% 30%; --ring: 345 60% 30%; }
+:root.theme-royal-gold, [class*="theme-royal-gold"] { --primary: 45 90% 35%; --ring: 45 90% 35%; }
+:root.theme-industrial, [class*="theme-industrial"] { --primary: 200 5% 45%; --ring: 200 5% 45%; }
+
 @layer base {
   * { @apply border-border; }
   body { 
@@ -159,7 +177,7 @@
   }
 }
 
-/* Nitidez Total: Remoção de blurs para visual Executivo de alto contraste */
+/* Nitidez Total */
 .backdrop-blur-md, .backdrop-blur-sm, .backdrop-blur-lg, .backdrop-filter {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;

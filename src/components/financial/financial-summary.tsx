@@ -1,11 +1,10 @@
-
 'use client';
 
 import * as React from 'react';
 import type { Row } from '@tanstack/react-table';
 import type { Proposal, Customer } from '@/lib/types';
 import { StatsCard } from '@/components/dashboard/stats-card';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, cn } from '@/lib/utils';
 import { CheckCircle, Hourglass, Coins, CircleDollarSign } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 import { subMonths, startOfMonth, endOfMonth, differenceInDays, subDays, isSameDay } from 'date-fns';
@@ -20,6 +19,10 @@ interface FinancialSummaryProps {
   onShowDetails: (title: string, proposals: ProposalWithCustomer[]) => void;
 }
 
+/**
+ * Resumo Financeiro Simplificado
+ * Focado exclusivamente em métricas de produção e fluxo de caixa de comissões.
+ */
 export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFiltered, onShowDetails }: FinancialSummaryProps) {
   const {
     totalPotentialCommission,
