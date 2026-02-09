@@ -20,7 +20,27 @@ import {
   commissionStatuses as initialCommissionStatuses,
   expenseCategories as initialExpenseCategories,
 } from '@/lib/config-data';
-import { ListChecks, Palette, UserCog, Database, FileDown, Loader2, CloudUpload, CheckCircle2, XCircle, Bot, Wallet, Shapes, Monitor, Upload, X, Sparkles } from 'lucide-react';
+import { 
+    ListChecks, 
+    Palette, 
+    UserCog, 
+    Database, 
+    FileDown, 
+    Loader2, 
+    CloudUpload, 
+    CheckCircle2, 
+    XCircle, 
+    Bot, 
+    Wallet, 
+    Shapes, 
+    Monitor, 
+    Upload, 
+    X, 
+    Sparkles,
+    Eye,
+    Zap,
+    Layout
+} from 'lucide-react';
 import { EditableList } from '@/components/settings/editable-list';
 import { BankEditableList } from '@/components/settings/bank-editable-list';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
@@ -40,8 +60,71 @@ import { Separator } from '@/components/ui/separator';
 import { useTheme } from '@/components/theme-provider';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 
 const DRIVE_LINKED_KEY = 'lk-ramos-google-drive-linked-v1';
+
+/**
+ * Componente de Pré-visualização em Tempo Real
+ */
+function DesignPreview() {
+    return (
+        <div className="space-y-4">
+            <div className="flex items-center gap-2">
+                <Eye className="h-4 w-4 text-primary" />
+                <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Laboratório de Visualização</h4>
+            </div>
+            
+            <div className="relative p-8 rounded-2xl border bg-background overflow-hidden min-h-[300px] flex items-center justify-center texture-preview">
+                {/* O fundo herda a textura global por causa da classe texture-preview se configurarmos o CSS para isso, 
+                    mas aqui o div pai já está sob o efeito do seletor global do html. 
+                    Mostramos elementos reais para o usuário ver o impacto. */}
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl relative z-10">
+                    <Card className="shadow-lg">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-bold flex items-center gap-2">
+                                <Zap className="h-4 w-4 text-primary" /> Exemplo de Card
+                            </CardTitle>
+                            <CardDescription className="text-[10px] uppercase">Demonstração de Aura</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <p className="text-xs text-muted-foreground">Este é um exemplo de como os textos e elementos aparecerão no seu sistema.</p>
+                            <div className="flex flex-wrap gap-2">
+                                <Badge>Badge Padrão</Badge>
+                                <Badge variant="outline" className="border-primary text-primary">Destaque</Badge>
+                            </div>
+                            <Progress value={65} className="h-1.5" />
+                        </CardContent>
+                    </Card>
+
+                    <div className="space-y-4 flex flex-col justify-center">
+                        <div className="space-y-2">
+                            <Label className="text-[10px] uppercase font-black">Botões e Interação</Label>
+                            <div className="flex gap-2">
+                                <Button size="sm">Primário</Button>
+                                <Button size="sm" variant="outline">Contorno</Button>
+                            </div>
+                        </div>
+                        <div className="p-4 bg-primary/5 border border-primary/10 rounded-lg">
+                            <div className="flex items-center gap-3">
+                                <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xs">A</div>
+                                <div>
+                                    <p className="text-xs font-bold">Avatar e Lista</p>
+                                    <p className="text-[9px] text-muted-foreground uppercase">Subtexto de exemplo</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {/* Marca d'água de textura para o simulador se quiser ser redundante */}
+                <div className="absolute inset-0 opacity-20 pointer-events-none bg-[inherit] texture-preview-bg" />
+            </div>
+            <p className="text-[10px] text-center text-muted-foreground italic">O simulador acima reflete instantaneamente suas mudanças de Cor, Aura, Intensidade e Arredondamento.</p>
+        </div>
+    );
+}
 
 export default function SettingsPage() {
   const { user, isUserLoading } = useUser();
@@ -273,6 +356,11 @@ export default function SettingsPage() {
                         
                         <Separator />
 
+                        {/* NOVO: SIMULADOR DE DESIGN */}
+                        <DesignPreview />
+
+                        <Separator />
+
                         {/* 3. AURA E ARREDONDAMENTO */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                             <div className="space-y-4">
@@ -327,7 +415,7 @@ export default function SettingsPage() {
 
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2">
-                                    <Monitor className="h-4 w-4 text-primary" />
+                                    <Layout className="h-4 w-4 text-primary" />
                                     <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Barra Lateral</h4>
                                 </div>
                                 <RadioGroup value={sidebarStyle} onValueChange={setSidebarStyle} className="grid grid-cols-3 gap-2">
@@ -377,3 +465,5 @@ export default function SettingsPage() {
     </AppLayout>
   );
 }
+
+    

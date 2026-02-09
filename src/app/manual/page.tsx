@@ -20,7 +20,8 @@ import {
     Database, 
     CloudUpload,
     FileBadge,
-    Bot
+    Bot,
+    MousePointer2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -60,6 +61,7 @@ export default function ManualPage() {
                         <ul className="list-disc pl-5 space-y-2">
                             <li><strong>Branding Próprio</strong>: Em Configurações, suba sua logomarca. Ela substituirá o logo padrão no menu e aparecerá em todos os relatórios PDF oficiais.</li>
                             <li><strong>Aura Visual</strong>: Escolha o estilo dos containers entre <strong>Glassmorphism</strong> (vidro fosco), <strong>Profundo</strong> (sombras de luxo) ou <strong>Flat</strong> (minimalista).</li>
+                            <li><strong>Laboratório de Design</strong>: Use o novo simulador em tempo real na aba Aparência para testar como os botões e cards ficam com cada combinação de estilo.</li>
                             <li><strong>Texturas de Fundo</strong>: Adicione padrões como <strong>Dots</strong> (pontos) ou <strong>Grid</strong> (grelha) para dar uma sensação de acabamento profissional às páginas.</li>
                             <li><strong>Controle de Intensidade</strong>: Escolha entre tons <strong>Sóbrios</strong> (pastéis executivos) ou <strong>Vibrantes</strong> (cores vivas).</li>
                         </ul>
@@ -137,6 +139,9 @@ export default function ManualPage() {
                         <a href="/settings?tab=appearance"><Monitor className="mr-2 h-3 w-3 text-blue-500" /> Branding Próprio</a>
                     </Button>
                     <Button variant="outline" className="w-full justify-start text-xs h-8" asChild>
+                        <a href="/settings?tab=appearance"><MousePointer2 className="mr-2 h-3 w-3 text-orange-500" /> Testar Simulador</a>
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start text-xs h-8" asChild>
                         <a href="/settings?tab=appearance"><Sparkles className="mr-2 h-3 w-3 text-purple-500" /> Aura Glassmorphism</a>
                     </Button>
                     <Button variant="outline" className="w-full justify-start text-xs h-8" asChild>
@@ -152,3 +157,5 @@ export default function ManualPage() {
     </AppLayout>
   );
 }
+
+    
