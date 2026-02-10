@@ -144,6 +144,9 @@ export default function DashboardPage() {
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
 
+    // Mês Anterior para visão de esteira ampliada
+    const prevMonthStart = startOfMonth(subMonths(fromDate, 1));
+
     const getSum = (list: Proposal[]) => list.reduce((sum, p) => sum + (p.grossAmount || 0), 0);
 
     const getTopOperator = (list: Proposal[]) => {
@@ -162,14 +165,21 @@ export default function DashboardPage() {
         });
     };
 
-    // 1. UNIVERSO DO PERÍODO: Apenas o que foi digitado no mês/intervalo selecionado
+    // 1. UNIVERSO DO MÊS VIGENTE (Total Digitado, Reprovas e Mix)
     const digitizedInPeriod = proposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
         return d >= fromDate && d <= effectiveToDate;
     });
 
-    // 2. PAGOS NO PERÍODO (Para o GoalCard - Independente de quando foi digitado)
+    // 2. UNIVERSO DA ESTEIRA (Mês Vigente + Anterior)
+    const digitizedInExtendedPeriod = proposals.filter(p => {
+        if (!p.dateDigitized) return false;
+        const d = new Date(p.dateDigitized);
+        return d >= prevMonthStart && d <= effectiveToDate;
+    });
+
+    // 3. PAGOS NO PERÍODO (Para o GoalCard)
     const paidInPeriod = proposals.filter(p => {
         if (p.status !== 'Pago') return false;
         if (!p.datePaidToClient) return false;
@@ -177,13 +187,17 @@ export default function DashboardPage() {
         return d >= fromDate && d <= effectiveToDate;
     });
 
-    // 3. ANÁLISE DOS STATUS OPERACIONAIS (Baseados no Digitado do Mês)
+    // 4. ANÁLISE DOS STATUS
     const statusAnalysis: Record<string, { total: number; count: number; spark: number[]; top: string; proposals: Proposal[] }> = {};
     const orderedFlow = ['Pendente', 'Em Andamento', 'Aguardando Saldo', 'Saldo Pago', 'Reprovado'];
 
     orderedFlow.forEach(status => {
-        // REGRA SOLICITADA: Para todos os status (incluindo Reprovado), mostrar apenas o que foi digitado no mês
-        const list = digitizedInPeriod.filter(p => p.status === status);
+        // REGRA LK RAMOS: 
+        // - Reprovado: Apenas mês vigente.
+        // - Outros: Mês vigente + Mês anterior.
+        const sourceList = (status === 'Reprovado') ? digitizedInPeriod : digitizedInExtendedPeriod;
+        const list = sourceList.filter(p => p.status === status);
+        
         statusAnalysis[status] = {
             total: getSum(list),
             count: list.length,
@@ -285,7 +299,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            <div className="cursor-pointer" onClick={() => handleShowDetails('Total Digitado (Mês)', stats.proposals.digitadoNoMes)}>
+            <div className="cursor-pointer" onClick={() => handleShowDetails('Total Digitado (Mês Vigente)', stats.proposals.digitadoNoMes)}>
                 <StatsCard 
                     title="Total Digitado" 
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.totalDigitado)} 
@@ -302,18 +316,18 @@ export default function DashboardPage() {
 
                 const getStatusMeta = (name: string) => {
                     const lower = name.toLowerCase();
-                    if (lower === 'pendente') return { icon: BadgePercent, isHot: true, desc: "VS PRODUÇÃO ATUAL" };
-                    if (lower === 'em andamento') return { icon: Hourglass, isHot: true, desc: "VS PRODUÇÃO ATUAL" };
-                    if (lower === 'aguardando saldo') return { icon: Clock, desc: "VS PRODUÇÃO ATUAL" };
-                    if (lower === 'saldo pago') return { icon: CheckCircle2, desc: "VS PRODUÇÃO ATUAL" };
-                    if (lower === 'reprovado') return { icon: XCircle, desc: "DO TOTAL DIGITADO" };
-                    return { icon: Activity, desc: "VOLUME NO MÊS" };
+                    if (lower === 'pendente') return { icon: BadgePercent, isHot: true, desc: "ESTEIRA (MÊS ATUAL + ANT)" };
+                    if (lower === 'em andamento') return { icon: Hourglass, isHot: true, desc: "ESTEIRA (MÊS ATUAL + ANT)" };
+                    if (lower === 'aguardando saldo') return { icon: Clock, desc: "ESTEIRA (MÊS ATUAL + ANT)" };
+                    if (lower === 'saldo pago') return { icon: CheckCircle2, desc: "ESTEIRA (MÊS ATUAL + ANT)" };
+                    if (lower === 'reprovado') return { icon: XCircle, desc: "DO TOTAL DIGITADO NO MÊS" };
+                    return { icon: Activity, desc: "VOLUME NO PERÍODO" };
                 };
 
                 const meta = getStatusMeta(statusName);
 
                 return (
-                    <div key={statusName} className="cursor-pointer" onClick={() => handleShowDetails(`${statusName} (Digitado no Mês)`, statusData.proposals)}>
+                    <div key={statusName} className="cursor-pointer" onClick={() => handleShowDetails(`${statusName}`, statusData.proposals)}>
                         <StatsCard 
                             title={statusName} 
                             value={isPrivacyMode ? '•••••' : formatCurrency(statusData.total)} 
