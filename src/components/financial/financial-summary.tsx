@@ -6,7 +6,7 @@ import type { Row } from '@tanstack/react-table';
 import type { Proposal, Customer, UserSettings } from '@/lib/types';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import { formatCurrency } from '@/lib/utils';
-import { CheckCircle, Hourglass, CircleDollarSign, TrendingUp, Activity } from 'lucide-react';
+import { Hourglass, CircleDollarSign, TrendingUp, Activity } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 import { startOfMonth, endOfMonth } from 'date-fns';
 
@@ -44,7 +44,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
 
-    // 1. PRODUÇÃO DIGITADA: Todos os contratos do mês vigente (INCLUINDO REPROVADOS)
+    // 1. PRODUÇÃO DIGITADA: Valor de comissão de TODOS os contratos do mês (mesmo reprovados)
     const currentMonthDigitized = allProposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
@@ -60,15 +60,16 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
     });
     const totalAmountPaid = commissionReceivedProposals.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
 
-    // 3. SALDO A RECEBER: Somente contratos com DATA DE AVERBAÇÃO preenchida (independente do mês) e não pagos
+    // 3. SALDO A RECEBER: Contratos com DATA DE AVERBAÇÃO preenchida (independente do mês) e não pagos totalmente
     const proposalsWithBalance = allProposals.filter(p => {
-        const hasAverbacao = !!p.dateApproved;
+        const isNotReprovado = p.status !== 'Reprovado';
+        const hasAverbacaoOrPaidStatus = (!!p.dateApproved || p.status === 'Pago' || p.status === 'Saldo Pago');
         const isNotFullyPaid = p.commissionStatus !== 'Paga';
-        return hasAverbacao && isNotFullyPaid;
+        return isNotReprovado && hasAverbacaoOrPaidStatus && isNotFullyPaid;
     });
     const totalSaldoAReceber = proposalsWithBalance.reduce((sum, p) => sum + (p.commissionValue - (p.amountPaid || 0)), 0);
 
-    // 4. COMISSÃO ESPERADA: Todos os contratos (independente do mês) exceto reprovados/cancelados e já pagos
+    // 4. COMISSÃO ESPERADA: Todos os contratos (independente do mês) exceto reprovados e já pagos
     const proposalsEsperadas = allProposals.filter(p => {
         const isNotReprovado = p.status !== 'Reprovado';
         const isNotFullyPaid = p.commissionStatus !== 'Paga';
@@ -105,7 +106,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
                     title="PRODUÇÃO DIGITADA"
                     value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalMonthlyComissaoDigitada)}
                     icon={Activity}
-                    description="TOTAL DIGITADO (MÊS)"
+                    description="COMISSÃO TOTAL (MÊS)"
                     subValue={`TICKET MÉDIO: ${formatCurrency(metrics.ticketMedio)}`}
                 />
             </div>
