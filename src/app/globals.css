@@ -108,10 +108,10 @@
 /* 🏛️ ARREDONDAMENTO ELITE (Ajuste Fino de Distinção) */
 .radius-reto { --radius: 0px; }
 .radius-extra-discreto { --radius: 2px; }
-.radius-discreto { --radius: 6px; }
-.radius-moderno { --radius: 12px; }
-.radius-amigavel { --radius: 18px; }
-.radius-suave { --radius: 24px; }
+.radius-discreto { --radius: 8px; }
+.radius-moderno { --radius: 16px; }
+.radius-amigavel { --radius: 22px; }
+.radius-suave { --radius: 28px; }
 .radius-capsula { --radius: 9999px; }
 
 .style-glass .card, .style-glass .sidebar, .style-glass .popover-content {

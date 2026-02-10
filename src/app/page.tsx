@@ -140,7 +140,7 @@ export default function DashboardPage() {
 
     const prevMonthStart = startOfMonth(subMonths(fromDate, 1));
 
-    // UNIVERSO MÊS VIGENTE
+    // UNIVERSO MÊS VIGENTE (Para Produção e Meta)
     const digitizedInPeriod = proposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
@@ -154,7 +154,7 @@ export default function DashboardPage() {
         return d >= prevMonthStart && d <= effectiveToDate;
     });
 
-    // PAGOS NO PERÍODO (Para Meta)
+    // PAGOS NO PERÍODO (Para Meta - Baseado na Data de Pagamento ao Cliente)
     const paidInPeriod = proposals.filter(p => {
         if (p.status !== 'Pago') return false;
         if (!p.datePaidToClient) return false;
@@ -175,7 +175,7 @@ export default function DashboardPage() {
     const orderedFlow = ['Pendente', 'Em Andamento', 'Aguardando Saldo', 'Saldo Pago', 'Reprovado'];
 
     orderedFlow.forEach(status => {
-        // Regra: Reprovado é só do mês vigente. Outros da esteira são Mês + Anterior.
+        // Regra: Reprovado e Digitado são apenas do mês vigente. Outros da esteira são Mês + Anterior.
         const sourceList = (status === 'Reprovado') ? digitizedInPeriod : digitizedInExtendedPeriod;
         const list = sourceList.filter(p => p.status === status);
         

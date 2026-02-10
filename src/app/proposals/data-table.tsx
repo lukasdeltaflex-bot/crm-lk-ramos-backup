@@ -392,7 +392,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     return cn("transition-colors status-row-custom", `status-${id}`);
   };
 
-  // ORDEM SOLICITADA PARA ABAS
+  // ORDEM SOLICITADA PARA ABAS (Refletindo a Imagem)
   const orderedTabs = ['Todos', 'Em Andamento', 'Aguardando Saldo', 'Pago', 'Saldo Pago', 'Pendente', 'Reprovado'];
 
   return (

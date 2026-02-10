@@ -27,8 +27,9 @@ interface StatsCardProps {
 }
 
 /**
- * StatsCard Premium Executivo V34
- * Sincronização 100% com o Laboratório de Cores e Aura de Fundo (5% opacidade).
+ * StatsCard Premium Executivo V35
+ * Sincronização 100% com o Laboratório de Cores.
+ * Implementação de bordas bonitas e aura de fundo (5% opacidade).
  */
 export function StatsCard({ 
     title, 
@@ -57,8 +58,8 @@ export function StatsCard({
             text: '', 
             stroke: `hsl(${customColor})`,
             style: { 
-                borderColor: `hsla(${customColor}, 0.3)`,
-                backgroundColor: `hsla(${customColor}, 0.05)`, // Aura de fundo leve (5%)
+                borderColor: `hsla(${customColor}, 0.3)`, // Borda levemente colorida
+                backgroundColor: `hsla(${customColor}, 0.05)`, // Aura de fundo suave
                 color: `hsl(${customColor})`,
                 '--status-color': customColor 
             } as any
@@ -82,48 +83,48 @@ export function StatsCard({
     
     if (t.includes('andamento') || t.includes('esperada')) 
         return {
-            card: 'border-yellow-200 dark:border-yellow-800 bg-yellow-50/30 dark:bg-yellow-900/10',
+            card: 'border-yellow-300 dark:border-yellow-800 bg-yellow-50/30 dark:bg-yellow-900/10',
             text: 'text-yellow-600 dark:text-yellow-500',
             stroke: '#d97706'
         };
 
     if (t.includes('saldo pago') || t.includes('saldo a receber')) 
         return {
-            card: 'border-orange-200 dark:border-orange-800 bg-orange-50/30 dark:bg-orange-900/10',
+            card: 'border-orange-300 dark:border-orange-800 bg-orange-50/30 dark:bg-orange-900/10',
             text: 'text-orange-600 dark:text-orange-400',
             stroke: '#ea580c'
         };
 
     if (t.includes('performance') || t.includes('recebida') || t.includes('paga') || t.includes('pago')) 
         return {
-            card: 'border-green-200 dark:border-green-800 bg-green-50/30 dark:bg-green-900/10',
+            card: 'border-green-300 dark:border-green-800 bg-green-50/30 dark:bg-green-900/10',
             text: 'text-green-600 dark:text-green-400',
             stroke: '#16a34a'
         };
     
     if (t.includes('aguardando')) 
         return {
-            card: 'border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-900/10',
+            card: 'border-blue-300 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-900/10',
             text: 'text-blue-600 dark:text-blue-400',
             stroke: '#2563eb'
         };
     
     if (t.includes('pendente')) 
         return {
-            card: 'border-purple-200 dark:border-purple-800 bg-purple-50/30 dark:bg-purple-900/10',
+            card: 'border-purple-300 dark:border-purple-800 bg-purple-50/30 dark:bg-purple-900/10',
             text: 'text-purple-600 dark:text-purple-400',
             stroke: '#9333ea'
         };
     
     if (t.includes('reprovado')) 
         return {
-            card: 'border-red-200 dark:border-red-800 bg-red-50/30 dark:bg-red-900/10',
+            card: 'border-red-300 dark:border-red-800 bg-red-50/30 dark:bg-red-900/10',
             text: 'text-red-600 dark:text-red-400',
             stroke: '#dc2626'
         };
 
     return { 
-        card: 'border-slate-200 dark:border-slate-700 bg-slate-50/30 dark:bg-slate-900/10', 
+        card: 'border-slate-300 dark:border-slate-700 bg-slate-50/30 dark:bg-slate-900/10', 
         text: 'text-slate-600 dark:text-slate-300',
         stroke: '#475569'
     };
@@ -159,7 +160,7 @@ export function StatsCard({
   return (
     <Card 
         className={cn(
-            'hover:shadow-md transition-all group relative overflow-hidden rounded-xl h-full flex flex-col border-2 py-3.5 px-5', 
+            'hover:shadow-lg transition-all group relative overflow-hidden rounded-xl h-full flex flex-col border-2 py-3.5 px-5', 
             theme.card,
             isHot && 'ring-2 ring-orange-500 ring-offset-2',
             className
