@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -6,7 +5,7 @@ import type { Row } from '@tanstack/react-table';
 import type { Proposal, Customer, UserSettings } from '@/lib/types';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import { formatCurrency } from '@/lib/utils';
-import { Hourglass, CircleDollarSign, TrendingUp, Activity } from 'lucide-react';
+import { Hourglass, CircleDollarSign, Activity, Wallet } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 import { startOfMonth, endOfMonth } from 'date-fns';
 
@@ -23,14 +22,14 @@ interface FinancialSummaryProps {
 
 export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onShowDetails }: FinancialSummaryProps) {
   const {
-    totalMonthlyComissaoDigitada,
-    totalAmountPaid,
+    totalComissaoProducaoDigitada,
+    totalComissaoRecebida,
     totalSaldoAReceber,
     totalComissaoEsperada,
-    allProposalsInPeriod,
-    commissionReceivedProposals,
-    proposalsWithBalance,
-    proposalsEsperadas,
+    allDigitizedInPeriod,
+    allReceivedInPeriod,
+    allAverbados,
+    allEsperados,
     metrics,
   } = React.useMemo(() => {
     const allProposals = Array.isArray(rows) && rows.length > 0 
@@ -40,70 +39,74 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
     const today = new Date();
     const fromDate = currentMonthRange?.from || startOfMonth(today);
     const toDate = currentMonthRange?.to || endOfMonth(today);
-    
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
 
-    // 1. PRODUÇÃO DIGITADA: Todos os contratos digitados no mês (MESMO REPROVADOS)
-    const currentMonthDigitized = allProposals.filter(p => {
+    /**
+     * 1. PRODUÇÃO DIGITADA (Mês Vigente)
+     * Valor de comissão de TODOS os contratos digitados no mês, incluindo reprovados.
+     */
+    const digitizedInPeriod = allProposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
         return d >= fromDate && d <= effectiveToDate;
     });
-    const totalMonthlyComissaoDigitada = currentMonthDigitized.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
+    const totalComissaoProducaoDigitada = digitizedInPeriod.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
 
-    // 2. COMISSÃO RECEBIDA: Dinheiro que entrou no mês vigente (independente de quando a proposta foi feita)
-    const commissionReceivedProposals = allProposals.filter(p => {
+    /**
+     * 2. COMISSÃO RECEBIDA (Mês Vigente)
+     * Valor efetivamente recebido no caixa durante o período selecionado.
+     */
+    const receivedInPeriod = allProposals.filter(p => {
         if (p.commissionStatus !== 'Paga' || !p.commissionPaymentDate) return false;
         const d = new Date(p.commissionPaymentDate);
         return d >= fromDate && d <= effectiveToDate;
     });
-    const totalAmountPaid = commissionReceivedProposals.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
+    const totalComissaoRecebida = receivedInPeriod.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
 
-    // 3. SALDO A RECEBER: Apenas contratos AVERBADOS ou PAGOS (com saldo pendente), independente do mês. Ignora Reprovados.
-    const proposalsWithBalance = allProposals.filter(p => {
+    /**
+     * 3. SALDO A RECEBER (Independente de Mês)
+     * Contratos com Data de Averbação preenchida que ainda não foram pagos integralmente.
+     * Exclui apenas Reprovados.
+     */
+    const averbados = allProposals.filter(p => {
         const isNotReprovado = p.status !== 'Reprovado';
         const isNotFullyPaid = p.commissionStatus !== 'Paga';
-        const hasAverbacaoOrPaid = !!p.dateApproved || p.status === 'Pago' || p.status === 'Saldo Pago';
-        return isNotReprovado && isNotFullyPaid && hasAverbacaoOrPaid;
+        const hasAverbacao = !!p.dateApproved || p.status === 'Pago' || p.status === 'Saldo Pago';
+        return isNotReprovado && isNotFullyPaid && hasAverbacao;
     });
-    const totalSaldoAReceber = proposalsWithBalance.reduce((sum, p) => sum + (p.commissionValue - (p.amountPaid || 0)), 0);
+    const totalSaldoAReceber = averbados.reduce((sum, p) => sum + (p.commissionValue - (p.amountPaid || 0)), 0);
 
-    // 4. COMISSÃO ESPERADA: Todos os contratos da base, EXCETO Reprovados, Pagos (status) ou já Recebidos. Independente do mês.
-    // Foca na esteira que ainda não finalizou.
-    const proposalsEsperadas = allProposals.filter(p => {
+    /**
+     * 4. COMISSÃO ESPERADA (Independente de Mês)
+     * Todos os contratos da base, exceto cancelados/reprovados e os que já foram pagos.
+     * Representa o faturamento total da esteira ativa.
+     */
+    const esperados = allProposals.filter(p => {
         const isNotReprovado = p.status !== 'Reprovado';
-        const isNotFinalized = p.status !== 'Pago' && p.status !== 'Saldo Pago';
         const isNotFullyPaid = p.commissionStatus !== 'Paga';
-        return isNotReprovado && isNotFinalized && isNotFullyPaid;
+        return isNotReprovado && isNotFullyPaid;
     });
-    const totalComissaoEsperada = proposalsEsperadas.reduce((sum, p) => sum + (p.commissionValue - (p.amountPaid || 0)), 0);
+    const totalComissaoEsperada = esperados.reduce((sum, p) => sum + (p.commissionValue - (p.amountPaid || 0)), 0);
 
-    const ticketMedio = currentMonthDigitized.length > 0 ? totalMonthlyComissaoDigitada / currentMonthDigitized.length : 0;
-    const eficiencia = (totalAmountPaid + totalSaldoAReceber) > 0 ? (totalAmountPaid / (totalAmountPaid + totalSaldoAReceber)) * 100 : 0;
-    
     const financeKpis = [
-        { name: "PRODUÇÃO DIGITADA", value: totalMonthlyComissaoDigitada },
-        { name: "COMISSÃO RECEBIDA", value: totalAmountPaid },
+        { name: "PRODUÇÃO DIGITADA", value: totalComissaoProducaoDigitada },
+        { name: "COMISSÃO RECEBIDA", value: totalComissaoRecebida },
         { name: "SALDO A RECEBER", value: totalSaldoAReceber },
         { name: "COMISSÃO ESPERADA", value: totalComissaoEsperada }
     ];
-    const hotKpi = financeKpis.sort((a,b) => b.value - a.value)[0]?.name;
+    const hotKpi = [...financeKpis].sort((a,b) => b.value - a.value)[0]?.name;
 
     return {
-      totalMonthlyComissaoDigitada,
-      totalAmountPaid,
+      totalComissaoProducaoDigitada,
+      totalComissaoRecebida,
       totalSaldoAReceber,
       totalComissaoEsperada,
-      allProposalsInPeriod: currentMonthDigitized,
-      commissionReceivedProposals,
-      proposalsWithBalance,
-      proposalsEsperadas,
-      metrics: {
-          ticketMedio,
-          eficiencia,
-          hotKpi
-      }
+      allDigitizedInPeriod: digitizedInPeriod,
+      allReceivedInPeriod: receivedInPeriod,
+      allAverbados: averbados,
+      allEsperados: esperados,
+      metrics: { hotKpi }
     };
   }, [rows, currentMonthRange]);
   
@@ -112,44 +115,43 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
   return (
     <div className='space-y-6 mb-8'>
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4 print:grid-cols-4'>
-            <div className="cursor-pointer" onClick={() => onShowDetails("Produção Digitada (Total Bruto Mês)", allProposalsInPeriod)}>
+            <div className="cursor-pointer" onClick={() => onShowDetails("Produção Digitada (Esforço Bruto Mês)", allDigitizedInPeriod)}>
                 <StatsCard
                     title="PRODUÇÃO DIGITADA"
-                    value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalMonthlyComissaoDigitada)}
+                    value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalComissaoProducaoDigitada)}
                     icon={Activity}
-                    description="TOTAL DIGITADO NO MÊS"
-                    subValue={`TICKET MÉDIO: ${formatCurrency(metrics.ticketMedio)}`}
+                    description="COMISSÃO TOTAL DIGITADA NO MÊS"
+                    subValue={`INCLUI REPROVADOS`}
                     isHot={metrics.hotKpi === "PRODUÇÃO DIGITADA"}
                 />
             </div>
 
-            <div className="cursor-pointer" onClick={() => onShowDetails("Comissões Recebidas no Período", commissionReceivedProposals)}>
+            <div className="cursor-pointer" onClick={() => onShowDetails("Comissão Recebida (Entrada de Caixa)", allReceivedInPeriod)}>
                 <StatsCard
                     title="COMISSÃO RECEBIDA"
-                    value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalAmountPaid)}
-                    icon={TrendingUp}
-                    description="DINHEIRO NO CAIXA"
-                    subValue={`EFICIÊNCIA: ${metrics.eficiencia.toFixed(1)}%`}
+                    value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalComissaoRecebida)}
+                    icon={Wallet}
+                    description="DINHEIRO QUE ENTROU NO MÊS"
                     isHot={metrics.hotKpi === "COMISSÃO RECEBIDA"}
                 />
             </div>
 
-            <div className="cursor-pointer" onClick={() => onShowDetails("Saldo a Receber (Averbados/Pagos)", proposalsWithBalance)}>
+            <div className="cursor-pointer" onClick={() => onShowDetails("Saldo a Receber (Contratos Averbados)", allAverbados)}>
                 <StatsCard
                     title="SALDO A RECEBER"
                     value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalSaldoAReceber)}
                     icon={Hourglass}
-                    description="CONTRATOS AVERBADOS"
+                    description="APENAS CONTRATOS AVERBADOS"
                     isHot={metrics.hotKpi === "SALDO A RECEBER"}
                 />
             </div>
 
-            <div className="cursor-pointer" onClick={() => onShowDetails("Comissão Esperada (Carteira Ativa)", proposalsEsperadas)}>
+            <div className="cursor-pointer" onClick={() => onShowDetails("Comissão Esperada (Esteira Ativa)", allEsperados)}>
                 <StatsCard
                     title="COMISSÃO ESPERADA"
                     value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalComissaoEsperada)}
                     icon={CircleDollarSign}
-                    description="PIPELINE EM TRÂMITE"
+                    description="FUTURO PROJETADO (TODA A BASE)"
                     isHot={metrics.hotKpi === "COMISSÃO ESPERADA"}
                 />
             </div>

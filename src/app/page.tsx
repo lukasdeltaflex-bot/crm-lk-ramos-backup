@@ -268,7 +268,7 @@ export default function DashboardPage() {
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             <div className="cursor-pointer" onClick={() => handleShowDetails('Total Digitado (Mês Vigente)', stats.proposals.digitadoNoMes)}>
                 <StatsCard 
-                    title="Total Digitado" 
+                    title="TOTAL DIGITADO" 
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.totalDigitado)} 
                     icon={FileText} 
                     description="PRODUÇÃO MENSAL"

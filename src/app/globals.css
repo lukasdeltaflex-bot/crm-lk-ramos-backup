@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Bebas+Neue&family=Quicksand:wght@300;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;700&family=Inter:wght@300;400;700;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -74,28 +75,33 @@
   }
 }
 
-/* 🚦 SISTEMA DINÂMICO DE STATUS V60 */
+/* 🚦 SISTEMA DINÂMICO DE STATUS V70 */
 .status-custom {
     color: hsl(var(--status-color)) !important;
-    background-color: hsla(var(--status-color), 0.12) !important;
+    background-color: hsla(var(--status-color), 0.15) !important;
     border-color: hsla(var(--status-color), 0.5) !important;
 }
 
 .style-glow .status-custom,
 .style-glow.card[style*="--status-color"] {
-    box-shadow: 0 0 15px hsla(var(--status-color), 0.25) !important;
+    box-shadow: 0 0 15px hsla(var(--status-color), 0.3) !important;
 }
 
 .status-row-custom {
-    background-color: hsla(var(--status-color), 0.08) !important;
+    background-color: hsla(var(--status-color), 0.12) !important;
 }
 .status-row-custom:hover {
-    background-color: hsla(var(--status-color), 0.15) !important;
+    background-color: hsla(var(--status-color), 0.2) !important;
 }
 
 /* INTENSIDADE DE CORES */
-.intensity-vibrante .status-custom { background-color: hsla(var(--status-color), 0.2) !important; font-weight: 800; }
-.intensity-vibrante .status-row-custom { background-color: hsla(var(--status-color), 0.12) !important; }
+.intensity-vibrante .status-custom { 
+    background-color: hsla(var(--status-color), 0.25) !important; 
+    font-weight: 800; 
+}
+.intensity-vibrante .status-row-custom { 
+    background-color: hsla(var(--status-color), 0.18) !important; 
+}
 
 /* MOTION DESIGN */
 .anim-estatico * { transition: none !important; animation: none !important; }
@@ -122,28 +128,35 @@
 .radius-capsula { --radius: 9999px; }
 
 /* TIPOGRAFIA INDUSTRIAL (20 ESTILOS) */
-.font-moderno { font-family: var(--font-sans), sans-serif !important; }
-.font-classico { font-family: "Georgia", serif !important; }
-.font-mono { font-family: ui-monospace, monospace !important; }
-.font-arredondado { font-family: "Quicksand", sans-serif !important; }
-.font-condensado { font-family: "Inter", sans-serif !important; font-stretch: condensed; }
-.font-business { font-family: "Trebuchet MS", sans-serif !important; }
-.font-elegante { font-family: "Playfair Display", serif !important; }
-.font-geometrico { font-family: "Futura", sans-serif !important; }
-.font-tecnico { font-family: "Consolas", monospace !important; }
-.font-minimalista { font-family: "Helvetica Neue", sans-serif !important; }
-.font-futurista { font-family: "Orbitron", sans-serif !important; }
-.font-robusto { font-family: "Impact", sans-serif !important; }
-.font-editorial { font-family: "Bodoni MT", serif !important; }
-.font-suico { font-family: "Akzidenz-Grotesk", sans-serif !important; }
-.font-academico { font-family: "Times New Roman", serif !important; }
-.font-industrial { font-family: "Bebas Neue", sans-serif !important; }
-.font-digital { font-family: "Courier New", monospace !important; }
-.font-real { font-family: "Garamond", serif !important; }
-.font-suave { font-family: "Outfit", sans-serif !important; }
-.font-sharp { font-family: "Segoe UI", sans-serif !important; }
+.font-moderno { --font-sans: "Inter", sans-serif; }
+.font-classico { --font-sans: "Georgia", serif; }
+.font-mono { --font-sans: ui-monospace, monospace; }
+.font-arredondado { --font-sans: "Quicksand", sans-serif; }
+.font-condensado { --font-sans: "Inter", sans-serif; font-stretch: condensed; }
+.font-business { --font-sans: "Trebuchet MS", sans-serif; }
+.font-elegante { --font-sans: "Playfair Display", serif; }
+.font-geometrico { --font-sans: "Futura", sans-serif; }
+.font-tecnico { --font-sans: "Consolas", monospace; }
+.font-minimalista { --font-sans: "Helvetica Neue", sans-serif; }
+.font-futurista { --font-sans: "Orbitron", sans-serif; }
+.font-robusto { --font-sans: "Impact", sans-serif; }
+.font-editorial { --font-sans: "Bodoni MT", serif; }
+.font-suico { --font-sans: "Akzidenz-Grotesk", sans-serif; }
+.font-academico { --font-sans: "Times New Roman", serif; }
+.font-industrial { --font-sans: "Bebas Neue", sans-serif; }
+.font-digital { --font-sans: "Courier New", monospace; }
+.font-real { --font-sans: "Garamond", serif; }
+.font-suave { --font-sans: "Outfit", sans-serif; }
+.font-sharp { --font-sans: "Segoe UI", sans-serif; }
 
 @layer base {
-  * { @apply border-border; transition: all var(--motion-duration) var(--motion-ease); }
-  body { @apply bg-background text-foreground; }
+  * { 
+    @apply border-border; 
+    transition: all var(--motion-duration) var(--motion-ease);
+    font-family: inherit;
+  }
+  body { 
+    @apply bg-background text-foreground; 
+    font-family: var(--font-sans), sans-serif;
+  }
 }

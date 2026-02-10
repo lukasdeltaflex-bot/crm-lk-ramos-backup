@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -41,7 +40,8 @@ import {
     Zap,
     MousePointer2,
     Eye,
-    Landmark
+    Landmark,
+    Bot
 } from 'lucide-react';
 import { EditableList } from '@/components/settings/editable-list';
 import { BankEditableList } from '@/components/settings/bank-editable-list';
@@ -108,12 +108,10 @@ export default function SettingsPage() {
     colorIntensity, setColorIntensity,
     animationStyle, setAnimationStyle,
     fontStyle, setFontStyle,
-    glassIntensity, setGlassIntensity,
     statusColors, setStatusColors,
     resolvedTheme
   } = useTheme();
   
-  const [isExporting, setIsExporting] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -179,7 +177,6 @@ export default function SettingsPage() {
 
   const isLoading = isUserLoading || isSettingsLoading;
 
-  // Usa Set para garantir chaves únicas
   const colorableStatuses = Array.from(new Set([
     ...proposalStatuses, 
     "Paga", "Pendente", "Parcial",
@@ -238,7 +235,6 @@ export default function SettingsPage() {
                                 <CardDescription>Ajuste a identidade visual completa da sua plataforma.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-10">
-                                {/* BRANDING */}
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-2"><Monitor className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Branding Próprio</h4></div>
                                     <div className="flex items-center gap-6 p-6 border rounded-xl bg-muted/20">
@@ -258,13 +254,12 @@ export default function SettingsPage() {
 
                                 <Separator />
 
-                                {/* PALETA GLOBAL */}
                                 <div className="space-y-6">
                                     <ThemeColors />
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                         <div className="space-y-4">
                                             <div className="flex items-center gap-2"><Pipette className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Intensidade das Cores</h4></div>
-                                            <RadioGroup value={colorIntensity} onValueChange={(val) => updateSettings({ colorIntensity: val as any })} className="grid grid-cols-2 gap-2">
+                                            <RadioGroup value={colorIntensity} onValueChange={(val) => { setColorIntensity(val); updateSettings({ colorIntensity: val as any }); }} className="grid grid-cols-2 gap-2">
                                                 {['sobrio', 'vibrante'].map((i) => (
                                                     <Label key={i} htmlFor={`i-${i}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold", colorIntensity === i ? "border-primary bg-primary/5" : "border-muted")}>
                                                         <RadioGroupItem value={i} id={`i-${i}`} className="sr-only" />{i}
@@ -291,14 +286,13 @@ export default function SettingsPage() {
                                 
                                 <Separator />
 
-                                {/* LABORATÓRIO DE CORES */}
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-2"><Pipette className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Laboratório de Cores (Status & Financeiro)</h4></div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {colorableStatuses.map((status) => {
                                             const currentHsl = statusColors[status] || THEMES[0].light;
                                             return (
-                                                <div key={status} className="flex items-center justify-between p-3 border rounded-xl bg-muted/10">
+                                                <div key={`color-${status}`} className="flex items-center justify-between p-3 border rounded-xl bg-muted/10">
                                                     <div className="flex items-center gap-2">
                                                         <div className="h-4 w-4 rounded-full border border-white/20" style={{ backgroundColor: `hsl(${currentHsl})` }} />
                                                         <span className="text-[10px] font-black uppercase tracking-tighter">{status}</span>
@@ -317,11 +311,10 @@ export default function SettingsPage() {
 
                                 <Separator />
 
-                                {/* AURA & ARREDONDAMENTO */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-2"><Shapes className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Aura Visual (Containers)</h4></div>
-                                        <RadioGroup value={containerStyle} onValueChange={(val) => updateSettings({ containerStyle: val as any })} className="grid grid-cols-2 gap-2">
+                                        <RadioGroup value={containerStyle} onValueChange={(val) => { setContainerStyle(val); updateSettings({ containerStyle: val as any }); }} className="grid grid-cols-2 gap-2">
                                             {['moderno', 'glass', 'deep', 'flat', 'glow', 'soft', 'bordado', 'geometrico'].map((s) => (
                                                 <Label key={s} htmlFor={`s-${s}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold", containerStyle === s ? "border-primary bg-primary/5" : "border-muted")}>
                                                     <RadioGroupItem value={s} id={`s-${s}`} className="sr-only" />{s === 'glow' ? 'Neon Glow' : s}
@@ -332,7 +325,7 @@ export default function SettingsPage() {
 
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-2"><MousePointer2 className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Arredondamento</h4></div>
-                                        <RadioGroup value={radius} onValueChange={(val) => updateSettings({ radius: val as any })} className="grid grid-cols-3 gap-2">
+                                        <RadioGroup value={radius} onValueChange={(val) => { setRadius(val); updateSettings({ radius: val as any }); }} className="grid grid-cols-3 gap-2">
                                             {['reto', 'extra-discreto', 'discreto', 'moderno', 'amigavel', 'suave', 'capsula'].map((r) => (
                                                 <Label key={r} htmlFor={`r-${r}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-[10px] font-bold text-center", radius === r ? "border-primary bg-primary/5" : "border-muted")}>
                                                     <RadioGroupItem value={r} id={`r-${r}`} className="sr-only" />{r === 'extra-discreto' ? 'X-Discreto' : r}
@@ -344,10 +337,9 @@ export default function SettingsPage() {
 
                                 <Separator />
 
-                                {/* TIPOGRAFIA */}
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-2"><Type className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Estúdio de Tipografia (20 Estilos Premium)</h4></div>
-                                    <RadioGroup value={fontStyle} onValueChange={(val) => updateSettings({ fontStyle: val })} className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+                                    <RadioGroup value={fontStyle} onValueChange={(val) => { setFontStyle(val); updateSettings({ fontStyle: val }); }} className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
                                         {fontOptions.map((f) => (
                                             <Label key={f} htmlFor={`f-${f}`} className={cn("flex items-center justify-center rounded-md border-2 p-4 cursor-pointer text-xs font-bold h-24 text-center group transition-all", fontStyle === f ? "border-primary bg-primary/5 scale-105 shadow-md" : "border-muted hover:border-primary/30")}>
                                                 <RadioGroupItem value={f} id={`f-${f}`} className="sr-only" />
@@ -362,11 +354,10 @@ export default function SettingsPage() {
 
                                 <Separator />
 
-                                {/* MOTION & TEXTURA */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-2"><MoveHorizontal className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Motion Design (Animações)</h4></div>
-                                        <RadioGroup value={animationStyle} onValueChange={(val) => updateSettings({ animationStyle: val as any })} className="grid grid-cols-2 gap-2">
+                                        <RadioGroup value={animationStyle} onValueChange={(val) => { setAnimationStyle(val); updateSettings({ animationStyle: val as any }); }} className="grid grid-cols-2 gap-2">
                                             {['estatico', 'instantaneo', 'rapido', 'sutil', 'cinematografico', 'elastico', 'dramatico', 'atmosferico'].map((a) => (
                                                 <Label key={a} htmlFor={`a-${a}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-[10px] font-bold", animationStyle === a ? "border-primary bg-primary/5" : "border-muted")}>
                                                     <RadioGroupItem value={a} id={`a-${a}`} className="sr-only" />{a}
@@ -377,7 +368,7 @@ export default function SettingsPage() {
 
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-2"><Layout className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Textura de Fundo</h4></div>
-                                        <RadioGroup value={backgroundTexture} onValueChange={(val) => updateSettings({ backgroundTexture: val as any })} className="grid grid-cols-2 gap-2">
+                                        <RadioGroup value={backgroundTexture} onValueChange={(val) => { setBackgroundTexture(val); updateSettings({ backgroundTexture: val as any }); }} className="grid grid-cols-2 gap-2">
                                             {['none', 'dots', 'grid', 'lines'].map((t) => (
                                                 <Label key={t} htmlFor={`t-${t}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold", backgroundTexture === t ? "border-primary bg-primary/5" : "border-muted")}>
                                                     <RadioGroupItem value={t} id={`t-${t}`} className="sr-only" />{t === 'none' ? 'Limpo' : t}
@@ -391,7 +382,7 @@ export default function SettingsPage() {
 
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-2"><Layout className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Barra Lateral</h4></div>
-                                    <RadioGroup value={sidebarStyle} onValueChange={(val) => updateSettings({ sidebarStyle: val as any })} className="grid grid-cols-3 gap-2">
+                                    <RadioGroup value={sidebarStyle} onValueChange={(val) => { setSidebarStyle(val); updateSettings({ sidebarStyle: val as any }); }} className="grid grid-cols-3 gap-2">
                                         {['default', 'dark', 'light'].map((s) => (
                                             <Label key={s} htmlFor={`s-${s}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold", sidebarStyle === s ? "border-primary bg-primary/5" : "border-muted")}>
                                                 <RadioGroupItem value={s} id={`s-${s}`} className="sr-only" />{s === 'default' ? 'Automático' : s === 'dark' ? 'Escura' : 'Clara'}

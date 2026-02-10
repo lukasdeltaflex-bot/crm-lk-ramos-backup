@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -89,7 +88,7 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (isMounted) {
       const root = document.documentElement;
       
@@ -117,6 +116,8 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
       root.classList.add(`font-${fontStyle}`);
       localStorage.setItem("font-theme", fontStyle);
 
+      // Sidebar
+      root.classList.remove("sidebar-dark", "sidebar-light");
       if (sidebarStyle !== 'default') {
         root.classList.add(`sidebar-${sidebarStyle}`);
       }

@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -56,7 +55,14 @@ export function StatsCard({
         };
     }
     
-    // Fallback neutro
+    // Fallback neutro - Zinc para TOTAL DIGITADO e PRODUÇÃO DIGITADA
+    if (t === 'TOTAL DIGITADO' || t === 'PRODUÇÃO DIGITADA') {
+        return {
+            card: 'border-zinc-300 bg-zinc-50/80 dark:bg-zinc-900/40 dark:border-zinc-700',
+            style: { color: 'hsl(var(--foreground))' }
+        }
+    }
+
     return { 
         card: 'border-zinc-200 bg-zinc-50/50 dark:bg-zinc-900/10 dark:border-zinc-800', 
         style: { color: 'hsl(var(--foreground))' }
