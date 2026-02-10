@@ -371,73 +371,73 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                 userSettings={userSettings}
             />
 
+            <div className="flex items-center justify-between py-4 print:hidden">
+                <div className="flex flex-wrap gap-2 items-center">
+                    <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as CommissionStatus | 'Todos')}>
+                        <TabsList className="bg-muted/50 p-1">
+                            <TabsTrigger value="Todos" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Todos</TabsTrigger>
+                            
+                            {['Paga', 'Pendente', 'Parcial'].map((status) => {
+                                const colorValue = statusColors[status];
+                                return (
+                                    <TabsTrigger 
+                                        key={status}
+                                        value={status} 
+                                        className={cn(
+                                            "border-2 border-transparent transition-all data-[state=active]:status-custom"
+                                        )}
+                                        style={colorValue ? { '--status-color': colorValue } as any : {}}
+                                    >
+                                        {status === 'Paga' ? 'Pagas' : status === 'Pendente' ? 'Pendentes' : 'Parciais'}
+                                    </TabsTrigger>
+                                )
+                            })}
+                        </TabsList>
+                    </Tabs>
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <Select onValueChange={(val) => applyRange(val as any)}>
+                            <SelectTrigger className='w-[140px] h-9 bg-card'>
+                                <CalendarIcon className='mr-2 h-4 w-4 text-primary' />
+                                <SelectValue placeholder="Período" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="today">Hoje</SelectItem>
+                                <SelectItem value="yesterday">Ontem</SelectItem>
+                                <SelectItem value="week">Últimos 7 dias</SelectItem>
+                                <SelectItem value="month">Mês Atual</SelectItem>
+                                <SelectItem value="lastMonth">Mês Passado</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <div className="flex items-center gap-1">
+                            <Input 
+                                placeholder="De" 
+                                value={startDateInput}
+                                onChange={(e) => handleDateInputChange(e.target.value, 'start')}
+                                maxLength={10}
+                                className="h-9 w-28 bg-card"
+                            />
+                            <span className='text-muted-foreground'>-</span>
+                            <Input 
+                                placeholder="Até" 
+                                value={endDateInput}
+                                onChange={(e) => handleDateInputChange(e.target.value, 'end')}
+                                maxLength={10}
+                                className="h-9 w-28 bg-card"
+                            />
+                        </div>
+                        <Button size="sm" onClick={handleApplyFilter}><Filter className="h-4 w-4" /> Aplicar</Button>
+                        {(startDateInput || endDateInput || appliedDateRange) && <Button variant="ghost" size="icon" className="h-9 w-9" onClick={clearDates}><X className="h-4 w-4" /></Button>}
+                    </div>
+                </div>
+            </div>
+
             <Card className="print:shadow-none print:border-none financial-table border-border/50 shadow-md rounded-xl overflow-hidden">
                 <div className="p-4 space-y-4 print:p-0">
-                    <div className="flex items-center justify-between py-4 print:hidden">
-                        <div className="flex flex-wrap gap-2 items-center">
-                            <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as CommissionStatus | 'Todos')}>
-                                <TabsList className="bg-muted/50">
-                                    <TabsTrigger value="Todos" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Todos</TabsTrigger>
-                                    
-                                    {['Paga', 'Pendente', 'Parcial'].map((status) => {
-                                        const colorValue = statusColors[status];
-                                        return (
-                                            <TabsTrigger 
-                                                key={status}
-                                                value={status} 
-                                                className={cn(
-                                                    "border border-transparent transition-all data-[state=active]:status-custom"
-                                                )}
-                                                style={colorValue ? { '--status-color': colorValue } as any : {}}
-                                            >
-                                                {status === 'Paga' ? 'Pagas' : status === 'Pendente' ? 'Pendentes' : 'Parciais'}
-                                            </TabsTrigger>
-                                        )
-                                    })}
-                                </TabsList>
-                            </Tabs>
-                            <div className="flex items-center gap-2 flex-wrap">
-                                <Select onValueChange={(val) => applyRange(val as any)}>
-                                    <SelectTrigger className='w-[140px] h-9 bg-card'>
-                                        <CalendarIcon className='mr-2 h-4 w-4 text-primary' />
-                                        <SelectValue placeholder="Período" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="today">Hoje</SelectItem>
-                                        <SelectItem value="yesterday">Ontem</SelectItem>
-                                        <SelectItem value="week">Últimos 7 dias</SelectItem>
-                                        <SelectItem value="month">Mês Atual</SelectItem>
-                                        <SelectItem value="lastMonth">Mês Passado</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <div className="flex items-center gap-1">
-                                    <Input 
-                                        placeholder="De" 
-                                        value={startDateInput}
-                                        onChange={(e) => handleDateInputChange(e.target.value, 'start')}
-                                        maxLength={10}
-                                        className="h-9 w-28 bg-card"
-                                    />
-                                    <span className='text-muted-foreground'>-</span>
-                                    <Input 
-                                        placeholder="Até" 
-                                        value={endDateInput}
-                                        onChange={(e) => handleDateInputChange(e.target.value, 'end')}
-                                        maxLength={10}
-                                        className="h-9 w-28 bg-card"
-                                    />
-                                </div>
-                                <Button size="sm" onClick={handleApplyFilter}><Filter className="h-4 w-4" /> Aplicar</Button>
-                                {(startDateInput || endDateInput || appliedDateRange) && <Button variant="ghost" size="icon" className="h-9 w-9" onClick={clearDates}><X className="h-4 w-4" /></Button>}
-                            </div>
-                        </div>
-                    </div>
-
                     <div className="flex items-center justify-between py-4 print:hidden">
                     <div className='relative w-full max-sm:max-w-full max-w-sm'>
                         <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
                         <Input
-                        placeholder="Busca inteligente (cliente, CPF, proposta...)"
+                        placeholder="Busca Inteligente (Nome, CPF, ID, Proposta...)"
                         value={globalFilter ?? ''}
                         onChange={(event) =>
                             setGlobalFilter(event.target.value)

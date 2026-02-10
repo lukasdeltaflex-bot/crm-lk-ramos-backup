@@ -58,17 +58,19 @@ export function StatsCard({
   const animationStyle = overrideAnimationStyle || globalAnimationStyle;
 
   const getThemeStyles = () => {
+    // Busca a cor pelo título ou pela descrição (necessário para Financeiro)
     const statusKey = title.toUpperCase();
-    const customColor = statusColors[statusKey] || statusColors[title] || statusColors[description || ''];
+    const customColor = statusColors[statusKey] || statusColors[title] || statusColors[description?.toUpperCase() || ''] || statusColors[description || ''];
 
     const cardClasses = cn(
-        'hover:shadow-lg transition-all group relative overflow-hidden flex flex-col border-2 py-3.5 px-5 min-h-[160px] status-custom h-full card',
+        'hover:shadow-lg transition-all group relative overflow-hidden flex flex-col border-2 py-3.5 px-5 min-h-[160px] h-full card',
         `style-${containerStyle}`,
         containerStyle === 'glow' && 'style-glow',
         `intensity-${intensity}`,
         `radius-${radius}`,
         `anim-${animationStyle}`,
-        isHot && 'card-hot-neon',
+        (isHot || title === "COMISSÃO ESPERADA") && 'card-hot-neon status-custom',
+        !isHot && 'status-custom',
         className
     );
 

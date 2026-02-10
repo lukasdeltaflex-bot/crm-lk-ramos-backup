@@ -315,9 +315,8 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
       onDragEnd={handleDragEnd}
       sensors={sensors}
     >
-        <Card className={cn("proposals-table border-border/50 shadow-md rounded-xl overflow-hidden", containerStyle === 'glow' && 'style-glow')}>
-        <div className="p-4">
-            <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+        <div className="space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-4">
                 <Tabs value={statusFilter} onValueChange={setStatusFilter}>
                     <TabsList className="h-auto flex-wrap justify-start bg-muted/50 p-1">
                         {orderedTabs.map(status => {
@@ -328,7 +327,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                     key={status} 
                                     value={status}
                                     className={cn(
-                                        "transition-all border border-transparent data-[state=active]:status-custom"
+                                        "transition-all border-2 border-transparent data-[state=active]:status-custom"
                                     )}
                                     style={colorValue ? { '--status-color': colorValue } as any : {}}
                                 >
@@ -358,118 +357,122 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     {(startDateInput || endDateInput || appliedDateRange) && <Button variant="ghost" size="icon" className="h-9 w-9" onClick={clearDates}><X className="h-4 w-4" /></Button>}
                 </div>
             </div>
-            <div className="flex items-center justify-between py-4">
-            <div className="flex items-center gap-2 flex-grow">
-                <div className='relative w-full max-md:max-w-full max-w-md'>
-                    <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
-                    <Input 
-                        placeholder="Busca Inteligente (Nome, CPF, ID, Proposta...)" 
-                        value={globalFilter ?? ''} 
-                        onChange={(event) => setGlobalFilter(event.target.value)} 
-                        className="pl-9 w-full bg-card" 
-                    />
-                </div>
-                {selectedRowCount > 0 && (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild><Button variant="outline" className="bg-card">Alterar status ({selectedRowCount})<ChevronsUpDown className="ml-2 h-4 w-4" /></Button></DropdownMenuTrigger>
-                    <DropdownMenuContent align="start">
-                    <DropdownMenuLabel>Escolha o novo status</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {proposalStatuses.map(status => (
-                        <DropdownMenuItem key={status} onSelect={() => onBulkStatusChange(status as ProposalStatus)}>{status}</DropdownMenuItem>
-                    ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-                )}
-            </div>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild><Button variant="outline" className="ml-auto bg-card">Colunas <ChevronDown className="ml-2 h-4 w-4" /></Button></DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                {table.getAllColumns().filter((column) => column.getCanHide()).map((column) => (
-                    <DropdownMenuCheckboxItem key={column.id} className="capitalize" checked={column.getIsVisible()} onCheckedChange={(value) => column.toggleVisibility(!!value)}>{idMap[column.id] || column.id}</DropdownMenuCheckboxItem>
-                ))}
-                </DropdownMenuContent>
-            </DropdownMenu>
-            </div>
-            <div className="rounded-xl border shadow-sm overflow-hidden">
-            <Table>
-                <TableHeader className="bg-muted/20">
-                    {table.getHeaderGroups().map(headerGroup => (
-                        <TableRow key={headerGroup.id}>
-                             <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
-                                {headerGroup.headers.map(header => (
-                                    <DraggableHeader key={header.id} header={header as Header<ProposalWithCustomer, unknown>} />
-                                ))}
-                            </SortableContext>
-                        </TableRow>
-                    ))}
-                </TableHeader>
-                <TableBody>
-                {table.getRowModel().rows?.length ? (
-                    table.getRowModel().rows.map((row) => {
-                        const proposal = row.original;
-                        const status = proposal.status;
-                        const colorValue = statusColors[status];
 
-                        return (
-                            <TableRow
-                                key={row.id}
-                                data-state={row.getIsSelected() && 'selected'}
-                                className={cn(
-                                    "transition-colors border-b",
-                                    colorValue && "status-row-custom"
-                                )}
-                                style={colorValue ? { '--status-color': colorValue } as any : {}}
-                            >
-                                {row.getVisibleCells().map((cell) => (
-                                <TableCell key={cell.id} className="py-4">{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-                                ))}
-                            </TableRow>
-                        )
-                    })
-                ) : (
-                    <TableRow><TableCell colSpan={columns.length} className="h-24 text-center">Nenhum resultado para os filtros aplicados.</TableCell></TableRow>
-                )}
-                </TableBody>
-            </Table>
-            </div>
-            <div className="flex items-center justify-between py-4">
-                <div className="flex-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-4">
-                    <span>{selectedRowCount} de {table.getFilteredRowModel().rows.length} selecionados.</span>
-                    {selectedRowCount > 0 && (
-                        <>
-                            <Separator orientation="vertical" className="h-4" />
-                            <div className="text-primary">Valor Bruto: <span className="text-foreground">{formatCurrency(totalSelectedGrossAmount)}</span></div>
-                            {isCommissionColumnVisible && (
+            <Card className={cn("proposals-table border-border/50 shadow-md rounded-xl overflow-hidden", containerStyle === 'glow' && 'style-glow')}>
+                <div className="p-4">
+                    <div className="flex items-center justify-between py-4">
+                    <div className="flex items-center gap-2 flex-grow">
+                        <div className='relative w-full max-md:max-w-full max-w-md'>
+                            <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+                            <Input 
+                                placeholder="Busca Inteligente (Nome, CPF, ID, Proposta...)" 
+                                value={globalFilter ?? ''} 
+                                onChange={(event) => setGlobalFilter(event.target.value)} 
+                                className="pl-9 w-full bg-card" 
+                            />
+                        </div>
+                        {selectedRowCount > 0 && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild><Button variant="outline" className="bg-card">Alterar status ({selectedRowCount})<ChevronsUpDown className="ml-2 h-4 w-4" /></Button></DropdownMenuTrigger>
+                            <DropdownMenuContent align="start">
+                            <DropdownMenuLabel>Escolha o novo status</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {proposalStatuses.map(status => (
+                                <DropdownMenuItem key={status} onSelect={() => onBulkStatusChange(status as ProposalStatus)}>{status}</DropdownMenuItem>
+                            ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        )}
+                    </div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild><Button variant="outline" className="ml-auto bg-card">Colunas <ChevronDown className="ml-2 h-4 w-4" /></Button></DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                        {table.getAllColumns().filter((column) => column.getCanHide()).map((column) => (
+                            <DropdownMenuCheckboxItem key={column.id} className="capitalize" checked={column.getIsVisible()} onCheckedChange={(value) => column.toggleVisibility(!!value)}>{idMap[column.id] || column.id}</DropdownMenuCheckboxItem>
+                        ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    </div>
+                    <div className="rounded-xl border shadow-sm overflow-hidden">
+                    <Table>
+                        <TableHeader className="bg-muted/20">
+                            {table.getHeaderGroups().map(headerGroup => (
+                                <TableRow key={headerGroup.id}>
+                                    <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
+                                        {headerGroup.headers.map(header => (
+                                            <DraggableHeader key={header.id} header={header as Header<ProposalWithCustomer, unknown>} />
+                                        ))}
+                                    </SortableContext>
+                                </TableRow>
+                            ))}
+                        </TableHeader>
+                        <TableBody>
+                        {table.getRowModel().rows?.length ? (
+                            table.getRowModel().rows.map((row) => {
+                                const proposal = row.original;
+                                const status = proposal.status;
+                                const colorValue = statusColors[status];
+
+                                return (
+                                    <TableRow
+                                        key={row.id}
+                                        data-state={row.getIsSelected() && 'selected'}
+                                        className={cn(
+                                            "transition-colors border-b",
+                                            colorValue && "status-row-custom"
+                                        )}
+                                        style={colorValue ? { '--status-color': colorValue } as any : {}}
+                                    >
+                                        {row.getVisibleCells().map((cell) => (
+                                        <TableCell key={cell.id} className="py-4">{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                                        ))}
+                                    </TableRow>
+                                )
+                            })
+                        ) : (
+                            <TableRow><TableCell colSpan={columns.length} className="h-24 text-center">Nenhum resultado para os filtros aplicados.</TableCell></TableRow>
+                        )}
+                        </TableBody>
+                    </Table>
+                    </div>
+                    <div className="flex items-center justify-between py-4">
+                        <div className="flex-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-4">
+                            <span>{selectedRowCount} de {table.getFilteredRowModel().rows.length} selecionados.</span>
+                            {selectedRowCount > 0 && (
                                 <>
                                     <Separator orientation="vertical" className="h-4" />
-                                    <div className="text-primary">Comissão: <span className="text-foreground">{formatCurrency(totalSelectedCommissionValue)}</span></div>
+                                    <div className="text-primary">Valor Bruto: <span className="text-foreground">{formatCurrency(totalSelectedGrossAmount)}</span></div>
+                                    {isCommissionColumnVisible && (
+                                        <>
+                                            <Separator orientation="vertical" className="h-4" />
+                                            <div className="text-primary">Comissão: <span className="text-foreground">{formatCurrency(totalSelectedCommissionValue)}</span></div>
+                                        </>
+                                    )}
                                 </>
                             )}
-                        </>
-                    )}
-                </div>
-                <div className="flex items-center space-x-6 lg:space-x-8">
-                    <div className="flex items-center space-x-2">
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Linhas</p>
-                        <Select value={`${table.getState().pagination.pageSize}`} onValueChange={(value) => table.setPageSize(Number(value))}>
-                            <SelectTrigger className="h-8 w-[70px] bg-card"><SelectValue placeholder={table.getState().pagination.pageSize} /></SelectTrigger>
-                            <SelectContent side="top">
-                                {[10, 20, 50, 100].map((pageSize) => (<SelectItem key={pageSize} value={`${pageSize}`}>{pageSize}</SelectItem>))}
-                            </SelectContent>
-                        </Select>
+                        </div>
+                        <div className="flex items-center space-x-6 lg:space-x-8">
+                            <div className="flex items-center space-x-2">
+                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Linhas</p>
+                                <Select value={`${table.getState().pagination.pageSize}`} onValueChange={(value) => table.setPageSize(Number(value))}>
+                                    <SelectTrigger className="h-8 w-[70px] bg-card"><SelectValue placeholder={table.getState().pagination.pageSize} /></SelectTrigger>
+                                    <SelectContent side="top">
+                                        {[10, 20, 50, 100].map((pageSize) => (<SelectItem key={pageSize} value={`${pageSize}`}>{pageSize}</SelectItem>))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="flex w-[100px] items-center justify-center text-xs font-bold text-primary uppercase">Pág {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}</div>
+                            <div className="flex items-center space-x-2">
+                                <Button variant="outline" className="hidden h-8 w-8 p-0 lg:flex bg-card" onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()}><span className="sr-only">Primeira página</span><ChevronsLeft className="h-4 w-4" /></Button>
+                                <Button variant="outline" className="h-8 w-8 p-0 bg-card" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}><span className="sr-only">Página anterior</span><ChevronLeft className="h-4 w-4" /></Button>
+                                <Button variant="outline" className="h-8 w-8 p-0 bg-card" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}><span className="sr-only">Próxima página</span><ChevronRight className="h-4 w-4" /></Button>
+                                <Button variant="outline" className="hidden h-8 w-8 p-0 lg:flex bg-card" onClick={() => table.setPageIndex(table.getPageCount() - 1)} disabled={!table.getCanNextPage()}><span className="sr-only">Última página</span><ChevronsRight className="h-4 w-4" /></Button>
+                            </div>
+                        </div>
                     </div>
-                    <div className="flex w-[100px] items-center justify-center text-xs font-bold text-primary uppercase">Pág {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}</div>
-                    <div className="flex items-center space-x-2">
-                        <Button variant="outline" className="hidden h-8 w-8 p-0 lg:flex bg-card" onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()}><span className="sr-only">Primeira página</span><ChevronsLeft className="h-4 w-4" /></Button>
-                        <Button variant="outline" className="h-8 w-8 p-0 bg-card" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}><span className="sr-only">Página anterior</span><ChevronLeft className="h-4 w-4" /></Button>
-                        <Button variant="outline" className="h-8 w-8 p-0 bg-card" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}><span className="sr-only">Próxima página</span><ChevronRight className="h-4 w-4" /></Button>
-                        <Button variant="outline" className="hidden h-8 w-8 p-0 lg:flex bg-card" onClick={() => table.setPageIndex(table.getPageCount() - 1)} disabled={!table.getCanNextPage()}><span className="sr-only">Última página</span><ChevronsRight className="h-4 w-4" /></Button>
-                    </div>
                 </div>
-            </div>
+            </Card>
         </div>
-        </Card>
     </DndContext>
   );
 });
