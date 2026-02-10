@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Bebas+Neue&family=Quicksand:wght@300;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;700&family=Inter:wght@300;400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Bebas+Neue&family=Quicksand:wght@300;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;700&family=Inter:wght@300;400;700;900&family=EB+Garamond:wght@400;700&family=Montserrat:wght@300;400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -38,7 +38,6 @@
 
     --motion-duration: 300ms;
     --motion-ease: cubic-bezier(0.4, 0, 0.2, 1);
-
     --glass-opacity: 0.7;
     --glass-blur: 12px;
   }
@@ -75,11 +74,17 @@
   }
 }
 
-/* 🚦 SISTEMA DINÂMICO DE STATUS V75 */
+/* 🚦 SISTEMA DINÂMICO DE STATUS V75 - AJUSTADO PARA TEMA ESCURO */
 .status-custom {
     color: hsl(var(--status-color)) !important;
-    background-color: hsla(var(--status-color), 0.12) !important;
+    background-color: hsla(var(--status-color), 0.15) !important;
     border-color: hsla(var(--status-color), 0.5) !important;
+}
+
+.dark .status-custom {
+    color: hsl(var(--status-color)) !important; /* Em modo escuro, a cor base já deve ser vibrante */
+    background-color: hsla(var(--status-color), 0.12) !important;
+    border-color: hsla(var(--status-color), 0.4) !important;
 }
 
 .status-row-custom {
@@ -89,15 +94,13 @@
     background-color: hsla(var(--status-color), 0.15) !important;
 }
 
-/* 🌟 AURA VISUAL (CONTAINERS) - REFORÇADO */
-.style-glow .card, .style-glow [data-sidebar="sidebar"] {
-    box-shadow: 0 0 20px hsla(var(--primary), 0.15) !important;
+/* 🌟 AURA VISUAL (CONTAINERS) - REFORÇADO PARA NEON */
+.style-glow .card, .style-glow [data-sidebar="sidebar"], .style-glow button[data-state="active"] {
+    box-shadow: 0 0 25px hsla(var(--status-color, var(--primary)), 0.25) !important;
 }
 
-.style-glow .status-custom,
-.style-glow.card[style*="--status-color"],
-.style-glow [data-state="active"].status-custom {
-    box-shadow: 0 0 15px hsla(var(--status-color), 0.4) !important;
+.dark .style-glow .card, .dark .style-glow [data-sidebar="sidebar"], .dark .style-glow button[data-state="active"] {
+    box-shadow: 0 0 35px hsla(var(--status-color, var(--primary)), 0.35) !important;
 }
 
 .style-glass .card, .style-glass .border, .style-glass [data-sidebar="sidebar"] {
@@ -115,7 +118,7 @@
 }
 
 .style-geometrico .card, .style-geometrico .border {
-    border-width: 2px !important;
+    border-width: 2.5px !important;
     border-color: currentColor !important;
 }
 
@@ -128,112 +131,96 @@
 .texture-grid body { background-image: linear-gradient(hsl(var(--primary) / 0.08) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary) / 0.08) 1px, transparent 1px); background-size: 40px 40px; }
 .texture-lines body { background-image: repeating-linear-gradient(45deg, hsl(var(--primary) / 0.03) 0px, hsl(var(--primary) / 0.03) 1px, transparent 1px, transparent 10px); }
 
-/* 🛡️ BARRA LATERAL ELITE - CORREÇÃO DEFINITIVA V3 (CONTRASTE MÁXIMO) */
+/* 🛡️ BARRA LATERAL ELITE - CONTRASTE MÁXIMO DEFINITIVO */
 [data-sidebar="sidebar"] {
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+    transition: background-color 0.3s ease, color 0.3s ease !important;
 }
 
 .sidebar-dark [data-sidebar="sidebar"] {
     --sidebar-background: 240 10% 4% !important;
     --sidebar-foreground: 0 0% 98% !important;
-    --sidebar-primary: var(--primary) !important;
-    --sidebar-primary-foreground: 0 0% 100% !important;
-    --sidebar-accent: 240 5% 15% !important;
-    --sidebar-accent-foreground: 0 0% 98% !important;
-    --sidebar-border: 240 5% 15% !important;
     background-color: hsl(var(--sidebar-background)) !important;
     color: hsl(var(--sidebar-foreground)) !important;
+    border-right: 1px solid hsla(0, 0%, 100%, 0.1) !important;
 }
 
-.sidebar-dark [data-sidebar="sidebar"] [data-sidebar="menu-button"],
-.sidebar-dark [data-sidebar="sidebar"] [data-sidebar="menu-sub-button"],
-.sidebar-dark [data-sidebar="sidebar"] .logo-text,
-.sidebar-dark [data-sidebar="sidebar"] svg:not([fill]) {
+.sidebar-dark [data-sidebar="sidebar"] * {
     color: hsl(var(--sidebar-foreground)) !important;
-    fill: hsl(var(--sidebar-foreground)) !important;
 }
 
 .sidebar-dark [data-sidebar="sidebar"] [data-sidebar="menu-button"]:hover,
 .sidebar-dark [data-sidebar="sidebar"] [data-sidebar="menu-button"][data-active="true"] {
-    background-color: hsl(var(--sidebar-accent)) !important;
-    color: hsl(var(--sidebar-accent-foreground)) !important;
+    background-color: hsla(0, 0%, 100%, 0.1) !important;
+    color: #fff !important;
 }
 
 .sidebar-light [data-sidebar="sidebar"] {
     --sidebar-background: 0 0% 100% !important;
     --sidebar-foreground: 222.2 47.4% 11.2% !important;
-    --sidebar-primary: var(--primary) !important;
-    --sidebar-primary-foreground: 0 0% 100% !important;
-    --sidebar-accent: 210 40% 94.1% !important;
-    --sidebar-accent-foreground: 222.2 47.4% 11.2% !important;
-    --sidebar-border: 214.3 31.8% 91.4% !important;
-    background-color: hsl(var(--sidebar-background)) !important;
-    color: hsl(var(--sidebar-foreground)) !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-right: 1px solid rgba(0, 0, 0, 0.1) !important;
 }
 
-.sidebar-light [data-sidebar="sidebar"] [data-sidebar="menu-button"],
-.sidebar-light [data-sidebar="sidebar"] [data-sidebar="menu-sub-button"],
-.sidebar-light [data-sidebar="sidebar"] .logo-text,
-.sidebar-light [data-sidebar="sidebar"] svg:not([fill]) {
-    color: hsl(var(--sidebar-foreground)) !important;
-    fill: hsl(var(--sidebar-foreground)) !important;
+.sidebar-light [data-sidebar="sidebar"] * {
+    color: #000000 !important;
 }
 
 .sidebar-light [data-sidebar="sidebar"] [data-sidebar="menu-button"]:hover,
 .sidebar-light [data-sidebar="sidebar"] [data-sidebar="menu-button"][data-active="true"] {
-    background-color: hsl(var(--sidebar-accent)) !important;
-    color: hsl(var(--sidebar-accent-foreground)) !important;
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    color: #000000 !important;
 }
 
-/* 🏃 MOTION DESIGN - CORREÇÃO DE ESCOPO */
-.anim-estatico { --motion-duration: 0ms !important; }
-.anim-instantaneo { --motion-duration: 50ms !important; }
-.anim-rapido { --motion-duration: 150ms !important; }
-.anim-sutil { --motion-duration: 300ms !important; }
-.anim-cinematografico { --motion-duration: 600ms !important; --motion-ease: cubic-bezier(0.22, 1, 0.36, 1) !important; }
-.anim-elastico { --motion-duration: 500ms !important; --motion-ease: cubic-bezier(0.68, -0.6, 0.32, 1.6) !important; }
-.anim-dramatico { --motion-duration: 800ms !important; }
-.anim-atmosferico { --motion-duration: 1200ms !important; --motion-ease: cubic-bezier(0.16, 1, 0.3, 1) !important; }
+/* 🏃 MOTION DESIGN */
+.anim-estatico * { transition-duration: 0ms !important; }
+.anim-instantaneo * { transition-duration: 50ms !important; }
+.anim-rapido * { transition-duration: 150ms !important; }
+.anim-sutil * { transition-duration: 300ms !important; }
+.anim-cinematografico * { transition-duration: 600ms !important; transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1) !important; }
+.anim-elastico * { transition-duration: 500ms !important; transition-timing-function: cubic-bezier(0.68, -0.6, 0.32, 1.6) !important; }
+.anim-dramatico * { transition-duration: 800ms !important; }
+.anim-atmosferico * { transition-duration: 1200ms !important; transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1) !important; }
 
 /* 📐 ARREDONDAMENTO */
 .radius-reto { --radius: 0px !important; }
 .radius-extra-discreto { --radius: 2px !important; }
-.radius-discreto { --radius: 6px !important; }
+.radius-discreto { --radius: 8px !important; }
 .radius-moderno { --radius: 12px !important; }
 .radius-amigavel { --radius: 16px !important; }
 .radius-suave { --radius: 24px !important; }
 .radius-capsula { --radius: 9999px !important; }
 
-/* ✍️ TIPOGRAFIA */
-.font-moderno { --font-sans: "Inter", sans-serif !important; }
-.font-classico { --font-sans: "Georgia", serif !important; }
-.font-mono { --font-sans: ui-monospace, monospace !important; }
-.font-arredondado { --font-sans: "Quicksand", sans-serif !important; }
-.font-condensado { --font-sans: "Inter", sans-serif !important; font-stretch: condensed !important; }
-.font-business { --font-sans: "Trebuchet MS", sans-serif !important; }
-.font-elegante { --font-sans: "Playfair Display", serif !important; }
-.font-geometrico { --font-sans: "Futura", sans-serif !important; }
-.font-tecnico { --font-sans: "Consolas", monospace !important; }
-.font-minimalista { --font-sans: "Helvetica Neue", sans-serif !important; }
-.font-futurista { --font-sans: "Orbitron", sans-serif !important; }
-.font-robusto { --font-sans: "Impact", sans-serif !important; }
-.font-editorial { --font-sans: "Bodoni MT", serif !important; }
-.font-suico { --font-sans: "Akzidenz-Grotesk", sans-serif !important; }
-.font-academico { --font-sans: "Times New Roman", serif !important; }
-.font-industrial { --font-sans: "Bebas Neue", sans-serif !important; }
-.font-digital { --font-sans: "Courier New", monospace !important; }
-.font-real { --font-sans: "Garamond", serif !important; }
-.font-suave { --font-sans: "Outfit", sans-serif !important; }
-.font-sharp { --font-sans: "Segoe UI", sans-serif !important; }
+/* ✍️ TIPOGRAFIA ELITE */
+.font-moderno { font-family: "Inter", sans-serif !important; }
+.font-classico { font-family: "Georgia", serif !important; }
+.font-mono { font-family: ui-monospace, monospace !important; }
+.font-arredondado { font-family: "Quicksand", sans-serif !important; }
+.font-condensado { font-family: "Inter", sans-serif !important; font-stretch: condensed !important; }
+.font-business { font-family: "Trebuchet MS", sans-serif !important; }
+.font-elegante { font-family: "Playfair Display", serif !important; }
+.font-geometrico { font-family: "Montserrat", sans-serif !important; }
+.font-tecnico { font-family: "Consolas", monospace !important; }
+.font-minimalista { font-family: "Helvetica Neue", Arial, sans-serif !important; }
+.font-futurista { font-family: "Orbitron", sans-serif !important; }
+.font-robusto { font-family: "Impact", Charcoal, sans-serif !important; }
+.font-editorial { font-family: "Bodoni MT", serif !important; }
+.font-suico { font-family: "Inter", Helvetica, sans-serif !important; }
+.font-academico { font-family: "Times New Roman", Times, serif !important; }
+.font-industrial { font-family: "Bebas Neue", sans-serif !important; }
+.font-digital { font-family: "Courier New", Courier, monospace !important; }
+.font-real { font-family: "EB Garamond", serif !important; }
+.font-suave { font-family: "Outfit", sans-serif !important; }
+.font-sharp { font-family: "Segoe UI", Tahoma, sans-serif !important; }
 
 @layer base {
   * { 
     @apply border-border; 
-    transition: all var(--motion-duration) var(--motion-ease);
-    font-family: inherit;
+    transition-property: all;
+    transition-duration: var(--motion-duration);
+    transition-timing-function: var(--motion-ease);
   }
   body { 
-    @apply bg-background text-foreground; 
-    font-family: var(--font-sans), sans-serif !important;
+    @apply bg-background text-foreground;
   }
 }

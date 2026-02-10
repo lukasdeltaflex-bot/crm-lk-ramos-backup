@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -27,18 +26,13 @@ interface StatusCellProps {
   onStatusChange?: (proposalId: string, newStatus: ProposalStatus, product?: string) => void;
 }
 
-const getStatusId = (status: string) => {
-    return status.replace(/\s+/g, '-').toLowerCase();
-};
-
 const getStatusClass = (status: ProposalStatus) => {
-  const id = getStatusId(status);
-  return cn('w-full justify-center text-[10px] font-black uppercase tracking-tighter py-1 px-3 border-2 transition-all status-custom', `status-${id}`);
+  return cn('w-full justify-center text-[10px] font-black uppercase tracking-tighter py-1 px-3 border-2 transition-all status-custom');
 };
 
 export function StatusCell({ proposalId, currentStatus, product, onStatusChange }: StatusCellProps) {
   const firestore = useFirestore();
-  const { statusColors } = useTheme();
+  const { statusColors, containerStyle } = useTheme();
 
   const handleUpdate = (newStatus: ProposalStatus) => {
     if (newStatus === currentStatus) return;
@@ -102,7 +96,10 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
         <SelectValue asChild>
             <Badge 
                 variant="outline" 
-                className={getStatusClass(currentStatus)}
+                className={cn(
+                    getStatusClass(currentStatus),
+                    containerStyle === 'glow' && "shadow-[0_0_10px_hsla(var(--status-color),0.3)]"
+                )}
                 style={hasCustomColor ? { 
                     '--status-color': statusColors[currentStatus] 
                 } as any : {}}
