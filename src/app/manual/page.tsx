@@ -1,5 +1,4 @@
-
-'use client';
+"use client"
 
 import React from 'react';
 import { AppLayout } from '@/components/app-layout';
@@ -27,7 +26,7 @@ import {
     Filter,
     Pipette,
     ListChecks
-} from 'lucide-react';
+} from 'lucide-center';
 import { Button } from '@/components/ui/button';
 
 export default function ManualPage() {
@@ -66,9 +65,9 @@ export default function ManualPage() {
                         <ul className="list-disc pl-5 space-y-2">
                             <li><strong>Branding Próprio</strong>: Em Configurações, suba sua logomarca. Ela aparecerá no menu e em todos os relatórios PDF oficiais com Identidade Total.</li>
                             <li><strong>Identidade Total</strong>: Ao escolher uma fonte ou cor, ela é aplicada forçadamente em 100% do sistema, garantindo consistência absoluta.</li>
-                            <li><strong>Laboratório de Visualização</strong>: O simulador interativo mostra como os botões e cards ficam com cada combinação. Use o botão <strong>"Testar Interação"</strong> para ver o ritmo das animações.</li>
+                            <li><strong>Arredondamento sob Medida</strong>: Escolha entre Reto, Discreto, Moderno, Suave ou Cápsula para definir a personalidade dos botões e cards.</li>
                             <li><strong>Estúdio de Tipografia</strong>: Escolha entre 20 estilos de fontes profissionais para encontrar a voz da sua marca.</li>
-                            <li><strong>Motion Design</strong>: Ajuste o ritmo do sistema entre Estático (sem transições), Sutil ou Cinematográfico (luxo com efeito elástico).</li>
+                            <li><strong>Motion Design (Ritmo)</strong>: Ajuste o ritmo do sistema entre Estático, Rápido, Sutil, Cinematográfico, Elástico ou Dramático para uma navegação única.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
@@ -79,16 +78,16 @@ export default function ManualPage() {
                             <div className="p-2 rounded-lg bg-blue-100 text-blue-600"><Pipette className="h-5 w-5" /></div>
                             <div className="text-left">
                                 <p className="font-bold">2. Customização Avançada & Aura</p>
-                                <p className="text-xs text-muted-foreground">Controle de vidro dinâmico e cores de status personalizadas</p>
+                                <p className="text-xs text-muted-foreground">Controle de vidro dinâmico, cores de status e novos estilos de aura</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
                         <p>Novas ferramentas para um ajuste fino da sua interface de trabalho.</p>
                         <ul className="list-disc pl-5 space-y-2">
+                            <li><strong>Estilos de Aura</strong>: Experimente os novos modos <strong>Glow (Neon)</strong>, <strong>Soft (Minimalista)</strong> ou <strong>Bordado</strong> para uma profundidade visual superior.</li>
                             <li><strong>Intensidade do Vidro (Glass Intensity)</strong>: Se você usa a Aura "Glassmorphism", agora possui um slider nas configurações para ajustar a transparência e o desfoque (blur) dos cards.</li>
                             <li><strong>Laboratório de Cores de Status</strong>: Defina cores personalizadas para cada status de proposta (*Pago*, *Pendente*, etc.). O sistema gera automaticamente os tons de fundo e bordas para manter a legibilidade.</li>
-                            <li><strong>Aplicação Inteligente</strong>: Suas cores de status são aplicadas em tempo real nos badges das tabelas, facilitando a identificação visual por cores que fazem sentido para o seu negócio.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>

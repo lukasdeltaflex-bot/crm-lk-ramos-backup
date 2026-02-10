@@ -1,5 +1,4 @@
-
-'use client';
+"use client"
 
 import React, { useState, useEffect, useRef } from 'react';
 import { AppLayout } from '@/components/app-layout';
@@ -69,10 +68,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 
 const DRIVE_LINKED_KEY = 'lk-ramos-google-drive-linked-v1';
 
-/**
- * Componente de Seletor de Cores para Status.
- * Usa a mesma paleta de temas globais para garantir consistência.
- */
 function StatusColorPalette({ 
     activeColor, 
     onSelect, 
@@ -541,7 +536,10 @@ export default function SettingsPage() {
                                         { id: 'moderno', label: 'Padrão' },
                                         { id: 'glass', label: 'Glassmorphism' },
                                         { id: 'deep', label: 'Profundo' },
-                                        { id: 'flat', label: 'Minimalista' }
+                                        { id: 'flat', label: 'Minimalista' },
+                                        { id: 'glow', label: 'Neon Glow' },
+                                        { id: 'soft', label: 'Soft (No Border)' },
+                                        { id: 'bordado', label: 'Bordado' }
                                     ].map((s) => (
                                         <Label key={s.id} htmlFor={`s-${s.id}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold transition-all", containerStyle === s.id ? "border-primary bg-primary/5" : "border-muted hover:border-primary/30")}>
                                             <RadioGroupItem value={s.id} id={`s-${s.id}`} className="sr-only" />
@@ -557,10 +555,16 @@ export default function SettingsPage() {
                                     <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Arredondamento</h4>
                                 </div>
                                 <RadioGroup value={radius} onValueChange={(val) => { setRadius(val as any); updateSettings({ radius: val as any } as any); }} className="grid grid-cols-3 gap-2">
-                                    {['executivo', 'moderno', 'suave'].map((r) => (
-                                        <Label key={r} htmlFor={`r-${r}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold transition-all", radius === r ? "border-primary bg-primary/5" : "border-muted hover:border-primary/30")}>
-                                            <RadioGroupItem value={r} id={`r-${r}`} className="sr-only" />
-                                            {r}
+                                    {[
+                                        { id: 'reto', label: 'Reto' },
+                                        { id: 'discreto', label: 'Discreto' },
+                                        { id: 'moderno', label: 'Moderno' },
+                                        { id: 'suave', label: 'Suave' },
+                                        { id: 'capsula', label: 'Cápsula' }
+                                    ].map((r) => (
+                                        <Label key={r.id} htmlFor={`r-${r.id}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold transition-all", radius === r.id ? "border-primary bg-primary/5" : "border-muted hover:border-primary/30")}>
+                                            <RadioGroupItem value={r.id} id={`r-${r.id}`} className="sr-only" />
+                                            {r.label}
                                         </Label>
                                     ))}
                                 </RadioGroup>
@@ -593,13 +597,16 @@ export default function SettingsPage() {
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2">
                                     <MoveHorizontal className="h-4 w-4 text-primary" />
-                                    <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Motion Design (Animações)</h4>
+                                    <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Motion Design (Ritmo Operacional)</h4>
                                 </div>
                                 <RadioGroup value={animationStyle} onValueChange={(val) => { setAnimationStyle(val as any); updateSettings({ animationStyle: val as any }); }} className="grid grid-cols-3 gap-2">
                                     {[
                                         { id: 'estatico', label: 'Estático' },
+                                        { id: 'rapido', label: 'Rápido' },
                                         { id: 'sutil', label: 'Sutil' },
-                                        { id: 'cinematografico', label: 'Cine' }
+                                        { id: 'cinematografico', label: 'Cine' },
+                                        { id: 'elastico', label: 'Elástico' },
+                                        { id: 'dramatico', label: 'Dramático' }
                                     ].map((a) => (
                                         <Label key={a.id} htmlFor={`a-${a.id}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold transition-all", animationStyle === a.id ? "border-primary bg-primary/5" : "border-muted hover:border-primary/30")}>
                                             <RadioGroupItem value={a.id} id={`a-${a.id}`} className="sr-only" />

@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -6,12 +5,12 @@ import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "n
 import { type ThemeProviderProps } from "next-themes/dist/types"
 import { THEMES } from "@/lib/themes"
 
-const RADIUS_OPTIONS = ["executivo", "moderno", "suave"];
+const RADIUS_OPTIONS = ["reto", "discreto", "moderno", "suave", "capsula"];
 const SIDEBAR_OPTIONS = ["default", "dark", "light"];
-const CONTAINER_STYLES = ["moderno", "glass", "deep", "flat"];
+const CONTAINER_STYLES = ["moderno", "glass", "deep", "flat", "glow", "soft", "bordado"];
 const TEXTURE_OPTIONS = ["none", "dots", "grid", "lines"];
 const INTENSITY_OPTIONS = ["sobrio", "vibrante"];
-const ANIMATION_OPTIONS = ["estatico", "sutil", "cinematografico"];
+const ANIMATION_OPTIONS = ["estatico", "rapido", "sutil", "cinematografico", "elastico", "dramatico"];
 const FONT_OPTIONS = [
     "moderno", "classico", "mono", "arredondado", "condensado", 
     "business", "elegante", "geometrico", "tecnico", "minimalista", 
@@ -100,59 +99,47 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
     if (isMounted) {
       const root = document.documentElement;
       
-      // Force Theme Color Inversion into CSS Variables
       const activeTheme = THEMES.find(t => t.name === colorTheme) || THEMES[0];
       const primaryValue = resolvedTheme === 'dark' ? activeTheme.dark : activeTheme.light;
       root.style.setProperty('--primary', primaryValue);
       root.style.setProperty('--sidebar-primary', primaryValue);
       localStorage.setItem("color-theme", colorTheme);
 
-      // Manage Radius
       root.classList.remove(...RADIUS_OPTIONS.map(r => `radius-${r}`));
       root.classList.add(`radius-${radius}`);
       localStorage.setItem("radius-theme", radius);
 
-      // Manage Sidebar
       root.classList.remove(...SIDEBAR_OPTIONS.map(s => `sidebar-${s}`));
       if (sidebarStyle !== 'default') {
         root.classList.add(`sidebar-${sidebarStyle}`);
       }
       localStorage.setItem("sidebar-theme", sidebarStyle);
 
-      // Manage Container Style
       root.classList.remove(...CONTAINER_STYLES.map(s => `style-${s}`));
       root.classList.add(`style-${containerStyle}`);
       localStorage.setItem("container-style", containerStyle);
 
-      // Manage Texture
       root.classList.remove(...TEXTURE_OPTIONS.map(t => `texture-${t}`));
       root.classList.add(`texture-${backgroundTexture}`);
       localStorage.setItem("texture-theme", backgroundTexture);
 
-      // Manage Intensity
       root.classList.remove(...INTENSITY_OPTIONS.map(i => `intensity-${i}`));
       root.classList.add(`intensity-${colorIntensity}`);
       localStorage.setItem("intensity-theme", colorIntensity);
 
-      // Manage Animations
       root.classList.remove(...ANIMATION_OPTIONS.map(a => `anim-${a}`));
       root.classList.add(`anim-${animationStyle}`);
       localStorage.setItem("animation-theme", animationStyle);
 
-      // Manage Fonts
       root.classList.remove(...FONT_OPTIONS.map(f => `font-${f}`));
       root.classList.add(`font-${fontStyle}`);
       localStorage.setItem("font-theme", fontStyle);
 
-      // Manage Glass Intensity
       root.style.setProperty('--glass-opacity', (glassIntensity / 100).toString());
       root.style.setProperty('--glass-blur', `${glassIntensity / 5}px`);
       localStorage.setItem("glass-intensity", String(glassIntensity));
 
-      // Manage Status Colors (Inject directly as HSL variables)
       Object.entries(statusColors).forEach(([name, color]) => {
-          // color is stored as "H S% L%" or full hsl() string
-          // We normalize it to the numeric values Tailwind expects
           const varName = `--status-color-${name.replace(/\s+/g, '-').toLowerCase()}`;
           root.style.setProperty(varName, color);
       });
