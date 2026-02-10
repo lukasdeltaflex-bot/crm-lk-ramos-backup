@@ -5,7 +5,7 @@ import type { Row } from '@tanstack/react-table';
 import type { Proposal, Customer, UserSettings } from '@/lib/types';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import { formatCurrency, cn } from '@/lib/utils';
-import { CheckCircle, Hourglass, Coins, CircleDollarSign, Activity } from 'lucide-react';
+import { CheckCircle, Hourglass, Coins, CircleDollarSign, Activity, Wallet } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 import { subMonths, startOfMonth, endOfMonth, differenceInDays, subDays, isSameDay } from 'date-fns';
 import * as configData from '@/lib/config-data';
@@ -22,16 +22,18 @@ interface FinancialSummaryProps {
 }
 
 /**
- * Resumo Financeiro Inteligente
- * Agora gera cards dinamicamente baseados nos status de comissão configurados.
+ * Resumo Financeiro Consolidado LK RAMOS
+ * Restaurado os cards de Saldo a Receber e Comissão Esperada para visão executiva.
  */
 export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFiltered, onShowDetails, userSettings }: FinancialSummaryProps) {
   const {
+    totalMonthlyGross,
     totalPotentialCommission,
     totalAmountPaid,
+    totalSaldoAReceber,
     allProposalsInPeriod,
     commissionReceivedProposals,
-    statusSpecificData,
+    proposalsWithBalance,
     metrics,
   } = React.useMemo(() => {
     const allProposals = Array.isArray(rows) && rows.length > 0 
@@ -45,18 +47,17 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
 
-    const activeCommissionStatuses = userSettings?.commissionStatuses || configData.commissionStatuses;
-
-    // 1. PRODUÇÃO MENSAL
+    // 1. PRODUÇÃO MENSAL (Focado no que foi digitado no período)
     const currentMonthProposals = allProposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
         return d >= fromDate && d <= effectiveToDate;
     });
 
+    const totalMonthlyGross = currentMonthProposals.reduce((sum, p) => sum + (p.grossAmount || 0), 0);
     const totalPotentialCommission = currentMonthProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
 
-    // 2. COMISSÕES PAGAS NO PERÍODO
+    // 2. COMISSÕES PAGAS NO PERÍODO (Dinheiro no caixa)
     const commissionReceivedProposals = allProposals.filter(p => {
         if (p.commissionStatus !== 'Paga' || !p.commissionPaymentDate) return false;
         const d = new Date(p.commissionPaymentDate);
@@ -64,15 +65,13 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     });
     const totalAmountPaid = commissionReceivedProposals.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
 
-    // 3. ANÁLISE DINÂMICA POR STATUS DE COMISSÃO
-    const statusSpecificData: Record<string, { total: number; proposals: ProposalWithCustomer[] }> = {};
-    activeCommissionStatuses.forEach(status => {
-        const list = allProposals.filter(p => p.commissionStatus === status);
-        statusSpecificData[status] = {
-            total: list.reduce((sum, p) => sum + (p.commissionValue || 0), 0),
-            proposals: list
-        };
-    });
+    // 3. SALDO A RECEBER (Pendente Geral de todas as propostas ativas)
+    const proposalsWithBalance = allProposals.filter(p => 
+        p.status !== 'Reprovado' && 
+        p.commissionStatus !== 'Paga' &&
+        (p.commissionValue - (p.amountPaid || 0)) > 0
+    );
+    const totalSaldoAReceber = proposalsWithBalance.reduce((sum, p) => sum + (p.commissionValue - (p.amountPaid || 0)), 0);
 
     // Sparklines
     const getSparkline = (list: Proposal[], dateField: keyof Proposal) => {
@@ -88,11 +87,13 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
     const getAvg = (val: number, list: any[]) => list.length > 0 ? val / list.length : 0;
     
     return {
+      totalMonthlyGross,
       totalPotentialCommission,
       totalAmountPaid,
+      totalSaldoAReceber,
       allProposalsInPeriod: currentMonthProposals,
       commissionReceivedProposals,
-      statusSpecificData,
+      proposalsWithBalance,
       metrics: {
           avgTotal: getAvg(totalPotentialCommission, currentMonthProposals),
           avgPaid: getAvg(totalAmountPaid, commissionReceivedProposals),
@@ -100,54 +101,58 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, isFil
           sparkPaid: getSparkline(commissionReceivedProposals, 'commissionPaymentDate'),
       }
     };
-  }, [rows, currentMonthRange, userSettings]);
+  }, [rows, currentMonthRange]);
   
   const privacyPlaceholder = '•••••';
-  const activeCommissionStatuses = userSettings?.commissionStatuses || configData.commissionStatuses;
-
-  const getCommissionIcon = (status: string) => {
-      if (status === 'Paga') return CheckCircle;
-      if (status === 'Pendente') return Hourglass;
-      if (status === 'Parcial') return Coins;
-      return Activity;
-  };
 
   return (
     <div className='space-y-6 mb-8'>
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4 print:grid-cols-4'>
-            {/* KPIs Fixos de Movimentação */}
-            <div className="cursor-pointer" onClick={() => onShowDetails("Total de Comissões Digitadas", allProposalsInPeriod)}>
+            {/* CARD 1: PRODUÇÃO DIGITADA (VOLUME BRUTO MENSAL) */}
+            <div className="cursor-pointer" onClick={() => onShowDetails("Produção Digitada (Bruta)", allProposalsInPeriod)}>
                 <StatsCard
                     title="Produção Digitada"
-                    value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalPotentialCommission)}
-                    icon={Coins}
-                    description="COMISSÃO POTENCIAL"
-                    subValue={`Ticket Médio: ${formatCurrency(metrics.avgTotal)}`}
+                    value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalMonthlyGross)}
+                    icon={CircleDollarSign}
+                    description="VOLUME BRUTO MENSAL"
+                    subValue={`Propostas: ${allProposalsInPeriod.length}`}
                     sparklineData={metrics.sparkTotal}
                 />
             </div>
-            <div className="cursor-pointer" onClick={() => onShowDetails("Comissão Efetivamente Recebida", commissionReceivedProposals)}>
+
+            {/* CARD 2: COMISSÃO RECEBIDA (CASH IN MENSAL) */}
+            <div className="cursor-pointer" onClick={() => onShowDetails("Comissões Recebidas no Mês", commissionReceivedProposals)}>
                 <StatsCard
                     title="Comissão Recebida"
                     value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalAmountPaid)}
                     icon={CheckCircle}
                     description="DINHEIRO NO CAIXA"
-                    subValue={`Eficiência: ${((totalAmountPaid / (totalPotentialCommission || 1)) * 100).toFixed(1)}%`}
+                    subValue={`Média: ${formatCurrency(metrics.avgPaid)}`}
                     sparklineData={metrics.sparkPaid}
                 />
             </div>
 
-            {/* CARDS DINÂMICOS - SEGUINDO A LÓGICA DE STATUS CUSTOMIZADOS */}
-            {activeCommissionStatuses.filter(s => s !== 'Paga').map(status => (
-                <div key={status} className="cursor-pointer" onClick={() => onShowDetails(`Volume em ${status}`, statusSpecificData[status]?.proposals || [])}>
-                    <StatsCard
-                        title={status}
-                        value={isPrivacyMode ? privacyPlaceholder : formatCurrency(statusSpecificData[status]?.total || 0)}
-                        icon={getCommissionIcon(status)}
-                        description="FLUXO DE COMISSÕES"
-                    />
-                </div>
-            ))}
+            {/* CARD 3: SALDO A RECEBER (PENDENTE GERAL) */}
+            <div className="cursor-pointer" onClick={() => onShowDetails("Saldo a Receber (Pendente Geral)", proposalsWithBalance)}>
+                <StatsCard
+                    title="Saldo a Receber"
+                    value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalSaldoAReceber)}
+                    icon={Coins}
+                    description="SALDO A RECEBER"
+                    subValue={`${proposalsWithBalance.length} Contratos pendentes`}
+                />
+            </div>
+
+            {/* CARD 4: COMISSÃO ESPERADA (POTENCIAL MENSAL) */}
+            <div className="cursor-pointer" onClick={() => onShowDetails("Comissão Esperada (Produção Mês)", allProposalsInPeriod)}>
+                <StatsCard
+                    title="Comissão Esperada"
+                    value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalPotentialCommission)}
+                    icon={Hourglass}
+                    description="COMISSÃO ESPERADA"
+                    subValue={`Ticket Médio: ${formatCurrency(metrics.avgTotal)}`}
+                />
+            </div>
         </div>
     </div>
   );

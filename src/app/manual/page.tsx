@@ -65,9 +65,9 @@ export default function ManualPage() {
                         <ul className="list-disc pl-5 space-y-2">
                             <li><strong>Branding Próprio</strong>: Em Configurações, suba sua logomarca. Ela aparecerá no menu e em todos os relatórios PDF oficiais com Identidade Total.</li>
                             <li><strong>Identidade Total</strong>: Ao escolher uma fonte ou cor, ela é aplicada forçadamente em 100% do sistema, garantindo consistência absoluta.</li>
-                            <li><strong>Estúdio de Arredondamento</strong>: Escolha entre níveis como Reto (90º), Extra-Discreto (2px), Moderno (8px), Amigável (12px) ou Cápsula (32px).</li>
-                            <li><strong>Estúdio de Tipografia</strong>: Escolha entre 20 estilos de fontes profissionais, como a *Industrial*, *Futurista* ou *Elegante*.</li>
-                            <li><strong>Motion Design (Ritmo)</strong>: Ajuste a velocidade de resposta. Use o modo *Instantâneo* para rapidez extrema ou *Atmosférico* para luxo.</li>
+                            <li><strong>Estúdio de Arredondamento</strong>: Níveis como Reto, Extra-Discreto (2px), Moderno (8px), Amigável (12px), Suave ou Cápsula.</li>
+                            <li><strong>Estúdio de Tipografia</strong>: 20 estilos de fontes profissionais como Industrial, Futurista, Real ou Elegante.</li>
+                            <li><strong>Motion Design (Ritmo)</strong>: Ajuste a velocidade de resposta. Use o modo <strong>Instantâneo</strong> para rapidez extrema ou <strong>Atmosférico</strong> para luxo.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
@@ -85,9 +85,9 @@ export default function ManualPage() {
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
                         <p>Ferramentas de ajuste fino para sua interface de trabalho.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Auras de Próxima Geração</strong>: Experimente os modos <strong>Glow (Neon)</strong>, <strong>Geométrico (Heavy Border)</strong>, <strong>Profundo (Shadow)</strong> ou <strong>Bordado</strong>.</li>
-                            <li><strong>Intensidade do Vidro (Glass Intensity)</strong>: No estilo "Glassmorphism", utilize o slider para ajustar a opacidade e o nível de desfoque (blur) do ambiente.</li>
-                            <li><strong>Laboratório de Cores de Status</strong>: Defina cores personalizadas para cada status usando a paleta de elite. O sistema gera automaticamente os tons de fundo e bordas.</li>
+                            <li><strong>Auras de Próxima Geração</strong>: Experimente os modos <strong>Glow (Neon)</strong>, <strong>Geométrico (Heavy Border)</strong>, <strong>Profundo (Inner Shadow)</strong> ou <strong>Bordado</strong>.</li>
+                            <li><strong>Intensidade do Vidro (Glass Intensity)</strong>: No estilo "Glassmorphism", utilize o slider para ajustar a opacidade e o nível de desfoque (blur).</li>
+                            <li><strong>Laboratório de Cores de Status</strong>: Defina cores personalizadas para cada status usando a paleta de elite. As cores são aplicadas automaticamente em cards e tabelas.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
@@ -105,29 +105,9 @@ export default function ManualPage() {
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
                         <p>Agilize sua produtividade com a sinalização visual do sistema.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Abas Coloridas</strong>: Os botões de filtro agora possuem cores representativas suaves que casam com o status da proposta.</li>
-                            <li><strong>Cards de Status Dinâmicos</strong>: O Dashboard e o Resumo Financeiro organizam os cards na sequência: <strong>Digitado, Pendente, Em Andamento, Aguardando Saldo, Saldo Pago e Reprovado</strong>.</li>
-                            <li><strong>Inteligência de Reprova</strong>: O card de "Reprovado" exibe apenas as propostas que foram recusadas no mês vigente, permitindo um controle real das perdas atuais.</li>
-                        </ul>
-                    </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="dashboard" className="border rounded-xl bg-card px-4 shadow-sm">
-                    <AccordionTrigger className="hover:no-underline">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-blue-100 text-blue-600"><LayoutDashboard className="h-5 w-5" /></div>
-                            <div className="text-left">
-                                <p className="font-bold">4. Radar de Vendas & Inteligência Diária</p>
-                                <p className="text-xs text-muted-foreground">Retenção de clientes e avisos estratégicos</p>
-                            </div>
-                        </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
-                        <p>O Dashboard monitora oportunidades ocultas na sua base de dados.</p>
-                        <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Radar de Vendas</strong>: Identifica automaticamente clientes com contratos pagos há mais de 12 meses (tempo de maturação).</li>
-                            <li><strong>Inteligência Diária</strong>: Consolida retornos, alertas de comissões e clientes próximos de 75 anos.</li>
-                            <li><strong>Layout Inteligente</strong>: O grid organiza os volumes de forma dinâmica, mantendo a ordem: <strong>Total Digitado, Pendente, Em Andamento, Aguardando Saldo, Saldo Pago e Reprovado</strong>.</li>
+                            <li><strong>Abas Coloridas</strong>: Botões de filtro com cores representativas que casam com o status da proposta.</li>
+                            <li><strong>Dashboard Inteligente</strong>: Se você criar um novo status em Configurações, um novo card surgirá automaticamente no Dashboard.</li>
+                            <li><strong>Visão de Esteira</strong>: Os cards de Pendente, Em Andamento e Aguardando Saldo mostram sempre o acumulado do mês atual e do anterior.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
@@ -137,15 +117,16 @@ export default function ManualPage() {
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-red-100 text-red-600"><Wallet className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold">5. Gestão Financeira & DRE</p>
-                                <p className="text-xs text-muted-foreground">Controle de gastos, categorias e conciliação bancária</p>
+                                <p className="font-bold">4. Gestão Financeira & DRE</p>
+                                <p className="text-xs text-muted-foreground">Saldo a receber, comissão esperada e livro de despesas</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
                         <p>Mantenha a saúde financeira da sua operação sob controle total.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Lançamento de Despesas</strong>: Registre custos operacionais e gerencie a situação (Pago/Pendente).</li>
+                            <li><strong>Quarteto Executivo</strong>: Acompanhe Produção Digitada (Bruta), Comissão Recebida, Saldo a Receber (Pendente Geral) e Comissão Esperada (Mês).</li>
+                            <li><strong>Lançamento de Despesas</strong>: Registre custos operacionais para cálculo de lucro real.</li>
                             <li><strong>Categorias de Elite</strong>: Crie categorias próprias em Configurações &gt; Opções.</li>
                             <li><strong>Conciliação com IA</strong>: Processe relatórios de pagamento colando apenas o texto do banco para baixar comissões automaticamente.</li>
                         </ul>
@@ -157,7 +138,7 @@ export default function ManualPage() {
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-zinc-100 text-zinc-600"><Eye className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold">6. Visualizador de Documentos & Central Fixa</p>
+                                <p className="font-bold">5. Visualizador de Documentos & Central Fixa</p>
                                 <p className="text-xs text-muted-foreground">Conferência instantânea e documentos permanentes</p>
                             </div>
                         </div>
