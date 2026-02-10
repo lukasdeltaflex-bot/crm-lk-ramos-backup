@@ -2,7 +2,8 @@
 import type { ProductType, ProposalStatus, CommissionStatus } from './types';
 
 export const productTypes: readonly ProductType[] = ['Margem', 'Margem CLT', 'Saque Complementar', 'Cartão - Plástico', 'Cartão com saque', 'Portabilidade', 'Refin Port', 'Refin', 'Saque FGTS'];
-export const proposalStatuses: readonly ProposalStatus[] = ['Pendente', 'Em Andamento', 'Aguardando Saldo', 'Pago', 'Saldo Pago', 'Reprovado'];
+// ORDEM SOLICITADA PARA ABAS E SISTEMA
+export const proposalStatuses: readonly ProposalStatus[] = ['Em Andamento', 'Aguardando Saldo', 'Pago', 'Saldo Pago', 'Pendente', 'Reprovado'];
 export const commissionStatuses: readonly CommissionStatus[] = ['Pendente', 'Paga', 'Parcial'];
 export const approvingBodies: readonly string[] = ['INSS', 'SPPREV', 'Federal', 'SIAPE', 'USP', 'GOVERNO', 'CLT', 'Outro'];
 export const expenseCategories: readonly string[] = ['Aluguel', 'Internet', 'Telefonia', 'Tráfego Pago', 'Salários', 'Impostos', 'Outros'];

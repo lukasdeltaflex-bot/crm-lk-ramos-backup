@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -315,7 +316,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         const proposal = row.original;
         const customer = proposal.customer;
         
-        // BUSCA EXATA POR ID DO CLIENTE OU PROPOSTA
         if (/^\d+$/.test(searchTerm)) {
             if (customer && String(customer.numericId) === searchTerm) return true;
             if (proposal.proposalNumber === searchTerm) return true;
@@ -423,7 +423,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                 value={statusFilter} 
                 onValueChange={setStatusFilter}
                 >
-                    <TabsList className="h-auto flex-wrap justify-start bg-muted/50">
+                    <TabsList className="h-auto flex-wrap justify-start bg-muted/50 p-1">
                         <TabsTrigger value="Todos" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Todos</TabsTrigger>
                         {proposalStatuses.map(status => {
                             const id = getStatusId(status);
@@ -434,7 +434,8 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                     value={status}
                                     className={cn(
                                         "transition-all border border-transparent",
-                                        `data-[state=active]:status-custom status-${id}`
+                                        "data-[state=active]:status-custom",
+                                        `status-${id}`
                                     )}
                                     style={hasCustomColor ? { 
                                         '--status-color': statusColors[status] 

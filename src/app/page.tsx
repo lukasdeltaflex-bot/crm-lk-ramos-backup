@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useEffect, useMemo } from 'react';
 import { AppLayout } from '@/components/app-layout';
@@ -47,7 +48,6 @@ import {
 import { CommissionChart } from '@/components/dashboard/commission-chart';
 import { ProductBreakdownChart } from '@/components/dashboard/product-breakdown-chart';
 import { RadarWidget } from '@/components/dashboard/radar-widget';
-import * as configData from '@/lib/config-data';
 
 export default function DashboardPage() {
   const [startDateInput, setStartDateInput] = useState('');
@@ -82,12 +82,6 @@ export default function DashboardPage() {
     return doc(firestore, 'users', user.uid);
   }, [firestore, user]);
   const { data: userProfile } = useDoc<UserProfile>(userProfileDocRef);
-
-  const settingsDocRef = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-    return doc(firestore, 'userSettings', user.uid);
-  }, [firestore, user]);
-  const { data: userSettings } = useDoc<UserSettings>(settingsDocRef);
 
   const handleDateInputChange = (value: string, type: 'start' | 'end') => {
     let formattedValue = value.replace(/\D/g, '');
@@ -144,7 +138,6 @@ export default function DashboardPage() {
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
 
-    // Mês Anterior para visão de esteira ampliada (Pendente, Em Andamento, etc)
     const prevMonthStart = startOfMonth(subMonths(fromDate, 1));
 
     const getSum = (list: Proposal[]) => list.reduce((sum, p) => sum + (p.grossAmount || 0), 0);
@@ -154,7 +147,7 @@ export default function DashboardPage() {
         list.forEach(p => {
             if (p.operator) ops[p.operator] = (ops[p.operator] || 0) + p.grossAmount;
         });
-        return Object.entries(ops).sort((a,b) => b[1] - a[1])[0]?.[0] || userProfile?.displayName || userProfile?.fullName || '---';
+        return Object.entries(ops).sort((a,b) => b[1] - a[1])[0]?.[0] || '---';
     };
 
     const getSparkline = (list: Proposal[]) => {
@@ -165,21 +158,21 @@ export default function DashboardPage() {
         });
     };
 
-    // 1. UNIVERSO DO MÊS VIGENTE (Total Digitado, Reprovas e Mix de Produtos)
+    // UNIVERSO MÊS VIGENTE (Meta, Total Digitado, Reprovas e Mix)
     const digitizedInPeriod = proposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
         return d >= fromDate && d <= effectiveToDate;
     });
 
-    // 2. UNIVERSO DA ESTEIRA (Mês Vigente + Anterior)
+    // UNIVERSO ESTEIRA (Mês Vigente + Anterior)
     const digitizedInExtendedPeriod = proposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
         return d >= prevMonthStart && d <= effectiveToDate;
     });
 
-    // 3. PAGOS NO PERÍODO (Para o GoalCard e Meta)
+    // PAGOS NO PERÍODO (Para GoalCard)
     const paidInPeriod = proposals.filter(p => {
         if (p.status !== 'Pago') return false;
         if (!p.datePaidToClient) return false;
@@ -187,7 +180,6 @@ export default function DashboardPage() {
         return d >= fromDate && d <= effectiveToDate;
     });
 
-    // 4. ANÁLISE DOS STATUS (Ordem: Pendente, Em Andamento, Aguardando Saldo, Saldo Pago, Reprovado)
     const statusAnalysis: Record<string, { total: number; count: number; spark: number[]; top: string; proposals: Proposal[] }> = {};
     const orderedFlow = ['Pendente', 'Em Andamento', 'Aguardando Saldo', 'Saldo Pago', 'Reprovado'];
 
@@ -205,21 +197,17 @@ export default function DashboardPage() {
         };
     });
 
-    const totalDigitado = getSum(digitizedInPeriod);
-    const totalDigitadoSpark = getSparkline(digitizedInPeriod);
-    const topTotal = getTopOperator(digitizedInPeriod);
-
     return {
-        totalDigitado,
-        totalDigitadoSpark,
-        topTotal,
+        totalDigitado: getSum(digitizedInPeriod),
+        totalDigitadoSpark: getSparkline(digitizedInPeriod),
+        topTotal: getTopOperator(digitizedInPeriod),
         statusAnalysis,
         proposals: {
             digitadoNoMes: digitizedInPeriod,
             pagoNoMes: paidInPeriod
         }
     };
-  }, [proposals, appliedDateRange, isClient, userProfile]);
+  }, [proposals, appliedDateRange, isClient]);
 
   const handleShowDetails = (title: string, props: Proposal[]) => {
     setDialogData({ title, proposals: props });
@@ -229,8 +217,6 @@ export default function DashboardPage() {
   const currentMonthName = rawMonthName.charAt(0).toUpperCase() + rawMonthName.slice(1);
 
   if (!stats) return null;
-
-  const orderedStatuses = ['Pendente', 'Em Andamento', 'Aguardando Saldo', 'Saldo Pago', 'Reprovado'];
 
   return (
     <AppLayout>
@@ -308,36 +294,62 @@ export default function DashboardPage() {
                 />
             </div>
 
-            {orderedStatuses.map((statusName) => {
-                const statusData = stats.statusAnalysis[statusName];
-                if (!statusData) return null;
+            <div className="cursor-pointer" onClick={() => handleShowDetails('Pendente (Mês Atual + Anterior)', stats.statusAnalysis['Pendente'].proposals)}>
+                <StatsCard 
+                    title="Pendente" 
+                    value={isPrivacyMode ? '•••••' : formatCurrency(stats.statusAnalysis['Pendente'].total)} 
+                    icon={BadgePercent} 
+                    description="ESTEIRA (MÊS ATUAL + ANT)"
+                    isHot={true}
+                    sparklineData={stats.statusAnalysis['Pendente'].spark}
+                    topContributor={stats.statusAnalysis['Pendente'].top}
+                />
+            </div>
 
-                const getStatusMeta = (name: string) => {
-                    const lower = name.toLowerCase();
-                    if (lower === 'pendente') return { icon: BadgePercent, isHot: true, desc: "ESTEIRA (MÊS ATUAL + ANT)" };
-                    if (lower === 'em andamento') return { icon: Hourglass, isHot: true, desc: "ESTEIRA (MÊS ATUAL + ANT)" };
-                    if (lower === 'aguardando saldo') return { icon: Clock, desc: "ESTEIRA (MÊS ATUAL + ANT)" };
-                    if (lower === 'saldo pago') return { icon: CheckCircle2, desc: "ESTEIRA (MÊS ATUAL + ANT)" };
-                    if (lower === 'reprovado') return { icon: XCircle, desc: "DO TOTAL DIGITADO NO MÊS" };
-                    return { icon: Activity, desc: "VOLUME NO PERÍODO" };
-                };
+            <div className="cursor-pointer" onClick={() => handleShowDetails('Em Andamento (Mês Atual + Anterior)', stats.statusAnalysis['Em Andamento'].proposals)}>
+                <StatsCard 
+                    title="Em Andamento" 
+                    value={isPrivacyMode ? '•••••' : formatCurrency(stats.statusAnalysis['Em Andamento'].total)} 
+                    icon={Hourglass} 
+                    description="ESTEIRA (MÊS ATUAL + ANT)"
+                    isHot={true}
+                    sparklineData={stats.statusAnalysis['Em Andamento'].spark}
+                    topContributor={stats.statusAnalysis['Em Andamento'].top}
+                />
+            </div>
 
-                const meta = getStatusMeta(statusName);
+            <div className="cursor-pointer" onClick={() => handleShowDetails('Aguardando Saldo (Mês Atual + Anterior)', stats.statusAnalysis['Aguardando Saldo'].proposals)}>
+                <StatsCard 
+                    title="Aguardando Saldo" 
+                    value={isPrivacyMode ? '•••••' : formatCurrency(stats.statusAnalysis['Aguardando Saldo'].total)} 
+                    icon={Clock} 
+                    description="ESTEIRA (MÊS ATUAL + ANT)"
+                    sparklineData={stats.statusAnalysis['Aguardando Saldo'].spark}
+                    topContributor={stats.statusAnalysis['Aguardando Saldo'].top}
+                />
+            </div>
 
-                return (
-                    <div key={statusName} className="cursor-pointer" onClick={() => handleShowDetails(`${statusName}`, statusData.proposals)}>
-                        <StatsCard 
-                            title={statusName} 
-                            value={isPrivacyMode ? '•••••' : formatCurrency(statusData.total)} 
-                            icon={meta.icon} 
-                            description={meta.desc}
-                            sparklineData={statusData.spark}
-                            topContributor={statusData.top}
-                            isHot={meta.isHot}
-                        />
-                    </div>
-                );
-            })}
+            <div className="cursor-pointer" onClick={() => handleShowDetails('Saldo Pago (Mês Atual + Anterior)', stats.statusAnalysis['Saldo Pago'].proposals)}>
+                <StatsCard 
+                    title="Saldo Pago" 
+                    value={isPrivacyMode ? '•••••' : formatCurrency(stats.statusAnalysis['Saldo Pago'].total)} 
+                    icon={CheckCircle2} 
+                    description="ESTEIRA (MÊS ATUAL + ANT)"
+                    sparklineData={stats.statusAnalysis['Saldo Pago'].spark}
+                    topContributor={stats.statusAnalysis['Saldo Pago'].top}
+                />
+            </div>
+
+            <div className="cursor-pointer" onClick={() => handleShowDetails('Reprovado (Digitados no Mês)', stats.statusAnalysis['Reprovado'].proposals)}>
+                <StatsCard 
+                    title="Reprovado" 
+                    value={isPrivacyMode ? '•••••' : formatCurrency(stats.statusAnalysis['Reprovado'].total)} 
+                    icon={XCircle} 
+                    description="DO TOTAL DIGITADO NO MÊS"
+                    sparklineData={stats.statusAnalysis['Reprovado'].spark}
+                    topContributor={stats.statusAnalysis['Reprovado'].top}
+                />
+            </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
