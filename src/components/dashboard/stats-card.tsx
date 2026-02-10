@@ -26,9 +26,8 @@ interface StatsCardProps {
 }
 
 /**
- * StatsCard Elite V46
- * Aura de fundo realçada (15%) e Bordas Dinâmicas (50%) sincronizadas com o Laboratório de Cores.
- * Selo EM ALTA restaurado com animação de pulsação.
+ * StatsCard Elite V47
+ * Suporte a Neon Glow e Sincronização Neutra para Digitados.
  */
 export function StatsCard({ 
     title, 
@@ -43,33 +42,36 @@ export function StatsCard({
     isCritical = false,
     topContributor
 }: StatsCardProps) {
-  const { statusColors } = useTheme();
+  const { statusColors, containerStyle } = useTheme();
   
   const getThemeStyles = () => {
-    // Busca a cor exata definida no laboratório para o status (Título)
+    const t = title.toLowerCase();
+    
+    // Regra de cores Neutras para Digitados (Solicitado)
+    if (t.includes('digitado')) {
+        return { 
+            card: 'border-zinc-300 bg-zinc-50/50 dark:bg-zinc-900/40 dark:border-zinc-800', 
+            style: { color: 'hsl(var(--foreground))' }, 
+            stroke: 'hsl(var(--muted-foreground))' 
+        };
+    }
+
+    if (isCritical) return { card: 'border-red-400 bg-red-50 dark:bg-red-900/20 animate-pulse', style: {}, stroke: '#dc2626' };
+
+    // Busca cor no Laboratório
     const customColor = statusColors[title];
     if (customColor) {
         return {
-            card: '',
+            card: cn(containerStyle === 'glow' && 'style-glow'),
             style: { 
-                borderColor: `hsla(${customColor}, 0.5)`, // Borda nítida 50%
-                backgroundColor: `hsla(${customColor}, 0.15)`, // Aura visível 15%
-                color: `hsl(${customColor})`, // Texto na cor do status
+                borderColor: `hsla(${customColor}, 0.5)`,
+                backgroundColor: `hsla(${customColor}, 0.15)`,
+                color: `hsl(${customColor})`,
                 '--status-color': customColor 
             } as any,
             stroke: `hsl(${customColor})`
         };
     }
-
-    const t = title.toLowerCase();
-    if (isCritical) return { card: 'border-red-400 bg-red-50 dark:bg-red-900/20 animate-pulse', style: {}, stroke: '#dc2626' };
-
-    // Fallback para "Total Digitado" e outros neutros - Adicionando cor primária suave
-    if (t.includes('digitado')) return { 
-        card: 'border-primary/20 bg-primary/[0.03]', 
-        style: { color: 'hsl(var(--primary))' }, 
-        stroke: 'hsl(var(--primary))' 
-    };
     
     return { 
         card: 'border-slate-200 bg-slate-50 dark:bg-slate-900/10', 

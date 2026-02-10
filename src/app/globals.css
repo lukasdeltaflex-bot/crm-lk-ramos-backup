@@ -37,9 +37,10 @@
     --motion-duration: 200ms;
     --motion-ease: ease-in-out;
 
-    /* Glass Defaults */
+    /* Glass & Glow Defaults */
     --glass-opacity: 0.7;
     --glass-blur: 12px;
+    --glow-opacity: 0.15;
 
     /* Status Color Variables (Default fallback) */
     --status-color-pago: 142 76% 36%;
@@ -82,64 +83,17 @@
   }
 }
 
-/* 🏛️ ESTÚDIO DE ARREDONDAMENTO (DISTINÇÃO REAL) */
-.radius-reto { --radius: 0px !important; }
-.radius-extra-discreto { --radius: 2px !important; } /* Técnico/Afiado */
-.radius-discreto { --radius: 8px !important; }       /* Equilibrado */
-.radius-moderno { --radius: 14px !important; }      /* Elegante */
-.radius-amigavel { --radius: 22px !important; }
-.radius-suave { --radius: 28px !important; }
-.radius-capsula { --radius: 9999px !important; }
-
-/* 🎨 MOTOR DE TIPOGRAFIA (20 ESTILOS) */
-.font-moderno { font-family: var(--font-sans), sans-serif !important; }
-.font-classico { font-family: Georgia, serif !important; }
-.font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important; }
-.font-arredondado { font-family: "Quicksand", "Segoe UI", sans-serif !important; }
-.font-condensado { font-family: "Inter Tight", "Arial Narrow", sans-serif !important; }
-.font-business { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important; }
-.font-elegante { font-family: "Didot", "Bodoni MT", serif !important; }
-.font-geometrico { font-family: "Futura", "Trebuchet MS", sans-serif !important; }
-.font-tecnico { font-family: "Roboto Mono", monospace !important; }
-.font-minimalista { font-family: "Avenir Next", "Avenir", sans-serif !important; }
-.font-futurista { font-family: "Orbitron", "Impact", sans-serif !important; }
-.font-robusto { font-family: "Arial Black", Gadget, sans-serif !important; }
-.font-editorial { font-family: "Charter", "Bitstream Charter", serif !important; }
-.font-suico { font-family: "Univers", "Helvetica", sans-serif !important; }
-.font-academico { font-family: "Century Schoolbook", serif !important; }
-.font-industrial { font-family: "Bebas Neue", "Impact", sans-serif !important; }
-.font-digital { font-family: "Courier New", Courier, monospace !important; }
-.font-real { font-family: "Times New Roman", Times, serif !important; }
-.font-suave { font-family: "Ubuntu", sans-serif !important; }
-.font-sharp { font-family: "Inter", "Segoe UI", sans-serif !important; font-weight: 500 !important; }
-
-/* Aplicação Global da Tipografia */
-html.font-moderno, html.font-moderno body { font-family: var(--font-sans), sans-serif !important; }
-html.font-classico, html.font-classico body { font-family: Georgia, serif !important; }
-html.font-mono, html.font-mono body { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important; }
-html.font-arredondado, html.font-arredondado body { font-family: "Quicksand", "Segoe UI", sans-serif !important; }
-html.font-condensado, html.font-condensado body { font-family: "Inter Tight", "Arial Narrow", sans-serif !important; }
-html.font-business, html.font-business body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important; }
-html.font-elegante, html.font-elegante body { font-family: "Didot", "Bodoni MT", serif !important; }
-html.font-geometrico, html.font-geometrico body { font-family: "Futura", "Trebuchet MS", sans-serif !important; }
-html.font-tecnico, html.font-tecnico body { font-family: "Roboto Mono", monospace !important; }
-html.font-minimalista, html.font-minimalista body { font-family: "Avenir Next", "Avenir", sans-serif !important; }
-html.font-futurista, html.font-futurista body { font-family: "Orbitron", "Impact", sans-serif !important; }
-html.font-robusto, html.font-robusto body { font-family: "Arial Black", Gadget, sans-serif !important; }
-html.font-editorial, html.font-editorial body { font-family: "Charter", "Bitstream Charter", serif !important; }
-html.font-suico, html.font-suico body { font-family: "Univers", "Helvetica", sans-serif !important; }
-html.font-academico, html.font-academico body { font-family: "Century Schoolbook", serif !important; }
-html.font-industrial, html.font-industrial body { font-family: "Bebas Neue", "Impact", sans-serif !important; }
-html.font-digital, html.font-digital body { font-family: "Courier New", Courier, monospace !important; }
-html.font-real, html.font-real body { font-family: "Times New Roman", Times, serif !important; }
-html.font-suave, html.font-suave body { font-family: "Ubuntu", sans-serif !important; }
-html.font-sharp, html.font-sharp body { font-family: "Inter", "Segoe UI", sans-serif !important; }
-
-/* 🚦 SISTEMA DINÂMICO DE STATUS V2 */
+/* 🚦 SISTEMA DINÂMICO DE STATUS V3 */
 .status-custom {
     color: hsl(var(--status-color)) !important;
     background-color: hsla(var(--status-color), 0.12) !important;
     border-color: hsla(var(--status-color), 0.5) !important;
+}
+
+/* EFEITO NEON (GLOW) */
+.style-glow .status-custom,
+.style-glow.card[style*="--status-color"] {
+    box-shadow: 0 0 15px hsla(var(--status-color), 0.3) !important;
 }
 
 .status-row-custom {
@@ -149,22 +103,41 @@ html.font-sharp, html.font-sharp body { font-family: "Inter", "Segoe UI", sans-s
     background-color: hsla(var(--status-color), 0.15) !important;
 }
 
-/* Classes de ID para compatibilidade legada */
-.status-pago { --status-color: var(--status-color-pago); }
-.status-saldo-pago { --status-color: var(--status-color-saldo-pago); }
-.status-em-andamento { --status-color: var(--status-color-em-andamento); }
-.status-aguardando-saldo { --status-color: var(--status-color-aguardando-saldo); }
-.status-reprovado { --status-color: var(--status-color-reprovado); }
-.status-pendente { --status-color: var(--status-color-pendente); }
-
+/* Estilos de Aura Visual */
 .style-glass .card, .style-glass .sidebar, .style-glass .popover-content {
     background-color: hsl(var(--background) / var(--glass-opacity)) !important;
     backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
 }
 
+.style-deep { box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2) !important; }
+.style-flat { border-width: 1px !important; box-shadow: none !important; }
+.style-soft { border: none !important; box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important; }
+.style-bordado { border-width: 3px !important; border-style: double !important; }
+.style-geometrico { border-width: 2px !important; border-radius: 0 !important; }
+
+/* Texturas de Fundo */
 .texture-dots body { background-image: radial-gradient(hsl(var(--primary) / 0.15) 1px, transparent 1px); background-size: 24px 24px; }
 .texture-grid body { background-image: linear-gradient(hsl(var(--primary) / 0.08) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary) / 0.08) 1px, transparent 1px); background-size: 40px 40px; }
+
+/* Arredondamento */
+.radius-reto { --radius: 0px !important; }
+.radius-extra-discreto { --radius: 2px !important; }
+.radius-discreto { --radius: 8px !important; }
+.radius-moderno { --radius: 14px !important; }
+.radius-amigavel { --radius: 22px !important; }
+.radius-suave { --radius: 28px !important; }
+.radius-capsula { --radius: 9999px !important; }
+
+/* Tipografia */
+html.font-moderno, html.font-moderno body { font-family: var(--font-sans), sans-serif !important; }
+html.font-classico, html.font-classico body { font-family: Georgia, serif !important; }
+html.font-mono, html.font-mono body { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important; }
+html.font-arredondado, html.font-arredondado body { font-family: "Quicksand", "Segoe UI", sans-serif !important; }
+html.font-industrial, html.font-industrial body { font-family: "Bebas Neue", "Impact", sans-serif !important; }
+html.font-futurista, html.font-futurista body { font-family: "Orbitron", "Impact", sans-serif !important; }
+html.font-elegante, html.font-elegante body { font-family: "Didot", "Bodoni MT", serif !important; }
+html.font-real, html.font-real body { font-family: "Times New Roman", Times, serif !important; }
 
 @layer base {
   * { @apply border-border; }

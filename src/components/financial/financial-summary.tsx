@@ -22,13 +22,14 @@ interface FinancialSummaryProps {
 
 export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onShowDetails }: FinancialSummaryProps) {
   const {
-    totalMonthlyGross,
-    totalPotentialCommission,
+    totalMonthlyComissaoDigitada,
     totalAmountPaid,
     totalSaldoAReceber,
+    totalComissaoEsperada,
     allProposalsInPeriod,
     commissionReceivedProposals,
     proposalsWithBalance,
+    proposalsEsperadas,
     metrics,
   } = React.useMemo(() => {
     const allProposals = Array.isArray(rows) && rows.length > 0 
@@ -42,17 +43,17 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
 
-    // 1. PRODUÇÃO MENSAL (VOLUME BRUTO)
-    const currentMonthProposals = allProposals.filter(p => {
+    const filteredBase = allProposals.filter(p => p.status !== 'Reprovado');
+
+    // 1. PRODUÇÃO DIGITADA: Comissão potencial do mês vigente (menos reprovados)
+    const currentMonthProposals = filteredBase.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
         return d >= fromDate && d <= effectiveToDate;
     });
+    const totalMonthlyComissaoDigitada = currentMonthProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
 
-    const totalMonthlyGross = currentMonthProposals.reduce((sum, p) => sum + (p.grossAmount || 0), 0);
-    const totalPotentialCommission = currentMonthProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
-
-    // 2. COMISSÃO RECEBIDA (CASH IN)
+    // 2. COMISSÃO RECEBIDA: Cash-in do período
     const commissionReceivedProposals = allProposals.filter(p => {
         if (p.commissionStatus !== 'Paga' || !p.commissionPaymentDate) return false;
         const d = new Date(p.commissionPaymentDate);
@@ -60,41 +61,33 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
     });
     const totalAmountPaid = commissionReceivedProposals.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
 
-    // 3. SALDO A RECEBER (PENDENTE GERAL)
-    const proposalsWithBalance = allProposals.filter(p => 
-        p.status !== 'Reprovado' && 
-        p.commissionStatus !== 'Paga' &&
-        (p.commissionValue - (p.amountPaid || 0)) > 0
-    );
+    // 3. SALDO A RECEBER: Contratos averbados OU Pagos com saldo pendente (menos reprovados)
+    const proposalsWithBalance = filteredBase.filter(p => {
+        const isPaidStatusWithResidual = p.status === 'Pago' && p.amountPaid < p.commissionValue;
+        const isAverbadoAndPending = !!p.dateApproved && p.commissionStatus !== 'Paga';
+        return (isPaidStatusWithResidual || isAverbadoAndPending);
+    });
     const totalSaldoAReceber = proposalsWithBalance.reduce((sum, p) => sum + (p.commissionValue - (p.amountPaid || 0)), 0);
 
-    // Sparklines
-    const getSparkline = (list: Proposal[], dateField: keyof Proposal) => {
-        const days = Array.from({length: 15}, (_, i) => subDays(today, 14 - i));
-        return days.map(day => {
-            return list.filter(p => {
-                const d = p[dateField];
-                return d && isSameDay(new Date(d as string), day);
-            }).reduce((sum, p) => sum + (p.commissionValue || 0), 0);
-        });
-    };
+    // 4. COMISSÃO ESPERADA: Repasse pendente de todos os status (menos reprovados/pagos)
+    const proposalsEsperadas = filteredBase.filter(p => p.commissionStatus !== 'Paga');
+    const totalComissaoEsperada = proposalsEsperadas.reduce((sum, p) => sum + (p.commissionValue - (p.amountPaid || 0)), 0);
 
-    const ticketMedio = currentMonthProposals.length > 0 ? totalPotentialCommission / currentMonthProposals.length : 0;
+    const ticketMedio = currentMonthProposals.length > 0 ? totalMonthlyComissaoDigitada / currentMonthProposals.length : 0;
     const eficiencia = (totalAmountPaid + totalSaldoAReceber) > 0 ? (totalAmountPaid / (totalAmountPaid + totalSaldoAReceber)) * 100 : 0;
     
     return {
-      totalMonthlyGross,
-      totalPotentialCommission,
+      totalMonthlyComissaoDigitada,
       totalAmountPaid,
       totalSaldoAReceber,
+      totalComissaoEsperada,
       allProposalsInPeriod: currentMonthProposals,
       commissionReceivedProposals,
       proposalsWithBalance,
+      proposalsEsperadas,
       metrics: {
           ticketMedio,
           eficiencia,
-          sparkTotal: getSparkline(currentMonthProposals, 'dateDigitized'),
-          sparkPaid: getSparkline(commissionReceivedProposals, 'commissionPaymentDate'),
       }
     };
   }, [rows, currentMonthRange]);
@@ -104,47 +97,42 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
   return (
     <div className='space-y-6 mb-8'>
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4 print:grid-cols-4'>
-            {/* CARD 1: PRODUÇÃO DIGITADA */}
-            <div className="cursor-pointer" onClick={() => onShowDetails("Produção Digitada (Bruta)", allProposalsInPeriod)}>
+            <div className="cursor-pointer" onClick={() => onShowDetails("Produção Digitada (Comissão)", allProposalsInPeriod)}>
                 <StatsCard
                     title="PRODUÇÃO DIGITADA"
-                    value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalMonthlyGross)}
+                    value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalMonthlyComissaoDigitada)}
                     icon={Activity}
                     description="COMISSÃO POTENCIAL"
                     subValue={`TICKET MÉDIO: ${formatCurrency(metrics.ticketMedio)}`}
-                    sparklineData={metrics.sparkTotal}
                 />
             </div>
 
-            {/* CARD 2: COMISSÃO RECEBIDA */}
-            <div className="cursor-pointer" onClick={() => onShowDetails("Comissões Recebidas no Mês", commissionReceivedProposals)}>
+            <div className="cursor-pointer" onClick={() => onShowDetails("Comissões Recebidas", commissionReceivedProposals)}>
                 <StatsCard
                     title="COMISSÃO RECEBIDA"
                     value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalAmountPaid)}
                     icon={TrendingUp}
                     description="DINHEIRO NO CAIXA"
                     subValue={`EFICIÊNCIA: ${metrics.eficiencia.toFixed(1)}%`}
-                    sparklineData={metrics.sparkPaid}
+                    isHot={metrics.eficiencia > 80}
                 />
             </div>
 
-            {/* CARD 3: SALDO A RECEBER */}
-            <div className="cursor-pointer" onClick={() => onShowDetails("Saldo a Receber (Pendente Geral)", proposalsWithBalance)}>
+            <div className="cursor-pointer" onClick={() => onShowDetails("Saldo a Receber", proposalsWithBalance)}>
                 <StatsCard
                     title="SALDO A RECEBER"
                     value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalSaldoAReceber)}
                     icon={Hourglass}
-                    description="FATURAMENTO PENDENTE"
+                    description="GARANTIDO EM ESTEIRA"
                 />
             </div>
 
-            {/* CARD 4: COMISSÃO ESPERADA */}
-            <div className="cursor-pointer" onClick={() => onShowDetails("Comissão Esperada (Produção Mês)", allProposalsInPeriod)}>
+            <div className="cursor-pointer" onClick={() => onShowDetails("Comissão Esperada", proposalsEsperadas)}>
                 <StatsCard
                     title="COMISSÃO ESPERADA"
-                    value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalPotentialCommission)}
+                    value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalComissaoEsperada)}
                     icon={CircleDollarSign}
-                    description="PIPELINE EM ESTEIRA"
+                    description="PIPELINE GERAL"
                 />
             </div>
         </div>

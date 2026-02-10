@@ -101,7 +101,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   onBulkStatusChange,
   userSettings,
 }, ref) => {
-  const { statusColors } = useTheme();
+  const { statusColors, containerStyle } = useTheme();
   const [sorting, setSorting] = React.useState<SortingState>([{ id: 'dateDigitized', desc: true }]);
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -167,11 +167,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   }, [pagination.pageSize, isClient]);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-        activationConstraint: {
-            distance: 8,
-        },
-    }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor)
   );
 
@@ -260,9 +256,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
       columnSizing,
       pagination,
     },
-    meta: {
-      userSettings,
-    },
+    meta: { userSettings },
     globalFilterFn: (row, columnId, filterValue) => {
         const searchTerm = normalizeString(String(filterValue ?? ''));
         if (!searchTerm) return true;
@@ -290,9 +284,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   }, [appliedDateRange, table]);
 
 
-  React.useImperativeHandle(ref, () => ({
-    table,
-  }));
+  React.useImperativeHandle(ref, () => ({ table }));
   
   const selectedRowCount = Object.keys(rowSelection).length;
   const totalSelectedGrossAmount = table.getSelectedRowModel().rows.reduce((total, row) => total + (row.original.grossAmount || 0), 0);
@@ -318,17 +310,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 
   const getStatusId = (status: string) => status.replace(/\s+/g, '-').toLowerCase();
 
-  const getRowStatusClass = (proposal: Proposal) => {
-    const { status, product, dateDigitized } = proposal;
-    if (product === 'Portabilidade' && status === 'Aguardando Saldo' && dateDigitized) {
-        const days = calculateBusinessDays(new Date(dateDigitized));
-        if (days >= 5) return 'bg-red-500/20 hover:bg-red-500/30 animate-pulse border-l-4 border-l-destructive';
-        if (days === 4) return 'bg-orange-500/20 hover:bg-orange-500/30 border-l-4 border-l-orange-500';
-    }
-    const id = getStatusId(status);
-    return cn("transition-colors status-row-custom", `status-${id}`);
-  };
-
   const orderedTabs = ['Todos', 'Em Andamento', 'Aguardando Saldo', 'Pago', 'Saldo Pago', 'Pendente', 'Reprovado'];
 
   return (
@@ -337,7 +318,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
       onDragEnd={handleDragEnd}
       sensors={sensors}
     >
-        <Card className="proposals-table border-border/50 shadow-md rounded-xl overflow-hidden">
+        <Card className={cn("proposals-table border-border/50 shadow-md rounded-xl overflow-hidden", containerStyle === 'glow' && 'style-glow')}>
         <div className="p-4">
             <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
                 <Tabs value={statusFilter} onValueChange={setStatusFilter}>
@@ -383,7 +364,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
             <div className="flex items-center gap-2 flex-grow">
                 <div className='relative w-full max-md:max-w-full max-w-md'>
                     <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
-                    <Input placeholder="Busca Inteligente (Nome, CPF, ID, Proposta...)" value={globalFilter ?? ''} onChange={(event) => setGlobalFilter(event.target.value)} className="pl-9 w-full bg-card" />
+                    <Input placeholder="Busca Inteligente..." value={globalFilter ?? ''} onChange={(event) => setGlobalFilter(event.target.value)} className="pl-9 w-full bg-card" />
                 </div>
                 {selectedRowCount > 0 && (
                 <DropdownMenu>
@@ -426,11 +407,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     <TableRow
                         key={row.id}
                         data-state={row.getIsSelected() && 'selected'}
-                        className={cn("transition-colors", getRowStatusClass(row.original))}
-                        style={Object.entries(statusColors).reduce((acc, [name, color]) => {
-                            if (row.original.status === name) acc['--status-color'] = color;
-                            return acc;
-                        }, {} as any)}
+                        className="transition-colors hover:bg-primary/[0.02]"
                     >
                         {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id} className="py-4">{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
