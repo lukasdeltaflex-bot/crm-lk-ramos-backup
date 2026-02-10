@@ -144,7 +144,7 @@ export default function DashboardPage() {
     const effectiveToDate = new Date(toDate);
     effectiveToDate.setHours(23, 59, 59, 999);
 
-    // Mês Anterior para visão de esteira ampliada
+    // Mês Anterior para visão de esteira ampliada (Pendente, Em Andamento, etc)
     const prevMonthStart = startOfMonth(subMonths(fromDate, 1));
 
     const getSum = (list: Proposal[]) => list.reduce((sum, p) => sum + (p.grossAmount || 0), 0);
@@ -165,7 +165,7 @@ export default function DashboardPage() {
         });
     };
 
-    // 1. UNIVERSO DO MÊS VIGENTE (Total Digitado, Reprovas e Mix)
+    // 1. UNIVERSO DO MÊS VIGENTE (Total Digitado, Reprovas e Mix de Produtos)
     const digitizedInPeriod = proposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
@@ -179,7 +179,7 @@ export default function DashboardPage() {
         return d >= prevMonthStart && d <= effectiveToDate;
     });
 
-    // 3. PAGOS NO PERÍODO (Para o GoalCard)
+    // 3. PAGOS NO PERÍODO (Para o GoalCard e Meta)
     const paidInPeriod = proposals.filter(p => {
         if (p.status !== 'Pago') return false;
         if (!p.datePaidToClient) return false;
@@ -187,14 +187,12 @@ export default function DashboardPage() {
         return d >= fromDate && d <= effectiveToDate;
     });
 
-    // 4. ANÁLISE DOS STATUS
+    // 4. ANÁLISE DOS STATUS (Ordem: Pendente, Em Andamento, Aguardando Saldo, Saldo Pago, Reprovado)
     const statusAnalysis: Record<string, { total: number; count: number; spark: number[]; top: string; proposals: Proposal[] }> = {};
     const orderedFlow = ['Pendente', 'Em Andamento', 'Aguardando Saldo', 'Saldo Pago', 'Reprovado'];
 
     orderedFlow.forEach(status => {
-        // REGRA LK RAMOS: 
-        // - Reprovado: Apenas mês vigente.
-        // - Outros: Mês vigente + Mês anterior.
+        // REGRA: Reprovado apenas do mês atual. Outros: Mês atual + Mês anterior.
         const sourceList = (status === 'Reprovado') ? digitizedInPeriod : digitizedInExtendedPeriod;
         const list = sourceList.filter(p => p.status === status);
         
@@ -262,7 +260,7 @@ export default function DashboardPage() {
                     <Input 
                         placeholder="--" 
                         value={startDateInput}
-                        onChange={(e) => setDateInputChange(e.target.value, 'start')}
+                        onChange={(e) => handleDateInputChange(e.target.value, 'start')}
                         maxLength={10}
                         className="h-9 w-24 border-none shadow-none text-center"
                     />
@@ -271,7 +269,7 @@ export default function DashboardPage() {
                     <Input 
                         placeholder="--" 
                         value={endDateInput}
-                        onChange={(e) => setDateInputChange(e.target.value, 'end')}
+                        onChange={(e) => handleDateInputChange(e.target.value, 'end')}
                         maxLength={10}
                         className="h-9 w-24 border-none shadow-none text-center"
                     />
