@@ -83,33 +83,41 @@
     border-color: hsla(var(--status-color), var(--status-border-opacity, 0.5)) !important;
 }
 
-/* NEON GLOW PREMIUM - IDENTIDADE VISUAL REALISTA */
+/* 🌟 NEON GLOW REALISTA (MULTICAMADAS) */
 .card-hot-neon {
-    border-color: hsl(var(--status-color)) !important;
-    border-width: 2px !important;
+    border-color: hsla(var(--status-color), 1) !important;
+    border-width: 2.5px !important;
     box-shadow: 
-        0 0 10px hsla(var(--status-color), 0.4),
-        0 0 20px hsla(var(--status-color), 0.2),
-        inset 0 0 10px hsla(var(--status-color), 0.1) !important;
-    animation: neon-flicker 3s infinite alternate ease-in-out !important;
+        0 0 5px hsla(var(--status-color), 0.8),
+        0 0 15px hsla(var(--status-color), 0.5),
+        0 0 30px hsla(var(--status-color), 0.3),
+        inset 0 0 15px hsla(var(--status-color), 0.2) !important;
+    animation: neon-pulse 2s infinite ease-in-out !important;
+    z-index: 10;
 }
 
-@keyframes neon-flicker {
-    0% { opacity: 0.95; box-shadow: 0 0 10px hsla(var(--status-color), 0.4), 0 0 20px hsla(var(--status-color), 0.2), inset 0 0 10px hsla(var(--status-color), 0.1); }
-    50% { opacity: 1; box-shadow: 0 0 15px hsla(var(--status-color), 0.6), 0 0 30px hsla(var(--status-color), 0.3), inset 0 0 12px hsla(var(--status-color), 0.2); }
-    100% { opacity: 0.95; box-shadow: 0 0 10px hsla(var(--status-color), 0.4), 0 0 20px hsla(var(--status-color), 0.2), inset 0 0 10px hsla(var(--status-color), 0.1); }
+@keyframes neon-pulse {
+    0%, 100% { 
+        filter: brightness(1);
+        box-shadow: 0 0 5px hsla(var(--status-color), 0.8), 0 0 15px hsla(var(--status-color), 0.5), 0 0 30px hsla(var(--status-color), 0.3), inset 0 0 15px hsla(var(--status-color), 0.2);
+    }
+    50% { 
+        filter: brightness(1.2);
+        box-shadow: 0 0 8px hsla(var(--status-color), 1), 0 0 25px hsla(var(--status-color), 0.7), 0 0 45px hsla(var(--status-color), 0.4), inset 0 0 20px hsla(var(--status-color), 0.3);
+    }
 }
 
+/* 📊 IDENTIDADE CROMÁTICA EM TABELAS */
 .status-row-custom {
-    background-color: hsla(var(--status-color), 0.08) !important;
+    background-color: hsla(var(--status-color), 0.1) !important;
 }
 .status-row-custom:hover {
-    background-color: hsla(var(--status-color), 0.12) !important;
+    background-color: hsla(var(--status-color), 0.15) !important;
 }
 
 .intensity-vibrante {
-    --status-bg-opacity: 0.22 !important;
-    --status-border-opacity: 0.8 !important;
+    --status-bg-opacity: 0.25 !important;
+    --status-border-opacity: 0.9 !important;
 }
 
 .intensity-sobrio {
@@ -142,12 +150,8 @@
     background-color: hsla(var(--status-color, var(--muted)), 0.05) !important;
 }
 
-/* 🛡️ BARRA LATERAL ELITE (CORREÇÃO DE CONTRASTE) */
+/* 🛡️ BARRA LATERAL ELITE (CONTRASTE ABSOLUTO) */
 .sidebar-dark [data-sidebar="sidebar"] {
-    --sidebar-background: 240 10% 2% !important;
-    --sidebar-foreground: 0 0% 100% !important;
-    --sidebar-accent: 240 5% 15% !important;
-    --sidebar-accent-foreground: 0 0% 100% !important;
     background-color: #000000 !important;
     color: #ffffff !important;
     border-right: 1px solid #1a1a1a !important;
@@ -160,10 +164,6 @@
 }
 
 .sidebar-light [data-sidebar="sidebar"] {
-    --sidebar-background: 0 0% 100% !important;
-    --sidebar-foreground: 240 10% 4% !important;
-    --sidebar-accent: 240 5% 96% !important;
-    --sidebar-accent-foreground: 240 10% 4% !important;
     background-color: #ffffff !important;
     color: #000000 !important;
     border-right: 1px solid #e5e7eb !important;

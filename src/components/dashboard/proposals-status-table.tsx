@@ -21,6 +21,8 @@ import { Button } from '@/components/ui/button';
 import type { Customer, Proposal } from '@/lib/types';
 import { statusColumns } from './status-columns';
 import { StatusBreakdownChart } from './status-breakdown-chart';
+import { useTheme } from '@/components/theme-provider';
+import { cn } from '@/lib/utils';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -31,6 +33,7 @@ function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
+  const { statusColors } = useTheme();
   const table = useReactTable({
     data,
     columns,
@@ -62,21 +65,32 @@ function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table.getRowModel().rows.map((row) => {
+                const proposal = row.original as any;
+                const status = proposal.status;
+                const colorValue = statusColors[status];
+
+                return (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                    className={cn(
+                        "transition-colors",
+                        colorValue && "status-row-custom"
+                    )}
+                    style={colorValue ? { '--status-color': colorValue } as any : {}}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                )
+              })
             ) : (
               <TableRow>
                 <TableCell

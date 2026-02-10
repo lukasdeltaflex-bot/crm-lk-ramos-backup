@@ -63,7 +63,7 @@ export function StatsCard({
     const customColor = statusColors[statusKey] || statusColors[title] || statusColors[description || ''];
 
     const cardClasses = cn(
-        'hover:shadow-lg transition-all group relative overflow-hidden flex flex-col border-2 py-3.5 px-5 min-h-[165px] status-custom h-full card',
+        'hover:shadow-lg transition-all group relative overflow-hidden flex flex-col border-2 py-3.5 px-5 min-h-[160px] status-custom h-full card',
         `style-${containerStyle}`,
         containerStyle === 'glow' && 'style-glow',
         `intensity-${intensity}`,
@@ -73,20 +73,10 @@ export function StatsCard({
         className
     );
 
-    if (customColor) {
-        return {
-            card: cardClasses,
-            style: { 
-                '--status-color': customColor,
-            } as any
-        };
-    }
-    
-    // Fallback neutro executivo
-    return { 
-        card: cn(cardClasses, 'border-zinc-200 bg-zinc-50/50 dark:bg-zinc-900/10 dark:border-zinc-800'), 
-        style: {
-            '--status-color': '217 33% 25%'
+    return {
+        card: cardClasses,
+        style: { 
+            '--status-color': customColor || '217 33% 25%',
         } as any
     };
   };
@@ -95,7 +85,7 @@ export function StatsCard({
 
   return (
     <Card 
-        className={themeStyles.card}
+        className={cn(themeStyles.card, "rounded-lg")}
         style={{ ...themeStyles.style, ...style }}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 mb-1.5">
