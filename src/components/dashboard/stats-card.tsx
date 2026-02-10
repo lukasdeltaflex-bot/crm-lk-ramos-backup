@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -27,9 +26,9 @@ interface StatsCardProps {
 }
 
 /**
- * StatsCard Premium Executivo V35
+ * StatsCard Premium Executivo V36
+ * Aura de fundo realçada (12% opacidade) e bordas nítidas (50% opacidade).
  * Sincronização 100% com o Laboratório de Cores.
- * Implementação de bordas bonitas e aura de fundo (5% opacidade).
  */
 export function StatsCard({ 
     title, 
@@ -58,8 +57,8 @@ export function StatsCard({
             text: '', 
             stroke: `hsl(${customColor})`,
             style: { 
-                borderColor: `hsla(${customColor}, 0.3)`, // Borda levemente colorida
-                backgroundColor: `hsla(${customColor}, 0.05)`, // Aura de fundo suave
+                borderColor: `hsla(${customColor}, 0.5)`, // Borda mais definida
+                backgroundColor: `hsla(${customColor}, 0.12)`, // Fundo mais visível
                 color: `hsl(${customColor})`,
                 '--status-color': customColor 
             } as any
@@ -68,64 +67,64 @@ export function StatsCard({
 
     if (isCritical) 
         return {
-            card: 'border-red-300 dark:border-red-800 bg-red-50/50 dark:bg-red-900/20 animate-pulse shadow-[0_0_15px_rgba(220,38,38,0.1)]',
+            card: 'border-red-400 bg-red-50 dark:bg-red-900/20 animate-pulse',
             text: 'text-red-600 dark:text-red-400',
             stroke: '#dc2626'
         };
 
-    // TEMAS NEUTROS (TOTAL DIGITADO / TOTAL COMISSÕES)
+    // TEMAS NEUTROS
     if (t === 'total digitado' || t === 'produção digitada' || t === 'total de comissões')
         return {
-            card: 'border-zinc-300 dark:border-zinc-500/40 bg-zinc-50/50 dark:bg-zinc-900/40',
-            text: 'text-zinc-600 dark:text-zinc-100',
+            card: 'border-zinc-300 dark:border-zinc-500/40 bg-zinc-100/50 dark:bg-zinc-900/40',
+            text: 'text-zinc-700 dark:text-zinc-100',
             stroke: '#a1a1aa'
         };
     
     if (t.includes('andamento') || t.includes('esperada')) 
         return {
-            card: 'border-yellow-300 dark:border-yellow-800 bg-yellow-50/30 dark:bg-yellow-900/10',
-            text: 'text-yellow-600 dark:text-yellow-500',
+            card: 'border-yellow-400 bg-yellow-50/50 dark:bg-yellow-900/10',
+            text: 'text-yellow-700 dark:text-yellow-500',
             stroke: '#d97706'
         };
 
     if (t.includes('saldo pago') || t.includes('saldo a receber')) 
         return {
-            card: 'border-orange-300 dark:border-orange-800 bg-orange-50/30 dark:bg-orange-900/10',
-            text: 'text-orange-600 dark:text-orange-400',
+            card: 'border-orange-400 bg-orange-50/50 dark:bg-orange-900/10',
+            text: 'text-orange-700 dark:text-orange-400',
             stroke: '#ea580c'
         };
 
     if (t.includes('performance') || t.includes('recebida') || t.includes('paga') || t.includes('pago')) 
         return {
-            card: 'border-green-300 dark:border-green-800 bg-green-50/30 dark:bg-green-900/10',
-            text: 'text-green-600 dark:text-green-400',
+            card: 'border-green-400 bg-green-50/50 dark:bg-green-900/10',
+            text: 'text-green-700 dark:text-green-400',
             stroke: '#16a34a'
         };
     
     if (t.includes('aguardando')) 
         return {
-            card: 'border-blue-300 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-900/10',
-            text: 'text-blue-600 dark:text-blue-400',
+            card: 'border-blue-400 bg-blue-50/50 dark:bg-blue-900/10',
+            text: 'text-blue-700 dark:text-blue-400',
             stroke: '#2563eb'
         };
     
     if (t.includes('pendente')) 
         return {
-            card: 'border-purple-300 dark:border-purple-800 bg-purple-50/30 dark:bg-purple-900/10',
-            text: 'text-purple-600 dark:text-purple-400',
+            card: 'border-purple-400 bg-purple-50/50 dark:bg-purple-900/10',
+            text: 'text-purple-700 dark:text-purple-400',
             stroke: '#9333ea'
         };
     
     if (t.includes('reprovado')) 
         return {
-            card: 'border-red-300 dark:border-red-800 bg-red-50/30 dark:bg-red-900/10',
-            text: 'text-red-600 dark:text-red-400',
+            card: 'border-red-400 bg-red-50/50 dark:bg-red-900/10',
+            text: 'text-red-700 dark:text-red-400',
             stroke: '#dc2626'
         };
 
     return { 
-        card: 'border-slate-300 dark:border-slate-700 bg-slate-50/30 dark:bg-slate-900/10', 
-        text: 'text-slate-600 dark:text-slate-300',
+        card: 'border-slate-300 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-900/10', 
+        text: 'text-slate-700 dark:text-slate-300',
         stroke: '#475569'
     };
   };
@@ -144,7 +143,7 @@ export function StatsCard({
     }).join(' ');
 
     return (
-        <svg width={width} height={height} className="opacity-40">
+        <svg width={width} height={height} className="opacity-60">
             <polyline
                 fill="none"
                 stroke={theme.stroke}
@@ -169,7 +168,7 @@ export function StatsCard({
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 mb-1.5">
         <div className="flex flex-col gap-0.5">
-            <CardTitle className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground group-hover:text-primary transition-colors" style={{ color: theme.style?.color || 'inherit' }}>
+            <CardTitle className="text-[10px] font-black uppercase tracking-[0.1em] transition-colors" style={{ color: theme.style?.color || 'inherit' }}>
                 {title}
             </CardTitle>
             {isCritical ? (
@@ -184,7 +183,7 @@ export function StatsCard({
         </div>
         <div className="flex items-center gap-2">
             {renderSparkline()}
-            <Icon className={cn("h-4 w-4 opacity-60", theme.text)} style={{ color: theme.style?.color || 'inherit' }} />
+            <Icon className={cn("h-4 w-4 opacity-80", theme.text)} style={{ color: theme.style?.color || 'inherit' }} />
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col justify-between p-0">
@@ -201,17 +200,17 @@ export function StatsCard({
         
         <div className="mt-2 pt-2 border-t border-border/10 flex items-center justify-between">
             <div className="flex flex-col">
-                <p className="text-[9px] font-bold text-muted-foreground/70 uppercase tracking-tighter">
+                <p className="text-[9px] font-bold opacity-70 uppercase tracking-tighter">
                     {description}
                 </p>
                 {subValue && (
-                    <p className="text-[9px] font-black text-primary/70 uppercase tracking-tighter mt-0.5">
+                    <p className="text-[9px] font-black opacity-80 uppercase tracking-tighter mt-0.5">
                         {subValue}
                     </p>
                 )}
             </div>
             {topContributor && (
-                <p className="text-[9px] font-bold text-primary/60 truncate max-w-[100px]" style={{ color: theme.style?.color || 'inherit' }}>
+                <p className="text-[9px] font-bold truncate max-w-[100px]" style={{ color: theme.style?.color || 'inherit' }}>
                     {topContributor.split(' ')[0]}
                 </p>
             )}

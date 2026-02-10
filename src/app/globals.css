@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -86,15 +85,15 @@
 /* 🚦 DYNAMIC STATUS SYSTEM V2 */
 .status-custom {
     color: hsl(var(--status-color)) !important;
-    background-color: hsla(var(--status-color), 0.1) !important;
-    border-color: hsla(var(--status-color), 0.3) !important;
+    background-color: hsla(var(--status-color), 0.12) !important;
+    border-color: hsla(var(--status-color), 0.5) !important;
 }
 
 .status-row-custom {
-    background-color: hsla(var(--status-color), 0.05) !important;
+    background-color: hsla(var(--status-color), 0.08) !important;
 }
 .status-row-custom:hover {
-    background-color: hsla(var(--status-color), 0.1) !important;
+    background-color: hsla(var(--status-color), 0.15) !important;
 }
 
 /* Specific ID classes used in components */

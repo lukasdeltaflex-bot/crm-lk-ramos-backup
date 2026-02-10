@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useEffect, useMemo } from 'react';
 import { AppLayout } from '@/components/app-layout';
@@ -22,7 +21,7 @@ import {
 import { format, startOfMonth, endOfMonth, isValid, startOfDay, subDays, endOfDay, subMonths, parse, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency, cn } from '@/lib/utils';
-import type { Proposal, Customer, UserProfile, UserSettings } from '@/lib/types';
+import type { Proposal, Customer, UserProfile } from '@/lib/types';
 import {
   Dialog,
   DialogContent,
@@ -55,10 +54,10 @@ export default function DashboardPage() {
   const [appliedDateRange, setAppliedDateRange] = useState<DateRange | undefined>(undefined);
   const [isPrivacyMode, setIsPrivacyMode] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [dialogData, setDialogData] = useState<{ title: string; proposals: Proposal[] } | null>(null);
+  
   const { user } = useUser();
   const firestore = useFirestore();
-
-  const [dialogData, setDialogData] = useState<{ title: string; proposals: Proposal[] } | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -140,7 +139,7 @@ export default function DashboardPage() {
 
     const prevMonthStart = startOfMonth(subMonths(fromDate, 1));
 
-    // UNIVERSO MÊS VIGENTE (Para Produção e Meta)
+    // UNIVERSO MÊS VIGENTE (Para Produção, Meta e Reprovas)
     const digitizedInPeriod = proposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
@@ -154,7 +153,7 @@ export default function DashboardPage() {
         return d >= prevMonthStart && d <= effectiveToDate;
     });
 
-    // PAGOS NO PERÍODO (Para Meta - Baseado na Data de Pagamento ao Cliente)
+    // PAGOS NO PERÍODO (Para Meta)
     const paidInPeriod = proposals.filter(p => {
         if (p.status !== 'Pago') return false;
         if (!p.datePaidToClient) return false;
@@ -172,10 +171,12 @@ export default function DashboardPage() {
     };
 
     const statusAnalysis: Record<string, { total: number; count: number; proposals: Proposal[]; top: string }> = {};
+    
+    // ORDEM SOLICITADA: Total Digitado -> Pendente -> Em Andamento -> Aguardando Saldo -> Saldo Pago -> Reprovado
     const orderedFlow = ['Pendente', 'Em Andamento', 'Aguardando Saldo', 'Saldo Pago', 'Reprovado'];
 
     orderedFlow.forEach(status => {
-        // Regra: Reprovado e Digitado são apenas do mês vigente. Outros da esteira são Mês + Anterior.
+        // Regra Híbrida: Reprovado é apenas do mês vigente. Outros da esteira são Mês + Anterior.
         const sourceList = (status === 'Reprovado') ? digitizedInPeriod : digitizedInExtendedPeriod;
         const list = sourceList.filter(p => p.status === status);
         
