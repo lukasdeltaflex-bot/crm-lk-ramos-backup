@@ -127,6 +127,7 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
       root.style.setProperty('--glass-blur', `${glassIntensity / 5}px`);
       localStorage.setItem("glass-intensity", String(glassIntensity));
 
+      // Injeta variáveis de cores de status
       Object.entries(statusColors).forEach(([name, color]) => {
           const varName = `--status-color-${name.replace(/\s+/g, '-').toLowerCase()}`;
           root.style.setProperty(varName, color);

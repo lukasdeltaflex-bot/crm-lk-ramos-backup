@@ -207,15 +207,12 @@ export default function SettingsPage() {
 
   const isLoading = isUserLoading || isSettingsLoading;
 
-  // Garantir que os nomes de KPI financeiro estejam disponíveis para coloração
   const colorableStatuses = Array.from(new Set([
     ...proposalStatuses, 
     "Paga", "Pendente", "Parcial",
-    "TOTAL DIGITADO", 
-    "PRODUÇÃO DIGITADA", 
-    "COMISSÃO RECEBIDA", 
-    "SALDO A RECEBER", 
-    "COMISSÃO ESPERADA"
+    "COMISSÃO ESPERADA",
+    "TOTAL DIGITADO",
+    "SALDO A RECEBER"
   ]));
 
   const fontOptions = [
@@ -482,7 +479,7 @@ export default function SettingsPage() {
                                         <div className="flex flex-wrap gap-2 p-4 border rounded-[var(--radius)] bg-background shadow-inner">
                                             <Badge className={cn("status-custom", preview.containerStyle === 'glow' && "shadow-[0_0_10px_hsla(var(--status-color),0.4)]")} style={{ '--status-color': preview.statusColors['Paga'] || '142 76% 36%' } as any}>Paga</Badge>
                                             <Badge className={cn("status-custom")} style={{ '--status-color': preview.statusColors['Pendente'] || '45 93% 47%' } as any}>Pendente</Badge>
-                                            <Button size="sm" className="status-custom h-8" style={{ '--status-color': '217 33% 25%' } as any}>Botão de Ação</Button>
+                                            <Button size="sm" className="status-custom h-8" style={{ '--status-color': THEMES[0].light } as any}>Botão de Ação</Button>
                                         </div>
                                     </div>
                                 </div>

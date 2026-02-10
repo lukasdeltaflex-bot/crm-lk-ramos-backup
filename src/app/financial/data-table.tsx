@@ -379,18 +379,21 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                                 <TabsList className="bg-muted/50">
                                     <TabsTrigger value="Todos" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Todos</TabsTrigger>
                                     
-                                    {['Paga', 'Pendente', 'Parcial'].map((status) => (
-                                        <TabsTrigger 
-                                            key={status}
-                                            value={status} 
-                                            className={cn(
-                                                "border border-transparent transition-all data-[state=active]:status-custom"
-                                            )}
-                                            style={statusColors[status] ? { '--status-color': statusColors[status] } as any : {}}
-                                        >
-                                            {status === 'Paga' ? 'Pagas' : status === 'Pendente' ? 'Pendentes' : 'Parciais'}
-                                        </TabsTrigger>
-                                    ))}
+                                    {['Paga', 'Pendente', 'Parcial'].map((status) => {
+                                        const colorValue = statusColors[status];
+                                        return (
+                                            <TabsTrigger 
+                                                key={status}
+                                                value={status} 
+                                                className={cn(
+                                                    "border border-transparent transition-all data-[state=active]:status-custom"
+                                                )}
+                                                style={colorValue ? { '--status-color': colorValue } as any : {}}
+                                            >
+                                                {status === 'Paga' ? 'Pagas' : status === 'Pendente' ? 'Pendentes' : 'Parciais'}
+                                            </TabsTrigger>
+                                        )
+                                    })}
                                 </TabsList>
                             </Tabs>
                             <div className="flex items-center gap-2 flex-wrap">
@@ -498,7 +501,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                                         data-state={row.getIsSelected() && 'selected'}
                                         className={cn(
                                             "print:even:bg-gray-50 transition-colors border-b",
-                                            colorValue ? "status-row-custom" : "hover:bg-primary/[0.02]"
+                                            colorValue && "status-row-custom"
                                         )}
                                         style={colorValue ? { '--status-color': colorValue } as any : {}}
                                     >

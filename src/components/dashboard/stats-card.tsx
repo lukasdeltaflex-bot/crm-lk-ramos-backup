@@ -55,8 +55,8 @@ export function StatsCard({
   const radius = overrideRadius || globalRadius;
 
   const getThemeStyles = () => {
-    const t = title.toUpperCase();
-    const customColor = statusColors[title] || statusColors[t];
+    // Tenta encontrar cor para o título ou status
+    const customColor = statusColors[title] || statusColors[title.toUpperCase()] || statusColors[description || ''];
 
     if (customColor) {
         return {
@@ -68,18 +68,15 @@ export function StatsCard({
                 'card'
             ),
             style: { 
-                borderColor: `hsla(${customColor}, var(--status-border-opacity, 0.5))`,
-                backgroundColor: `hsla(${customColor}, var(--status-bg-opacity, 0.12))`,
-                color: `hsl(${customColor})`,
                 '--status-color': customColor,
             } as any
         };
     }
     
-    // Fallback neutro
+    // Fallback neutro com altura uniforme
     return { 
         card: cn(`style-${containerStyle}`, 'border-zinc-200 bg-zinc-50/50 dark:bg-zinc-900/10 dark:border-zinc-800', `radius-${radius}`, 'card'), 
-        style: { color: 'hsl(var(--foreground))' }
+        style: {}
     };
   };
 
@@ -88,7 +85,7 @@ export function StatsCard({
   return (
     <Card 
         className={cn(
-            'hover:shadow-lg transition-all group relative overflow-hidden flex flex-col border-2 py-3.5 px-5 min-h-[140px]', 
+            'hover:shadow-lg transition-all group relative overflow-hidden flex flex-col border-2 py-3.5 px-5 min-h-[150px] status-custom h-full', 
             themeStyles.card,
             className
         )}

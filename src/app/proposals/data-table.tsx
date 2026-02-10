@@ -320,17 +320,16 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                 <Tabs value={statusFilter} onValueChange={setStatusFilter}>
                     <TabsList className="h-auto flex-wrap justify-start bg-muted/50 p-1">
                         {orderedTabs.map(status => {
-                            const hasCustomColor = !!statusColors[status];
+                            const colorValue = statusColors[status];
                             if (status === 'Todos') return <TabsTrigger key="Todos" value="Todos" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Todos</TabsTrigger>;
                             return (
                                 <TabsTrigger 
                                     key={status} 
                                     value={status}
                                     className={cn(
-                                        "transition-all border border-transparent data-[state=active]:status-custom",
-                                        containerStyle === 'glow' && "data-[state=active]:shadow-[0_0_15px_hsla(var(--status-color),0.4)]"
+                                        "transition-all border border-transparent data-[state=active]:status-custom"
                                     )}
-                                    style={hasCustomColor ? { '--status-color': statusColors[status] } as any : {}}
+                                    style={colorValue ? { '--status-color': colorValue } as any : {}}
                                 >
                                     {status}
                                 </TabsTrigger>
@@ -412,7 +411,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                 data-state={row.getIsSelected() && 'selected'}
                                 className={cn(
                                     "transition-colors border-b",
-                                    colorValue ? "status-row-custom" : "hover:bg-primary/[0.02]"
+                                    colorValue && "status-row-custom"
                                 )}
                                 style={colorValue ? { '--status-color': colorValue } as any : {}}
                             >
