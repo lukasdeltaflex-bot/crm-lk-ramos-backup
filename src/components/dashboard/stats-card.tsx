@@ -22,6 +22,7 @@ interface StatsCardProps {
   isHot?: boolean;
   isCritical?: boolean;
   topContributor?: string;
+  style?: React.CSSProperties;
 }
 
 export function StatsCard({ 
@@ -35,7 +36,8 @@ export function StatsCard({
     valueClassName,
     isHot = false,
     isCritical = false,
-    topContributor
+    topContributor,
+    style
 }: StatsCardProps) {
   const { statusColors, containerStyle } = useTheme();
   
@@ -78,7 +80,7 @@ export function StatsCard({
             theme.card,
             className
         )}
-        style={theme.style}
+        style={{ ...theme.style, ...style }}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 mb-1.5">
         <div className="flex flex-col gap-0.5">
