@@ -58,7 +58,6 @@ export function StatsCard({
   const animationStyle = overrideAnimationStyle || globalAnimationStyle;
 
   const getThemeStyles = () => {
-    // Busca cor vinculada ao título (ex: "COMISSÃO ESPERADA") ou ao status no laboratório
     const statusKey = title.toUpperCase();
     const customColor = statusColors[statusKey] || statusColors[title] || statusColors[description || ''];
 
@@ -85,7 +84,7 @@ export function StatsCard({
 
   return (
     <Card 
-        className={cn(themeStyles.card, "rounded-lg")}
+        className={cn(themeStyles.card)}
         style={{ ...themeStyles.style, ...style }}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 mb-1.5">

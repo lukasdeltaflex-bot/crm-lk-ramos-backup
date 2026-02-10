@@ -362,7 +362,12 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
             <div className="flex items-center gap-2 flex-grow">
                 <div className='relative w-full max-md:max-w-full max-w-md'>
                     <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
-                    <Input placeholder="Busca Inteligente..." value={globalFilter ?? ''} onChange={(event) => setGlobalFilter(event.target.value)} className="pl-9 w-full bg-card" />
+                    <Input 
+                        placeholder="Busca Inteligente (Nome, CPF, ID, Proposta...)" 
+                        value={globalFilter ?? ''} 
+                        onChange={(event) => setGlobalFilter(event.target.value)} 
+                        className="pl-9 w-full bg-card" 
+                    />
                 </div>
                 {selectedRowCount > 0 && (
                 <DropdownMenu>
