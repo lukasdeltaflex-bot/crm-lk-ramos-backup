@@ -164,12 +164,14 @@ export default function DashboardPage() {
         });
     };
 
+    // 1. TOTAL DIGITADO NO PERÍODO (Base para todos os outros volumes do mês)
     const digitizedInPeriod = proposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
         return d >= fromDate && d <= effectiveToDate;
     });
 
+    // 2. PAGOS NO PERÍODO (Para o GoalCard)
     const paidInPeriod = proposals.filter(p => {
         if (p.status !== 'Pago') return false;
         if (!p.datePaidToClient) return false;
@@ -177,35 +179,28 @@ export default function DashboardPage() {
         return d >= fromDate && d <= effectiveToDate;
     });
 
-    // REGRA ESPECIAL REPROVADO: Apenas reprovados no período vigente
+    // 3. REPROVADOS NO PERÍODO (Regra de Ouro: Independente da digitação)
     const reprovedInPeriod = proposals.filter(p => {
         if (p.status !== 'Reprovado') return false;
         
-        // Verifica quando ele foi marcado como Reprovado no histórico
-        const reprovalEntry = p.history?.filter(h => h.message.includes('Reprovado'))
+        // Tenta achar a data da reprova no histórico
+        const reprovalEntry = p.history?.filter(h => h.message.toLowerCase().includes('reprovado'))
                                 .sort((a, b) => b.date.localeCompare(a.date))[0];
         
         const eventDate = reprovalEntry ? new Date(reprovalEntry.date) : new Date(p.dateDigitized);
         return eventDate >= fromDate && eventDate <= effectiveToDate;
     });
 
-    const accumulatedProposals = proposals.filter(p => {
-        const d = new Date(p.dateDigitized);
-        return d <= effectiveToDate;
-    });
-
+    // 4. ANÁLISE DOS STATUS OPERACIONAIS
     const statusAnalysis: Record<string, { total: number; count: number; spark: number[]; top: string; proposals: Proposal[] }> = {};
     
-    activeProposalStatuses.forEach(status => {
-        let list: Proposal[] = [];
-        if (status === 'Pago') {
-            list = paidInPeriod;
-        } else if (status === 'Reprovado') {
-            list = reprovedInPeriod;
-        } else {
-            list = accumulatedProposals.filter(p => p.status === status);
-        }
+    // Lista ordenada conforme solicitação: Pendente, Em Andamento, Aguardando Saldo, Saldo Pago
+    const orderedFlow = ['Pendente', 'Em Andamento', 'Aguardando Saldo', 'Saldo Pago'];
 
+    orderedFlow.forEach(status => {
+        // Para estes status, mostramos o que está NESTE MOMENTO com este status,
+        // mas que foi digitado no período ou acumulado.
+        const list = proposals.filter(p => p.status === status);
         statusAnalysis[status] = {
             total: getSum(list),
             count: list.length,
@@ -214,6 +209,15 @@ export default function DashboardPage() {
             proposals: list
         };
     });
+
+    // Adiciona o Reprovado com a regra especial de período
+    statusAnalysis['Reprovado'] = {
+        total: getSum(reprovedInPeriod),
+        count: reprovedInPeriod.length,
+        spark: getSparkline(reprovedInPeriod),
+        top: getTopOperator(reprovedInPeriod),
+        proposals: reprovedInPeriod
+    };
 
     const totalDigitado = getSum(digitizedInPeriod);
     const totalDigitadoSpark = getSparkline(digitizedInPeriod);
@@ -229,7 +233,7 @@ export default function DashboardPage() {
             pago: paidInPeriod
         }
     };
-  }, [proposals, appliedDateRange, isClient, activeProposalStatuses, userProfile]);
+  }, [proposals, appliedDateRange, isClient, userProfile]);
 
   const handleShowDetails = (title: string, props: Proposal[]) => {
     setDialogData({ title, proposals: props });
