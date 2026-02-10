@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Bebas+Neue&family=Quicksand:wght@300;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;700&family=Inter:wght@300;400;700;900&family=EB+Garamond:wght@400;700&family=Montserrat:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Bebas+Neue&family=Quicksand:wght@300;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;700&family=Inter:wght@300;400;700;900&family=EB+Garamond:wght@400;700&family=Montserrat:wght@300;400;700&family=Roboto+Condensed:wght@400;700&family=Source+Code+Pro:wght@400;700&family=Cinzel:wght@400;700&family=Space+Grotesk:wght@300;400;700&family=UnifrakturMaguntia&family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@400;700&family=Lexend:wght@300;400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -94,8 +94,8 @@
     background-color: hsla(var(--status-color), 0.12) !important;
 }
 
-/* 🌟 AURA VISUAL (CONTAINERS) */
-.style-glow .card, .style-glow [data-sidebar="sidebar"], .style-glow button[data-state="active"], .style-glow .status-custom {
+/* 🌟 AURA VISUAL (FORÇADA) */
+.style-glow .card, .style-glow .status-custom, .style-glow [data-sidebar="sidebar"] {
     box-shadow: 0 0 20px hsla(var(--status-color, var(--primary)), 0.3) !important;
 }
 
@@ -109,12 +109,16 @@
     border-color: currentColor !important;
 }
 
+.style-deep .card {
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.3) !important;
+}
+
 /* 🏔️ TEXTURAS */
 .texture-dots { background-image: radial-gradient(hsl(var(--primary) / 0.1) 1px, transparent 1px); background-size: 20px 20px; }
 .texture-grid { background-image: linear-gradient(hsl(var(--primary) / 0.05) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary) / 0.05) 1px, transparent 1px); background-size: 30px 30px; }
 .texture-lines { background-image: repeating-linear-gradient(45deg, hsl(var(--primary) / 0.02) 0px, hsl(var(--primary) / 0.02) 1px, transparent 1px, transparent 8px); }
 
-/* 🛡️ BARRA LATERAL ELITE */
+/* 🛡️ BARRA LATERAL ELITE (REGRAS DE IMPACTO) */
 .sidebar-dark [data-sidebar="sidebar"] {
     --sidebar-background: 240 10% 4% !important;
     --sidebar-foreground: 0 0% 100% !important;
@@ -129,24 +133,46 @@
 }
 .sidebar-light [data-sidebar="sidebar"] * { color: #000000 !important; }
 
-/* ✍️ TIPOGRAFIA ELITE */
+/* ✍️ TIPOGRAFIA ELITE (20 ESTILOS) */
 .font-moderno { font-family: "Inter", sans-serif !important; }
 .font-classico { font-family: "Georgia", serif !important; }
-.font-mono { font-family: ui-monospace, monospace !important; }
+.font-mono { font-family: "Source Code Pro", monospace !important; }
 .font-arredondado { font-family: "Quicksand", sans-serif !important; }
+.font-condensado { font-family: "Roboto Condensed", sans-serif !important; }
+.font-business { font-family: "Lexend", sans-serif !important; }
 .font-elegante { font-family: "Playfair Display", serif !important; }
 .font-geometrico { font-family: "Montserrat", sans-serif !important; }
+.font-tecnico { font-family: "JetBrains Mono", monospace !important; }
+.font-minimalista { font-family: "Space Grotesk", sans-serif !important; }
 .font-futurista { font-family: "Orbitron", sans-serif !important; }
 .font-industrial { font-family: "Bebas Neue", sans-serif !important; }
 .font-real { font-family: "EB Garamond", serif !important; }
 .font-suave { font-family: "Outfit", sans-serif !important; }
+.font-sharp { font-family: "Syne", sans-serif !important; }
+.font-editorial { font-family: "Cinzel", serif !important; }
+.font-suico { font-family: "Inter", sans-serif !important; letter-spacing: -0.02em; }
+.font-academico { font-family: "EB Garamond", serif; font-style: italic; }
+.font-digital { font-family: "Orbitron", sans-serif; letter-spacing: 0.1em; }
+.font-robusto { font-family: "Montserrat", sans-serif; font-weight: 900; }
 
 /* 📐 ARREDONDAMENTO */
 .radius-reto { --radius: 0px !important; }
 .radius-extra-discreto { --radius: 2px !important; }
 .radius-discreto { --radius: 8px !important; }
 .radius-moderno { --radius: 12px !important; }
+.radius-amigavel { --radius: 16px !important; }
 .radius-suave { --radius: 24px !important; }
+.radius-capsula { --radius: 9999px !important; }
+
+/* ⏳ MOTION DESIGN */
+.anim-estatico * { transition: none !important; }
+.anim-instantaneo * { transition-duration: 50ms !important; }
+.anim-rapido * { transition-duration: 150ms !important; }
+.anim-sutil * { transition-duration: 300ms !important; }
+.anim-cinematografico * { transition-duration: 600ms !important; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important; }
+.anim-elastico * { transition-duration: 500ms !important; transition-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55) !important; }
+.anim-dramatico * { transition-duration: 800ms !important; }
+.anim-atmosferico * { transition-duration: 1200ms !important; transition-timing-function: ease-in-out !important; }
 
 @layer base {
   * { 

@@ -217,8 +217,10 @@ export default function SettingsPage() {
   ]));
 
   const fontOptions = [
-    "moderno", "classico", "mono", "arredondado", "elegante", 
-    "geometrico", "futurista", "industrial", "real", "suave"
+    "moderno", "classico", "mono", "arredondado", "condensado", 
+    "business", "elegante", "geometrico", "tecnico", "minimalista", 
+    "futurista", "robusto", "editorial", "suico", "academico",
+    "industrial", "digital", "real", "suave", "sharp"
   ];
 
   return (
@@ -263,7 +265,7 @@ export default function SettingsPage() {
                                     <CardDescription>Configure a estética industrial da sua plataforma.</CardDescription>
                                 </div>
                                 <Button onClick={handleApplyAppearance} size="sm" className="bg-primary hover:bg-primary/90">
-                                    <Sparkles className="mr-2 h-4 w-4" /> Salvar Aparência
+                                    <Sparkles className="mr-2 h-4 w-4" /> Salvar Identidade Visual
                                 </Button>
                             </CardHeader>
                             <CardContent className="space-y-10">
@@ -358,7 +360,7 @@ export default function SettingsPage() {
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-2"><MousePointer2 className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Arredondamento</h4></div>
                                         <RadioGroup value={preview.radius} onValueChange={(val) => setPreview(p => ({ ...p, radius: val }))} className="grid grid-cols-3 gap-2">
-                                            {['reto', 'extra-discreto', 'discreto', 'moderno', 'suave'].map((r) => (
+                                            {['reto', 'extra-discreto', 'discreto', 'moderno', 'amigavel', 'suave', 'capsula'].map((r) => (
                                                 <Label key={r} htmlFor={`r-${r}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-[10px] font-bold text-center", preview.radius === r ? "border-primary bg-primary/5" : "border-muted")}>
                                                     <RadioGroupItem value={r} id={`r-${r}`} className="sr-only" />{r === 'extra-discreto' ? 'X-Discreto' : r}
                                                 </Label>
@@ -440,7 +442,8 @@ export default function SettingsPage() {
                                     "p-6 rounded-2xl transition-all duration-500",
                                     `texture-${preview.backgroundTexture}`,
                                     `radius-${preview.radius}`,
-                                    `font-${preview.fontStyle}`
+                                    `font-${preview.fontStyle}`,
+                                    `anim-${preview.animationStyle}`
                                 )}>
                                     <div className="space-y-4">
                                         <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Preview de KPI</p>
@@ -452,7 +455,9 @@ export default function SettingsPage() {
                                             isHot={true}
                                             className={cn(
                                                 preview.containerStyle === 'glow' && "style-glow",
-                                                preview.containerStyle === 'glass' && "style-glass"
+                                                preview.containerStyle === 'glass' && "style-glass",
+                                                preview.containerStyle === 'geometrico' && "style-geometrico",
+                                                preview.containerStyle === 'deep' && "style-deep"
                                             )}
                                             style={{
                                                 '--status-color': preview.statusColors['COMISSÃO ESPERADA'] || '217 33% 25%'
