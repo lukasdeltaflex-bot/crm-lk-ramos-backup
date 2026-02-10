@@ -42,7 +42,8 @@ export function ProductBreakdownChart({ proposals }: ProductBreakdownChartProps)
   const chartData = React.useMemo(() => {
     const data: Record<string, number> = {}
     proposals.forEach((p) => {
-      const amount = p.commissionBase === 'net' ? (p.netAmount || 0) : (p.grossAmount || 0)
+      // Usamos sempre a base de comissão ou valor bruto para o mix de produtos
+      const amount = p.grossAmount || 0;
       data[p.product] = (data[p.product] || 0) + amount
     })
 
@@ -56,8 +57,9 @@ export function ProductBreakdownChart({ proposals }: ProductBreakdownChartProps)
   }, [proposals])
 
   const totalVolume = React.useMemo(() => {
-    return chartData.reduce((acc, curr) => acc + curr.amount, 0)
-  }, [chartData])
+    // Sincroniza com o Total Digitado passado via props
+    return proposals.reduce((acc, curr) => acc + (curr.grossAmount || 0), 0);
+  }, [proposals])
 
   if (proposals.length === 0) return null
 
@@ -131,7 +133,7 @@ export function ProductBreakdownChart({ proposals }: ProductBreakdownChartProps)
       </CardContent>
       <div className="p-6 pt-0 border-t bg-muted/5 flex items-center justify-between rounded-b-lg">
         <div className="flex flex-col">
-            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-tighter">Volume Digitado</span>
+            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-tighter">Volume Digitado (Mês)</span>
             <span className="text-lg font-bold text-primary">{formatCurrency(totalVolume)}</span>
         </div>
         <div className="flex -space-x-2">

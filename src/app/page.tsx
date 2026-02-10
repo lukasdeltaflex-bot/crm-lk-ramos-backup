@@ -89,8 +89,6 @@ export default function DashboardPage() {
   }, [firestore, user]);
   const { data: userSettings } = useDoc<UserSettings>(settingsDocRef);
 
-  const activeProposalStatuses = userSettings?.proposalStatuses || configData.proposalStatuses;
-
   const handleDateInputChange = (value: string, type: 'start' | 'end') => {
     let formattedValue = value.replace(/\D/g, '');
     if (formattedValue.length > 8) formattedValue = formattedValue.substring(0, 8);
@@ -164,14 +162,14 @@ export default function DashboardPage() {
         });
     };
 
-    // 1. TOTAL DIGITADO NO PERÍODO (Base para todos os outros volumes do mês)
+    // 1. UNIVERSO DO PERÍODO: Apenas o que foi digitado no mês/intervalo selecionado
     const digitizedInPeriod = proposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
         return d >= fromDate && d <= effectiveToDate;
     });
 
-    // 2. PAGOS NO PERÍODO (Para o GoalCard)
+    // 2. PAGOS NO PERÍODO (Para o GoalCard - Independente de quando foi digitado)
     const paidInPeriod = proposals.filter(p => {
         if (p.status !== 'Pago') return false;
         if (!p.datePaidToClient) return false;
@@ -179,28 +177,13 @@ export default function DashboardPage() {
         return d >= fromDate && d <= effectiveToDate;
     });
 
-    // 3. REPROVADOS NO PERÍODO (Regra de Ouro: Independente da digitação)
-    const reprovedInPeriod = proposals.filter(p => {
-        if (p.status !== 'Reprovado') return false;
-        
-        // Tenta achar a data da reprova no histórico
-        const reprovalEntry = p.history?.filter(h => h.message.toLowerCase().includes('reprovado'))
-                                .sort((a, b) => b.date.localeCompare(a.date))[0];
-        
-        const eventDate = reprovalEntry ? new Date(reprovalEntry.date) : new Date(p.dateDigitized);
-        return eventDate >= fromDate && eventDate <= effectiveToDate;
-    });
-
-    // 4. ANÁLISE DOS STATUS OPERACIONAIS
+    // 3. ANÁLISE DOS STATUS OPERACIONAIS (Baseados no Digitado do Mês)
     const statusAnalysis: Record<string, { total: number; count: number; spark: number[]; top: string; proposals: Proposal[] }> = {};
-    
-    // Lista ordenada conforme solicitação: Pendente, Em Andamento, Aguardando Saldo, Saldo Pago
-    const orderedFlow = ['Pendente', 'Em Andamento', 'Aguardando Saldo', 'Saldo Pago'];
+    const orderedFlow = ['Pendente', 'Em Andamento', 'Aguardando Saldo', 'Saldo Pago', 'Reprovado'];
 
     orderedFlow.forEach(status => {
-        // Para estes status, mostramos o que está NESTE MOMENTO com este status,
-        // mas que foi digitado no período ou acumulado.
-        const list = proposals.filter(p => p.status === status);
+        // REGRA SOLICITADA: Para todos os status (incluindo Reprovado), mostrar apenas o que foi digitado no mês
+        const list = digitizedInPeriod.filter(p => p.status === status);
         statusAnalysis[status] = {
             total: getSum(list),
             count: list.length,
@@ -209,15 +192,6 @@ export default function DashboardPage() {
             proposals: list
         };
     });
-
-    // Adiciona o Reprovado com a regra especial de período
-    statusAnalysis['Reprovado'] = {
-        total: getSum(reprovedInPeriod),
-        count: reprovedInPeriod.length,
-        spark: getSparkline(reprovedInPeriod),
-        top: getTopOperator(reprovedInPeriod),
-        proposals: reprovedInPeriod
-    };
 
     const totalDigitado = getSum(digitizedInPeriod);
     const totalDigitadoSpark = getSparkline(digitizedInPeriod);
@@ -229,8 +203,8 @@ export default function DashboardPage() {
         topTotal,
         statusAnalysis,
         proposals: {
-            todos: digitizedInPeriod,
-            pago: paidInPeriod
+            digitadoNoMes: digitizedInPeriod,
+            pagoNoMes: paidInPeriod
         }
     };
   }, [proposals, appliedDateRange, isClient, userProfile]);
@@ -244,7 +218,6 @@ export default function DashboardPage() {
 
   if (!stats) return null;
 
-  // ORDEM EXATA SOLICITADA PARA OS CARDS
   const orderedStatuses = ['Pendente', 'Em Andamento', 'Aguardando Saldo', 'Saldo Pago', 'Reprovado'];
 
   return (
@@ -302,17 +275,17 @@ export default function DashboardPage() {
 
         <div className="w-full">
             <GoalCard 
-                currentProduction={stats.statusAnalysis['Pago']?.total || 0} 
+                currentProduction={stats.proposals.pagoNoMes.reduce((sum, p) => sum + p.grossAmount, 0)} 
                 totalDigitized={stats.totalDigitado}
                 isPrivacyMode={isPrivacyMode}
-                onValueClick={() => handleShowDetails('Contratos Pagos no Período', stats.proposals.pago)}
-                sparklineData={stats.statusAnalysis['Pago']?.spark || []}
-                topContributor={stats.statusAnalysis['Pago']?.top}
+                onValueClick={() => handleShowDetails('Contratos Pagos no Período', stats.proposals.pagoNoMes)}
+                sparklineData={stats.totalDigitadoSpark}
+                topContributor={stats.topTotal}
             />
         </div>
 
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            <div className="cursor-pointer" onClick={() => handleShowDetails('Total Digitado (Mês)', stats.proposals.todos)}>
+            <div className="cursor-pointer" onClick={() => handleShowDetails('Total Digitado (Mês)', stats.proposals.digitadoNoMes)}>
                 <StatsCard 
                     title="Total Digitado" 
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.totalDigitado)} 
@@ -333,14 +306,14 @@ export default function DashboardPage() {
                     if (lower === 'em andamento') return { icon: Hourglass, isHot: true, desc: "VS PRODUÇÃO ATUAL" };
                     if (lower === 'aguardando saldo') return { icon: Clock, desc: "VS PRODUÇÃO ATUAL" };
                     if (lower === 'saldo pago') return { icon: CheckCircle2, desc: "VS PRODUÇÃO ATUAL" };
-                    if (lower === 'reprovado') return { icon: XCircle, desc: "DO MÊS ATUAL" };
-                    return { icon: Activity, desc: "VOLUME ACUMULADO" };
+                    if (lower === 'reprovado') return { icon: XCircle, desc: "DO TOTAL DIGITADO" };
+                    return { icon: Activity, desc: "VOLUME NO MÊS" };
                 };
 
                 const meta = getStatusMeta(statusName);
 
                 return (
-                    <div key={statusName} className="cursor-pointer" onClick={() => handleShowDetails(`${statusName} ${statusName === 'Reprovado' ? '(Mês)' : '(Acumulado)'}`, statusData.proposals)}>
+                    <div key={statusName} className="cursor-pointer" onClick={() => handleShowDetails(`${statusName} (Digitado no Mês)`, statusData.proposals)}>
                         <StatsCard 
                             title={statusName} 
                             value={isPrivacyMode ? '•••••' : formatCurrency(statusData.total)} 
@@ -360,12 +333,12 @@ export default function DashboardPage() {
                 <CommissionChart proposals={proposals || []} />
             </div>
             <div className="lg:col-span-1">
-                <ProductBreakdownChart proposals={stats.proposals.todos} />
+                <ProductBreakdownChart proposals={stats.proposals.digitadoNoMes} />
             </div>
         </div>
 
         <div className="w-full">
-            <PartnerPerformanceCharts proposals={stats.proposals.todos} />
+            <PartnerPerformanceCharts proposals={stats.proposals.digitadoNoMes} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
