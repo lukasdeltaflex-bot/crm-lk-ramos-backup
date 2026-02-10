@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -80,7 +81,6 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
     /**
      * 4. COMISSÃO ESPERADA (Independente de Mês)
      * Regra: Todos os contratos da base, EXCEÇÃO: Reprovados/Cancelados e os já Pagos.
-     * Focado apenas na esteira ativa (Pendente, Em Andamento, Aguardando Saldo, Saldo Pago).
      */
     const esperados = allProposals.filter(p => {
         const isNotReprovado = p.status !== 'Reprovado';

@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -207,6 +208,7 @@ export default function SettingsPage() {
 
   const isLoading = isUserLoading || isSettingsLoading;
 
+  // Use unique status names for the color picker
   const colorableStatuses = Array.from(new Set([
     ...proposalStatuses, 
     "Paga", "Pendente", "Parcial",
