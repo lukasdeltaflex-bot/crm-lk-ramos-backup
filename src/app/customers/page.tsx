@@ -362,80 +362,88 @@ const handleExportToPdf = async () => {
   const handleFormSubmit = async (data: Omit<Customer, 'id' | 'ownerId' | 'numericId'>) => {
     if (!firestore || !user) return;
 
-    const cpfExists = customers?.find(
-      (c) => c.cpf === data.cpf && c.id !== selectedCustomer?.id
-    );
-    if (cpfExists) {
-        toast({
-            variant: 'destructive',
-            title: 'CPF já cadastrado',
-            description: `O CPF ${data.cpf} já pertence ao cliente "${cpfExists.name}".`,
-        });
-        return;
-    }
-
     setIsSaving(true);
-    
-    if (sheetMode === 'edit' && selectedCustomer) {
-        const customerToUpdate: Customer = {
-            ...selectedCustomer,
-            ...data,
-        };
-        const docRef = doc(firestore, 'customers', selectedCustomer.id);
-        
-        // Non-blocking setDoc
-        setDoc(docRef, customerToUpdate, { merge: true })
-            .catch(async (error) => {
-                if (error.code === 'permission-denied') {
-                    errorEmitter.emit('permission-error', new FirestorePermissionError({
-                        path: docRef.path,
-                        operation: 'update',
-                        requestResourceData: customerToUpdate
-                    }));
-                }
+    try {
+        const cpfExists = customers?.find(
+          (c) => c.cpf === data.cpf && c.id !== selectedCustomer?.id
+        );
+        if (cpfExists) {
+            toast({
+                variant: 'destructive',
+                title: 'CPF já cadastrado',
+                description: `O CPF ${data.cpf} já pertence ao cliente "${cpfExists.name}".`,
             });
-
-        toast({
-            title: 'Cliente Atualizado!',
-            description: `O cliente ${data.name} foi atualizado com sucesso.`,
-        });
-        setIsDialog(false);
-        setIsSaving(false);
-  
-    } else {
-        const newDocRef = doc(collection(firestore, 'customers'));
-        
-        let nextNumericId = 1;
-        if (customers && customers.length > 0) {
-            const maxId = Math.max(...customers.map(c => c.numericId || 0));
-            nextNumericId = maxId + 1;
+            setIsSaving(false);
+            return;
         }
 
-        const newCustomerWithId: Customer = {
-          ...data,
-          id: newDocRef.id,
-          numericId: nextNumericId,
-          ownerId: user.uid,
-          status: data.status || 'active',
-        };
+        if (sheetMode === 'edit' && selectedCustomer) {
+            const customerToUpdate: Customer = {
+                ...selectedCustomer,
+                ...data,
+            };
+            const docRef = doc(firestore, 'customers', selectedCustomer.id);
+            
+            // Non-blocking setDoc
+            setDoc(docRef, customerToUpdate, { merge: true })
+                .catch(async (error) => {
+                    if (error.code === 'permission-denied') {
+                        errorEmitter.emit('permission-error', new FirestorePermissionError({
+                            path: docRef.path,
+                            operation: 'update',
+                            requestResourceData: customerToUpdate
+                        }));
+                    }
+                });
 
-        // Non-blocking setDoc
-        setDoc(newDocRef, newCustomerWithId)
-            .catch(async (error) => {
-                if (error.code === 'permission-denied') {
-                    errorEmitter.emit('permission-error', new FirestorePermissionError({
-                        path: newDocRef.path,
-                        operation: 'create',
-                        requestResourceData: newCustomerWithId
-                    }));
-                }
+            toast({
+                title: 'Cliente Atualizado!',
+                description: `O cliente ${data.name} foi atualizado com sucesso.`,
             });
+            setIsDialog(false);
+        } else {
+            const newDocRef = doc(collection(firestore, 'customers'));
+            
+            let nextNumericId = 1;
+            if (customers && customers.length > 0) {
+                const maxId = Math.max(...customers.map(c => c.numericId || 0));
+                nextNumericId = maxId + 1;
+            }
 
+            const newCustomerWithId: Customer = {
+              ...data,
+              id: newDocRef.id,
+              numericId: nextNumericId,
+              ownerId: user.uid,
+              status: data.status || 'active',
+            };
+
+            // Non-blocking setDoc
+            setDoc(newDocRef, newCustomerWithId)
+                .catch(async (error) => {
+                    if (error.code === 'permission-denied') {
+                        errorEmitter.emit('permission-error', new FirestorePermissionError({
+                            path: newDocRef.path,
+                            operation: 'create',
+                            requestResourceData: newCustomerWithId
+                        }));
+                    }
+                });
+
+            toast({
+              title: 'Cliente Salvo!',
+              description: `O cliente ${data.name} foi salvo com sucesso.`,
+            });
+            setIsDialog(false);
+        }
+    } catch (error) {
+        console.error("Error saving customer:", error);
         toast({
-          title: 'Cliente Salvo!',
-          description: `O cliente ${data.name} foi salvo com sucesso.`,
+            variant: "destructive",
+            title: "Erro ao salvar",
+            description: "Ocorreu um problema técnico ao tentar salvar os dados."
         });
-        setIsDialog(false);
+    } finally {
         setIsSaving(false);
     }
   };
