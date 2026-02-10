@@ -25,8 +25,8 @@ interface StatsCardProps {
 }
 
 /**
- * StatsCard Premium Executivo V31
- * Sincronizado com o Laboratório de Cores para Cards Dinâmicos.
+ * StatsCard Premium Executivo V32
+ * Sincronizado com o Laboratório de Cores para espelhar a identidade visual nos cards.
  */
 export function StatsCard({ 
     title, 
@@ -48,16 +48,16 @@ export function StatsCard({
     const t = title.toLowerCase();
 
     // Prioridade 1: Cores Dinâmicas do Laboratório de Status
-    // Se o título do card for exatamente o nome de um status, usamos a cor customizada.
     const customColor = statusColors[title];
     if (customColor) {
         return {
             card: '',
-            text: 'text-foreground',
+            text: '', 
             stroke: `hsl(${customColor})`,
             style: { 
                 borderColor: `hsla(${customColor}, 0.3)`,
                 backgroundColor: `hsla(${customColor}, 0.05)`,
+                color: `hsl(${customColor})`,
                 '--status-color': customColor 
             } as any
         };
@@ -166,7 +166,7 @@ export function StatsCard({
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 mb-1.5">
         <div className="flex flex-col gap-0.5">
-            <CardTitle className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground group-hover:text-primary transition-colors">
+            <CardTitle className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground group-hover:text-primary transition-colors" style={{ color: theme.style?.color }}>
                 {title}
             </CardTitle>
             {isCritical ? (
@@ -181,12 +181,12 @@ export function StatsCard({
         </div>
         <div className="flex items-center gap-2">
             {renderSparkline()}
-            <Icon className={cn("h-4 w-4 opacity-60", theme.text)} />
+            <Icon className={cn("h-4 w-4 opacity-60", theme.text)} style={{ color: theme.style?.color }} />
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col justify-between p-0">
         <div className="flex items-baseline justify-between gap-2">
-            <div className={cn("text-2xl sm:text-3xl font-light tracking-tighter", theme.text, valueClassName)}>
+            <div className={cn("text-2xl sm:text-3xl font-light tracking-tighter", theme.text, valueClassName)} style={{ color: theme.style?.color }}>
                 {value}
             </div>
             {percentage !== undefined && (

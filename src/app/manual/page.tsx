@@ -7,26 +7,19 @@ import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { 
-    LayoutDashboard, 
     Palette, 
-    Shapes, 
-    Monitor, 
-    Zap, 
+    ShieldCheck, 
     Wallet, 
     Eye, 
-    TrendingUp, 
-    ShieldCheck, 
-    Sparkles, 
-    Database, 
-    CloudUpload,
-    FileBadge,
-    Bot,
-    MousePointer2,
-    Type,
-    MoveHorizontal,
     Filter,
     Pipette,
-    ListChecks
+    ListChecks,
+    BookOpen,
+    Zap,
+    Type,
+    MoveHorizontal,
+    Bot,
+    MousePointer2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 

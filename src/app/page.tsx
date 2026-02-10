@@ -172,7 +172,7 @@ export default function DashboardPage() {
         return d >= prevMonthStart && d <= effectiveToDate;
     });
 
-    // PAGOS NO PERÍODO (Para GoalCard)
+    // PAGOS NO PERÍODO (Para Meta de Produção)
     const paidInPeriod = proposals.filter(p => {
         if (p.status !== 'Pago') return false;
         if (!p.datePaidToClient) return false;
@@ -184,7 +184,7 @@ export default function DashboardPage() {
     const orderedFlow = ['Pendente', 'Em Andamento', 'Aguardando Saldo', 'Saldo Pago', 'Reprovado'];
 
     orderedFlow.forEach(status => {
-        // REGRA: Reprovado apenas do mês atual. Outros: Mês atual + Mês anterior.
+        // REGRA: Reprovado apenas do mês atual. Outros da esteira: Mês atual + Mês anterior.
         const sourceList = (status === 'Reprovado') ? digitizedInPeriod : digitizedInExtendedPeriod;
         const list = sourceList.filter(p => p.status === status);
         
