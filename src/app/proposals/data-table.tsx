@@ -24,9 +24,9 @@ import {
     closestCenter,
     KeyboardSensor,
     PointerSensor,
-    useSensor,
     useSensors,
     DragEndEvent,
+    useSensor,
   } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 
@@ -167,7 +167,11 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   }, [pagination.pageSize, isClient]);
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+        activationConstraint: {
+            distance: 8,
+        },
+    }),
     useSensor(KeyboardSensor)
   );
 

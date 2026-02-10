@@ -26,8 +26,8 @@ interface StatsCardProps {
 }
 
 /**
- * StatsCard Elite V45
- * Aura de fundo realçada (12%) e Bordas Dinâmicas (50%) sincronizadas com o Laboratório de Cores.
+ * StatsCard Elite V46
+ * Aura de fundo realçada (15%) e Bordas Dinâmicas (50%) sincronizadas com o Laboratório de Cores.
  * Selo EM ALTA restaurado com animação de pulsação.
  */
 export function StatsCard({ 
@@ -52,8 +52,8 @@ export function StatsCard({
         return {
             card: '',
             style: { 
-                borderColor: `hsla(${customColor}, 0.5)`, // Borda nítida
-                backgroundColor: `hsla(${customColor}, 0.12)`, // Fundo visível (Aura)
+                borderColor: `hsla(${customColor}, 0.5)`, // Borda nítida 50%
+                backgroundColor: `hsla(${customColor}, 0.15)`, // Aura visível 15%
                 color: `hsl(${customColor})`, // Texto na cor do status
                 '--status-color': customColor 
             } as any,
@@ -64,8 +64,12 @@ export function StatsCard({
     const t = title.toLowerCase();
     if (isCritical) return { card: 'border-red-400 bg-red-50 dark:bg-red-900/20 animate-pulse', style: {}, stroke: '#dc2626' };
 
-    // Fallback para "Total Digitado" e outros neutros
-    if (t.includes('digitado')) return { card: 'border-zinc-300 bg-zinc-50 dark:bg-zinc-900/40', style: {}, stroke: '#a1a1aa' };
+    // Fallback para "Total Digitado" e outros neutros - Adicionando cor primária suave
+    if (t.includes('digitado')) return { 
+        card: 'border-primary/20 bg-primary/[0.03]', 
+        style: { color: 'hsl(var(--primary))' }, 
+        stroke: 'hsl(var(--primary))' 
+    };
     
     return { 
         card: 'border-slate-200 bg-slate-50 dark:bg-slate-900/10', 
