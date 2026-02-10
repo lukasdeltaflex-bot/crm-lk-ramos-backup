@@ -4,16 +4,7 @@
 import * as React from "react"
 import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "next-themes"
 import { type ThemeProviderProps } from "next-themes/dist/types"
-
-const COLOR_THEMES = [
-  "padrão", "zinc", "blue", "green", "violet", "orange", "red", "rose", "gray", 
-  "yellow", "cyan", "purple", "magenta", "emerald", "burnt-orange", "sky-blue", "pink",
-  "mint", "lavender", "peach", "slate", "midnight", "forest", "charcoal", "wine", 
-  "coffee", "gold", "indigo", "amber", "teal", "bronze", "royal-blue", "cherry",
-  "forest-bright", "deep-purple", "mustard", "rust", "arctic", "lime", "graphite", "copper",
-  "ocean", "berry", "olive", "terracotta", "electric", "ruby", "emerald-vivid", "amethyst", "silver", "sand",
-  "crimson", "obsidian", "nordic", "volcano", "titanium", "espresso", "sage", "claret", "royal-gold", "industrial"
-];
+import { THEMES } from "@/lib/themes"
 
 const RADIUS_OPTIONS = ["executivo", "moderno", "suave"];
 const SIDEBAR_OPTIONS = ["default", "dark", "light"];
@@ -68,11 +59,12 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
   const [glassIntensity, setGlassIntensityState] = React.useState(70);
   const [statusColors, setStatusColorsState] = React.useState<Record<string, string>>({});
   const [isMounted, setIsMounted] = React.useState(false);
+  const { resolvedTheme } = useNextTheme();
 
   React.useEffect(() => {
     setIsMounted(true);
     const savedColor = localStorage.getItem("color-theme");
-    if (savedColor && COLOR_THEMES.includes(savedColor)) setColorThemeState(savedColor);
+    if (savedColor) setColorThemeState(savedColor);
     
     const savedRadius = localStorage.getItem("radius-theme");
     if (savedRadius && RADIUS_OPTIONS.includes(savedRadius)) setRadiusState(savedRadius);
@@ -108,9 +100,11 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
     if (isMounted) {
       const root = document.documentElement;
       
-      // Manage Colors
-      root.classList.remove(...COLOR_THEMES.map(t => `theme-${t}`));
-      root.classList.add(`theme-${colorTheme}`);
+      // Force Theme Color Inversion into CSS Variables
+      const activeTheme = THEMES.find(t => t.name === colorTheme) || THEMES[0];
+      const primaryValue = resolvedTheme === 'dark' ? activeTheme.dark : activeTheme.light;
+      root.style.setProperty('--primary', primaryValue);
+      root.style.setProperty('--sidebar-primary', primaryValue);
       localStorage.setItem("color-theme", colorTheme);
 
       // Manage Radius
@@ -155,18 +149,20 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
       root.style.setProperty('--glass-blur', `${glassIntensity / 5}px`);
       localStorage.setItem("glass-intensity", String(glassIntensity));
 
-      // Manage Status Colors
+      // Manage Status Colors (Inject directly as HSL variables)
       Object.entries(statusColors).forEach(([name, color]) => {
+          // color is stored as "H S% L%" or full hsl() string
+          // We normalize it to the numeric values Tailwind expects
           const varName = `--status-color-${name.replace(/\s+/g, '-').toLowerCase()}`;
           root.style.setProperty(varName, color);
       });
       localStorage.setItem("status-colors", JSON.stringify(statusColors));
     }
-  }, [colorTheme, radius, sidebarStyle, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, glassIntensity, statusColors, isMounted]);
+  }, [colorTheme, radius, sidebarStyle, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, glassIntensity, statusColors, isMounted, resolvedTheme]);
 
   const value = {
     colorTheme,
-    setColorTheme: (theme: string) => { if (COLOR_THEMES.includes(theme)) setColorThemeState(theme); },
+    setColorTheme: (theme: string) => { setColorThemeState(theme); },
     radius,
     setRadius: (r: string) => { if (RADIUS_OPTIONS.includes(r)) setRadiusState(r); },
     sidebarStyle,

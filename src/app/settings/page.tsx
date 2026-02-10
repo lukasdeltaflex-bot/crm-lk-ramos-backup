@@ -39,7 +39,8 @@ import {
     MoveHorizontal,
     MousePointer2,
     Shapes,
-    Pipette
+    Pipette,
+    Check
 } from 'lucide-react';
 import { EditableList } from '@/components/settings/editable-list';
 import { BankEditableList } from '@/components/settings/bank-editable-list';
@@ -63,8 +64,47 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
+import { THEMES } from '@/lib/themes';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const DRIVE_LINKED_KEY = 'lk-ramos-google-drive-linked-v1';
+
+/**
+ * Componente de Seletor de Cores para Status.
+ * Usa a mesma paleta de temas globais para garantir consistência.
+ */
+function StatusColorPalette({ 
+    activeColor, 
+    onSelect, 
+    isDark 
+}: { 
+    activeColor: string; 
+    onSelect: (color: string) => void;
+    isDark: boolean;
+}) {
+    return (
+        <div className="grid grid-cols-6 gap-2 p-2 w-[280px]">
+            {THEMES.map((theme) => {
+                const colorValue = isDark ? theme.dark : theme.light;
+                const isActive = activeColor === colorValue;
+                return (
+                    <button
+                        key={theme.name}
+                        onClick={() => onSelect(colorValue)}
+                        className={cn(
+                            "h-8 w-8 rounded-md border transition-all hover:scale-110 flex items-center justify-center",
+                            isActive ? "border-foreground ring-2 ring-primary/30" : "border-transparent"
+                        )}
+                        style={{ backgroundColor: `hsl(${colorValue})` }}
+                        title={theme.label}
+                    >
+                        {isActive && <Check className="h-4 w-4 text-white drop-shadow-sm" />}
+                    </button>
+                )
+            })}
+        </div>
+    );
+}
 
 export default function SettingsPage() {
   const { user, isUserLoading } = useUser();
@@ -80,7 +120,8 @@ export default function SettingsPage() {
     setColorTheme,
     colorTheme,
     glassIntensity, setGlassIntensity,
-    statusColors, setStatusColors
+    statusColors, setStatusColors,
+    resolvedTheme
   } = useTheme();
   
   const [isExporting, setIsExporting] = useState(false);
@@ -370,25 +411,37 @@ export default function SettingsPage() {
                                 <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Cores dos Status Operacionais</h4>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {proposalStatuses.map((status) => (
-                                    <div key={status} className="flex items-center justify-between p-3 border rounded-xl bg-muted/10 hover:border-primary/20 transition-all">
-                                        <div className="flex items-center gap-2">
-                                            <div 
-                                                className="h-3 w-3 rounded-full shadow-sm" 
-                                                style={{ backgroundColor: statusColors[status] || 'hsl(var(--primary))' }} 
-                                            />
-                                            <span className="text-xs font-bold uppercase tracking-tighter">{status}</span>
+                                {proposalStatuses.map((status) => {
+                                    const currentHsl = statusColors[status] || THEMES[0].light;
+                                    return (
+                                        <div key={status} className="flex items-center justify-between p-3 border rounded-xl bg-muted/10 hover:border-primary/20 transition-all">
+                                            <div className="flex items-center gap-2">
+                                                <div 
+                                                    className="h-4 w-4 rounded-full shadow-inner border border-white/20" 
+                                                    style={{ backgroundColor: `hsl(${currentHsl})` }} 
+                                                />
+                                                <span className="text-xs font-bold uppercase tracking-tighter">{status}</span>
+                                            </div>
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <Button variant="ghost" size="sm" className="h-8 text-[10px] font-bold uppercase gap-2 bg-background shadow-sm border">
+                                                        Escolher Cor
+                                                        <Pipette className="h-3 w-3 opacity-50" />
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0" align="end">
+                                                    <StatusColorPalette 
+                                                        activeColor={currentHsl}
+                                                        onSelect={(color) => handleStatusColorChange(status, color)}
+                                                        isDark={resolvedTheme === 'dark'}
+                                                    />
+                                                </PopoverContent>
+                                            </Popover>
                                         </div>
-                                        <Input 
-                                            type="color" 
-                                            className="h-8 w-12 p-0.5 border-none bg-transparent cursor-pointer"
-                                            value={statusColors[status] || '#1e3a8a'}
-                                            onChange={(e) => handleStatusColorChange(status, e.target.value)}
-                                        />
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
-                            <p className="text-[10px] text-muted-foreground italic text-center">Estas cores serão aplicadas automaticamente em todos os badges e linhas de tabelas.</p>
+                            <p className="text-[10px] text-muted-foreground italic text-center">As cores de status agora usam a mesma paleta premium do tema global.</p>
                         </div>
 
                         <Separator />

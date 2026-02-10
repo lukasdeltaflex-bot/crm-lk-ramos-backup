@@ -1,0 +1,75 @@
+/**
+ * @fileOverview Definições centralizadas dos temas cromáticos do LK RAMOS.
+ * Armazena as cores primárias em formato compatível com variáveis CSS (HSL puro).
+ */
+
+export interface ThemeDefinition {
+  name: string;
+  label: string;
+  light: string; // Formato: "H S% L%"
+  dark: string;  // Formato: "H S% L%"
+}
+
+export const THEMES: ThemeDefinition[] = [
+    { name: "padrão", label: "Padrão", light: "217 33% 25%", dark: "217 33% 30%" },
+    { name: "zinc", label: "Cinza", light: "240 5.9% 10%", dark: "240 5.9% 90%" },
+    { name: "midnight", label: "Meia-Noite", light: "222 47% 11%", dark: "222 47% 11%" },
+    { name: "obsidian", label: "Obsidiana", light: "240 10% 10%", dark: "240 10% 10%" },
+    { name: "charcoal", label: "Carvão", light: "210 10% 20%", dark: "210 10% 20%" },
+    { name: "slate", label: "Ardósia", light: "215 25% 27%", dark: "215 25% 67%" },
+    { name: "titanium", label: "Titânio", light: "210 5% 30%", dark: "210 5% 35%" },
+    { name: "industrial", label: "Industrial", light: "200 5% 45%", dark: "200 5% 50%" },
+    { name: "graphite", label: "Grafite", light: "215 15% 35%", dark: "215 15% 40%" },
+    { name: "blue", label: "Azul", light: "217.2 91.2% 59.8%", dark: "217.2 91.2% 59.8%" },
+    { name: "nordic", label: "Nórdico", light: "210 20% 40%", dark: "210 20% 45%" },
+    { name: "royal-blue", label: "Royal", light: "225 73% 45%", dark: "225 73% 50%" },
+    { name: "sky-blue", label: "Azul Céu", light: "199 89% 48%", dark: "199 89% 53%" },
+    { name: "arctic", label: "Ártico", light: "195 90% 45%", dark: "195 90% 50%" },
+    { name: "ocean", label: "Oceano", light: "210 100% 25%", dark: "210 100% 30%" },
+    { name: "indigo", label: "Índigo", light: "243 75% 59%", dark: "243 75% 59%" },
+    { name: "purple", label: "Roxo", light: "282 78% 51%", dark: "282 78% 56%" },
+    { name: "deep-purple", label: "Plum", light: "275 80% 35%", dark: "275 80% 40%" },
+    { name: "amethyst", label: "Ametista", light: "275 70% 55%", dark: "275 70% 60%" },
+    { name: "violet", label: "Violeta", light: "262.1 83.3% 57.8%", dark: "262.1 83.3% 62.8%" },
+    { name: "lavender", label: "Lavanda", light: "250 60% 60%", dark: "250 60% 65%" },
+    { name: "pink", label: "Pink", light: "336 82% 54%", dark: "336 82% 59%" },
+    { name: "magenta", label: "Magenta", light: "322 84% 50%", dark: "322 84% 55%" },
+    { name: "berry", label: "Frutas", light: "330 80% 40%", dark: "330 80% 45%" },
+    { name: "rose", label: "Rosa", light: "346.8 77.2% 49.8%", dark: "346.8 77.2% 54.8%" },
+    { name: "wine", label: "Vinho", light: "345 60% 25%", dark: "345 60% 25%" },
+    { name: "claret", label: "Bordeaux", light: "345 60% 30%", dark: "345 60% 35%" },
+    { name: "cherry", label: "Cereja", light: "350 85% 40%", dark: "350 85% 45%" },
+    { name: "ruby", label: "Rubi", light: "355 100% 45%", dark: "355 100% 50%" },
+    { name: "crimson", label: "Carmesim", light: "348 83% 47%", dark: "348 83% 52%" },
+    { name: "red", label: "Vermelho", light: "0 72.2% 50.6%", dark: "0 72.2% 55.6%" },
+    { name: "volcano", label: "Vulcão", light: "10 80% 45%", dark: "10 80% 50%" },
+    { name: "burnt-orange", label: "Burnt", light: "16 84% 44%", dark: "16 84% 49%" },
+    { name: "rust", label: "Ferrugem", light: "15 75% 45%", dark: "15 75% 50%" },
+    { name: "terracotta", label: "Argila", light: "15 65% 50%", dark: "15 65% 55%" },
+    { name: "orange", label: "Laranja", light: "24.6 95% 53.1%", dark: "24.6 95% 58.1%" },
+    { name: "amber", label: "Âmbar", light: "38 92% 50%", dark: "38 92% 50%" },
+    { name: "copper", label: "Cobre", light: "25 65% 45%", dark: "25 65% 50%" },
+    { name: "yellow", label: "Amarelo", light: "45 93% 47%", dark: "45 93% 52%" },
+    { name: "mustard", label: "Mostarda", light: "45 95% 45%", dark: "45 95% 50%" },
+    { name: "gold", label: "Ouro", light: "45 80% 40%", dark: "45 80% 40%" },
+    { name: "royal-gold", label: "Ouro Real", light: "45 90% 35%", dark: "45 90% 40%" },
+    { name: "coffee", label: "Café", light: "25 30% 20%", dark: "25 30% 20%" },
+    { name: "espresso", label: "Expresso", light: "15 20% 15%", dark: "15 20% 15%" },
+    { name: "bronze", label: "Bronze", light: "30 40% 40%", dark: "30 40% 40%" },
+    { name: "sand", label: "Areia", light: "40 50% 65%", dark: "40 50% 70%" },
+    { name: "peach", label: "Pêssego", light: "29 100% 65%", dark: "29 100% 70%" },
+    { name: "green", label: "Verde", light: "142.1 76.2% 36.3%", dark: "142.1 76.2% 41.3%" },
+    { name: "forest", label: "Floresta", light: "145 63% 22%", dark: "145 63% 22%" },
+    { name: "sage", label: "Sálvia", light: "120 15% 45%", dark: "120 15% 50%" },
+    { name: "olive", label: "Oliveira", light: "80 50% 35%", dark: "80 50% 40%" },
+    { name: "forest-bright", label: "Mata", light: "145 80% 35%", dark: "145 80% 40%" },
+    { name: "emerald", label: "Esmeralda", light: "158 78% 41%", dark: "158 78% 46%" },
+    { name: "emerald-vivid", label: "Esmeralda V.", light: "150 100% 40%", dark: "150 100% 45%" },
+    { name: "mint", label: "Menta", light: "168 86% 44%", dark: "168 86% 49%" },
+    { name: "teal", label: "Teal", light: "173 80% 40%", dark: "173 80% 40%" },
+    { name: "cyan", label: "Ciano", light: "184 90% 41%", dark: "184 90% 46%" },
+    { name: "lime", label: "Lima", light: "85 90% 40%", dark: "85 90% 45%" },
+    { name: "silver", label: "Prata", light: "210 15% 65%", dark: "210 15% 75%" },
+    { name: "gray", label: "Grafite", light: "220 9% 46%", dark: "220 9% 51%" },
+    { name: "electric", label: "Elétrico", light: "230 100% 60%", dark: "230 100% 65%" },
+];
