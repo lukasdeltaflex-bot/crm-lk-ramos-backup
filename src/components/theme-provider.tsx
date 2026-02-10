@@ -6,7 +6,7 @@ import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "n
 import { type ThemeProviderProps } from "next-themes/dist/types"
 import { THEMES } from "@/lib/themes"
 
-const RADIUS_OPTIONS = ["reto", "extra-discreto", "discreto", "moderno", "amigavel", "suave", "capsula"];
+const RADIUS_OPTIONS = ["reto", "extra-discreto", "discreto", "moderno", "amigavel", "organico", "capsula"];
 const SIDEBAR_OPTIONS = ["default", "dark", "light"];
 const CONTAINER_STYLES = ["moderno", "glass", "deep", "flat", "glow", "soft", "bordado", "geometrico"];
 const TEXTURE_OPTIONS = ["none", "dots", "grid", "lines"];

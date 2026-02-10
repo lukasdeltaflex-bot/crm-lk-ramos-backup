@@ -26,6 +26,8 @@ interface StatsCardProps {
   style?: React.CSSProperties;
   overrideStatusColors?: Record<string, string>;
   overrideContainerStyle?: string;
+  overrideIntensity?: string;
+  overrideRadius?: string;
 }
 
 export function StatsCard({ 
@@ -42,12 +44,16 @@ export function StatsCard({
     topContributor,
     style,
     overrideStatusColors,
-    overrideContainerStyle
+    overrideContainerStyle,
+    overrideIntensity,
+    overrideRadius
 }: StatsCardProps) {
-  const { statusColors: globalStatusColors, containerStyle: globalContainerStyle } = useTheme();
+  const { statusColors: globalStatusColors, containerStyle: globalContainerStyle, colorIntensity: globalIntensity, radius: globalRadius } = useTheme();
   
   const statusColors = overrideStatusColors || globalStatusColors;
   const containerStyle = overrideContainerStyle || globalContainerStyle;
+  const intensity = overrideIntensity || globalIntensity;
+  const radius = overrideRadius || globalRadius;
 
   const getThemeStyles = () => {
     const t = title.toUpperCase();
@@ -57,13 +63,16 @@ export function StatsCard({
         return {
             card: cn(
                 `style-${containerStyle}`,
-                containerStyle === 'glow' && 'style-glow'
+                containerStyle === 'glow' && 'style-glow',
+                `intensity-${intensity}`,
+                `radius-${radius}`
             ),
             style: { 
-                borderColor: `hsla(${customColor}, 0.5)`,
-                backgroundColor: `hsla(${customColor}, 0.12)`,
+                borderColor: `hsla(${customColor}, var(--status-border-opacity, 0.5))`,
+                backgroundColor: `hsla(${customColor}, var(--status-bg-opacity, 0.12))`,
                 color: `hsl(${customColor})`,
-                '--status-color': customColor 
+                '--status-color': customColor,
+                borderRadius: radius === 'organico' ? '32px' : radius === 'capsula' ? '9999px' : undefined
             } as any
         };
     }
@@ -71,14 +80,14 @@ export function StatsCard({
     // Fallback neutro
     if (t === 'TOTAL DIGITADO' || t === 'PRODUÇÃO DIGITADA') {
         return {
-            card: cn(`style-${containerStyle}`, 'border-zinc-300 bg-zinc-50/80 dark:bg-zinc-900/40 dark:border-zinc-700'),
-            style: { color: 'hsl(var(--foreground))' }
+            card: cn(`style-${containerStyle}`, 'border-zinc-300 bg-zinc-50/80 dark:bg-zinc-900/40 dark:border-zinc-700', `radius-${radius}`),
+            style: { color: 'hsl(var(--foreground))', borderRadius: radius === 'organico' ? '32px' : radius === 'capsula' ? '9999px' : undefined }
         }
     }
 
     return { 
-        card: cn(`style-${containerStyle}`, 'border-zinc-200 bg-zinc-50/50 dark:bg-zinc-900/10 dark:border-zinc-800'), 
-        style: { color: 'hsl(var(--foreground))' }
+        card: cn(`style-${containerStyle}`, 'border-zinc-200 bg-zinc-50/50 dark:bg-zinc-900/10 dark:border-zinc-800', `radius-${radius}`), 
+        style: { color: 'hsl(var(--foreground))', borderRadius: radius === 'organico' ? '32px' : radius === 'capsula' ? '9999px' : undefined }
     };
   };
 
@@ -87,7 +96,7 @@ export function StatsCard({
   return (
     <Card 
         className={cn(
-            'hover:shadow-lg transition-all group relative overflow-hidden rounded-xl h-full flex flex-col border-2 py-3.5 px-5', 
+            'hover:shadow-lg transition-all group relative overflow-hidden flex flex-col border-2 py-3.5 px-5', 
             theme.card,
             className
         )}

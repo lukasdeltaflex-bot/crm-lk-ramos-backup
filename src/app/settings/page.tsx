@@ -114,7 +114,7 @@ export default function SettingsPage() {
 
   const { data: userSettings, isLoading: isSettingsLoading } = useDoc<UserSettings>(settingsDocRef);
 
-  // PREVIEW LOCAL (Simulador)
+  // PREVIEW LOCAL (Simulador vivo)
   const [preview, setPreview] = useState({
     radius: theme.radius,
     containerStyle: theme.containerStyle,
@@ -157,7 +157,7 @@ export default function SettingsPage() {
         statusColors: userSettings.statusColors || theme.statusColors
       });
     }
-  }, [userSettings, theme.radius, theme.containerStyle, theme.backgroundTexture, theme.colorIntensity, theme.animationStyle, theme.fontStyle, theme.sidebarStyle, theme.statusColors]);
+  }, [userSettings]);
 
   const updateSettings = async (updatedLists: Partial<UserSettings>) => {
     if (settingsDocRef) {
@@ -208,7 +208,7 @@ export default function SettingsPage() {
 
   const isLoading = isUserLoading || isSettingsLoading;
 
-  // Use unique status names for the color picker
+  // Garantir que os nomes de KPI financeiro estejam disponíveis para coloração
   const colorableStatuses = Array.from(new Set([
     ...proposalStatuses, 
     "Paga", "Pendente", "Parcial",
@@ -299,7 +299,7 @@ export default function SettingsPage() {
                                             <RadioGroup value={preview.colorIntensity} onValueChange={(val) => setPreview(p => ({ ...p, colorIntensity: val }))} className="grid grid-cols-2 gap-2">
                                                 {['sobrio', 'vibrante'].map((i) => (
                                                     <Label key={i} htmlFor={`i-${i}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold", preview.colorIntensity === i ? "border-primary bg-primary/5" : "border-muted")}>
-                                                        <RadioGroupItem value={i} id={`i-${i}`} className="sr-only" />{i}
+                                                        <RadioGroupItem value={i} id={`i-${i}`} className="sr-only" />{i === 'sobrio' ? 'Sóbrio' : 'Vibrante'}
                                                     </Label>
                                                 ))}
                                             </RadioGroup>
@@ -363,9 +363,10 @@ export default function SettingsPage() {
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-2"><MousePointer2 className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Arredondamento</h4></div>
                                         <RadioGroup value={preview.radius} onValueChange={(val) => setPreview(p => ({ ...p, radius: val }))} className="grid grid-cols-3 gap-2">
-                                            {['reto', 'extra-discreto', 'discreto', 'moderno', 'amigavel', 'suave', 'capsula'].map((r) => (
+                                            {['reto', 'extra-discreto', 'discreto', 'moderno', 'amigavel', 'organico', 'capsula'].map((r) => (
                                                 <Label key={r} htmlFor={`r-${r}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-[10px] font-bold text-center", preview.radius === r ? "border-primary bg-primary/5" : "border-muted")}>
-                                                    <RadioGroupItem value={r} id={`r-${r}`} className="sr-only" />{r === 'extra-discreto' ? 'X-Discreto' : r}
+                                                    <RadioGroupItem value={r} id={`r-${r}`} className="sr-only" />
+                                                    {r === 'extra-discreto' ? 'X-Discreto' : r === 'organico' ? 'Orgânico' : r}
                                                 </Label>
                                             ))}
                                         </RadioGroup>
@@ -442,29 +443,36 @@ export default function SettingsPage() {
                             </CardHeader>
                             <CardContent className="space-y-6">
                                 <div className={cn(
-                                    "p-6 rounded-2xl transition-all duration-500 border shadow-sm",
+                                    "p-6 rounded-2xl transition-all border shadow-sm group/preview",
                                     `texture-${preview.backgroundTexture}`,
                                     `radius-${preview.radius}`,
                                     `font-${preview.fontStyle}`,
                                     `anim-${preview.animationStyle}`,
                                     `style-${preview.containerStyle}`,
                                     `intensity-${preview.colorIntensity}`
-                                )}>
+                                )}
+                                style={{
+                                    '--radius': preview.radius === 'organico' ? '32px' : preview.radius === 'capsula' ? '9999px' : '8px',
+                                    '--motion-duration': preview.animationStyle === 'atmosferico' ? '1200ms' : '300ms'
+                                } as any}>
                                     <div className="space-y-4">
-                                        <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Preview de KPI</p>
+                                        <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Preview de KPI & Aura</p>
                                         <StatsCard 
                                             title="COMISSÃO ESPERADA" 
                                             value="R$ 15.420,00" 
                                             icon={Zap} 
                                             description="VALOR EM TRÂMITE"
                                             isHot={true}
+                                            className="hover:scale-105 transition-transform"
                                             overrideContainerStyle={preview.containerStyle}
                                             overrideStatusColors={preview.statusColors}
+                                            overrideIntensity={preview.colorIntensity}
+                                            overrideRadius={preview.radius}
                                         />
 
                                         <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mt-6">Preview de Barra Lateral</p>
                                         <div className={cn(
-                                            "border rounded-xl p-4 flex gap-3 transition-all",
+                                            "border rounded-[var(--radius)] p-4 flex gap-3 transition-all",
                                             preview.sidebarStyle === 'dark' ? "bg-black text-white" : preview.sidebarStyle === 'light' ? "bg-white text-black" : "bg-muted text-foreground"
                                         )}>
                                             <div className="flex flex-col gap-2">
@@ -476,13 +484,14 @@ export default function SettingsPage() {
                                         </div>
 
                                         <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mt-6">Preview de Badge & Botão</p>
-                                        <div className="flex flex-wrap gap-2 p-4 border rounded-xl bg-background shadow-inner">
+                                        <div className="flex flex-wrap gap-2 p-4 border rounded-[var(--radius)] bg-background shadow-inner">
                                             <Badge className={cn("status-custom", preview.containerStyle === 'glow' && "shadow-[0_0_10px_hsla(var(--status-color),0.4)]")} style={{ '--status-color': preview.statusColors['Paga'] || '142 76% 36%' } as any}>Paga</Badge>
                                             <Badge className={cn("status-custom")} style={{ '--status-color': preview.statusColors['Pendente'] || '45 93% 47%' } as any}>Pendente</Badge>
                                             <Button size="sm" className="status-custom h-8" style={{ '--status-color': '217 33% 25%' } as any}>Botão de Ação</Button>
                                         </div>
                                     </div>
                                 </div>
+                                <p className="text-[10px] text-center text-muted-foreground italic">Passe o mouse sobre o card para testar a animação.</p>
                             </CardContent>
                         </Card>
                     </div>

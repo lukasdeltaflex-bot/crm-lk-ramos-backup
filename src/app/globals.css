@@ -41,6 +41,8 @@
     --motion-ease: cubic-bezier(0.4, 0, 0.2, 1);
     --glass-opacity: 0.7;
     --glass-blur: 12px;
+    --status-bg-opacity: 0.12;
+    --status-border-opacity: 0.5;
   }
  
   .dark {
@@ -78,20 +80,23 @@
 /* 🚦 SISTEMA DINÂMICO DE STATUS V75 */
 .status-custom {
     color: hsl(var(--status-color)) !important;
-    background-color: hsla(var(--status-color), 0.12) !important;
-    border-color: hsla(var(--status-color), 0.5) !important;
+    background-color: hsla(var(--status-color), var(--status-bg-opacity)) !important;
+    border-color: hsla(var(--status-color), var(--status-border-opacity)) !important;
 }
 
 .dark .status-custom {
     color: hsl(var(--status-color)) !important;
     filter: brightness(1.2);
-    background-color: hsla(var(--status-color), 0.15) !important;
-    border-color: hsla(var(--status-color), 0.4) !important;
 }
 
-.intensity-vibrante .status-custom {
-    background-color: hsla(var(--status-color), 0.2) !important;
-    border-width: 2px !important;
+.intensity-vibrante {
+    --status-bg-opacity: 0.22 !important;
+    --status-border-opacity: 0.8 !important;
+}
+
+.intensity-sobrio {
+    --status-bg-opacity: 0.08 !important;
+    --status-border-opacity: 0.3 !important;
 }
 
 .status-row-custom {
@@ -170,11 +175,11 @@
 
 /* 📐 ARREDONDAMENTO */
 .radius-reto { --radius: 0px !important; }
-.radius-extra-discreto { --radius: 2px !important; }
+.radius-extra-discreto { --radius: 4px !important; }
 .radius-discreto { --radius: 8px !important; }
 .radius-moderno { --radius: 12px !important; }
 .radius-amigavel { --radius: 16px !important; }
-.radius-suave { --radius: 24px !important; }
+.radius-organico { --radius: 32px !important; }
 .radius-capsula { --radius: 9999px !important; }
 
 /* ⏳ MOTION DESIGN */
