@@ -289,10 +289,10 @@ export default function SettingsPage() {
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-2"><Pipette className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Laboratório de Cores (Status & Financeiro)</h4></div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {colorableStatuses.map((status) => {
+                                        {colorableStatuses.map((status, index) => {
                                             const currentHsl = statusColors[status] || THEMES[0].light;
                                             return (
-                                                <div key={`color-status-${status}`} className="flex items-center justify-between p-3 border rounded-xl bg-muted/10">
+                                                <div key={`color-status-${status}-${index}`} className="flex items-center justify-between p-3 border rounded-xl bg-muted/10">
                                                     <div className="flex items-center gap-2">
                                                         <div className="h-4 w-4 rounded-full border border-white/20" style={{ backgroundColor: `hsl(${currentHsl})` }} />
                                                         <span className="text-[10px] font-black uppercase tracking-tighter">{status}</span>

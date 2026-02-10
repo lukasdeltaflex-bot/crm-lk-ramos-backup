@@ -44,7 +44,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
 
     /**
      * 1. PRODUÇÃO DIGITADA (Mês Vigente)
-     * Regra: Soma TODOS os contratos digitados no mês, incluindo reprovados.
+     * Regra: Soma TODOS os contratos digitados no mês, INCLUSIVE REPROVADOS.
      */
     const digitizedInPeriod = allProposals.filter(p => {
         if (!p.dateDigitized) return false;
@@ -66,7 +66,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
 
     /**
      * 3. SALDO A RECEBER (Independente de Mês)
-     * Regra: Contratos com Data de Averbação preenchida que ainda não foram pagos.
+     * Regra: Apenas contratos com DATA DE AVERBAÇÃO preenchida.
      */
     const averbados = allProposals.filter(p => {
         const isNotFullyPaid = p.commissionStatus !== 'Paga';
@@ -77,12 +77,13 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
 
     /**
      * 4. COMISSÃO ESPERADA (Independente de Mês)
-     * Regra: Todos os contratos menos os reprovados e os já pagos.
+     * Regra: Todos os contratos EXCETO Reprovados e Pagos.
      */
     const esperados = allProposals.filter(p => {
         const isNotReprovado = p.status !== 'Reprovado';
+        const isNotPaid = p.status !== 'Pago' && p.status !== 'Saldo Pago';
         const isNotFullyPaid = p.commissionStatus !== 'Paga';
-        return isNotReprovado && isNotFullyPaid;
+        return isNotReprovado && isNotPaid && isNotFullyPaid;
     });
     const totalComissaoEsperada = esperados.reduce((sum, p) => sum + (p.commissionValue - (p.amountPaid || 0)), 0);
 
@@ -112,12 +113,12 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
   return (
     <div className='space-y-6 mb-8'>
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4 print:grid-cols-4'>
-            <div className="cursor-pointer" onClick={() => onShowDetails("Produção Digitada (Esforço Bruto Mês)", allDigitizedInPeriod)}>
+            <div className="cursor-pointer" onClick={() => onShowDetails("Produção Digitada (Total Mês)", allDigitizedInPeriod)}>
                 <StatsCard
                     title="PRODUÇÃO DIGITADA"
                     value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalComissaoProducaoDigitada)}
                     icon={Activity}
-                    description="COMISSÃO TOTAL DIGITADA NO MÊS"
+                    description="TOTAL DIGITADO NO MÊS"
                     subValue={`INCLUI REPROVADOS`}
                     isHot={metrics.hotKpi === "PRODUÇÃO DIGITADA"}
                 />
@@ -133,22 +134,22 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
                 />
             </div>
 
-            <div className="cursor-pointer" onClick={() => onShowDetails("Saldo a Receber (Contratos Averbados)", allAverbados)}>
+            <div className="cursor-pointer" onClick={() => onShowDetails("Saldo a Receber (Averbados)", allAverbados)}>
                 <StatsCard
                     title="SALDO A RECEBER"
                     value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalSaldoAReceber)}
                     icon={Hourglass}
-                    description="APENAS CONTRATOS AVERBADOS"
+                    description="SOMENTE CONTRATOS AVERBADOS"
                     isHot={metrics.hotKpi === "SALDO A RECEBER"}
                 />
             </div>
 
-            <div className="cursor-pointer" onClick={() => onShowDetails("Comissão Esperada (Esteira Ativa)", allEsperados)}>
+            <div className="cursor-pointer" onClick={() => onShowDetails("Comissão Esperada (Carteira Futura)", allEsperados)}>
                 <StatsCard
                     title="COMISSÃO ESPERADA"
                     value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalComissaoEsperada)}
                     icon={CircleDollarSign}
-                    description="FUTURO PROJETADO (TODA A BASE)"
+                    description="PROJEÇÃO (EXCETO REPROV./PAGOS)"
                     isHot={metrics.hotKpi === "COMISSÃO ESPERADA"}
                 />
             </div>

@@ -90,6 +90,10 @@
 }
 
 /* 🌟 AURA VISUAL (CONTAINERS) - REFORÇADO */
+.style-glow .card, .style-glow [data-sidebar="sidebar"] {
+    box-shadow: 0 0 20px hsla(var(--primary), 0.15) !important;
+}
+
 .style-glow .status-custom,
 .style-glow.card[style*="--status-color"],
 .style-glow [data-state="active"].status-custom {
@@ -124,21 +128,61 @@
 .texture-grid body { background-image: linear-gradient(hsl(var(--primary) / 0.08) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary) / 0.08) 1px, transparent 1px); background-size: 40px 40px; }
 .texture-lines body { background-image: repeating-linear-gradient(45deg, hsl(var(--primary) / 0.03) 0px, hsl(var(--primary) / 0.03) 1px, transparent 1px, transparent 10px); }
 
-/* 🛡️ BARRA LATERAL ELITE - CORREÇÃO DEFINITIVA */
+/* 🛡️ BARRA LATERAL ELITE - CORREÇÃO DEFINITIVA V3 (CONTRASTE MÁXIMO) */
+[data-sidebar="sidebar"] {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}
+
 .sidebar-dark [data-sidebar="sidebar"] {
-    --sidebar-background: 220 13% 10% !important;
-    --sidebar-foreground: 210 20% 98% !important;
-    --sidebar-border: 215 27.9% 25% !important;
-    --sidebar-accent: 215 27.9% 16.9% !important;
+    --sidebar-background: 240 10% 4% !important;
+    --sidebar-foreground: 0 0% 98% !important;
+    --sidebar-primary: var(--primary) !important;
+    --sidebar-primary-foreground: 0 0% 100% !important;
+    --sidebar-accent: 240 5% 15% !important;
+    --sidebar-accent-foreground: 0 0% 98% !important;
+    --sidebar-border: 240 5% 15% !important;
     background-color: hsl(var(--sidebar-background)) !important;
+    color: hsl(var(--sidebar-foreground)) !important;
+}
+
+.sidebar-dark [data-sidebar="sidebar"] [data-sidebar="menu-button"],
+.sidebar-dark [data-sidebar="sidebar"] [data-sidebar="menu-sub-button"],
+.sidebar-dark [data-sidebar="sidebar"] .logo-text,
+.sidebar-dark [data-sidebar="sidebar"] svg:not([fill]) {
+    color: hsl(var(--sidebar-foreground)) !important;
+    fill: hsl(var(--sidebar-foreground)) !important;
+}
+
+.sidebar-dark [data-sidebar="sidebar"] [data-sidebar="menu-button"]:hover,
+.sidebar-dark [data-sidebar="sidebar"] [data-sidebar="menu-button"][data-active="true"] {
+    background-color: hsl(var(--sidebar-accent)) !important;
+    color: hsl(var(--sidebar-accent-foreground)) !important;
 }
 
 .sidebar-light [data-sidebar="sidebar"] {
-    --sidebar-background: 210 40% 98% !important;
+    --sidebar-background: 0 0% 100% !important;
     --sidebar-foreground: 222.2 47.4% 11.2% !important;
-    --sidebar-border: 214.3 31.8% 91.4% !important;
+    --sidebar-primary: var(--primary) !important;
+    --sidebar-primary-foreground: 0 0% 100% !important;
     --sidebar-accent: 210 40% 94.1% !important;
+    --sidebar-accent-foreground: 222.2 47.4% 11.2% !important;
+    --sidebar-border: 214.3 31.8% 91.4% !important;
     background-color: hsl(var(--sidebar-background)) !important;
+    color: hsl(var(--sidebar-foreground)) !important;
+}
+
+.sidebar-light [data-sidebar="sidebar"] [data-sidebar="menu-button"],
+.sidebar-light [data-sidebar="sidebar"] [data-sidebar="menu-sub-button"],
+.sidebar-light [data-sidebar="sidebar"] .logo-text,
+.sidebar-light [data-sidebar="sidebar"] svg:not([fill]) {
+    color: hsl(var(--sidebar-foreground)) !important;
+    fill: hsl(var(--sidebar-foreground)) !important;
+}
+
+.sidebar-light [data-sidebar="sidebar"] [data-sidebar="menu-button"]:hover,
+.sidebar-light [data-sidebar="sidebar"] [data-sidebar="menu-button"][data-active="true"] {
+    background-color: hsl(var(--sidebar-accent)) !important;
+    color: hsl(var(--sidebar-accent-foreground)) !important;
 }
 
 /* 🏃 MOTION DESIGN - CORREÇÃO DE ESCOPO */
@@ -161,26 +205,26 @@
 .radius-capsula { --radius: 9999px !important; }
 
 /* ✍️ TIPOGRAFIA */
-.font-moderno { --font-sans: "Inter", sans-serif; }
-.font-classico { --font-sans: "Georgia", serif; }
-.font-mono { --font-sans: ui-monospace, monospace; }
-.font-arredondado { --font-sans: "Quicksand", sans-serif; }
-.font-condensado { --font-sans: "Inter", sans-serif; font-stretch: condensed; }
-.font-business { --font-sans: "Trebuchet MS", sans-serif; }
-.font-elegante { --font-sans: "Playfair Display", serif; }
-.font-geometrico { --font-sans: "Futura", sans-serif; }
-.font-tecnico { --font-sans: "Consolas", monospace; }
-.font-minimalista { --font-sans: "Helvetica Neue", sans-serif; }
-.font-futurista { --font-sans: "Orbitron", sans-serif; }
-.font-robusto { --font-sans: "Impact", sans-serif; }
-.font-editorial { --font-sans: "Bodoni MT", serif; }
-.font-suico { --font-sans: "Akzidenz-Grotesk", sans-serif; }
-.font-academico { --font-sans: "Times New Roman", serif; }
-.font-industrial { --font-sans: "Bebas Neue", sans-serif; }
-.font-digital { --font-sans: "Courier New", monospace; }
-.font-real { --font-sans: "Garamond", serif; }
-.font-suave { --font-sans: "Outfit", sans-serif; }
-.font-sharp { --font-sans: "Segoe UI", sans-serif; }
+.font-moderno { --font-sans: "Inter", sans-serif !important; }
+.font-classico { --font-sans: "Georgia", serif !important; }
+.font-mono { --font-sans: ui-monospace, monospace !important; }
+.font-arredondado { --font-sans: "Quicksand", sans-serif !important; }
+.font-condensado { --font-sans: "Inter", sans-serif !important; font-stretch: condensed !important; }
+.font-business { --font-sans: "Trebuchet MS", sans-serif !important; }
+.font-elegante { --font-sans: "Playfair Display", serif !important; }
+.font-geometrico { --font-sans: "Futura", sans-serif !important; }
+.font-tecnico { --font-sans: "Consolas", monospace !important; }
+.font-minimalista { --font-sans: "Helvetica Neue", sans-serif !important; }
+.font-futurista { --font-sans: "Orbitron", sans-serif !important; }
+.font-robusto { --font-sans: "Impact", sans-serif !important; }
+.font-editorial { --font-sans: "Bodoni MT", serif !important; }
+.font-suico { --font-sans: "Akzidenz-Grotesk", sans-serif !important; }
+.font-academico { --font-sans: "Times New Roman", serif !important; }
+.font-industrial { --font-sans: "Bebas Neue", sans-serif !important; }
+.font-digital { --font-sans: "Courier New", monospace !important; }
+.font-real { --font-sans: "Garamond", serif !important; }
+.font-suave { --font-sans: "Outfit", sans-serif !important; }
+.font-sharp { --font-sans: "Segoe UI", sans-serif !important; }
 
 @layer base {
   * { 
@@ -190,6 +234,6 @@
   }
   body { 
     @apply bg-background text-foreground; 
-    font-family: var(--font-sans), sans-serif;
+    font-family: var(--font-sans), sans-serif !important;
   }
 }
