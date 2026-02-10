@@ -155,7 +155,7 @@ export default function SettingsPage() {
         statusColors: userSettings.statusColors || theme.statusColors
       });
     }
-  }, [userSettings, theme.radius, theme.containerStyle, theme.backgroundTexture, theme.colorIntensity, theme.animationStyle, theme.fontStyle, theme.sidebarStyle, theme.statusColors]);
+  }, [userSettings]);
 
   const updateSettings = async (updatedLists: Partial<UserSettings>) => {
     if (settingsDocRef) {
