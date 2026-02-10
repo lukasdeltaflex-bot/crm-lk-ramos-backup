@@ -74,6 +74,7 @@ import { formatCurrency, calculateBusinessDays, normalizeString } from '@/lib/ut
 import { parse, isValid, startOfDay, endOfDay, subDays, startOfMonth, subMonths, endOfMonth } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/components/theme-provider';
 
 const STORAGE_KEY_VISIBILITY = 'lk-ramos-proposal-columns-visibility-v5';
 const STORAGE_KEY_ORDER = 'lk-ramos-proposal-columns-order-v5';
@@ -101,6 +102,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   onBulkStatusChange,
   userSettings,
 }, ref) => {
+  const { statusColors } = useTheme();
   const [sorting, setSorting] = React.useState<SortingState>([{ id: 'dateDigitized', desc: true }]);
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -392,6 +394,10 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     debtBalanceArrivalDate: 'Chegada Saldo',
   }
 
+  const getStatusId = (status: string) => {
+    return status.replace(/\s+/g, '-').toLowerCase();
+  };
+
   const getRowStatusClass = (proposal: Proposal) => {
     const { status, product, dateDigitized } = proposal;
     
@@ -401,15 +407,8 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         if (days === 4) return 'bg-orange-500/20 hover:bg-orange-500/30 border-l-4 border-l-orange-500';
     }
 
-    switch (status) {
-      case 'Pago': return 'bg-green-100/40 dark:bg-green-900/20 hover:bg-green-200/40 dark:hover:bg-green-900/30';
-      case 'Saldo Pago': return 'bg-orange-100/40 dark:bg-orange-900/20 hover:bg-orange-200/40 dark:hover:bg-orange-900/30';
-      case 'Reprovado': return 'bg-red-100/40 dark:bg-red-900/20 hover:bg-red-200/40 dark:hover:bg-red-900/30';
-      case 'Em Andamento': return 'bg-yellow-100/40 dark:bg-yellow-900/20 hover:bg-yellow-200/40 dark:hover:bg-yellow-900/30';
-      case 'Aguardando Saldo': return 'bg-blue-100/40 dark:bg-blue-900/20 hover:bg-blue-200/40 dark:hover:bg-blue-900/30';
-      case 'Pendente': return 'bg-purple-100/40 dark:bg-purple-900/20 hover:bg-purple-200/40 dark:hover:bg-purple-900/30';
-      default: return '';
-    }
+    const id = getStatusId(status);
+    return cn("transition-colors status-row-custom", `status-${id}`);
   };
 
   return (
@@ -427,23 +426,25 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                 >
                     <TabsList className="h-auto flex-wrap justify-start bg-muted/50">
                         <TabsTrigger value="Todos" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Todos</TabsTrigger>
-                        {proposalStatuses.map(status => (
-                            <TabsTrigger 
-                                key={status} 
-                                value={status}
-                                className={cn(
-                                    "transition-all border border-transparent",
-                                    status === 'Pago' && "data-[state=active]:bg-green-100 data-[state=active]:text-green-700 data-[state=active]:border-green-300",
-                                    status === 'Saldo Pago' && "data-[state=active]:bg-orange-100 data-[state=active]:text-orange-700 data-[state=active]:border-orange-300",
-                                    status === 'Em Andamento' && "data-[state=active]:bg-yellow-100 data-[state=active]:text-yellow-700 data-[state=active]:border-yellow-300",
-                                    status === 'Aguardando Saldo' && "data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 data-[state=active]:border-blue-300",
-                                    status === 'Reprovado' && "data-[state=active]:bg-red-100 data-[state=active]:text-red-700 data-[state=active]:border-red-300",
-                                    status === 'Pendente' && "data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700 data-[state=active]:border-purple-300",
-                                )}
-                            >
-                                {status}
-                            </TabsTrigger>
-                        ))}
+                        {proposalStatuses.map(status => {
+                            const id = getStatusId(status);
+                            const hasCustomColor = !!statusColors[status];
+                            return (
+                                <TabsTrigger 
+                                    key={status} 
+                                    value={status}
+                                    className={cn(
+                                        "transition-all border border-transparent",
+                                        `data-[state=active]:status-custom status-${id}`
+                                    )}
+                                    style={hasCustomColor ? { 
+                                        '--status-color': statusColors[status] 
+                                    } as any : {}}
+                                >
+                                    {status}
+                                </TabsTrigger>
+                            )
+                        })}
                     </TabsList>
                 </Tabs>
                 <div className="flex items-center gap-2 flex-wrap">
@@ -566,6 +567,12 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                         key={row.id}
                         data-state={row.getIsSelected() && 'selected'}
                         className={cn("transition-colors", getRowStatusClass(row.original))}
+                        style={Object.entries(statusColors).reduce((acc, [name, color]) => {
+                            if (row.original.status === name) {
+                                acc['--status-color'] = color;
+                            }
+                            return acc;
+                        }, {} as any)}
                     >
                         {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id} className="py-4">

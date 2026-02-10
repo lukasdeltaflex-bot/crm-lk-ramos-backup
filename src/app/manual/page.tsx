@@ -24,7 +24,9 @@ import {
     MousePointer2,
     Type,
     MoveHorizontal,
-    Filter
+    Filter,
+    Pipette,
+    ListChecks
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -71,12 +73,32 @@ export default function ManualPage() {
                     </AccordionContent>
                 </AccordionItem>
 
+                <AccordionItem value="advanced-custom" className="border rounded-xl bg-card px-4 shadow-sm">
+                    <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-blue-100 text-blue-600"><Pipette className="h-5 w-5" /></div>
+                            <div className="text-left">
+                                <p className="font-bold">2. Customização Avançada & Aura</p>
+                                <p className="text-xs text-muted-foreground">Controle de vidro dinâmico e cores de status personalizadas</p>
+                            </div>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
+                        <p>Novas ferramentas para um ajuste fino da sua interface de trabalho.</p>
+                        <ul className="list-disc pl-5 space-y-2">
+                            <li><strong>Intensidade do Vidro (Glass Intensity)</strong>: Se você usa a Aura "Glassmorphism", agora possui um slider nas configurações para ajustar a transparência e o desfoque (blur) dos cards.</li>
+                            <li><strong>Laboratório de Cores de Status</strong>: Defina cores personalizadas para cada status de proposta (*Pago*, *Pendente*, etc.). O sistema gera automaticamente os tons de fundo e bordas para manter a legibilidade.</li>
+                            <li><strong>Aplicação Inteligente</strong>: Suas cores de status são aplicadas em tempo real nos badges das tabelas, facilitando a identificação visual por cores que fazem sentido para o seu negócio.</li>
+                        </ul>
+                    </AccordionContent>
+                </AccordionItem>
+
                 <AccordionItem value="navigation" className="border rounded-xl bg-card px-4 shadow-sm">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-orange-100 text-orange-600"><Filter className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold">2. Navegação Cromática & Filtros Inteligentes</p>
+                                <p className="font-bold">3. Navegação Cromática & Filtros Inteligentes</p>
                                 <p className="text-xs text-muted-foreground">Filtros coloridos e busca inteligente por ID ou CPF</p>
                             </div>
                         </div>
@@ -96,7 +118,7 @@ export default function ManualPage() {
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-blue-100 text-blue-600"><LayoutDashboard className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold">3. Radar de Vendas & Inteligência Diária</p>
+                                <p className="font-bold">4. Radar de Vendas & Inteligência Diária</p>
                                 <p className="text-xs text-muted-foreground">Retenção de clientes e avisos estratégicos</p>
                             </div>
                         </div>
@@ -116,7 +138,7 @@ export default function ManualPage() {
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-red-100 text-red-600"><Wallet className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold">4. Gestão Financeira & DRE</p>
+                                <p className="font-bold">5. Gestão Financeira & DRE</p>
                                 <p className="text-xs text-muted-foreground">Controle de gastos, categorias e conciliação bancária</p>
                             </div>
                         </div>
@@ -136,7 +158,7 @@ export default function ManualPage() {
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-zinc-100 text-zinc-600"><Eye className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold">5. Visualizador de Documentos & Central Fixa</p>
+                                <p className="font-bold">6. Visualizador de Documentos & Central Fixa</p>
                                 <p className="text-xs text-muted-foreground">Conferência instantânea e documentos permanentes</p>
                             </div>
                         </div>
@@ -160,6 +182,9 @@ export default function ManualPage() {
                 <CardContent className="space-y-2">
                     <Button variant="outline" className="w-full justify-start text-xs h-8" asChild>
                         <a href="/settings?tab=appearance"><Type className="mr-2 h-3 w-3 text-blue-500" /> Estúdio de Fontes</a>
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start text-xs h-8" asChild>
+                        <a href="/settings?tab=appearance"><Pipette className="mr-2 h-3 w-3 text-pink-500" /> Cores de Status</a>
                     </Button>
                     <Button variant="outline" className="w-full justify-start text-xs h-8" asChild>
                         <a href="/settings?tab=appearance"><MoveHorizontal className="mr-2 h-3 w-3 text-purple-500" /> Motion Design</a>

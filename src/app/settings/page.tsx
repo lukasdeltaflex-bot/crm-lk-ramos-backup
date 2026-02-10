@@ -38,7 +38,8 @@ import {
     Type,
     MoveHorizontal,
     MousePointer2,
-    Shapes
+    Shapes,
+    Pipette
 } from 'lucide-react';
 import { EditableList } from '@/components/settings/editable-list';
 import { BankEditableList } from '@/components/settings/bank-editable-list';
@@ -60,6 +61,7 @@ import { useTheme } from '@/components/theme-provider';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
+import { Slider } from '@/components/ui/slider';
 
 const DRIVE_LINKED_KEY = 'lk-ramos-google-drive-linked-v1';
 
@@ -75,7 +77,9 @@ export default function SettingsPage() {
     animationStyle, setAnimationStyle,
     fontStyle, setFontStyle,
     setColorTheme,
-    colorTheme
+    colorTheme,
+    glassIntensity, setGlassIntensity,
+    statusColors, setStatusColors
   } = useTheme();
   
   const [isExporting, setIsExporting] = useState(false);
@@ -141,6 +145,12 @@ export default function SettingsPage() {
         toast({ variant: "destructive", title: "Erro ao Salvar" });
       }
     }
+  };
+
+  const handleStatusColorChange = (status: string, color: string) => {
+      const newColors = { ...statusColors, [status]: color };
+      setStatusColors(newColors);
+      updateSettings({ statusColors: newColors });
   };
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -308,24 +318,78 @@ export default function SettingsPage() {
 
                         <div className="space-y-6">
                             <ThemeColors />
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2">
-                                    <Sparkles className="h-4 w-4 text-primary" />
-                                    <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Intensidade das Cores</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2">
+                                        <Sparkles className="h-4 w-4 text-primary" />
+                                        <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Intensidade das Cores</h4>
+                                    </div>
+                                    <RadioGroup value={colorIntensity} onValueChange={(val) => { setColorIntensity(val); updateSettings({ colorIntensity: val as any }); }} className="grid grid-cols-2 gap-2">
+                                        <Label htmlFor="i-sobrio" className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer transition-all", colorIntensity === 'sobrio' ? "border-primary bg-primary/5" : "border-muted hover:border-primary/30")}>
+                                            <RadioGroupItem value="sobrio" id="i-sobrio" className="sr-only" />
+                                            <span className="text-xs font-bold">Sóbria</span>
+                                        </Label>
+                                        <Label htmlFor="i-vibrante" className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer transition-all", colorIntensity === 'vibrante' ? "border-primary bg-primary/5" : "border-muted hover:border-primary/30")}>
+                                            <RadioGroupItem value="vibrante" id="i-vibrante" className="sr-only" />
+                                            <span className="text-xs font-bold">Vibrante</span>
+                                        </Label>
+                                    </RadioGroup>
                                 </div>
-                                <RadioGroup value={colorIntensity} onValueChange={(val) => { setColorIntensity(val); updateSettings({ colorIntensity: val as any }); }} className="grid grid-cols-2 gap-2 max-w-sm">
-                                    <Label htmlFor="i-sobrio" className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer transition-all", colorIntensity === 'sobrio' ? "border-primary bg-primary/5" : "border-muted hover:border-primary/30")}>
-                                        <RadioGroupItem value="sobrio" id="i-sobrio" className="sr-only" />
-                                        <span className="text-xs font-bold">Sóbria (Executiva)</span>
-                                    </Label>
-                                    <Label htmlFor="i-vibrante" className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer transition-all", colorIntensity === 'vibrante' ? "border-primary bg-primary/5" : "border-muted hover:border-primary/30")}>
-                                        <RadioGroupItem value="vibrante" id="i-vibrante" className="sr-only" />
-                                        <span className="text-xs font-bold">Vibrante (Moderna)</span>
-                                    </Label>
-                                </RadioGroup>
+
+                                {containerStyle === 'glass' && (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-2">
+                                            <Pipette className="h-4 w-4 text-primary" />
+                                            <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Intensidade do Vidro</h4>
+                                        </div>
+                                        <div className="p-4 border rounded-xl bg-muted/20 space-y-4">
+                                            <div className="flex items-center justify-between text-xs font-bold">
+                                                <span>Transparência & Blur</span>
+                                                <span className="text-primary">{glassIntensity}%</span>
+                                            </div>
+                                            <Slider 
+                                                value={[glassIntensity]} 
+                                                min={10} 
+                                                max={95} 
+                                                step={5} 
+                                                onValueChange={(val) => { setGlassIntensity(val[0]); updateSettings({ glassIntensity: val[0] }); }} 
+                                            />
+                                            <p className="text-[10px] text-muted-foreground leading-tight italic">Controle o nível de opacidade dos containers no estilo Glassmorphism.</p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                         
+                        <Separator />
+
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2">
+                                <ListChecks className="h-4 w-4 text-primary" />
+                                <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Cores dos Status Operacionais</h4>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {proposalStatuses.map((status) => (
+                                    <div key={status} className="flex items-center justify-between p-3 border rounded-xl bg-muted/10 hover:border-primary/20 transition-all">
+                                        <div className="flex items-center gap-2">
+                                            <div 
+                                                className="h-3 w-3 rounded-full shadow-sm" 
+                                                style={{ backgroundColor: statusColors[status] || 'hsl(var(--primary))' }} 
+                                            />
+                                            <span className="text-xs font-bold uppercase tracking-tighter">{status}</span>
+                                        </div>
+                                        <Input 
+                                            type="color" 
+                                            className="h-8 w-12 p-0.5 border-none bg-transparent cursor-pointer"
+                                            value={statusColors[status] || '#1e3a8a'}
+                                            onChange={(e) => handleStatusColorChange(status, e.target.value)}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="text-[10px] text-muted-foreground italic text-center">Estas cores serão aplicadas automaticamente em todos os badges e linhas de tabelas.</p>
+                        </div>
+
                         <Separator />
 
                         <div className="space-y-4">
@@ -359,7 +423,7 @@ export default function SettingsPage() {
                                             <CardDescription className="text-[10px] uppercase tracking-wider">Aura & Ritmo Operacional</CardDescription>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
-                                            <p className="text-xs text-muted-foreground leading-relaxed">Este simulador reflete instantaneamente suas escolhas de Aura, Tipografia, Motion e Cores. Clique nos botões para testar.</p>
+                                            <p className="text-xs text-muted-foreground leading-relaxed">Este simulador reflete instantaneamente suas escolhas de Aura, Tipografia, Motion e Cores.</p>
                                             <div className="flex flex-wrap gap-2">
                                                 <Badge className="font-bold">Badge Principal</Badge>
                                                 {isMotionTestActive && (
@@ -408,7 +472,6 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             </div>
-                            <p className="text-[10px] text-center text-muted-foreground italic">Use o botão "Testar Interação" acima para sentir o ritmo das animações escolhidas.</p>
                         </div>
 
                         <Separator />

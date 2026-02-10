@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -48,6 +49,10 @@ const ColorThemeContext = React.createContext<{
   setAnimationStyle: (a: string) => void;
   fontStyle: string;
   setFontStyle: (f: string) => void;
+  glassIntensity: number;
+  setGlassIntensity: (v: number) => void;
+  statusColors: Record<string, string>;
+  setStatusColors: (colors: Record<string, string>) => void;
 } | undefined>(undefined);
 
 
@@ -60,6 +65,8 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
   const [colorIntensity, setColorIntensityState] = React.useState('sobrio');
   const [animationStyle, setAnimationStyleState] = React.useState('sutil');
   const [fontStyle, setFontStyleState] = React.useState('moderno');
+  const [glassIntensity, setGlassIntensityState] = React.useState(70);
+  const [statusColors, setStatusColorsState] = React.useState<Record<string, string>>({});
   const [isMounted, setIsMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -87,6 +94,14 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
 
     const savedFont = localStorage.getItem("font-theme");
     if (savedFont && FONT_OPTIONS.includes(savedFont)) setFontStyleState(savedFont);
+
+    const savedGlass = localStorage.getItem("glass-intensity");
+    if (savedGlass) setGlassIntensityState(Number(savedGlass));
+
+    const savedStatusColors = localStorage.getItem("status-colors");
+    if (savedStatusColors) {
+        try { setStatusColorsState(JSON.parse(savedStatusColors)); } catch(e) {}
+    }
   }, []);
 
   React.useEffect(() => {
@@ -134,8 +149,20 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
       root.classList.remove(...FONT_OPTIONS.map(f => `font-${f}`));
       root.classList.add(`font-${fontStyle}`);
       localStorage.setItem("font-theme", fontStyle);
+
+      // Manage Glass Intensity
+      root.style.setProperty('--glass-opacity', (glassIntensity / 100).toString());
+      root.style.setProperty('--glass-blur', `${glassIntensity / 5}px`);
+      localStorage.setItem("glass-intensity", String(glassIntensity));
+
+      // Manage Status Colors
+      Object.entries(statusColors).forEach(([name, color]) => {
+          const varName = `--status-color-${name.replace(/\s+/g, '-').toLowerCase()}`;
+          root.style.setProperty(varName, color);
+      });
+      localStorage.setItem("status-colors", JSON.stringify(statusColors));
     }
-  }, [colorTheme, radius, sidebarStyle, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, isMounted]);
+  }, [colorTheme, radius, sidebarStyle, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, glassIntensity, statusColors, isMounted]);
 
   const value = {
     colorTheme,
@@ -153,7 +180,11 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
     animationStyle,
     setAnimationStyle: (a: string) => { if (ANIMATION_OPTIONS.includes(a)) setAnimationStyleState(a); },
     fontStyle,
-    setFontStyle: (f: string) => { if (FONT_OPTIONS.includes(f)) setFontStyleState(f); }
+    setFontStyle: (f: string) => { if (FONT_OPTIONS.includes(f)) setFontStyleState(f); },
+    glassIntensity,
+    setGlassIntensity: (v: number) => setGlassIntensityState(v),
+    statusColors,
+    setStatusColors: (colors: Record<string, string>) => setStatusColorsState(colors)
   };
 
   return (
@@ -198,5 +229,9 @@ export function useTheme() {
         setAnimationStyle: colorThemeContext.setAnimationStyle,
         fontStyle: colorThemeContext.fontStyle,
         setFontStyle: colorThemeContext.setFontStyle,
+        glassIntensity: colorThemeContext.glassIntensity,
+        setGlassIntensity: colorThemeContext.setGlassIntensity,
+        statusColors: colorThemeContext.statusColors,
+        setStatusColors: colorThemeContext.setStatusColors,
     };
 }

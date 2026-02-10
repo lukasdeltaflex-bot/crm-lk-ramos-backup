@@ -122,6 +122,8 @@ export type UserSettings = {
   animationStyle?: 'estatico' | 'sutil' | 'cinematografico';
   fontStyle?: string;
   colorTheme?: string;
+  glassIntensity?: number; // 0 to 100
+  statusColors?: Record<string, string>; // Status Name -> Hex Color
 };
 
 export type UserProfile = {

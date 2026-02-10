@@ -18,6 +18,7 @@ import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { useTheme } from '@/components/theme-provider';
 
 interface StatusCellProps {
   proposalId: string;
@@ -26,19 +27,18 @@ interface StatusCellProps {
   onStatusChange?: (proposalId: string, newStatus: ProposalStatus, product?: string) => void;
 }
 
+const getStatusId = (status: string) => {
+    return status.replace(/\s+/g, '-').toLowerCase();
+};
+
 const getStatusClass = (status: ProposalStatus) => {
-  return cn('w-full justify-center text-[10px] font-black uppercase tracking-tighter py-1 px-3 border-2 transition-all', {
-    'border-green-500/30 text-green-600 bg-green-50/80 hover:bg-green-100': status === 'Pago',
-    'border-orange-500/30 text-orange-600 bg-orange-50/80 hover:bg-orange-100': status === 'Saldo Pago',
-    'border-yellow-500/30 text-yellow-600 bg-yellow-50/80 hover:bg-yellow-100': status === 'Em Andamento',
-    'border-blue-500/30 text-blue-600 bg-blue-50/80 hover:bg-blue-100': status === 'Aguardando Saldo',
-    'border-red-500/30 text-red-600 bg-red-50/80 hover:bg-red-100': status === 'Reprovado',
-    'border-purple-500/30 text-purple-600 bg-purple-50/80 hover:bg-purple-100': status === 'Pendente',
-  });
+  const id = getStatusId(status);
+  return cn('w-full justify-center text-[10px] font-black uppercase tracking-tighter py-1 px-3 border-2 transition-all status-custom', `status-${id}`);
 };
 
 export function StatusCell({ proposalId, currentStatus, product, onStatusChange }: StatusCellProps) {
   const firestore = useFirestore();
+  const { statusColors } = useTheme();
 
   const handleUpdate = (newStatus: ProposalStatus) => {
     if (newStatus === currentStatus) return;
@@ -55,18 +55,14 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
     
     const isPortability = product === 'Portabilidade';
 
-    // REGRA LK RAMOS: 
-    // Se for Pago, preenche averbação e pagamento para todos os produtos (incluindo Portabilidade)
     if (newStatus === 'Pago') {
         dataToUpdate.dateApproved = now;
         dataToUpdate.datePaidToClient = now;
     } 
-    // Se for Saldo Pago, preenche EXCLUSIVAMENTE a chegada do saldo em Portabilidade.
     else if (newStatus === 'Saldo Pago' && isPortability) {
         dataToUpdate.debtBalanceArrivalDate = now;
     }
 
-    // Linha do Tempo Automática
     const user = auth?.currentUser;
     const userName = user?.displayName || user?.email || 'Sistema';
 
@@ -95,6 +91,8 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
         });
   };
 
+  const hasCustomColor = !!statusColors[currentStatus];
+
   return (
     <Select
       value={currentStatus}
@@ -102,7 +100,13 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
     >
       <SelectTrigger className="p-0 border-0 focus:ring-0 focus:ring-offset-0 shadow-none bg-transparent h-auto w-full group">
         <SelectValue asChild>
-            <Badge variant="outline" className={getStatusClass(currentStatus)}>
+            <Badge 
+                variant="outline" 
+                className={getStatusClass(currentStatus)}
+                style={hasCustomColor ? { 
+                    '--status-color': statusColors[currentStatus] 
+                } as any : {}}
+            >
                 {currentStatus}
             </Badge>
         </SelectValue>
