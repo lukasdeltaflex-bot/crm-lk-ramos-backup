@@ -287,7 +287,6 @@ export function ProposalForm({
             setValue('debtBalanceArrivalDate', today, { shouldValidate: true });
         }
     } else if (status === 'Pago') {
-        // Agora preenche averbação automática para todos, incluindo portabilidade
         if (!form.getValues('dateApproved')) {
             setValue('dateApproved', today, { shouldValidate: true });
         }
@@ -349,8 +348,9 @@ export function ProposalForm({
             dateApproved: formatDateForForm(source.dateApproved),
             datePaidToClient: formatDateForForm(source.datePaidToClient),
             debtBalanceArrivalDate: formatDateForForm(source.debtBalanceArrivalDate),
-            bank: source.bank ? cleanBankName(source.bank) : '',
-            bankOrigin: source.bankOrigin ? cleanBankName(source.bankOrigin) : '',
+            // FIX: Removido cleanBankName para garantir que o valor coincida com as opções do Select
+            bank: source.bank || '',
+            bankOrigin: source.bankOrigin || '',
         }
         form.reset(sourceData);
     } else {
@@ -405,9 +405,8 @@ export function ProposalForm({
     const { default: autoTable } = await import('jspdf-autotable');
 
     const doc = new jsPDF();
-    const primaryColor = [30, 58, 138]; // Tom de azul executivo
+    const primaryColor = [30, 58, 138];
 
-    // Título Principal Centralizado
     doc.setFontSize(22);
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "bold");
@@ -416,7 +415,6 @@ export function ProposalForm({
     doc.setDrawColor(200);
     doc.line(14, 32, 196, 32);
 
-    // Bloco Cliente
     doc.setFontSize(14);
     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.text("DADOS DO CLIENTE", 14, 45);
@@ -435,7 +433,6 @@ export function ProposalForm({
         columnStyles: { 0: { fontStyle: 'bold', width: 50 } }
     });
 
-    // Bloco Proposta
     doc.setFontSize(14);
     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.text("DADOS DA OPERAÇÃO", 14, (doc as any).lastAutoTable.finalY + 15);
@@ -456,7 +453,6 @@ export function ProposalForm({
         columnStyles: { 0: { fontStyle: 'bold', width: 50 } }
     });
 
-    // Bloco Financeiro
     doc.setFontSize(14);
     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.text("VALORES E COMISSÃO", 14, (doc as any).lastAutoTable.finalY + 15);
@@ -475,7 +471,6 @@ export function ProposalForm({
         styles: { fontSize: 11, cellPadding: 3 }
     });
 
-    // Observações
     const obs = form.getValues('observations');
     if (obs) {
         doc.setFontSize(14);
@@ -488,7 +483,6 @@ export function ProposalForm({
         doc.text(splitObs, 14, (doc as any).lastAutoTable.finalY + 22);
     }
 
-    // Rodapé com data e assinatura
     const pageHeight = doc.internal.pageSize.height;
     doc.setDrawColor(150);
     doc.line(40, pageHeight - 40, 170, pageHeight - 40);
@@ -1037,7 +1031,7 @@ export function ProposalForm({
                                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddHistory())}
                             />
                             <Button type="button" size="sm" onClick={handleAddHistory} disabled={isAddingHistory || !newHistoryEntry.trim()}>
-                                {isAddingHistory ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                                {isAddingHistory ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                             </Button>
                         </div>
 
@@ -1082,7 +1076,6 @@ export function ProposalForm({
                     )}
                 </div>
                 <FormField
-                    variant="default"
                     control={form.control}
                     name="observations"
                     render={({ field }) => (
