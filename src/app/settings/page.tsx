@@ -231,7 +231,7 @@ export default function SettingsPage() {
                     <div className="lg:col-span-2 space-y-8">
                         <Card className="border-border/50 shadow-sm">
                             <CardHeader>
-                                <CardTitle>Personalização Visual & Aura</CardTitle>
+                                <CardTitle>Personalização Visual & Branding</CardTitle>
                                 <CardDescription>Ajuste a identidade visual completa da sua plataforma.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-10">

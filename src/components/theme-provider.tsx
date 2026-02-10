@@ -98,7 +98,7 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
       root.style.setProperty('--sidebar-primary', primaryValue);
       localStorage.setItem("color-theme", colorTheme);
 
-      // Classes Globais
+      // Classes Globais - Aplicação forçada
       const clearAndAdd = (list: string[], prefix: string, current: string) => {
           root.classList.remove(...list.map(item => `${prefix}-${item}`));
           root.classList.add(`${prefix}-${current}`);
@@ -116,7 +116,7 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
       root.classList.add(`font-${fontStyle}`);
       localStorage.setItem("font-theme", fontStyle);
 
-      // Sidebar
+      // Sidebar - Aplicação forçada
       root.classList.remove("sidebar-dark", "sidebar-light");
       if (sidebarStyle !== 'default') {
         root.classList.add(`sidebar-${sidebarStyle}`);
