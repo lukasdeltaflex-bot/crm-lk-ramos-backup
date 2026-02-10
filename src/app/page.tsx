@@ -173,7 +173,7 @@ export default function DashboardPage() {
     });
 
     const paidInPeriod = proposals.filter(p => {
-        if (p.status !== 'Pago' && p.status !== 'Saldo Pago') return false;
+        if (p.status !== 'Pago') return false;
         if (!p.datePaidToClient) return false;
         const d = new Date(p.datePaidToClient);
         return d >= fromDate && d <= effectiveToDate;
@@ -188,7 +188,7 @@ export default function DashboardPage() {
     const statusAnalysis: Record<string, { total: number; count: number; spark: number[]; top: string; proposals: Proposal[] }> = {};
     
     activeProposalStatuses.forEach(status => {
-        const list = (status === 'Pago' || status === 'Saldo Pago') ? paidInPeriod : accumulatedProposals.filter(p => p.status === status);
+        const list = (status === 'Pago') ? paidInPeriod : accumulatedProposals.filter(p => p.status === status);
         statusAnalysis[status] = {
             total: getSum(list),
             count: list.length,
@@ -288,7 +288,7 @@ export default function DashboardPage() {
             </div>
         </div>
 
-        {/* META & KPI PRINCIPAL */}
+        {/* META & KPI PRINCIPAL (PAGO) */}
         <div className="w-full">
             <GoalCard 
                 currentProduction={stats.statusAnalysis['Pago']?.total || 0} 
@@ -300,22 +300,22 @@ export default function DashboardPage() {
             />
         </div>
 
-        {/* PRODUÇÃO TOTAL */}
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-1">
+        {/* 1. TOTAL DIGITADO (CABECALHO DA GRADE) */}
+        <div className="w-full">
             <div className="cursor-pointer" onClick={() => handleShowDetails('Total Digitado (Mês)', stats.proposals.todos)}>
                 <StatsCard 
                     title="Total Digitado" 
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.totalDigitado)} 
                     icon={FileText} 
-                    description="PRODUÇÃO MENSAL"
+                    description="PRODUÇÃO MENSAL TOTAL"
                     sparklineData={stats.totalDigitadoSpark}
                     topContributor={stats.topTotal}
                 />
             </div>
         </div>
 
-        {/* GRID DINÂMICO DE STATUS - CRIA CARDS AUTOMATICAMENTE */}
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
+        {/* 2. GRID DINÂMICO DE STATUS - ORDEM: PENDENTE, EM ANDAMENTO, AGUARDANDO SALDO, SALDO PAGO, REPROVADO */}
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {activeProposalStatuses.filter(s => s !== 'Pago').map((status) => {
                 const analysis = stats.statusAnalysis[status];
                 if (!analysis) return null;
