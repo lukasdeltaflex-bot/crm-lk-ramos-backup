@@ -58,29 +58,33 @@ export function StatsCard({
   const animationStyle = overrideAnimationStyle || globalAnimationStyle;
 
   const getThemeStyles = () => {
-    // Tenta encontrar cor para o título ou status
-    const customColor = statusColors[title] || statusColors[title.toUpperCase()] || statusColors[description || ''];
+    // Busca cor vinculada ao título (ex: "COMISSÃO ESPERADA") ou ao status no laboratório
+    const statusKey = title.toUpperCase();
+    const customColor = statusColors[statusKey] || statusColors[title] || statusColors[description || ''];
+
+    const cardClasses = cn(
+        'hover:shadow-lg transition-all group relative overflow-hidden flex flex-col border-2 py-3.5 px-5 min-h-[165px] status-custom h-full card',
+        `style-${containerStyle}`,
+        containerStyle === 'glow' && 'style-glow',
+        `intensity-${intensity}`,
+        `radius-${radius}`,
+        `anim-${animationStyle}`,
+        isHot && 'card-hot-neon',
+        className
+    );
 
     if (customColor) {
         return {
-            card: cn(
-                `style-${containerStyle}`,
-                containerStyle === 'glow' && 'style-glow',
-                `intensity-${intensity}`,
-                `radius-${radius}`,
-                `anim-${animationStyle}`,
-                isHot && 'card-hot-neon',
-                'card'
-            ),
+            card: cardClasses,
             style: { 
                 '--status-color': customColor,
             } as any
         };
     }
     
-    // Fallback neutro com altura uniforme
+    // Fallback neutro executivo
     return { 
-        card: cn(`style-${containerStyle}`, 'border-zinc-200 bg-zinc-50/50 dark:bg-zinc-900/10 dark:border-zinc-800', `radius-${radius}`, `anim-${animationStyle}`, isHot && 'card-hot-neon', 'card'), 
+        card: cn(cardClasses, 'border-zinc-200 bg-zinc-50/50 dark:bg-zinc-900/10 dark:border-zinc-800'), 
         style: {
             '--status-color': '217 33% 25%'
         } as any
@@ -91,11 +95,7 @@ export function StatsCard({
 
   return (
     <Card 
-        className={cn(
-            'hover:shadow-lg transition-all group relative overflow-hidden flex flex-col border-2 py-3.5 px-5 min-h-[165px] status-custom h-full', 
-            themeStyles.card,
-            className
-        )}
+        className={themeStyles.card}
         style={{ ...themeStyles.style, ...style }}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 mb-1.5">
@@ -108,7 +108,7 @@ export function StatsCard({
                     <AlertTriangle className="h-2.5 w-2.5 fill-current" /> PENDÊNCIA
                 </div>
             ) : isHot && (
-                <div className="flex items-center gap-1 text-[8px] font-black text-orange-600 bg-white/80 dark:bg-black/40 px-1.5 py-0.5 rounded-full border border-orange-200 animate-pulse">
+                <div className="flex items-center gap-1 text-[8px] font-black text-orange-600 bg-white/80 dark:bg-black/40 px-1.5 py-0.5 rounded-full border border-orange-200">
                     <Zap className="h-2.5 w-2.5 fill-current" /> EM ALTA
                 </div>
             )}

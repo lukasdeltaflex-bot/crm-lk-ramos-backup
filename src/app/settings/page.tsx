@@ -124,26 +124,8 @@ export default function SettingsPage() {
     statusColors: theme.statusColors
   });
 
-  const [productTypes, setProductTypes] = useState([...initialProductTypes]);
-  const [proposalStatuses, setProposalStatuses] = useState([...initialProposalStatuses]);
-  const [commissionStatuses, setCommissionStatuses] = useState([...initialCommissionStatuses]);
-  const [approvingBodies, setApprovingBodies] = useState([...initialApprovingBodies]);
-  const [expenseCategories, setExpenseCategories] = useState([...initialExpenseCategories]);
-  const [banks, setBanks] = useState([...initialBanks]);
-  const [bankDomains, setBankDomains] = useState<Record<string, string>>({});
-  const [showBankLogos, setShowBankLogos] = useState(true);
-
   useEffect(() => {
     if (userSettings) {
-      setProductTypes(userSettings.productTypes || [...initialProductTypes]);
-      setProposalStatuses(userSettings.proposalStatuses || [...initialProposalStatuses]);
-      setCommissionStatuses(userSettings.commissionStatuses || [...initialCommissionStatuses]);
-      setApprovingBodies(userSettings.approvingBodies || [...initialApprovingBodies]);
-      setExpenseCategories(userSettings.expenseCategories || [...initialExpenseCategories]);
-      setBanks(userSettings.banks || [...initialBanks]);
-      setBankDomains(userSettings.bankDomains || {});
-      setShowBankLogos(userSettings.showBankLogos ?? true);
-      
       setPreview({
         radius: userSettings.radius || theme.radius,
         containerStyle: userSettings.containerStyle || theme.containerStyle,
@@ -207,7 +189,7 @@ export default function SettingsPage() {
   const isLoading = isUserLoading || isSettingsLoading;
 
   const colorableStatuses = Array.from(new Set([
-    ...proposalStatuses, 
+    ...initialProposalStatuses, 
     "Paga", "Pendente", "Parcial",
     "COMISSÃO ESPERADA",
     "TOTAL DIGITADO",
@@ -241,12 +223,12 @@ export default function SettingsPage() {
                     <CardContent>
                     {isLoading ? <div className="space-y-4"><Skeleton className="h-12 w-full" /></div> : (
                         <Accordion type="multiple" className="w-full space-y-4">
-                        <EditableList title="Tipos de Produto" items={productTypes} setItems={(n) => { setProductTypes(n); updateSettings({ productTypes: n }); }} />
-                        <EditableList title="Status da Proposta" items={proposalStatuses} setItems={(n) => { setProposalStatuses(n); updateSettings({ proposalStatuses: n }); }} />
-                        <EditableList title="Status da Comissão" items={commissionStatuses} setItems={(n) => { setCommissionStatuses(n); updateSettings({ commissionStatuses: n }); }} />
-                        <EditableList title="Órgãos Aprovadores" items={approvingBodies} setItems={(n) => { setApprovingBodies(n); updateSettings({ approvingBodies: n }); }} />
-                        <EditableList title="Categorias de Despesas" items={expenseCategories} setItems={(n) => { setExpenseCategories(n); updateSettings({ expenseCategories: n }); }} />
-                        <BankEditableList banks={banks} bankDomains={bankDomains} onUpdate={(b, d) => updateSettings({ banks: b, bankDomains: d })} />
+                        <EditableList title="Tipos de Produto" items={userSettings?.productTypes || initialProductTypes} setItems={(n) => updateSettings({ productTypes: n as string[] })} />
+                        <EditableList title="Status da Proposta" items={userSettings?.proposalStatuses || initialProposalStatuses} setItems={(n) => updateSettings({ proposalStatuses: n as string[] })} />
+                        <EditableList title="Status da Comissão" items={userSettings?.commissionStatuses || initialCommissionStatuses} setItems={(n) => updateSettings({ commissionStatuses: n as string[] })} />
+                        <EditableList title="Órgãos Aprovadores" items={userSettings?.approvingBodies || initialApprovingBodies} setItems={(n) => updateSettings({ approvingBodies: n as string[] })} />
+                        <EditableList title="Categorias de Despesas" items={userSettings?.expenseCategories || initialExpenseCategories} setItems={(n) => updateSettings({ expenseCategories: n as string[] })} />
+                        <BankEditableList banks={userSettings?.banks || initialBanks} bankDomains={userSettings?.bankDomains || {}} onUpdate={(b, d) => updateSettings({ banks: b, bankDomains: d })} />
                         </Accordion>
                     )}
                     </CardContent>
@@ -304,9 +286,8 @@ export default function SettingsPage() {
                                             <div className="flex items-center space-x-2 p-3 border rounded-lg bg-muted/10">
                                                 <Switch 
                                                     id="show-bank-logos" 
-                                                    checked={showBankLogos} 
+                                                    checked={userSettings?.showBankLogos ?? true} 
                                                     onCheckedChange={(val) => {
-                                                        setShowBankLogos(val);
                                                         updateSettings({ showBankLogos: val });
                                                     }}
                                                 />
@@ -378,7 +359,7 @@ export default function SettingsPage() {
                                                 <RadioGroupItem value={f} id={`f-${f}`} className="sr-only" />
                                                 <div className="flex flex-col gap-1 items-center">
                                                     <span className={cn("text-2xl", `font-${f}`)}>Aa</span>
-                                                    <span className="opacity-60">{f}</span>
+                                                    <span className="opacity-60 text-[10px]">{f}</span>
                                                 </div>
                                             </Label>
                                         ))}
@@ -434,7 +415,7 @@ export default function SettingsPage() {
                                     <Eye className="h-5 w-5 text-primary" />
                                     Laboratório de Visualização
                                 </CardTitle>
-                                <CardDescription>Teste sua configuração aqui antes de salvar.</CardDescription>
+                                <CardDescription>Simulação viva das suas escolhas.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-6">
                                 <div className={cn(
@@ -447,7 +428,7 @@ export default function SettingsPage() {
                                     `intensity-${preview.colorIntensity}`
                                 )}>
                                     <div className="space-y-4">
-                                        <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Preview de KPI & Aura</p>
+                                        <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Preview de KPI & Neon Glow</p>
                                         <StatsCard 
                                             title="COMISSÃO ESPERADA" 
                                             value="R$ 15.420,00" 
@@ -479,11 +460,11 @@ export default function SettingsPage() {
                                         <div className="flex flex-wrap gap-2 p-4 border rounded-[var(--radius)] bg-background shadow-inner">
                                             <Badge className={cn("status-custom", preview.containerStyle === 'glow' && "shadow-[0_0_10px_hsla(var(--status-color),0.4)]")} style={{ '--status-color': preview.statusColors['Paga'] || '142 76% 36%' } as any}>Paga</Badge>
                                             <Badge className={cn("status-custom")} style={{ '--status-color': preview.statusColors['Pendente'] || '45 93% 47%' } as any}>Pendente</Badge>
-                                            <Button size="sm" className="status-custom h-8" style={{ '--status-color': THEMES[0].light } as any}>Botão de Ação</Button>
+                                            <Button size="sm" className="status-custom h-8" style={{ '--status-color': THEMES[0].light } as any}>Ação</Button>
                                         </div>
                                     </div>
                                 </div>
-                                <p className="text-[10px] text-center text-muted-foreground italic">Passe o mouse sobre o card para testar a animação.</p>
+                                <p className="text-[10px] text-center text-muted-foreground italic">Passe o mouse sobre o card para testar o ritmo.</p>
                             </CardContent>
                         </Card>
                     </div>
