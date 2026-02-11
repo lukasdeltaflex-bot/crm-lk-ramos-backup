@@ -373,7 +373,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             <div className="flex items-center justify-between py-4 print:hidden">
                 <div className="flex flex-wrap gap-2 items-center">
                     <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as CommissionStatus | 'Todos')}>
-                        <TabsList className="bg-muted/50 p-1">
+                        <TabsList className="bg-muted/50 p-1 h-auto flex-wrap">
                             <TabsTrigger value="Todos" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Todos</TabsTrigger>
                             
                             {['Paga', 'Pendente', 'Parcial'].map((status) => {

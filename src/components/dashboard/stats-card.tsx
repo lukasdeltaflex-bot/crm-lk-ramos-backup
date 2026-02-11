@@ -58,6 +58,7 @@ export function StatsCard({
   const animationStyle = overrideAnimationStyle || globalAnimationStyle;
 
   const getThemeStyles = () => {
+    // Tenta encontrar a cor baseada no título ou descrição
     const statusKey = title.toUpperCase();
     const customColor = statusColors[statusKey] || statusColors[title] || statusColors[description?.toUpperCase() || ''] || statusColors[description || ''];
 
@@ -68,8 +69,7 @@ export function StatsCard({
         `intensity-${intensity}`,
         `radius-${radius}`,
         `anim-${animationStyle}`,
-        (isHot || title === "COMISSÃO ESPERADA") && 'card-hot-neon status-custom',
-        !(isHot || title === "COMISSÃO ESPERADA") && 'status-custom',
+        (isHot || title === "COMISSÃO ESPERADA") ? 'card-hot-neon status-custom' : 'status-custom',
         className
     );
 

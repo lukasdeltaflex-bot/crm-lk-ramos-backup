@@ -187,15 +187,15 @@
 .font-tecnico { font-family: "JetBrains Mono", monospace !important; }
 .font-minimalista { font-family: "Space Grotesk", sans-serif !important; }
 .font-futurista { font-family: "Orbitron", sans-serif !important; }
-.font-industrial { font-family: "Bebas Neue", sans-serif !important; }
-.font-real { font-family: "EB Garamond", serif !important; }
-.font-suave { font-family: "Outfit", sans-serif !important; }
-.font-sharp { font-family: "Syne", sans-serif !important; }
+.font-robusto { font-family: "Montserrat", sans-serif; font-weight: 900; }
 .font-editorial { font-family: "Cinzel", serif !important; }
 .font-suico { font-family: "Inter", sans-serif !important; letter-spacing: -0.02em; }
 .font-academico { font-family: "EB Garamond", serif; font-style: italic; }
+.font-industrial { font-family: "Bebas Neue", sans-serif !important; }
 .font-digital { font-family: "Orbitron", sans-serif; letter-spacing: 0.1em; }
-.font-robusto { font-family: "Montserrat", sans-serif; font-weight: 900; }
+.font-real { font-family: "EB Garamond", serif !important; }
+.font-suave { font-family: "Outfit", sans-serif !important; }
+.font-sharp { font-family: "Syne", sans-serif !important; }
 
 /* 📐 ARREDONDAMENTO */
 .radius-reto { --radius: 0px !important; }
