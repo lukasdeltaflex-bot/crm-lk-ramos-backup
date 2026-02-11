@@ -2,7 +2,7 @@
 
 import { ColumnDef, Header, Table } from '@tanstack/react-table';
 import type { Proposal, ProposalStatus, UserSettings } from '@/lib/types';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,7 +21,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-  } from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog"
 import { MoreHorizontal, ArrowUpDown, GripVertical, ArrowUp, ArrowDown, Copy, AlertCircle } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatCurrency, cleanBankName, calculateBusinessDays } from '@/lib/utils';
@@ -33,7 +33,7 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { TableHead, TableCell } from '@/components/ui/table';
+import { TableHead } from '@/components/ui/table';
 import { flexRender } from '@tanstack/react-table';
 import { toast } from '@/hooks/use-toast';
 import type { DateRange } from 'react-day-picker';
@@ -276,10 +276,9 @@ export const getColumns = (
     },
   },
   {
-    accessorKey: 'banco_digitado_v6',
+    accessorKey: 'bank',
     header: 'Banco Digitado',
     id: 'banco_digitado_v6',
-    accessorFn: (row) => row.bank,
     cell: ({ row, table }) => {
         const bankRaw = row.original.bank;
         const bank = cleanBankName(bankRaw);
@@ -315,7 +314,7 @@ export const getColumns = (
                 />
             </div>
             {isPortAwaitingBalance && businessDays >= 5 && (
-                <AlertCircle className="h-4 w-4 text-red-600 animate-alert-pulse shrink-0" />
+                <AlertCircle className="h-5 w-5 text-red-600 animate-alert-pulse shrink-0" />
             )}
         </div>
       );
@@ -390,5 +389,3 @@ export const getColumns = (
     enableSorting: false,
   },
 ].map(column => ({ ...column, id: column.id || column.accessorKey as string}));
-
-export { DraggableHeader };

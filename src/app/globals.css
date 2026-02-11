@@ -76,32 +76,23 @@
   }
 }
 
-/* 🚦 SISTEMA DINÂMICO DE STATUS */
-.status-custom {
-    color: hsl(var(--status-color)) !important;
-    background-color: hsl(var(--status-color) / var(--status-bg-opacity, 0.12)) !important;
-    border-color: hsl(var(--status-color) / var(--status-border-opacity, 0.5)) !important;
+/* ⚡ PULSAÇÃO DE ALERTA INDUSTRIAL (LUXURY ALERT) */
+@keyframes alert-pulse-custom {
+  0% { 
+    transform: scale(1);
+    filter: drop-shadow(0 0 0px rgba(220, 38, 38, 0));
+  }
+  50% { 
+    transform: scale(1.4);
+    filter: drop-shadow(0 0 15px rgba(220, 38, 38, 1));
+  }
+  100% { 
+    transform: scale(1);
+    filter: drop-shadow(0 0 0px rgba(220, 38, 38, 0));
+  }
 }
-
-/* 🔘 BOTÕES DE STATUS (ABAS) */
-.status-tab {
-    color: hsl(var(--status-color) / 0.7) !important;
-    border-bottom: 3px solid transparent !important;
-    transition: all 0.3s ease !important;
-}
-.status-tab[data-state=active] {
-    color: hsl(var(--status-color)) !important;
-    background-color: hsl(var(--status-color) / 0.15) !important;
-    border-bottom-color: hsl(var(--status-color)) !important;
-    box-shadow: 0 4px 12px -2px hsl(var(--status-color) / 0.3) !important;
-}
-
-/* 📊 IDENTIDADE CROMÁTICA EM TABELAS */
-.status-row-custom {
-    background-color: hsl(var(--status-color) / 0.1) !important;
-}
-.status-row-custom:hover {
-    background-color: hsl(var(--status-color) / 0.15) !important;
+.animate-alert-pulse {
+  animation: alert-pulse-custom 0.8s ease-in-out infinite !important;
 }
 
 /* 🌟 NEON GLOW REALISTA (MULTICAMADAS) */
@@ -128,23 +119,32 @@
     }
 }
 
-/* ⚡ PULSAÇÃO DE ALERTA AGRESSIVA (LUXURY ALERT) */
-@keyframes alert-pulse-custom {
-  0% { 
-    transform: scale(1);
-    filter: drop-shadow(0 0 0px rgba(220, 38, 38, 0));
-  }
-  50% { 
-    transform: scale(1.4);
-    filter: drop-shadow(0 0 12px rgba(220, 38, 38, 0.9));
-  }
-  100% { 
-    transform: scale(1);
-    filter: drop-shadow(0 0 0px rgba(220, 38, 38, 0));
-  }
+/* 🚦 SISTEMA DINÂMICO DE STATUS */
+.status-custom {
+    color: hsl(var(--status-color)) !important;
+    background-color: hsl(var(--status-color) / var(--status-bg-opacity, 0.12)) !important;
+    border-color: hsl(var(--status-color) / var(--status-border-opacity, 0.5)) !important;
 }
-.animate-alert-pulse {
-  animation: alert-pulse-custom 0.8s ease-in-out infinite !important;
+
+/* 🔘 BOTÕES DE STATUS (ABAS) */
+.status-tab {
+    color: hsl(var(--status-color) / 0.7) !important;
+    border-bottom: 3px solid transparent !important;
+    transition: all 0.3s ease !important;
+}
+.status-tab[data-state=active] {
+    color: hsl(var(--status-color)) !important;
+    background-color: hsl(var(--status-color) / 0.15) !important;
+    border-bottom-color: hsl(var(--status-color)) !important;
+    box-shadow: 0 4px 12px -2px hsl(var(--status-color) / 0.3) !important;
+}
+
+/* 📊 IDENTIDADE CROMÁTICA EM TABELAS */
+.status-row-custom {
+    background-color: hsl(var(--status-color) / 0.08) !important;
+}
+.status-row-custom:hover {
+    background-color: hsl(var(--status-color) / 0.12) !important;
 }
 
 .intensity-vibrante {
