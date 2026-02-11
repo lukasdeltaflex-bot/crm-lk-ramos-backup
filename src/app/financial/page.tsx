@@ -179,11 +179,16 @@ export default function FinancialPage() {
         return d.getMonth() === targetMonth && d.getFullYear() === targetYear;
     });
 
-    if (reportProposals.length === 0) {
+    const reportExpenses = (expenses || []).filter(e => {
+        const d = new Date(e.date);
+        return d.getMonth() === targetMonth && d.getFullYear() === targetYear;
+    });
+
+    if (reportProposals.length === 0 && reportExpenses.length === 0) {
         toast({
             variant: "destructive",
             title: "Sem dados para o período",
-            description: "Nenhuma proposta encontrada para o mês selecionado."
+            description: "Nenhuma proposta ou despesa encontrada para o mês selecionado."
         });
         return;
     }
@@ -197,30 +202,34 @@ export default function FinancialPage() {
 
     doc.setFontSize(20);
     doc.setTextColor(40, 74, 127);
-    doc.text("Relatório de Fechamento Mensal", 14, 20);
+    doc.text("Fechamento Mensal & Balanço Empresarial", 14, 20);
     doc.setFontSize(12);
     doc.setTextColor(100);
     doc.text(`Período de Competência: ${monthYear}`, 14, 28);
     doc.text(`Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 34);
 
-    const totalComissao = reportProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
+    const totalComissaoDigitada = reportProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
     const recebido = reportProposals.filter(p => p.commissionStatus === 'Paga').reduce((sum, p) => sum + (p.amountPaid || 0), 0);
     const pendente = reportProposals.filter(p => p.commissionStatus !== 'Paga').reduce((sum, p) => sum + (p.commissionValue || 0), 0);
+    const totalDespesas = reportExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const lucroLiquido = recebido - totalDespesas;
 
     doc.setDrawColor(200);
     doc.line(14, 40, 196, 40);
 
     doc.setFontSize(14);
     doc.setTextColor(0);
-    doc.text("Resumo Financeiro do Período", 14, 50);
+    doc.text("Resumo Financeiro Executivo", 14, 50);
     
     autoTable(doc, {
         startY: 55,
-        head: [['Métrica', 'Valor']],
+        head: [['Métrica de Balanço', 'Valor']],
         body: [
-            ['Comissões Digitadas no Mês', formatCurrency(totalComissao)],
-            ['Comissões Já Recebidas', formatCurrency(recebido)],
-            ['Saldo Pendente/Esperado', formatCurrency(pendente)],
+            ['Comissões Digitadas no Mês', formatCurrency(totalComissaoDigitada)],
+            ['Comissões Efetivamente Recebidas (Entrada)', formatCurrency(recebido)],
+            ['Despesas Totais do Período (Saída)', formatCurrency(totalDespesas)],
+            ['LUCRO LÍQUIDO REAL (Entradas - Saídas)', { content: formatCurrency(lucroLiquido), styles: { fontStyle: 'bold', textColor: lucroLiquido >= 0 ? [22, 101, 52] : [185, 28, 28] } }],
+            ['Saldo Pendente de Recebimento', formatCurrency(pendente)],
         ],
         theme: 'striped',
         headStyles: { fillColor: [40, 74, 127] },
@@ -249,26 +258,45 @@ export default function FinancialPage() {
         styles: { fontSize: 9 }
     });
 
-    doc.text("Detalhamento das Propostas Digitadas", 14, (doc as any).lastAutoTable.finalY + 15);
+    if (reportProposals.length > 0) {
+        doc.addPage();
+        doc.text("Detalhamento das Propostas Digitadas", 14, 20);
 
-    const tableRows = reportProposals.map(p => [
-        p.customer?.name || '-',
-        p.proposalNumber,
-        p.product,
-        formatCurrency(p.grossAmount),
-        formatCurrency(p.commissionValue),
-        p.status
-    ]);
+        const tableRows = reportProposals.map(p => [
+            p.customer?.name || '-',
+            p.proposalNumber,
+            p.product,
+            formatCurrency(p.grossAmount),
+            formatCurrency(p.commissionValue),
+            p.status
+        ]);
 
-    autoTable(doc, {
-        startY: (doc as any).lastAutoTable.finalY + 20,
-        head: [['Cliente', 'Nº Proposta', 'Produto', 'Vlr. Bruto', 'Comissão', 'Status Prop.']],
-        body: tableRows,
-        styles: { fontSize: 8 },
-        headStyles: { fillColor: [40, 74, 127] },
-    });
+        autoTable(doc, {
+            startY: 25,
+            head: [['Cliente', 'Nº Proposta', 'Produto', 'Vlr. Bruto', 'Comissão', 'Status Prop.']],
+            body: tableRows,
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [40, 74, 127] },
+        });
+    }
 
-    doc.save(`Fechamento_${monthYear.replace(/\s+/g, '_')}.pdf`);
+    if (reportExpenses.length > 0) {
+        doc.text("Detalhamento de Despesas", 14, (doc as any).lastAutoTable.finalY + 15);
+        autoTable(doc, {
+            startY: (doc as any).lastAutoTable.finalY + 20,
+            head: [['Data', 'Descrição', 'Categoria', 'Valor']],
+            body: reportExpenses.map(e => [
+                format(new Date(e.date), 'dd/MM/yyyy'),
+                e.description,
+                e.category,
+                formatCurrency(e.amount)
+            ]),
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [185, 28, 28] }, // Red for expenses
+        });
+    }
+
+    doc.save(`Balanco_${monthYear.replace(/\s+/g, '_')}.pdf`);
     
     toast({
         title: "Relatório Gerado!",
@@ -513,8 +541,8 @@ export default function FinancialPage() {
                 </DialogTrigger>
                 <DialogContent className="max-w-sm">
                     <DialogHeader>
-                        <DialogTitle>Configurar Fechamento</DialogTitle>
-                        <DialogDescription>Período de competência do relatório.</DialogDescription>
+                        <DialogTitle>Configurar Balanço Mensal</DialogTitle>
+                        <DialogDescription>Unifica Comissões e Despesas no mesmo PDF.</DialogDescription>
                     </DialogHeader>
                     <div className="grid grid-cols-2 gap-4 py-4">
                         <div className="space-y-2">
