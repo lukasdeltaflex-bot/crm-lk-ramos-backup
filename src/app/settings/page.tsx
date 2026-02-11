@@ -40,7 +40,7 @@ import {
     Eye,
     Layout,
     PanelLeft,
-    Image as ImageIcon,
+    ImageIcon,
     Play,
     Bot,
     FileDown,
