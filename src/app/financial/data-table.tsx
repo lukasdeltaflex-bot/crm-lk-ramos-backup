@@ -383,7 +383,8 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                                         key={status}
                                         value={status} 
                                         className={cn(
-                                            "border-2 border-transparent transition-all data-[state=active]:status-custom"
+                                            "border-2 border-transparent transition-all",
+                                            "data-[state=active]:status-custom"
                                         )}
                                         style={colorValue ? { '--status-color': colorValue } as any : {}}
                                     >
@@ -491,7 +492,9 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                         {table.getRowModel().rows?.length ? (
                             table.getRowModel().rows.map((row) => {
                                 const proposal = row.original;
-                                const colorValue = statusColors[proposal.commissionStatus] || statusColors[proposal.status];
+                                // Prioridade para cor de status de comissão no financeiro
+                                const statusKey = proposal.commissionStatus || proposal.status;
+                                const colorValue = statusColors[statusKey];
 
                                 return (
                                     <TableRow

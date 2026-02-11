@@ -94,7 +94,7 @@ export function StatsCard({
                 {title}
             </CardTitle>
             {isCritical ? (
-                <div className="flex items-center gap-1 text-[8px] font-bold text-red-600 animate-bounce">
+                <div className="flex items-center gap-1 text-[8px] font-bold text-red-600 animate-alert-pulse">
                     <AlertTriangle className="h-2.5 w-2.5 fill-current" /> PENDÊNCIA
                 </div>
             ) : isHot && (

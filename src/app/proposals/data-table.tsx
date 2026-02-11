@@ -322,12 +322,14 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                         {orderedTabs.map(status => {
                             const colorValue = statusColors[status];
                             if (status === 'Todos') return <TabsTrigger key="Todos" value="Todos" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Todos</TabsTrigger>;
+                            
                             return (
                                 <TabsTrigger 
                                     key={status} 
                                     value={status}
                                     className={cn(
-                                        "transition-all border-2 border-transparent data-[state=active]:status-custom"
+                                        "transition-all border-2 border-transparent",
+                                        "data-[state=active]:status-custom"
                                     )}
                                     style={colorValue ? { '--status-color': colorValue } as any : {}}
                                 >
