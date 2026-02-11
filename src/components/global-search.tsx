@@ -74,7 +74,7 @@ export function GlobalSearch() {
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput 
-            placeholder="Encontre clientes (nome/cpf) ou propostas..." 
+            placeholder="Nome, CPF, Proposta ou Benefício INSS..." 
         />
         <CommandList>
           <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
@@ -100,26 +100,40 @@ export function GlobalSearch() {
           <CommandSeparator />
 
           <CommandGroup heading="Clientes">
-            {validCustomers.map((customer) => (
-              <CommandItem
-                key={customer.id}
-                value={normalizeString(`${customer.name} ${customer.cpf}`)}
-                onSelect={() => {
-                  runCommand(() => router.push(`/customers/${customer.id}`));
-                }}
-              >
-                <div className="flex items-center justify-between w-full">
-                    <div className='flex items-center'>
-                        <User className="mr-2 h-4 w-4 text-muted-foreground" />
-                        <div className="flex flex-col">
-                            <span className="font-medium">{customer.name}</span>
-                            <span className="text-[10px] text-muted-foreground">{customer.cpf}</span>
-                        </div>
-                    </div>
-                    <ArrowRight className='h-3 w-3 opacity-0 group-aria-selected:opacity-100 transition-opacity' />
-                </div>
-              </CommandItem>
-            ))}
+            {validCustomers.map((customer) => {
+              // Concatena nomes, CPFs e TODOS os números de benefícios para o índice de busca
+              const benefitNumbers = customer.benefits?.map(b => b.number).join(' ') || '';
+              const searchIndex = `${customer.name} ${customer.cpf} ${benefitNumbers}`;
+              
+              return (
+                <CommandItem
+                  key={customer.id}
+                  value={normalizeString(searchIndex)}
+                  onSelect={() => {
+                    runCommand(() => router.push(`/customers/${customer.id}`));
+                  }}
+                >
+                  <div className="flex items-center justify-between w-full">
+                      <div className='flex items-center'>
+                          <User className="mr-2 h-4 w-4 text-muted-foreground" />
+                          <div className="flex flex-col">
+                              <span className="font-medium">{customer.name}</span>
+                              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                                  <span>CPF: {customer.cpf}</span>
+                                  {customer.benefits && customer.benefits.length > 0 && (
+                                      <>
+                                          <span className="opacity-30">|</span>
+                                          <span>NB: {customer.benefits[0].number}</span>
+                                      </>
+                                  )}
+                              </div>
+                          </div>
+                      </div>
+                      <ArrowRight className='h-3 w-3 opacity-0 group-aria-selected:opacity-100 transition-opacity' />
+                  </div>
+                </CommandItem>
+              );
+            })}
           </CommandGroup>
           
           <CommandSeparator />

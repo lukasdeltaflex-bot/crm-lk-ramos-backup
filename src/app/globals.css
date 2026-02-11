@@ -105,12 +105,13 @@
 .radius-organico { --radius: 1.5rem !important; }
 .radius-capsula { --radius: 2.5rem !important; }
 
-/* Aura Styles */
+/* Aura Styles - UPGRADE GLASSMORPHISM */
 .style-moderno { @apply border shadow-sm; }
 .style-glass { 
-    background-color: hsla(var(--background) / 0.7) !important;
-    backdrop-filter: blur(12px) !important;
-    @apply border shadow-lg;
+    background-color: hsla(var(--background) / 0.45) !important;
+    backdrop-filter: blur(16px) saturate(180%) !important;
+    border: 1px solid hsla(var(--primary) / 0.12) !important;
+    box-shadow: 0 8px 32px 0 hsla(0, 0%, 0%, 0.08) !important;
 }
 .style-deep { @apply border-2 shadow-2xl; }
 .style-flat { @apply border shadow-none; }
