@@ -44,7 +44,8 @@ import {
     Play,
     Bot,
     FileDown,
-    Settings2
+    Settings2,
+    RotateCcw
 } from 'lucide-react';
 import { EditableList } from '@/components/settings/editable-list';
 import { BankEditableList } from '@/components/settings/bank-editable-list';
@@ -115,7 +116,6 @@ export default function SettingsPage() {
 
   const { data: userSettings } = useDoc<UserSettings>(settingsDocRef);
 
-  // PREVIEW LOCAL: Todas as mudanças ficam aqui até clicar em Salvar
   const [preview, setPreview] = useState({
     radius: 'moderno',
     containerStyle: 'moderno',
@@ -160,7 +160,6 @@ export default function SettingsPage() {
   };
 
   const handleApplyAppearance = () => {
-      // Aplica no contexto global do ThemeProvider
       theme.setRadius(preview.radius);
       theme.setContainerStyle(preview.containerStyle);
       theme.setBackgroundTexture(preview.backgroundTexture);
@@ -171,7 +170,6 @@ export default function SettingsPage() {
       theme.setColorTheme(preview.colorTheme);
       theme.setStatusColors(preview.statusColors);
       
-      // Salva no banco de dados
       saveSettingsToFirebase({
           radius: preview.radius,
           containerStyle: preview.containerStyle,
@@ -183,6 +181,34 @@ export default function SettingsPage() {
           colorTheme: preview.colorTheme,
           statusColors: preview.statusColors
       });
+  };
+
+  const handleResetToDefaults = () => {
+      const defaults = {
+        radius: 'moderno',
+        containerStyle: 'moderno',
+        backgroundTexture: 'none',
+        colorIntensity: 'equilibrada',
+        animationStyle: 'sutil',
+        fontStyle: 'moderno',
+        sidebarStyle: 'padrão',
+        colorTheme: 'padrão',
+        statusColors: {}
+      };
+      setPreview(defaults);
+      
+      theme.setRadius(defaults.radius);
+      theme.setContainerStyle(defaults.containerStyle);
+      theme.setBackgroundTexture(defaults.backgroundTexture);
+      theme.setColorIntensity(defaults.colorIntensity);
+      theme.setAnimationStyle(defaults.animationStyle);
+      theme.setFontStyle(defaults.fontStyle);
+      theme.setSidebarStyle(defaults.sidebarStyle);
+      theme.setColorTheme(defaults.colorTheme);
+      theme.setStatusColors(defaults.statusColors);
+
+      saveSettingsToFirebase(defaults);
+      toast({ title: "Visual Restaurado", description: "O padrão de fábrica foi aplicado." });
   };
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -270,9 +296,14 @@ export default function SettingsPage() {
                                     <CardTitle>Identidade Visual de Elite</CardTitle>
                                     <CardDescription>Personalize o motor visual e o brilho industrial da sua marca.</CardDescription>
                                 </div>
-                                <Button onClick={handleApplyAppearance} size="sm" className="bg-primary hover:bg-primary/90 font-bold">
-                                    <Sparkles className="mr-2 h-4 w-4" /> Aplicar em Todo o Sistema
-                                </Button>
+                                <div className="flex gap-2">
+                                    <Button variant="outline" size="sm" onClick={handleResetToDefaults} className="font-bold">
+                                        <RotateCcw className="mr-2 h-4 w-4" /> Restaurar Padrão
+                                    </Button>
+                                    <Button onClick={handleApplyAppearance} size="sm" className="bg-primary hover:bg-primary/90 font-bold">
+                                        <Sparkles className="mr-2 h-4 w-4" /> Aplicar Globalmente
+                                    </Button>
+                                </div>
                             </CardHeader>
                             <CardContent className="space-y-10">
                                 <ThemeColors 
@@ -466,7 +497,6 @@ export default function SettingsPage() {
                                     )}
                                     style={{ '--primary': previewPrimaryColor } as any}
                                 >
-                                    {/* Teste de Barra Lateral (Miniatura) */}
                                     <div className="w-full max-w-sm space-y-2">
                                         <p className="text-[9px] font-black uppercase text-center text-muted-foreground tracking-[0.2em]">Preview de Interface</p>
                                         <div className={cn(
@@ -486,7 +516,6 @@ export default function SettingsPage() {
                                         </div>
                                     </div>
 
-                                    {/* Teste de Card de Status Dinâmico */}
                                     <div className="w-full max-w-sm space-y-4">
                                         <div className="flex items-center gap-2 bg-background/80 backdrop-blur p-2 rounded-lg border shadow-sm">
                                             <Settings2 className="h-3 w-3 text-muted-foreground" />
@@ -527,7 +556,6 @@ export default function SettingsPage() {
                                         </div>
                                     </div>
 
-                                    {/* Teste de Botões e Ritmo */}
                                     <div className="w-full max-w-sm space-y-4">
                                         <p className="text-[9px] font-black uppercase text-center text-muted-foreground tracking-[0.2em] mb-4">Painel de Teste de Ritmo</p>
                                         <div className="grid grid-cols-2 gap-3">
