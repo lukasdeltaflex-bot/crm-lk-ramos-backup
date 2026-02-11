@@ -97,11 +97,9 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
       clearAndAdd(TEXTURE_OPTIONS, "texture", backgroundTexture);
       clearAndAdd(INTENSITY_OPTIONS, "intensity", colorIntensity);
       clearAndAdd(ANIMATION_OPTIONS, "anim", animationStyle);
+      clearAndAdd(FONT_OPTIONS, "font", fontStyle);
       
       [root, body].forEach(el => {
-          el.classList.remove(...FONT_OPTIONS.map(f => `font-${f}`));
-          el.classList.add(`font-${fontStyle}`);
-          
           el.classList.remove(...SIDEBAR_OPTIONS.map(s => `sidebar-${s}`));
           el.classList.add(`sidebar-${sidebarStyle}`);
       });
