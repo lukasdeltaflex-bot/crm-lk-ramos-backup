@@ -83,12 +83,10 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
       const activeTheme = THEMES.find(t => t.name === colorTheme) || THEMES[0];
       const primaryValue = resolvedTheme === 'dark' ? activeTheme.dark : activeTheme.light;
       root.style.setProperty('--primary', primaryValue);
-      localStorage.setItem("lk-color-theme", colorTheme);
 
       const clearAndAdd = (list: string[], prefix: string, current: string) => {
           root.classList.remove(...list.map(item => `${prefix}-${item}`));
           root.classList.add(`${prefix}-${current}`);
-          localStorage.setItem(`lk-${prefix}-theme`, current);
       };
 
       clearAndAdd(RADIUS_OPTIONS, "radius", radius);
@@ -99,13 +97,9 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
       
       root.classList.remove(...FONT_OPTIONS.map(f => `font-${f}`));
       root.classList.add(`font-${fontStyle}`);
-      localStorage.setItem("lk-font-theme", fontStyle);
 
       root.classList.remove(...SIDEBAR_OPTIONS.map(s => `sidebar-${s}`));
       root.classList.add(`sidebar-${sidebarStyle}`);
-      localStorage.setItem("lk-sidebar-style", sidebarStyle);
-
-      localStorage.setItem("lk-status-colors", JSON.stringify(statusColors));
     }
   }, [colorTheme, radius, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, sidebarStyle, statusColors, isMounted, resolvedTheme]);
 

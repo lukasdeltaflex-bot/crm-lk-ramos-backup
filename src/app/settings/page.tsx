@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
@@ -39,7 +39,6 @@ import {
     MousePointer2,
     Eye,
     Layout,
-    FileDown,
     PanelLeft,
     Image as ImageIcon,
     Play,
@@ -112,45 +111,51 @@ export default function SettingsPage() {
 
   const { data: userSettings } = useDoc<UserSettings>(settingsDocRef);
 
+  // PREVIEW LOCAL: Todas as mudanças ficam aqui até clicar em Salvar
   const [preview, setPreview] = useState({
-    radius: theme.radius,
-    containerStyle: theme.containerStyle,
-    backgroundTexture: theme.backgroundTexture,
-    colorIntensity: theme.colorIntensity,
-    animationStyle: theme.animationStyle,
-    fontStyle: theme.fontStyle,
-    sidebarStyle: theme.sidebarStyle,
-    statusColors: theme.statusColors
+    radius: 'moderno',
+    containerStyle: 'moderno',
+    backgroundTexture: 'none',
+    colorIntensity: 'equilibrada',
+    animationStyle: 'sutil',
+    fontStyle: 'moderno',
+    sidebarStyle: 'padrão',
+    colorTheme: 'padrão',
+    statusColors: {} as Record<string, string>
   });
 
-  // Sync preview with actual theme but only once or on manual trigger
-  useEffect(() => {
-    if (userSettings) {
-      setPreview({
-        radius: userSettings.radius || theme.radius,
-        containerStyle: userSettings.containerStyle || theme.containerStyle,
-        backgroundTexture: userSettings.backgroundTexture || theme.backgroundTexture,
-        colorIntensity: userSettings.colorIntensity || theme.colorIntensity,
-        animationStyle: userSettings.animationStyle || theme.animationStyle,
-        fontStyle: userSettings.fontStyle || theme.fontStyle,
-        sidebarStyle: userSettings.sidebarStyle || theme.sidebarStyle,
-        statusColors: userSettings.statusColors || theme.statusColors
-      });
-    }
-  }, [userSettings]);
+  const [hasLoadedSettings, setHasLoadedSettings] = useState(false);
 
-  const updateSettings = async (updatedLists: Partial<UserSettings>) => {
+  useEffect(() => {
+    if (userSettings && !hasLoadedSettings) {
+      setPreview({
+        radius: userSettings.radius || 'moderno',
+        containerStyle: userSettings.containerStyle || 'moderno',
+        backgroundTexture: userSettings.backgroundTexture || 'none',
+        colorIntensity: userSettings.colorIntensity || 'equilibrada',
+        animationStyle: userSettings.animationStyle || 'sutil',
+        fontStyle: userSettings.fontStyle || 'moderno',
+        sidebarStyle: userSettings.sidebarStyle || 'padrão',
+        colorTheme: userSettings.colorTheme || 'padrão',
+        statusColors: userSettings.statusColors || {}
+      });
+      setHasLoadedSettings(true);
+    }
+  }, [userSettings, hasLoadedSettings]);
+
+  const saveSettingsToFirebase = async (updated: Partial<UserSettings>) => {
     if (settingsDocRef) {
       try {
-        await setDoc(settingsDocRef, updatedLists, { merge: true });
-        toast({ title: "Configurações Salvas" });
+        await setDoc(settingsDocRef, updated, { merge: true });
+        toast({ title: "Configurações Salvas com Sucesso!" });
       } catch (error) {
-        toast({ variant: "destructive", title: "Erro ao Salvar" });
+        toast({ variant: "destructive", title: "Erro ao Salvar no Firebase" });
       }
     }
   };
 
   const handleApplyAppearance = () => {
+      // 1. Aplica no contexto global do ThemeProvider
       theme.setRadius(preview.radius);
       theme.setContainerStyle(preview.containerStyle);
       theme.setBackgroundTexture(preview.backgroundTexture);
@@ -158,9 +163,11 @@ export default function SettingsPage() {
       theme.setAnimationStyle(preview.animationStyle);
       theme.setFontStyle(preview.fontStyle);
       theme.setSidebarStyle(preview.sidebarStyle);
+      theme.setColorTheme(preview.colorTheme);
       theme.setStatusColors(preview.statusColors);
       
-      updateSettings({
+      // 2. Salva permanentemente no Firebase
+      saveSettingsToFirebase({
           radius: preview.radius,
           containerStyle: preview.containerStyle,
           backgroundTexture: preview.backgroundTexture,
@@ -168,6 +175,7 @@ export default function SettingsPage() {
           animationStyle: preview.animationStyle,
           fontStyle: preview.fontStyle,
           sidebarStyle: preview.sidebarStyle,
+          colorTheme: preview.colorTheme,
           statusColors: preview.statusColors
       });
   };
@@ -179,7 +187,7 @@ export default function SettingsPage() {
       const reader = new FileReader();
       reader.onloadend = async () => {
         const dataUrl = reader.result as string;
-        await updateSettings({ customLogoURL: dataUrl });
+        await saveSettingsToFirebase({ customLogoURL: dataUrl });
         setIsUploadingLogo(false);
       };
       reader.readAsDataURL(file);
@@ -202,6 +210,12 @@ export default function SettingsPage() {
     "soft": "Quicksand", "neo-classico": "Spectral", "corp": "Manrope",
     "sharp": "Roboto Condensed", "script": "Cormorant"
   };
+
+  // Calcula a cor primária de preview baseada no tema selecionado no simulador
+  const previewPrimaryColor = React.useMemo(() => {
+    const selectedTheme = THEMES.find(t => t.name === preview.colorTheme) || THEMES[0];
+    return theme.resolvedTheme === 'dark' ? selectedTheme.dark : selectedTheme.light;
+  }, [preview.colorTheme, theme.resolvedTheme]);
 
   return (
     <AppLayout>
@@ -252,7 +266,10 @@ export default function SettingsPage() {
                                 </Button>
                             </CardHeader>
                             <CardContent className="space-y-10">
-                                <ThemeColors />
+                                <ThemeColors 
+                                    activeThemeName={preview.colorTheme} 
+                                    onSelect={(name) => setPreview(p => ({ ...p, colorTheme: name }))} 
+                                />
 
                                 <Separator />
 
@@ -267,7 +284,7 @@ export default function SettingsPage() {
                                             <div className="flex gap-2">
                                                 <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleLogoUpload} />
                                                 <Button size="sm" onClick={() => fileInputRef.current?.click()} disabled={isUploadingLogo}><Upload className="h-3 w-3 mr-2" /> Alterar Logo</Button>
-                                                {userSettings?.customLogoURL && <Button size="sm" variant="ghost" className="text-destructive" onClick={() => updateSettings({ customLogoURL: '' })}><X className="h-3 w-3 mr-2" /> Remover</Button>}
+                                                {userSettings?.customLogoURL && <Button size="sm" variant="ghost" className="text-destructive" onClick={() => saveSettingsToFirebase({ customLogoURL: '' })}><X className="h-3 w-3 mr-2" /> Remover</Button>}
                                             </div>
                                         </div>
                                     </div>
@@ -296,7 +313,7 @@ export default function SettingsPage() {
                                             </div>
                                             <Switch 
                                                 checked={userSettings?.showBankLogos ?? true} 
-                                                onCheckedChange={(val) => updateSettings({ showBankLogos: val })}
+                                                onCheckedChange={(val) => saveSettingsToFirebase({ showBankLogos: val })}
                                             />
                                         </div>
                                     </div>
@@ -318,7 +335,11 @@ export default function SettingsPage() {
                                                     <Popover>
                                                         <PopoverTrigger asChild><Button variant="ghost" size="sm" className="h-8 bg-background shadow-sm border"><Pipette className="h-3 w-3 opacity-50" /></Button></PopoverTrigger>
                                                         <PopoverContent className="w-auto p-0" align="end">
-                                                            <StatusColorPalette activeColor={currentHsl} onSelect={(color) => setPreview(p => ({ ...p, statusColors: { ...p.statusColors, [status]: color } }))} isDark={theme.resolvedTheme === 'dark'} />
+                                                            <StatusColorPalette 
+                                                                activeColor={currentHsl} 
+                                                                onSelect={(color) => setPreview(p => ({ ...p, statusColors: { ...p.statusColors, [status]: color } }))} 
+                                                                isDark={theme.resolvedTheme === 'dark'} 
+                                                            />
                                                         </PopoverContent>
                                                     </Popover>
                                                 </div>
@@ -426,14 +447,37 @@ export default function SettingsPage() {
                                 <CardDescription>Valide cada detalhe antes da aplicação global.</CardDescription>
                             </CardHeader>
                             <CardContent className="p-0">
-                                <div className={cn(
-                                    "p-8 min-h-[500px] flex flex-col gap-8 items-center justify-center transition-all",
-                                    `texture-${preview.backgroundTexture}`,
-                                    `radius-${preview.radius}`,
-                                    `font-${preview.fontStyle}`,
-                                    `anim-${preview.animationStyle}`
-                                )}>
-                                    {/* Teste de Card */}
+                                <div 
+                                    className={cn(
+                                        "p-8 min-h-[500px] flex flex-col gap-8 items-center justify-center transition-all",
+                                        `texture-${preview.backgroundTexture}`,
+                                        `radius-${preview.radius}`,
+                                        `font-${preview.fontStyle}`,
+                                        `anim-${preview.animationStyle}`
+                                    )}
+                                    style={{ '--primary': previewPrimaryColor } as any}
+                                >
+                                    {/* Teste de Barra Lateral (Miniatura) */}
+                                    <div className="w-full max-w-sm space-y-2">
+                                        <p className="text-[9px] font-black uppercase text-center text-muted-foreground tracking-[0.2em]">Teste de Barra Lateral</p>
+                                        <div className={cn(
+                                            "flex gap-3 p-3 border-2 rounded-xl shadow-sm transition-colors duration-500",
+                                            preview.sidebarStyle === 'dark' ? "bg-zinc-900 border-zinc-800 text-white" : 
+                                            preview.sidebarStyle === 'light' ? "bg-white border-zinc-200 text-zinc-900" :
+                                            "bg-muted/50 border-border text-foreground"
+                                        )}>
+                                            <div className="flex flex-col gap-2 flex-1">
+                                                <div className="h-2 w-12 rounded bg-primary/40" />
+                                                <div className="h-2 w-full rounded bg-primary/20" />
+                                                <div className="h-2 w-full rounded bg-primary/20" />
+                                            </div>
+                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                                <PanelLeft className="h-5 w-5 text-primary" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Teste de Card de Status */}
                                     <div className="w-full max-w-sm">
                                         <StatsCard 
                                             title="EM ANDAMENTO" 
@@ -502,12 +546,12 @@ export default function SettingsPage() {
                     </CardHeader>
                     <CardContent>
                         <Accordion type="multiple" className="w-full space-y-4">
-                        <EditableList title="Tipos de Produto" items={userSettings?.productTypes || initialProductTypes} setItems={(n) => updateSettings({ productTypes: n as string[] })} />
-                        <EditableList title="Status da Proposta" items={userSettings?.proposalStatuses || initialProposalStatuses} setItems={(n) => updateSettings({ proposalStatuses: n as string[] })} />
-                        <EditableList title="Status da Comissão" items={userSettings?.commissionStatuses || initialCommissionStatuses} setItems={(n) => updateSettings({ commissionStatuses: n as string[] })} />
-                        <EditableList title="Órgãos Aprovadores" items={userSettings?.approvingBodies || initialApprovingBodies} setItems={(n) => updateSettings({ approvingBodies: n as string[] })} />
-                        <EditableList title="Categorias de Despesas" items={userSettings?.expenseCategories || initialExpenseCategories} setItems={(n) => updateSettings({ expenseCategories: n as string[] })} />
-                        <BankEditableList banks={userSettings?.banks || initialBanks} bankDomains={userSettings?.bankDomains || {}} onUpdate={(b, d) => updateSettings({ banks: b, bankDomains: d })} />
+                        <EditableList title="Tipos de Produto" items={userSettings?.productTypes || initialProductTypes} setItems={(n) => saveSettingsToFirebase({ productTypes: n as string[] })} />
+                        <EditableList title="Status da Proposta" items={userSettings?.proposalStatuses || initialProposalStatuses} setItems={(n) => saveSettingsToFirebase({ proposalStatuses: n as string[] })} />
+                        <EditableList title="Status da Comissão" items={userSettings?.commissionStatuses || initialCommissionStatuses} setItems={(n) => saveSettingsToFirebase({ commissionStatuses: n as string[] })} />
+                        <EditableList title="Órgãos Aprovadores" items={userSettings?.approvingBodies || initialApprovingBodies} setItems={(n) => saveSettingsToFirebase({ approvingBodies: n as string[] })} />
+                        <EditableList title="Categorias de Despesas" items={userSettings?.expenseCategories || initialExpenseCategories} setItems={(n) => saveSettingsToFirebase({ expenseCategories: n as string[] })} />
+                        <BankEditableList banks={userSettings?.banks || initialBanks} bankDomains={userSettings?.bankDomains || {}} onUpdate={(b, d) => saveSettingsToFirebase({ banks: b, bankDomains: d })} />
                         </Accordion>
                     </CardContent>
                 </Card>
