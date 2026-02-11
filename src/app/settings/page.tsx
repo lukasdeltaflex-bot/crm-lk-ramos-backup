@@ -300,7 +300,7 @@ export default function SettingsPage() {
     "EM ANDAMENTO", "AGUARDANDO SALDO", "PAGO", 
     "SALDO PAGO", "PENDENTE", "REPROVADO", 
     "PAGA", "PARCIAL", "COMISSÃO ESPERADA", 
-    "SALDO A RECEBER", "DIGITADO"
+    "SALDO A RECEBER", "DIGITADO", "COMISSÃO RECEBIDA"
   ];
 
   const FONT_LABELS: Record<string, string> = {
