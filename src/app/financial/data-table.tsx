@@ -382,10 +382,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                                     <TabsTrigger 
                                         key={status}
                                         value={status} 
-                                        className={cn(
-                                            "border-2 border-transparent transition-all",
-                                            "data-[state=active]:status-custom"
-                                        )}
+                                        className="status-tab font-black uppercase text-[10px] tracking-widest px-4 h-9"
                                         style={colorValue ? { '--status-color': colorValue } as any : {}}
                                     >
                                         {status === 'Paga' ? 'Pagas' : status === 'Pendente' ? 'Pendentes' : 'Parciais'}

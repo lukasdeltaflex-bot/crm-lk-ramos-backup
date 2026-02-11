@@ -83,6 +83,19 @@
     border-color: hsl(var(--status-color) / var(--status-border-opacity, 0.5)) !important;
 }
 
+/* 🔘 BOTÕES DE STATUS (ABAS) */
+.status-tab {
+    color: hsl(var(--status-color) / 0.7) !important;
+    border-bottom: 3px solid transparent !important;
+    transition: all 0.3s ease !important;
+}
+.status-tab[data-state=active] {
+    color: hsl(var(--status-color)) !important;
+    background-color: hsl(var(--status-color) / 0.15) !important;
+    border-bottom-color: hsl(var(--status-color)) !important;
+    box-shadow: 0 4px 12px -2px hsl(var(--status-color) / 0.2) !important;
+}
+
 /* 📊 IDENTIDADE CROMÁTICA EM TABELAS */
 .status-row-custom {
     background-color: hsl(var(--status-color) / 0.08) !important;

@@ -327,10 +327,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                 <TabsTrigger 
                                     key={status} 
                                     value={status}
-                                    className={cn(
-                                        "transition-all border-2 border-transparent",
-                                        "data-[state=active]:status-custom"
-                                    )}
+                                    className="status-tab font-black uppercase text-[10px] tracking-widest px-4 h-9"
                                     style={colorValue ? { '--status-color': colorValue } as any : {}}
                                 >
                                     {status}
