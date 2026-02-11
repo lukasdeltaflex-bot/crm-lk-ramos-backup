@@ -72,4 +72,7 @@ export const THEMES: ThemeDefinition[] = [
     { name: "silver", label: "Prata", light: "210 15% 65%", dark: "210 15% 75%" },
     { name: "gray", label: "Grafite", light: "220 9% 46%", dark: "220 9% 51%" },
     { name: "electric", label: "Elétrico", light: "230 100% 60%", dark: "230 100% 65%" },
+    { name: "neon-blue", label: "Neon Blue", light: "200 100% 50%", dark: "200 100% 50%" },
+    { name: "neon-green", label: "Neon Green", light: "120 100% 50%", dark: "120 100% 50%" },
+    { name: "neon-purple", label: "Neon Purple", light: "280 100% 60%", dark: "280 100% 60%" },
 ];

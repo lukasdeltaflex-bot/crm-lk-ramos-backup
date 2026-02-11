@@ -77,7 +77,7 @@ function StatusColorPalette({
 }) {
     return (
         <div className="grid grid-cols-6 gap-2 p-2 w-[280px]">
-            {THEMES.slice(0, 36).map((theme) => {
+            {THEMES.map((theme) => {
                 const colorValue = isDark ? theme.dark : theme.light;
                 const isActive = activeColor === colorValue;
                 return (
@@ -515,6 +515,16 @@ export default function SettingsPage() {
                                             overrideAnimationStyle={preview.animationStyle}
                                             style={testAnimation ? { transform: 'translateX(20px)' } : {}}
                                         />
+                                        <div className="flex justify-center">
+                                            <Button 
+                                                variant="outline" 
+                                                className="status-tab font-black uppercase text-[10px] tracking-widest px-6 h-9 border-2"
+                                                data-state="active"
+                                                style={{ '--status-color': preview.statusColors[previewStatus] || '217 33% 25%' } as any}
+                                            >
+                                                Botão de Filtro {previewStatus}
+                                            </Button>
+                                        </div>
                                     </div>
 
                                     {/* Teste de Botões e Ritmo */}

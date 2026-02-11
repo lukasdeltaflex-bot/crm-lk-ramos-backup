@@ -101,18 +101,18 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
       root.classList.remove(...SIDEBAR_OPTIONS.map(s => `sidebar-${s}`));
       root.classList.add(`sidebar-${sidebarStyle}`);
     }
-  }, [colorTheme, radius, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, sidebarStyle, statusColors, isMounted, resolvedTheme]);
+  }, [colorTheme, radius, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, sidebarStyle, isMounted, resolvedTheme]);
 
   const value = React.useMemo(() => ({
-    colorTheme, setColorTheme,
-    radius, setRadius,
-    containerStyle, setContainerStyle,
-    backgroundTexture, setBackgroundTexture,
-    colorIntensity, setColorIntensity,
-    animationStyle, setAnimationStyle,
-    fontStyle, setFontStyle,
-    sidebarStyle, setSidebarStyle,
-    statusColors, setStatusColors
+    colorTheme, setColorTheme: (val: string) => { setColorTheme(val); localStorage.setItem("lk-color-theme", val); },
+    radius, setRadius: (val: string) => { setRadius(val); localStorage.setItem("lk-radius-theme", val); },
+    containerStyle, setContainerStyle: (val: string) => { setContainerStyle(val); localStorage.setItem("lk-container-style", val); },
+    backgroundTexture, setBackgroundTexture: (val: string) => { setBackgroundTexture(val); localStorage.setItem("lk-texture-theme", val); },
+    colorIntensity, setColorIntensity: (val: string) => { setColorIntensity(val); localStorage.setItem("lk-intensity-theme", val); },
+    animationStyle, setAnimationStyle: (val: string) => { setAnimationStyle(val); localStorage.setItem("lk-animation-theme", val); },
+    fontStyle, setFontStyle: (val: string) => { setFontStyle(val); localStorage.setItem("lk-font-theme", val); },
+    sidebarStyle, setSidebarStyle: (val: string) => { setSidebarStyle(val); localStorage.setItem("lk-sidebar-style", val); },
+    statusColors, setStatusColors: (val: Record<string, string>) => { setStatusColors(val); localStorage.setItem("lk-status-colors", JSON.stringify(val)); }
   }), [colorTheme, radius, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, sidebarStyle, statusColors]);
 
   return (
