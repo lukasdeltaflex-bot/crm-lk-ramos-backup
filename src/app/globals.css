@@ -31,34 +31,40 @@
     --motion-ease: cubic-bezier(0.4, 0, 0.2, 1);
     --glass-opacity: 0.7;
     --glass-blur: 12px;
-    --status-bg-opacity: 0.12;
-    --status-border-opacity: 0.5;
+    --status-bg-opacity: 0.08;
+    --status-border-opacity: 0.4;
   }
  
   .dark {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
-    --card: 224 71% 2%;
-    --card-foreground: 213 31% 91%;
-    --popover: 224 71% 2%;
-    --popover-foreground: 213 31% 91%;
+    --background: 222 47% 4%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 2%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 2%;
+    --popover-foreground: 210 40% 98%;
     --primary: 217 33% 35%;
     --primary-foreground: 210 20% 98%;
-    --secondary: 224 71% 8%;
-    --secondary-foreground: 213 31% 91%;
-    --muted: 224 71% 8%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --secondary: 222 47% 8%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 222 47% 8%;
+    --muted-foreground: 215 20.2% 75.1%;
     --accent: 45 83% 60%;
     --accent-foreground: 210 20% 98%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 210 40% 98%;
-    --border: 224 71% 12%;
-    --input: 224 71% 12%;
+    --border: 222 47% 12%;
+    --input: 222 47% 12%;
     --ring: 217 33% 35%;
   }
 }
 
-/* ⚡ ARREDONDAMENTO DINÂMICO */
+/* 🎨 NÍVEIS DE INTENSIDADE */
+.intensity-minima { --status-bg-opacity: 0.02; --status-border-opacity: 0.2; }
+.intensity-equilibrada { --status-bg-opacity: 0.08; --status-border-opacity: 0.4; }
+.intensity-impactante { --status-bg-opacity: 0.15; --status-border-opacity: 0.7; }
+.intensity-neon { --status-bg-opacity: 0.25; --status-border-opacity: 1; }
+
+/* ⚡ ARREDONDAMENTO */
 .radius-reto { --radius: 0rem; }
 .radius-extra-discreto { --radius: 0.125rem; }
 .radius-discreto { --radius: 0.25rem; }
@@ -67,7 +73,7 @@
 .radius-organico { --radius: 1rem; }
 .radius-capsula { --radius: 2rem; }
 
-/* 🌟 ESTILOS DE CONTAINER (AURAS) */
+/* 🌟 ESTILOS DE AURA */
 .style-moderno { @apply border shadow-sm; }
 .style-glass { 
     background-color: hsla(var(--background) / var(--glass-opacity)) !important;
@@ -77,112 +83,57 @@
 .style-deep { @apply border-2 shadow-2xl; }
 .style-flat { @apply border shadow-none; }
 .style-glow {
-    border-color: hsl(var(--status-color) / 0.5) !important;
-    box-shadow: 0 0 15px hsl(var(--status-color) / 0.2), inset 0 0 5px hsl(var(--status-color) / 0.05) !important;
+    border-color: hsl(var(--status-color) / 0.6) !important;
+    box-shadow: 0 0 20px hsl(var(--status-color) / 0.3), inset 0 0 10px hsl(var(--status-color) / 0.05) !important;
 }
 .style-soft { @apply border-none shadow-md bg-opacity-50; }
-.style-bordado { @apply border-4 border-double; }
 .style-geometrico { @apply border-2 border-primary/20 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]; }
 
-/* 🎨 INTENSIDADE DE COR */
-.intensity-sobrio { --status-bg-opacity: 0.08; --status-border-opacity: 0.3; }
-.intensity-vibrante { --status-bg-opacity: 0.18; --status-border-opacity: 0.7; }
-
-/* 📊 TEXTURAS DE FUNDO */
-.texture-dots { background-image: radial-gradient(hsl(var(--foreground) / 0.05) 1px, transparent 1px); background-size: 20px 20px; }
-.texture-grid { background-image: linear-gradient(hsl(var(--foreground) / 0.03) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground) / 0.03) 1px, transparent 1px); background-size: 30px 30px; }
-.texture-lines { background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, hsl(var(--foreground) / 0.02) 10px, hsl(var(--foreground) / 0.02) 11px); }
-
-/* 🎭 ESTILOS DE FONTE */
+/* 🎭 FONTES PREMIUM */
 .font-moderno { font-family: 'Inter', sans-serif; }
 .font-classico { font-family: 'Playfair Display', serif; }
 .font-mono { font-family: 'JetBrains Mono', monospace; }
 .font-arredondado { font-family: 'Lexend', sans-serif; }
-.font-condensado { font-family: 'Roboto Condensed', sans-serif; }
-.font-business { font-family: 'Outfit', sans-serif; }
-.font-elegante { font-family: 'EB Garamond', serif; }
-.font-geometrico { font-family: 'Montserrat', sans-serif; }
-.font-tecnico { font-family: 'Source Code Pro', monospace; }
-.font-minimalista { font-family: 'Quicksand', sans-serif; }
-.font-futurista { font-family: 'Orbitron', sans-serif; }
-.font-robusto { font-family: 'Syne', sans-serif; }
-.font-editorial { font-family: 'Cinzel', serif; }
 .font-industrial { font-family: 'Bebas Neue', cursive; }
-.font-digital { font-family: 'Space Grotesk', sans-serif; }
-.font-real { font-family: 'UnifrakturMaguntia', cursive; }
+.font-futurista { font-family: 'Orbitron', sans-serif; }
 
-/* ⚡ ANIMAÇÕES E RITMO */
-.anim-estatico * { transition: none !important; }
-.anim-instantaneo * { --motion-duration: 50ms; }
-.anim-rapido * { --motion-duration: 150ms; }
-.anim-sutil * { --motion-duration: 300ms; }
-.anim-cinematografico * { --motion-duration: 600ms; --motion-ease: cubic-bezier(0.22, 1, 0.36, 1); }
-.anim-elastico * { --motion-duration: 500ms; --motion-ease: cubic-bezier(0.68, -0.6, 0.32, 1.6); }
-.anim-dramatico * { --motion-duration: 800ms; }
-.anim-atmosferico * { --motion-duration: 1200ms; }
-
-/* 🌟 NEON GLOW REALISTA */
-.card-hot-neon {
-    border-color: hsl(var(--status-color)) !important;
-    border-width: 2px !important;
-    box-shadow: 
-        0 0 10px hsl(var(--status-color) / 0.4),
-        0 0 20px hsl(var(--status-color) / 0.2),
-        inset 0 0 10px hsl(var(--status-color) / 0.05) !important;
-    animation: neon-pulse 2s infinite ease-in-out !important;
+/* 🚦 SISTEMA DE STATUS DINÂMICO */
+.status-custom {
+    color: hsl(var(--status-color)) !important;
+    background-color: hsl(var(--status-color) / var(--status-bg-opacity, 0.08)) !important;
+    border-color: hsl(var(--status-color) / var(--status-border-opacity, 0.4)) !important;
 }
 
-@keyframes neon-pulse {
-    0%, 100% { filter: brightness(1); opacity: 1; }
-    50% { filter: brightness(1.2); opacity: 0.95; }
+.status-row-custom {
+    background-color: hsl(var(--status-color) / 0.06) !important;
+}
+.status-row-custom:hover {
+    background-color: hsl(var(--status-color) / 0.1) !important;
 }
 
-/* ⚡ PULSAÇÃO DE ALERTA INDUSTRIAL */
+/* 🔘 ABAS DE STATUS (FILTROS) */
+.status-tab {
+    color: hsl(var(--status-color) / 0.6) !important;
+    transition: all 0.3s ease !important;
+}
+.status-tab[data-state=active] {
+    color: hsl(var(--status-color)) !important;
+    background-color: hsl(var(--status-color) / 0.12) !important;
+    border-color: hsl(var(--status-color) / 0.5) !important;
+    box-shadow: 0 4px 12px -2px hsl(var(--status-color) / 0.2) !important;
+}
+
+/* ⚡ PULSAÇÃO INDUSTRIAL REFORÇADA */
 @keyframes alert-pulse-industrial {
-  0% { transform: scale(1); filter: drop-shadow(0 0 0px rgba(220, 38, 38, 0)); }
-  50% { transform: scale(1.2); filter: drop-shadow(0 0 15px rgba(220, 38, 38, 1)) drop-shadow(0 0 5px rgba(220, 38, 38, 0.8)); }
-  100% { transform: scale(1); filter: drop-shadow(0 0 0px rgba(220, 38, 38, 0)); }
+  0% { transform: scale(1); filter: drop-shadow(0 0 0px rgba(220, 38, 38, 0)); opacity: 1; }
+  50% { transform: scale(1.25); filter: drop-shadow(0 0 15px rgba(220, 38, 38, 1)) drop-shadow(0 0 5px rgba(220, 38, 38, 0.8)); opacity: 0.8; }
+  100% { transform: scale(1); filter: drop-shadow(0 0 0px rgba(220, 38, 38, 0)); opacity: 1; }
 }
 .animate-alert-pulse {
   animation: alert-pulse-industrial 0.8s ease-in-out infinite !important;
 }
 
-/* 🚦 SISTEMA DINÂMICO DE STATUS */
-.status-custom {
-    color: hsl(var(--status-color)) !important;
-    background-color: hsl(var(--status-color) / var(--status-bg-opacity, 0.12)) !important;
-    border-color: hsl(var(--status-color) / var(--status-border-opacity, 0.5)) !important;
-}
-
-/* 🔘 BOTÕES DE STATUS (ABAS) */
-.status-tab {
-    color: hsl(var(--status-color) / 0.6) !important;
-    transition: all 0.3s ease !important;
-    border: 1px solid transparent !important;
-}
-.status-tab[data-state=active] {
-    color: hsl(var(--status-color)) !important;
-    background-color: hsl(var(--status-color) / 0.15) !important;
-    border-color: hsl(var(--status-color) / 0.5) !important;
-    box-shadow: 0 4px 12px -2px hsl(var(--status-color) / 0.2) !important;
-}
-
-/* 📊 IDENTIDADE CROMÁTICA EM TABELAS */
-.status-row-custom {
-    background-color: hsl(var(--status-color) / 0.08) !important;
-}
-.status-row-custom:hover {
-    background-color: hsl(var(--status-color) / 0.12) !important;
-}
-
 @layer base {
-  * { 
-    @apply border-border; 
-    transition-property: all;
-    transition-duration: var(--motion-duration);
-    transition-timing-function: var(--motion-ease);
-  }
-  body { 
-    @apply bg-background text-foreground antialiased;
-  }
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground antialiased; }
 }

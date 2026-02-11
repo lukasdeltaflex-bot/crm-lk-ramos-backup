@@ -187,51 +187,24 @@ export default function SettingsPage() {
 
   const isLoading = isUserLoading || isSettingsLoading;
 
-  const colorableStatuses = Array.from(new Set([
-    ...initialProposalStatuses, 
-    "Paga", "Pendente", "Parcial",
-    "COMISSÃO ESPERADA",
+  // LISTA COMPLETA DA IMAGEM
+  const colorableStatuses = [
+    "EM ANDAMENTO", "AGUARDANDO SALDO", "PAGO", 
+    "SALDO PAGO", "PENDENTE", "REPROVADO", 
+    "PAGA", "PARCIAL", "COMISSÃO ESPERADA", 
     "SALDO A RECEBER"
-  ]));
-
-  const fontOptions = [
-    "moderno", "classico", "mono", "arredondado", "condensado", 
-    "business", "elegante", "geometrico", "tecnico", "minimalista", 
-    "futurista", "robusto", "editorial", "suico", "academico",
-    "industrial", "digital", "real", "suave", "sharp"
   ];
 
   return (
     <AppLayout>
-      <PageHeader title="Configurações de Elite" />
-        <Tabs defaultValue="lists">
+      <PageHeader title="Estúdio de Branding LK RAMOS" />
+        <Tabs defaultValue="appearance">
             <TabsList className="mb-4 bg-muted/50 p-1">
-                <TabsTrigger value="lists"><ListChecks className="mr-2 h-4 w-4" /> Opções</TabsTrigger>
-                <TabsTrigger value="appearance"><Palette className="mr-2 h-4 w-4" /> Aparência</TabsTrigger>
+                <TabsTrigger value="appearance"><Palette className="mr-2 h-4 w-4" /> Aparência & Aura</TabsTrigger>
+                <TabsTrigger value="lists"><ListChecks className="mr-2 h-4 w-4" /> Parâmetros</TabsTrigger>
                 <TabsTrigger value="data"><Database className="mr-2 h-4 w-4" /> Dados</TabsTrigger>
                 <TabsTrigger value="account"><UserCog className="mr-2 h-4 w-4" /> Conta</TabsTrigger>
             </TabsList>
-
-            <TabsContent value="lists">
-                <Card className="border-border/50 shadow-sm">
-                    <CardHeader>
-                        <CardTitle>Gerenciamento de Listas</CardTitle>
-                        <CardDescription>Configure os parâmetros operacionais do seu sistema.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                    {isLoading ? <div className="space-y-4"><Skeleton className="h-12 w-full" /></div> : (
-                        <Accordion type="multiple" className="w-full space-y-4">
-                        <EditableList title="Tipos de Produto" items={userSettings?.productTypes || initialProductTypes} setItems={(n) => updateSettings({ productTypes: n as string[] })} />
-                        <EditableList title="Status da Proposta" items={userSettings?.proposalStatuses || initialProposalStatuses} setItems={(n) => updateSettings({ proposalStatuses: n as string[] })} />
-                        <EditableList title="Status da Comissão" items={userSettings?.commissionStatuses || initialCommissionStatuses} setItems={(n) => updateSettings({ commissionStatuses: n as string[] })} />
-                        <EditableList title="Órgãos Aprovadores" items={userSettings?.approvingBodies || initialApprovingBodies} setItems={(n) => updateSettings({ approvingBodies: n as string[] })} />
-                        <EditableList title="Categorias de Despesas" items={userSettings?.expenseCategories || initialExpenseCategories} setItems={(n) => updateSettings({ expenseCategories: n as string[] })} />
-                        <BankEditableList banks={userSettings?.banks || initialBanks} bankDomains={userSettings?.bankDomains || {}} onUpdate={(b, d) => updateSettings({ banks: b, bankDomains: d })} />
-                        </Accordion>
-                    )}
-                    </CardContent>
-                </Card>
-            </TabsContent>
 
             <TabsContent value="appearance">
                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -239,25 +212,25 @@ export default function SettingsPage() {
                         <Card className="border-border/50 shadow-sm">
                             <CardHeader className="flex flex-row items-center justify-between">
                                 <div>
-                                    <CardTitle>Identidade Visual & Branding</CardTitle>
-                                    <CardDescription>Configure a estética industrial da sua plataforma.</CardDescription>
+                                    <CardTitle>Identidade Visual de Elite</CardTitle>
+                                    <CardDescription>Customize a estética industrial e o brilho da sua marca.</CardDescription>
                                 </div>
                                 <Button onClick={handleApplyAppearance} size="sm" className="bg-primary hover:bg-primary/90">
-                                    <Sparkles className="mr-2 h-4 w-4" /> Salvar Identidade Visual
+                                    <Sparkles className="mr-2 h-4 w-4" /> Aplicar Mudanças
                                 </Button>
                             </CardHeader>
                             <CardContent className="space-y-10">
                                 <div className="space-y-4">
-                                    <div className="flex items-center gap-2"><Monitor className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Logomarca Oficial</h4></div>
+                                    <div className="flex items-center gap-2"><Monitor className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Branding (Logomarca)</h4></div>
                                     <div className="flex items-center gap-6 p-6 border rounded-xl bg-muted/20">
                                         <div className="h-24 w-24 bg-white border flex items-center justify-center rounded-lg overflow-hidden shadow-inner">
                                             {userSettings?.customLogoURL ? <img src={userSettings.customLogoURL} className="max-h-full max-w-full object-contain" alt="Preview Logo" /> : <Monitor className="h-8 w-8 opacity-20" />}
                                         </div>
                                         <div className="space-y-3">
-                                            <p className="text-sm font-medium">Sua logo aparecerá no menu lateral e em todos os relatórios PDF oficiais.</p>
+                                            <p className="text-xs font-medium text-muted-foreground">Sua logo será aplicada globalmente e em todos os PDFs oficiais.</p>
                                             <div className="flex gap-2">
                                                 <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleLogoUpload} />
-                                                <Button size="sm" onClick={() => fileInputRef.current?.click()} disabled={isUploadingLogo}><Upload className="h-3 w-3 mr-2" /> Subir Logo</Button>
+                                                <Button size="sm" onClick={() => fileInputRef.current?.click()} disabled={isUploadingLogo}><Upload className="h-3 w-3 mr-2" /> Alterar Logo</Button>
                                                 {userSettings?.customLogoURL && <Button size="sm" variant="ghost" className="text-destructive" onClick={() => updateSettings({ customLogoURL: '' })}><X className="h-3 w-3 mr-2" /> Remover</Button>}
                                             </div>
                                         </div>
@@ -267,43 +240,12 @@ export default function SettingsPage() {
                                 <Separator />
 
                                 <div className="space-y-6">
-                                    <ThemeColors />
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                                        <div className="space-y-4">
-                                            <div className="flex items-center gap-2"><Pipette className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Intensidade das Cores</h4></div>
-                                            <RadioGroup value={preview.colorIntensity} onValueChange={(val) => setPreview(p => ({ ...p, colorIntensity: val }))} className="grid grid-cols-2 gap-2">
-                                                {['sobrio', 'vibrante'].map((i) => (
-                                                    <Label key={i} htmlFor={`i-${i}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold", preview.colorIntensity === i ? "border-primary bg-primary/5" : "border-muted")}>
-                                                        <RadioGroupItem value={i} id={`i-${i}`} className="sr-only" />{i === 'sobrio' ? 'Sóbrio' : 'Vibrante'}
-                                                    </Label>
-                                                ))}
-                                            </RadioGroup>
-                                        </div>
-                                        <div className="space-y-4">
-                                            <div className="flex items-center gap-2"><Landmark className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Logotipos dos Bancos</h4></div>
-                                            <div className="flex items-center space-x-2 p-3 border rounded-lg bg-muted/10">
-                                                <Switch 
-                                                    id="show-bank-logos" 
-                                                    checked={userSettings?.showBankLogos ?? true} 
-                                                    onCheckedChange={(val) => {
-                                                        updateSettings({ showBankLogos: val });
-                                                    }}
-                                                />
-                                                <Label htmlFor="show-bank-logos" className="text-xs font-bold cursor-pointer">Exibe o ícone visual de cada banco nas tabelas e formulários.</Label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <Separator />
-
-                                <div className="space-y-4">
                                     <div className="flex items-center gap-2"><Pipette className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Laboratório de Cores (Status & Financeiro)</h4></div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {colorableStatuses.map((status, index) => {
-                                            const currentHsl = preview.statusColors[status] || THEMES[0].light;
+                                        {colorableStatuses.map((status) => {
+                                            const currentHsl = preview.statusColors[status] || "217 33% 25%";
                                             return (
-                                                <div key={`color-status-${status}-${index}`} className="flex items-center justify-between p-3 border rounded-xl bg-muted/10">
+                                                <div key={status} className="flex items-center justify-between p-3 border rounded-xl bg-muted/10">
                                                     <div className="flex items-center gap-2">
                                                         <div className="h-4 w-4 rounded-full border border-white/20" style={{ backgroundColor: `hsl(${currentHsl})` }} />
                                                         <span className="text-[10px] font-black uppercase tracking-tighter">{status}</span>
@@ -324,157 +266,124 @@ export default function SettingsPage() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                     <div className="space-y-4">
-                                        <div className="flex items-center gap-2"><Shapes className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Aura Visual (Containers)</h4></div>
+                                        <div className="flex items-center gap-2"><Zap className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Intensidade do Brilho</h4></div>
+                                        <RadioGroup value={preview.colorIntensity} onValueChange={(val) => setPreview(p => ({ ...p, colorIntensity: val }))} className="grid grid-cols-2 gap-2">
+                                            {['minima', 'equilibrada', 'impactante', 'neon'].map((i) => (
+                                                <Label key={i} htmlFor={`i-${i}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold", preview.colorIntensity === i ? "border-primary bg-primary/5" : "border-muted")}>
+                                                    <RadioGroupItem value={i} id={`i-${i}`} className="sr-only" />{i === 'minima' ? 'Mínima' : i === 'equilibrada' ? 'Equilibrada' : i === 'impactante' ? 'Impactante' : 'Industrial (Neon)'}
+                                                </Label>
+                                            ))}
+                                        </RadioGroup>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-2"><Shapes className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Estilo de Aura (Containers)</h4></div>
                                         <RadioGroup value={preview.containerStyle} onValueChange={(val) => setPreview(p => ({ ...p, containerStyle: val }))} className="grid grid-cols-2 gap-2">
-                                            {['moderno', 'glass', 'deep', 'flat', 'glow', 'soft', 'bordado', 'geometrico'].map((s) => (
+                                            {['moderno', 'glass', 'deep', 'flat', 'glow', 'soft', 'geometrico'].map((s) => (
                                                 <Label key={s} htmlFor={`s-${s}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold", preview.containerStyle === s ? "border-primary bg-primary/5" : "border-muted")}>
                                                     <RadioGroupItem value={s} id={`s-${s}`} className="sr-only" />{s === 'glow' ? 'Neon Glow' : s}
                                                 </Label>
                                             ))}
                                         </RadioGroup>
                                     </div>
-
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-2"><MousePointer2 className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Arredondamento</h4></div>
-                                        <RadioGroup value={preview.radius} onValueChange={(val) => setPreview(p => ({ ...p, radius: val }))} className="grid grid-cols-3 gap-2">
-                                            {['reto', 'extra-discreto', 'discreto', 'moderno', 'amigavel', 'organico', 'capsula'].map((r) => (
-                                                <Label key={r} htmlFor={`r-${r}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-[10px] font-bold text-center", preview.radius === r ? "border-primary bg-primary/5" : "border-muted")}>
-                                                    <RadioGroupItem value={r} id={`r-${r}`} className="sr-only" />
-                                                    {r === 'extra-discreto' ? 'X-Discreto' : r === 'organico' ? 'Orgânico' : r}
-                                                </Label>
-                                            ))}
-                                        </RadioGroup>
-                                    </div>
-                                </div>
-
-                                <Separator />
-
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-2"><Type className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Estúdio de Tipografia (20 Estilos Premium)</h4></div>
-                                    <RadioGroup value={preview.fontStyle} onValueChange={(val) => setPreview(p => ({ ...p, fontStyle: val }))} className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                                        {fontOptions.map((f) => (
-                                            <Label key={f} htmlFor={`f-${f}`} className={cn("flex items-center justify-center rounded-md border-2 p-4 cursor-pointer text-xs font-bold h-20 text-center group transition-all", preview.fontStyle === f ? "border-primary bg-primary/5 scale-105" : "border-muted hover:border-primary/30")}>
-                                                <RadioGroupItem value={f} id={`f-${f}`} className="sr-only" />
-                                                <div className="flex flex-col gap-1 items-center">
-                                                    <span className={cn("text-2xl", `font-${f}`)}>Aa</span>
-                                                    <span className="opacity-60 text-[10px]">{f}</span>
-                                                </div>
-                                            </Label>
-                                        ))}
-                                    </RadioGroup>
                                 </div>
 
                                 <Separator />
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                     <div className="space-y-4">
-                                        <div className="flex items-center gap-2"><MoveHorizontal className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Motion Design (Animações)</h4></div>
-                                        <RadioGroup value={preview.animationStyle} onValueChange={(val) => setPreview(p => ({ ...p, animationStyle: val }))} className="grid grid-cols-2 gap-2">
-                                            {['estatico', 'instantaneo', 'rapido', 'sutil', 'cinematografico', 'elastico', 'dramatico', 'atmosferico'].map((a) => (
-                                                <Label key={a} htmlFor={`a-${a}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-[10px] font-bold", preview.animationStyle === a ? "border-primary bg-primary/5" : "border-muted")}>
-                                                    <RadioGroupItem value={a} id={`a-${a}`} className="sr-only" />{a}
+                                        <div className="flex items-center gap-2"><MousePointer2 className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Arredondamento</h4></div>
+                                        <RadioGroup value={preview.radius} onValueChange={(val) => setPreview(p => ({ ...p, radius: val }))} className="grid grid-cols-3 gap-2">
+                                            {['reto', 'extra-discreto', 'discreto', 'moderno', 'amigavel', 'organico', 'capsula'].map((r) => (
+                                                <Label key={r} htmlFor={`r-${r}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-[10px] font-bold text-center", preview.radius === r ? "border-primary bg-primary/5" : "border-muted")}>
+                                                    <RadioGroupItem value={r} id={`r-${r}`} className="sr-only" />{r}
                                                 </Label>
                                             ))}
                                         </RadioGroup>
                                     </div>
-
                                     <div className="space-y-4">
-                                        <div className="flex items-center gap-2"><Pipette className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Textura de Fundo</h4></div>
-                                        <RadioGroup value={preview.backgroundTexture} onValueChange={(val) => setPreview(p => ({ ...p, backgroundTexture: val }))} className="grid grid-cols-2 gap-2">
-                                            {['none', 'dots', 'grid', 'lines'].map((t) => (
-                                                <Label key={t} htmlFor={`t-${t}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold", preview.backgroundTexture === t ? "border-primary bg-primary/5" : "border-muted")}>
-                                                    <RadioGroupItem value={t} id={`t-${t}`} className="sr-only" />{t === 'none' ? 'Limpo' : t}
+                                        <div className="flex items-center gap-2"><Type className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Tipografia</h4></div>
+                                        <RadioGroup value={preview.fontStyle} onValueChange={(val) => setPreview(p => ({ ...p, fontStyle: val }))} className="grid grid-cols-2 gap-2">
+                                            {['moderno', 'classico', 'mono', 'arredondado', 'industrial', 'futurista'].map((f) => (
+                                                <Label key={f} htmlFor={`f-${f}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold", preview.fontStyle === f ? "border-primary bg-primary/5" : "border-muted")}>
+                                                    <RadioGroupItem value={f} id={`f-${f}`} className="sr-only" />{f}
                                                 </Label>
                                             ))}
                                         </RadioGroup>
                                     </div>
-                                </div>
-
-                                <Separator />
-
-                                <div className="space-y-4">
-                                    <div className="flex items-center gap-2"><Shapes className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Barra Lateral</h4></div>
-                                    <RadioGroup value={preview.sidebarStyle} onValueChange={(val) => setPreview(p => ({ ...p, sidebarStyle: val }))} className="grid grid-cols-3 gap-2">
-                                        {['default', 'dark', 'light'].map((s) => (
-                                            <Label key={s} htmlFor={`s-${s}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold", preview.sidebarStyle === s ? "border-primary bg-primary/5" : "border-muted")}>
-                                                <RadioGroupItem value={s} id={`s-${s}`} className="sr-only" />{s === 'default' ? 'Auto' : s === 'dark' ? 'Escura' : 'Clara'}
-                                            </Label>
-                                        ))}
-                                    </RadioGroup>
                                 </div>
                             </CardContent>
                         </Card>
                     </div>
 
-                    <div className="lg:col-span-1 space-y-8">
+                    <div className="lg:col-span-1">
                         <Card className="sticky top-20 border-primary/20 bg-primary/[0.02]">
                             <CardHeader>
                                 <CardTitle className="text-lg font-bold flex items-center gap-2">
                                     <Eye className="h-5 w-5 text-primary" />
                                     Laboratório de Visualização
                                 </CardTitle>
-                                <CardDescription>Simulação viva das suas escolhas.</CardDescription>
+                                <CardDescription>Veja todos os status em tempo real.</CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-6">
+                            <CardContent>
                                 <div className={cn(
-                                    "p-6 rounded-2xl transition-all border shadow-sm group/preview",
+                                    "p-4 rounded-2xl transition-all border shadow-sm",
                                     `texture-${preview.backgroundTexture}`,
                                     `radius-${preview.radius}`,
                                     `font-${preview.fontStyle}`,
-                                    `anim-${preview.animationStyle}`,
                                     `style-${preview.containerStyle}`,
                                     `intensity-${preview.colorIntensity}`
                                 )}>
-                                    <div className="space-y-4">
-                                        <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Preview de KPI & Neon Glow</p>
-                                        <StatsCard 
-                                            title="COMISSÃO ESPERADA" 
-                                            value="R$ 15.420,00" 
-                                            icon={Zap} 
-                                            description="VALOR EM TRÂMITE"
-                                            isHot={true}
-                                            className="hover:scale-105 transition-transform"
-                                            overrideStatusColors={preview.statusColors}
-                                            overrideContainerStyle={preview.containerStyle}
-                                            overrideIntensity={preview.colorIntensity}
-                                            overrideRadius={preview.radius}
-                                            overrideAnimationStyle={preview.animationStyle}
-                                        />
-
-                                        <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mt-6">Preview de Barra Lateral</p>
-                                        <div className={cn(
-                                            "border rounded-[var(--radius)] p-4 flex gap-3 transition-all shadow-sm",
-                                            preview.sidebarStyle === 'dark' ? "bg-black text-white" : preview.sidebarStyle === 'light' ? "bg-white text-black" : "bg-muted text-foreground"
-                                        )}>
-                                            <div className="flex flex-col gap-2">
-                                                <div className="h-2 w-12 bg-current opacity-20 rounded" />
-                                                <div className="h-2 w-10 bg-current opacity-40 rounded" />
-                                            </div>
-                                            <Separator orientation="vertical" className="h-8" />
-                                            <LayoutDashboard className="h-5 w-5" />
-                                        </div>
-
-                                        <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mt-6">Preview de Badge & Botão</p>
-                                        <div className="flex flex-wrap gap-2 p-4 border rounded-[var(--radius)] bg-background shadow-inner">
-                                            <Badge className={cn("status-custom", preview.containerStyle === 'glow' && "shadow-[0_0_10px_hsla(var(--status-color),0.4)]")} style={{ '--status-color': preview.statusColors['Paga'] || '142 76% 36%' } as any}>Paga</Badge>
-                                            <Badge className={cn("status-custom")} style={{ '--status-color': preview.statusColors['Pendente'] || '45 93% 47%' } as any}>Pendente</Badge>
-                                            <Button size="sm" className="status-custom h-8" style={{ '--status-color': THEMES[0].light } as any}>Ação</Button>
-                                        </div>
+                                    <div className="grid grid-cols-1 gap-3">
+                                        {colorableStatuses.map(status => (
+                                            <StatsCard 
+                                                key={`preview-${status}`}
+                                                title={status} 
+                                                value="R$ 0,00" 
+                                                icon={status.includes("COMISSÃO") ? Zap : status.includes("SALDO") ? ListChecks : Monitor} 
+                                                description="EXEMPLO DE STATUS"
+                                                isHot={preview.containerStyle === 'glow'}
+                                                overrideStatusColors={preview.statusColors}
+                                                overrideContainerStyle={preview.containerStyle}
+                                                overrideIntensity={preview.colorIntensity}
+                                                overrideRadius={preview.radius}
+                                            />
+                                        ))}
                                     </div>
                                 </div>
-                                <p className="text-[10px] text-center text-muted-foreground italic">Passe o mouse sobre o card para testar o ritmo.</p>
                             </CardContent>
                         </Card>
                     </div>
                  </div>
             </TabsContent>
 
+            <TabsContent value="lists">
+                <Card className="border-border/50 shadow-sm">
+                    <CardHeader>
+                        <CardTitle>Configuração de Listas</CardTitle>
+                        <CardDescription>Ajuste os itens disponíveis nos menus de seleção do sistema.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                    {isLoading ? <div className="space-y-4"><Skeleton className="h-12 w-full" /></div> : (
+                        <Accordion type="multiple" className="w-full space-y-4">
+                        <EditableList title="Tipos de Produto" items={userSettings?.productTypes || initialProductTypes} setItems={(n) => updateSettings({ productTypes: n as string[] })} />
+                        <EditableList title="Status da Proposta" items={userSettings?.proposalStatuses || initialProposalStatuses} setItems={(n) => updateSettings({ proposalStatuses: n as string[] })} />
+                        <EditableList title="Status da Comissão" items={userSettings?.commissionStatuses || initialCommissionStatuses} setItems={(n) => updateSettings({ commissionStatuses: n as string[] })} />
+                        <EditableList title="Órgãos Aprovadores" items={userSettings?.approvingBodies || initialApprovingBodies} setItems={(n) => updateSettings({ approvingBodies: n as string[] })} />
+                        <EditableList title="Categorias de Despesas" items={userSettings?.expenseCategories || initialExpenseCategories} setItems={(n) => updateSettings({ expenseCategories: n as string[] })} />
+                        <BankEditableList banks={userSettings?.banks || initialBanks} bankDomains={userSettings?.bankDomains || {}} onUpdate={(b, d) => updateSettings({ banks: b, bankDomains: d })} />
+                        </Accordion>
+                    )}
+                    </CardContent>
+                </Card>
+            </TabsContent>
+
             <TabsContent value="data">
                 <Card className="border-border/50 shadow-sm">
-                    <CardHeader><CardTitle>Segurança & Backup</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>Backup & Segurança</CardTitle></CardHeader>
                     <CardContent>
                         <Button className="w-full" variant="outline">
-                            <FileDown className="mr-2 h-4 w-4" /> Baixar Backup Geral (Excel)
+                            <FileDown className="mr-2 h-4 w-4" /> Exportar Banco de Dados (Excel)
                         </Button>
                     </CardContent>
                 </Card>
@@ -485,7 +394,7 @@ export default function SettingsPage() {
                     <CardHeader><CardTitle>Minha Conta</CardTitle></CardHeader>
                     <CardContent>
                         <Link href="/profile">
-                            <Button>Ir para Gerenciamento de Perfil</Button>
+                            <Button>Gerenciar Perfil</Button>
                         </Link>
                     </CardContent>
                 </Card>

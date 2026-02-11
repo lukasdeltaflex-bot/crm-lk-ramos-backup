@@ -9,14 +9,8 @@ const RADIUS_OPTIONS = ["reto", "extra-discreto", "discreto", "moderno", "amigav
 const SIDEBAR_OPTIONS = ["default", "dark", "light"];
 const CONTAINER_STYLES = ["moderno", "glass", "deep", "flat", "glow", "soft", "bordado", "geometrico"];
 const TEXTURE_OPTIONS = ["none", "dots", "grid", "lines"];
-const INTENSITY_OPTIONS = ["sobrio", "vibrante"];
-const ANIMATION_OPTIONS = ["estatico", "instantaneo", "rapido", "sutil", "cinematografico", "elastico", "dramatico", "atmosferico"];
-const FONT_OPTIONS = [
-    "moderno", "classico", "mono", "arredondado", "condensado", 
-    "business", "elegante", "geometrico", "tecnico", "minimalista", 
-    "futurista", "robusto", "editorial", "suico", "academico",
-    "industrial", "digital", "real", "suave", "sharp"
-];
+const INTENSITY_OPTIONS = ["minima", "equilibrada", "impactante", "neon"];
+const FONT_OPTIONS = ["moderno", "classico", "mono", "arredondado", "industrial", "futurista"];
 
 type CustomThemeProviderProps = ThemeProviderProps & {
   children: React.ReactNode;
@@ -52,7 +46,7 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
   const [sidebarStyle, setSidebarStyleState] = React.useState('default');
   const [containerStyle, setContainerStyleState] = React.useState('moderno');
   const [backgroundTexture, setBackgroundTextureState] = React.useState('none');
-  const [colorIntensity, setColorIntensityState] = React.useState('sobrio');
+  const [colorIntensity, setColorIntensityState] = React.useState('equilibrada');
   const [animationStyle, setAnimationStyleState] = React.useState('sutil');
   const [fontStyle, setFontStyleState] = React.useState('moderno');
   const [glassIntensity, setGlassIntensityState] = React.useState(70);
@@ -73,14 +67,11 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
     setSidebarStyleState(getSaved("sidebar-theme", "default"));
     setContainerStyleState(getSaved("container-style", "moderno"));
     setBackgroundTextureState(getSaved("texture-theme", "none"));
-    setColorIntensityState(getSaved("intensity-theme", "sobrio"));
+    setColorIntensityState(getSaved("intensity-theme", "equilibrada"));
     setAnimationStyleState(getSaved("animation-theme", "sutil"));
     setFontStyleState(getSaved("font-theme", "moderno"));
     
     if (typeof window !== 'undefined') {
-        const savedGlass = localStorage.getItem("glass-intensity");
-        if (savedGlass) setGlassIntensityState(Number(savedGlass));
-
         const savedStatusColors = localStorage.getItem("status-colors");
         if (savedStatusColors) {
             try { setStatusColorsState(JSON.parse(savedStatusColors)); } catch(e) {}
@@ -95,7 +86,6 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
       const activeTheme = THEMES.find(t => t.name === colorTheme) || THEMES[0];
       const primaryValue = resolvedTheme === 'dark' ? activeTheme.dark : activeTheme.light;
       root.style.setProperty('--primary', primaryValue);
-      root.style.setProperty('--sidebar-primary', primaryValue);
       localStorage.setItem("color-theme", colorTheme);
 
       const clearAndAdd = (list: string[], prefix: string, current: string) => {
@@ -108,30 +98,19 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
       clearAndAdd(CONTAINER_STYLES, "style", containerStyle);
       clearAndAdd(TEXTURE_OPTIONS, "texture", backgroundTexture);
       clearAndAdd(INTENSITY_OPTIONS, "intensity", colorIntensity);
-      clearAndAdd(ANIMATION_OPTIONS, "anim", animationStyle);
       
       root.classList.remove(...FONT_OPTIONS.map(f => `font-${f}`));
       root.classList.add(`font-${fontStyle}`);
       localStorage.setItem("font-theme", fontStyle);
 
-      root.classList.remove("sidebar-dark", "sidebar-light");
-      if (sidebarStyle !== 'default') {
-        root.classList.add(`sidebar-${sidebarStyle}`);
-      }
-      localStorage.setItem("sidebar-theme", sidebarStyle);
-
-      root.style.setProperty('--glass-opacity', (glassIntensity / 100).toString());
-      root.style.setProperty('--glass-blur', `${glassIntensity / 5}px`);
-      localStorage.setItem("glass-intensity", String(glassIntensity));
-
-      // 🛡️ INJEÇÃO DINÂMICA DE CORES DE STATUS
+      // Injeção de Cores de Status
       Object.entries(statusColors).forEach(([name, color]) => {
           const varName = `--status-color-${name.replace(/\s+/g, '-').toLowerCase()}`;
           root.style.setProperty(varName, color);
       });
       localStorage.setItem("status-colors", JSON.stringify(statusColors));
     }
-  }, [colorTheme, radius, sidebarStyle, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, glassIntensity, statusColors, isMounted, resolvedTheme]);
+  }, [colorTheme, radius, sidebarStyle, containerStyle, backgroundTexture, colorIntensity, fontStyle, statusColors, isMounted, resolvedTheme]);
 
   const value = {
     colorTheme,

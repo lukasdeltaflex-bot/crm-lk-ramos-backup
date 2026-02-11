@@ -60,12 +60,12 @@ export function StatsCard({
   const getThemeStyles = () => {
     const statusKey = title.toUpperCase();
     
-    // Tenta encontrar a cor baseada no título ou descrição
-    let customColor = statusColors[statusKey] || statusColors[title] || statusColors[description?.toUpperCase() || ''] || statusColors[description || ''];
+    // Tenta encontrar a cor baseada no título (exatamente como no Laboratório)
+    let customColor = statusColors[statusKey] || statusColors[title];
 
-    // COR NEUTRA PARA CARDS ESPECÍFICOS (TOTAL DIGITADO / PRODUÇÃO DIGITADA)
+    // COR NEUTRA PARA CARDS ESPECÍFICOS DE VOLUME
     if (statusKey === "TOTAL DIGITADO" || statusKey === "PRODUÇÃO DIGITADA") {
-        customColor = "240 5% 65%"; // Zinc Neutro Confortável (Claro e Escuro)
+        customColor = "240 5% 65%"; 
     }
 
     const cardClasses = cn(
@@ -75,7 +75,8 @@ export function StatsCard({
         `intensity-${intensity}`,
         `radius-${radius}`,
         `anim-${animationStyle}`,
-        (isHot || statusKey === "COMISSÃO ESPERADA") ? 'card-hot-neon status-custom' : 'status-custom',
+        'status-custom',
+        isHot && 'card-hot-neon',
         className
     );
 
