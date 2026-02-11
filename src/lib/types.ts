@@ -96,6 +96,7 @@ export type Proposal = {
   commissionPaymentDate?: string; // YYYY-MM-DD
   bankOrigin?: string;
   debtBalanceArrivalDate?: string; // YYYY-MM-DD
+  statusAwaitingBalanceAt?: string; // ISO String - Quando entrou em Aguardando Saldo
   interestRate?: number;
   operator?: string;
   commissionBase?: 'gross' | 'net';

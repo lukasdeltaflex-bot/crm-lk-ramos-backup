@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ColumnDef, Header, flexRender } from '@tanstack/react-table';
@@ -37,7 +38,6 @@ import { BankIcon } from '@/components/bank-icon';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
@@ -194,7 +194,11 @@ const StatusCellWithPulse = ({
     useEffect(() => setHasMounted(true), []);
 
     const isPortAwaitingBalance = proposal.product === 'Portabilidade' && proposal.status === 'Aguardando Saldo';
-    const businessDays = hasMounted && proposal.dateDigitized ? calculateBusinessDays(proposal.dateDigitized) : 0;
+    
+    // REGRA: Usa a data da entrada no status ou fallback para a digitação.
+    // O cálculo de dias úteis já começa no próximo dia.
+    const referenceDate = proposal.statusAwaitingBalanceAt || proposal.dateDigitized;
+    const businessDays = hasMounted && referenceDate ? calculateBusinessDays(referenceDate) : 0;
 
     return (
         <div className="flex items-center gap-2">
@@ -207,26 +211,24 @@ const StatusCellWithPulse = ({
                 />
             </div>
             {isPortAwaitingBalance && hasMounted && (
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <div className={cn(
-                                "flex items-center justify-center h-5 w-5 rounded-full border cursor-help transition-all shadow-sm",
-                                businessDays >= 5 
-                                    ? "bg-red-50 border-red-200 text-red-600 animate-alert-pulse" 
-                                    : "bg-blue-50 border-blue-200 text-blue-500"
-                            )}>
-                                <span className="text-[10px] font-black">!</span>
-                            </div>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="bg-white text-zinc-950 border shadow-2xl p-4 rounded-[2rem] min-w-[200px] animate-in zoom-in-95 duration-200">
-                            <div className="space-y-1 text-center">
-                                <p className="font-bold text-sm text-blue-600">Monitoramento de Saldo</p>
-                                <p className="text-xs font-medium text-muted-foreground">Prazo decorrido: <span className="font-bold text-zinc-900">{businessDays} dia(s) úteis.</span></p>
-                            </div>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <div className={cn(
+                            "flex items-center justify-center h-5 w-5 rounded-full border cursor-help transition-all shadow-sm",
+                            businessDays >= 5 
+                                ? "bg-red-50 border-red-200 text-red-600 animate-alert-pulse" 
+                                : "bg-blue-50 border-blue-200 text-blue-500"
+                        )}>
+                            <span className="text-[10px] font-black">!</span>
+                        </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="bg-white text-zinc-950 border shadow-2xl p-4 rounded-[2rem] min-w-[200px] animate-in zoom-in-95 duration-200">
+                        <div className="space-y-1 text-center">
+                            <p className="font-bold text-sm text-blue-600">Monitoramento de Saldo</p>
+                            <p className="text-xs font-medium text-muted-foreground">Prazo decorrido: <span className="font-bold text-zinc-900">{businessDays} dia(s) úteis.</span></p>
+                        </div>
+                    </TooltipContent>
+                </Tooltip>
             )}
         </div>
     );

@@ -25,7 +25,15 @@
         "dismissedAlerts": { "type": "array", "items": { "type": "string" } },
         "productTypes": { "type": "array", "items": { "type": "string" } },
         "proposalStatuses": { "type": "array", "items": { "type": "string" } },
-        "banks": { "type": "array", "items": { "type": "string" } }
+        "banks": { "type": "array", "items": { "type": "string" } },
+        "customLogoURL": { "type": "string" },
+        "statusColors": { "type": "object" },
+        "bankDomains": { "type": "object" },
+        "showBankLogos": { "type": "boolean" },
+        "radius": { "type": "string" },
+        "containerStyle": { "type": "string" },
+        "animationStyle": { "type": "string" },
+        "fontStyle": { "type": "string" }
       }
     },
     "Customer": {
@@ -39,7 +47,12 @@
         "status": { "type": "string", "enum": ["active", "inactive"] },
         "gender": { "type": "string", "enum": ["Masculino", "Feminino"] },
         "phone": { "type": "string" },
-        "ownerId": { "type": "string" }
+        "phone2": { "type": "string" },
+        "email": { "type": "string" },
+        "birthDate": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "benefits": { "type": "array" },
+        "documents": { "type": "array" }
       },
       "required": ["numericId", "name", "cpf", "phone", "ownerId"]
     },
@@ -52,7 +65,15 @@
         "customerId": { "type": "string" },
         "proposalNumber": { "type": "string" },
         "status": { "type": "string" },
-        "observations": { "type": "string", "description": "Observações gerais ou motivo de reprova." },
+        "product": { "type": "string" },
+        "bank": { "type": "string" },
+        "grossAmount": { "type": "number" },
+        "netAmount": { "type": "number" },
+        "commissionValue": { "type": "number" },
+        "commissionStatus": { "type": "string" },
+        "dateDigitized": { "type": "string" },
+        "statusAwaitingBalanceAt": { "type": "string", "description": "Momento em que entrou em Aguardando Saldo." },
+        "observations": { "type": "string" },
         "history": { 
             "type": "array", 
             "items": { 
@@ -66,41 +87,6 @@
             }
         }
       }
-    },
-    "FollowUp": {
-      "title": "FollowUp",
-      "type": "object",
-      "description": "Mecanismo de retornos futuros para clientes ou leads.",
-      "properties": {
-        "id": { "type": "string" },
-        "ownerId": { "type": "string" },
-        "contactName": { "type": "string" },
-        "contactPhone": { "type": "string" },
-        "customerId": { "type": "string" },
-        "referralInfo": { "type": "string" },
-        "description": { "type": "string" },
-        "dueDate": { "type": "string", "format": "date" },
-        "status": { "type": "string", "enum": ["pending", "completed", "rescheduled", "cancelled"] },
-        "createdAt": { "type": "string", "format": "date-time" },
-        "completedAt": { "type": "string", "format": "date-time" },
-        "notes": { "type": "string" }
-      },
-      "required": ["ownerId", "contactName", "dueDate", "status", "createdAt"]
-    },
-    "Expense": {
-      "title": "Expense",
-      "type": "object",
-      "description": "Controle de gastos para cálculo de lucro líquido.",
-      "properties": {
-        "id": { "type": "string" },
-        "ownerId": { "type": "string" },
-        "description": { "type": "string" },
-        "amount": { "type": "number" },
-        "date": { "type": "string", "format": "date" },
-        "category": { "type": "string" },
-        "paid": { "type": "boolean" }
-      },
-      "required": ["ownerId", "description", "amount", "date", "category"]
     }
   },
   "auth": {

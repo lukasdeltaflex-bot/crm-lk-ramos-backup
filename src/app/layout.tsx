@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -8,6 +9,7 @@ import { setDefaultOptions } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ThemeProvider } from '@/components/theme-provider';
 import { InteractionFixer } from '@/components/interaction-fixer';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 setDefaultOptions({ locale: ptBR });
 
@@ -39,11 +41,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <InteractionFixer />
-          <FirebaseClientProvider>
-            {children}
-          </FirebaseClientProvider>
-          <Toaster />
+          <TooltipProvider delayDuration={0}>
+            <InteractionFixer />
+            <FirebaseClientProvider>
+              {children}
+            </FirebaseClientProvider>
+            <Toaster />
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -51,6 +52,10 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
     } 
     else if (newStatus === 'Saldo Pago' && isPortability) {
         dataToUpdate.debtBalanceArrivalDate = now;
+    }
+    else if (newStatus === 'Aguardando Saldo' && isPortability) {
+        // GRAVA O MOMENTO EXATO DA ENTRADA NO STATUS PARA MONITORAMENTO
+        dataToUpdate.statusAwaitingBalanceAt = now;
     }
 
     const user = auth?.currentUser;

@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -19,7 +20,6 @@ import { AlertCircle, ArrowRight, User } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import Link from 'next/link';
@@ -106,9 +106,12 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
             ) : (
                 recentProposals.map((proposal) => {
                     const isPortAwaitingBalance = proposal.product === 'Portabilidade' && proposal.status === 'Aguardando Saldo';
-                    const businessDays = hasMounted && proposal.dateDigitized ? calculateBusinessDays(proposal.dateDigitized) : 0;
+                    
+                    // REGRA: Contagem real pelo tempo de status ou data de digitação
+                    const referenceDate = proposal.statusAwaitingBalanceAt || proposal.dateDigitized;
+                    const businessDays = hasMounted && referenceDate ? calculateBusinessDays(referenceDate) : 0;
+                    
                     const colorValue = statusColors[proposal.status];
-
                     const cleanBank = cleanBankName(proposal.bank);
                     const customDomain = userSettings?.bankDomains?.[proposal.bank];
 
@@ -156,18 +159,25 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
                                     >
                                         {proposal.status}
                                     </Badge>
-                                    {isPortAwaitingBalance && hasMounted && businessDays >= 5 && (
-                                        <TooltipProvider>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <AlertCircle className="h-5 w-5 text-red-600 animate-alert-pulse" />
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p className="font-semibold text-xs text-primary">Monitoramento de Saldo</p>
-                                                    <p className="text-[10px]">Prazo decorrido: {businessDays} dia(s) úteis.</p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
+                                    {isPortAwaitingBalance && hasMounted && (
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <div className={cn(
+                                                    "flex items-center justify-center h-5 w-5 rounded-full border cursor-help transition-all shadow-sm",
+                                                    businessDays >= 5 
+                                                        ? "bg-red-50 border-red-200 text-red-600 animate-alert-pulse" 
+                                                        : "bg-blue-50 border-blue-200 text-blue-500"
+                                                )}>
+                                                    <span className="text-[10px] font-black">!</span>
+                                                </div>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="top" className="bg-white text-zinc-950 border shadow-2xl p-4 rounded-[2rem] min-w-[200px]">
+                                                <div className="space-y-1 text-center">
+                                                    <p className="font-bold text-sm text-blue-600">Monitoramento de Saldo</p>
+                                                    <p className="text-xs font-medium text-muted-foreground">Prazo decorrido: <span className="font-bold text-zinc-900">{businessDays} dia(s) úteis.</span></p>
+                                                </div>
+                                            </TooltipContent>
+                                        </Tooltip>
                                     )}
                                 </div>
                             </TableCell>
