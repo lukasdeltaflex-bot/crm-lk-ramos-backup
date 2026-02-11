@@ -1,4 +1,3 @@
-
 export type Benefit = {
   number: string;
   species?: string;
@@ -112,18 +111,19 @@ export type UserSettings = {
   approvingBodies: string[];
   banks: string[];
   expenseCategories: string[];
-  bankDomains?: Record<string, string>; // Mapeamento de Nome -> Domínio para ícones
+  bankDomains?: Record<string, string>;
   showBankLogos?: boolean;
   // Appearance Elite
   customLogoURL?: string;
-  containerStyle?: 'moderno' | 'glass' | 'deep' | 'flat';
-  backgroundTexture?: 'none' | 'dots' | 'grid' | 'lines';
-  colorIntensity?: 'sobrio' | 'vibrante';
-  animationStyle?: 'estatico' | 'sutil' | 'cinematografico';
+  containerStyle?: string;
+  backgroundTexture?: string;
+  colorIntensity?: string;
+  animationStyle?: string;
   fontStyle?: string;
+  radius?: string;
+  sidebarStyle?: string;
   colorTheme?: string;
-  glassIntensity?: number; // 0 to 100
-  statusColors?: Record<string, string>; // Status Name -> Hex Color
+  statusColors?: Record<string, string>;
 };
 
 export type UserProfile = {

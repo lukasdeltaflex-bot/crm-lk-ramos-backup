@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ColumnDef, Header, flexRender } from '@tanstack/react-table';
@@ -21,14 +20,12 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { MoreHorizontal, ArrowUpDown, GripVertical, ArrowUp, ArrowDown, Copy, AlertCircle } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatCurrency, cleanBankName, calculateBusinessDays } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
 import { StatusCell } from './status-cell';
-import { type ProposalWithCustomer } from './page';
 import { format, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -38,6 +35,8 @@ import { TableHead } from '@/components/ui/table';
 import { toast } from '@/hooks/use-toast';
 import type { DateRange } from 'react-day-picker';
 import { BankIcon } from '@/components/bank-icon';
+
+type ProposalWithCustomer = Proposal & { customer: any };
 
 const formatDate = (dateString?: string) => {
     if (!dateString) return '-';
@@ -87,14 +86,14 @@ const ActionsCell = ({ row, onEdit, onView, onDelete, onDuplicate }: any) => {
             <DropdownMenuItem onSelect={() => onDuplicate(proposal)}>Duplicar</DropdownMenuItem>
             <DropdownMenuSeparator />
             <AlertDialog>
-                <AlertDialogTrigger asChild>
+                <DropdownMenuTrigger asChild>
                     <DropdownMenuItem 
                         onSelect={(e) => e.preventDefault()}
                         className="text-destructive focus:text-destructive focus:bg-destructive/10"
                         >
                         Cancelar
                     </DropdownMenuItem>
-                </AlertDialogTrigger>
+                </DropdownMenuTrigger>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>

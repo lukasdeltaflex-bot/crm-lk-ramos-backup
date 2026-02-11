@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -8,10 +7,11 @@ import { THEMES } from "@/lib/themes"
 
 const RADIUS_OPTIONS = ["reto", "extra-discreto", "discreto", "moderno", "amigavel", "organico", "capsula"];
 const SIDEBAR_OPTIONS = ["default", "dark", "light"];
-const CONTAINER_STYLES = ["moderno", "glass", "deep", "flat", "glow", "soft", "bordado", "geometrico"];
+const CONTAINER_STYLES = ["moderno", "glass", "deep", "flat", "glow", "geometrico"];
 const TEXTURE_OPTIONS = ["none", "dots", "grid", "lines"];
 const INTENSITY_OPTIONS = ["minima", "equilibrada", "impactante", "neon"];
 const FONT_OPTIONS = ["moderno", "classico", "mono", "arredondado", "industrial", "futurista"];
+const ANIMATION_OPTIONS = ["instantaneo", "sutil", "atmosferico", "cinematografico"];
 
 type CustomThemeProviderProps = ThemeProviderProps & {
   children: React.ReactNode;
@@ -34,8 +34,6 @@ const ColorThemeContext = React.createContext<{
   setAnimationStyle: (a: string) => void;
   fontStyle: string;
   setFontStyle: (f: string) => void;
-  glassIntensity: number;
-  setGlassIntensity: (v: number) => void;
   statusColors: Record<string, string>;
   setStatusColors: (colors: Record<string, string>) => void;
 } | undefined>(undefined);
@@ -50,7 +48,6 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
   const [colorIntensity, setColorIntensityState] = React.useState('equilibrada');
   const [animationStyle, setAnimationStyleState] = React.useState('sutil');
   const [fontStyle, setFontStyleState] = React.useState('moderno');
-  const [glassIntensity, setGlassIntensityState] = React.useState(70);
   const [statusColors, setStatusColorsState] = React.useState<Record<string, string>>({});
   const [isMounted, setIsMounted] = React.useState(false);
   const { resolvedTheme } = useNextTheme();
@@ -59,24 +56,21 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
     setIsMounted(true);
     const getSaved = (key: string, def: string) => {
         if (typeof window === 'undefined') return def;
-        const val = localStorage.getItem(key);
-        return val || def;
+        return localStorage.getItem(key) || def;
     };
 
-    setColorThemeState(getSaved("color-theme", "padrão"));
-    setRadiusState(getSaved("radius-theme", "moderno"));
-    setSidebarStyleState(getSaved("sidebar-theme", "default"));
-    setContainerStyleState(getSaved("container-style", "moderno"));
-    setBackgroundTextureState(getSaved("texture-theme", "none"));
-    setColorIntensityState(getSaved("intensity-theme", "equilibrada"));
-    setAnimationStyleState(getSaved("animation-theme", "sutil"));
-    setFontStyleState(getSaved("font-theme", "moderno"));
+    setColorThemeState(getSaved("lk-color-theme", "padrão"));
+    setRadiusState(getSaved("lk-radius-theme", "moderno"));
+    setSidebarStyleState(getSaved("lk-sidebar-theme", "default"));
+    setContainerStyleState(getSaved("lk-container-style", "moderno"));
+    setBackgroundTextureState(getSaved("lk-texture-theme", "none"));
+    setColorIntensityState(getSaved("lk-intensity-theme", "equilibrada"));
+    setAnimationStyleState(getSaved("lk-animation-theme", "sutil"));
+    setFontStyleState(getSaved("lk-font-theme", "moderno"));
     
-    if (typeof window !== 'undefined') {
-        const savedStatusColors = localStorage.getItem("status-colors");
-        if (savedStatusColors) {
-            try { setStatusColorsState(JSON.parse(savedStatusColors)); } catch(e) {}
-        }
+    const savedStatusColors = localStorage.getItem("lk-status-colors");
+    if (savedStatusColors) {
+        try { setStatusColorsState(JSON.parse(savedStatusColors)); } catch(e) {}
     }
   }, []);
 
@@ -87,30 +81,27 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
       const activeTheme = THEMES.find(t => t.name === colorTheme) || THEMES[0];
       const primaryValue = resolvedTheme === 'dark' ? activeTheme.dark : activeTheme.light;
       root.style.setProperty('--primary', primaryValue);
-      localStorage.setItem("color-theme", colorTheme);
+      localStorage.setItem("lk-color-theme", colorTheme);
 
       const clearAndAdd = (list: string[], prefix: string, current: string) => {
           root.classList.remove(...list.map(item => `${prefix}-${item}`));
           root.classList.add(`${prefix}-${current}`);
-          localStorage.setItem(`${prefix}-theme`, current);
+          localStorage.setItem(`lk-${prefix}-theme`, current);
       };
 
       clearAndAdd(RADIUS_OPTIONS, "radius", radius);
       clearAndAdd(CONTAINER_STYLES, "style", containerStyle);
       clearAndAdd(TEXTURE_OPTIONS, "texture", backgroundTexture);
       clearAndAdd(INTENSITY_OPTIONS, "intensity", colorIntensity);
+      clearAndAdd(ANIMATION_OPTIONS, "anim", animationStyle);
       
       root.classList.remove(...FONT_OPTIONS.map(f => `font-${f}`));
       root.classList.add(`font-${fontStyle}`);
-      localStorage.setItem("font-theme", fontStyle);
+      localStorage.setItem("lk-font-theme", fontStyle);
 
-      Object.entries(statusColors).forEach(([name, color]) => {
-          const varName = `--status-color-${name.replace(/\s+/g, '-').toLowerCase()}`;
-          root.style.setProperty(varName, color);
-      });
-      localStorage.setItem("status-colors", JSON.stringify(statusColors));
+      localStorage.setItem("lk-status-colors", JSON.stringify(statusColors));
     }
-  }, [colorTheme, radius, sidebarStyle, containerStyle, backgroundTexture, colorIntensity, fontStyle, statusColors, isMounted, resolvedTheme]);
+  }, [colorTheme, radius, sidebarStyle, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, statusColors, isMounted, resolvedTheme]);
 
   const value = React.useMemo(() => ({
     colorTheme,
@@ -129,11 +120,9 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
     setAnimationStyle: (a: string) => setAnimationStyleState(a),
     fontStyle,
     setFontStyle: (f: string) => setFontStyleState(f),
-    glassIntensity,
-    setGlassIntensity: (v: number) => setGlassIntensityState(v),
     statusColors,
     setStatusColors: (colors: Record<string, string>) => setStatusColorsState(colors)
-  }), [colorTheme, radius, sidebarStyle, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, glassIntensity, statusColors]);
+  }), [colorTheme, radius, sidebarStyle, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, statusColors]);
 
   return (
     <ColorThemeContext.Provider value={value}>
@@ -179,8 +168,6 @@ export function useTheme() {
         setAnimationStyle: colorThemeContext.setAnimationStyle,
         fontStyle: colorThemeContext.fontStyle,
         setFontStyle: colorThemeContext.setFontStyle,
-        glassIntensity: colorThemeContext.glassIntensity,
-        setGlassIntensity: colorThemeContext.setGlassIntensity,
         statusColors: colorThemeContext.statusColors,
         setStatusColors: colorThemeContext.setStatusColors,
     };

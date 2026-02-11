@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -41,7 +40,7 @@ import {
     MousePointer2,
     Eye,
     Landmark,
-    Bot
+    Layout
 } from 'lucide-react';
 import { EditableList } from '@/components/settings/editable-list';
 import { BankEditableList } from '@/components/settings/bank-editable-list';
@@ -73,7 +72,7 @@ function StatusColorPalette({
 }) {
     return (
         <div className="grid grid-cols-6 gap-2 p-2 w-[280px]">
-            {THEMES.map((theme) => {
+            {THEMES.slice(0, 36).map((theme) => {
                 const colorValue = isDark ? theme.dark : theme.light;
                 const isActive = activeColor === colorValue;
                 return (
@@ -123,8 +122,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (userSettings) {
-      setPreview(prev => ({
-        ...prev,
+      setPreview({
         radius: userSettings.radius || theme.radius,
         containerStyle: userSettings.containerStyle || theme.containerStyle,
         backgroundTexture: userSettings.backgroundTexture || theme.backgroundTexture,
@@ -133,9 +131,9 @@ export default function SettingsPage() {
         fontStyle: userSettings.fontStyle || theme.fontStyle,
         sidebarStyle: userSettings.sidebarStyle || theme.sidebarStyle,
         statusColors: userSettings.statusColors || theme.statusColors
-      }));
+      });
     }
-  }, [userSettings]);
+  }, [userSettings, theme]);
 
   const updateSettings = async (updatedLists: Partial<UserSettings>) => {
     if (settingsDocRef) {
@@ -183,8 +181,6 @@ export default function SettingsPage() {
       reader.readAsDataURL(file);
     }
   };
-
-  const isLoading = isSettingsLoading;
 
   const colorableStatuses = [
     "EM ANDAMENTO", "AGUARDANDO SALDO", "PAGO", 
@@ -235,7 +231,7 @@ export default function SettingsPage() {
                             <CardHeader className="flex flex-row items-center justify-between">
                                 <div>
                                     <CardTitle>Identidade Visual de Elite</CardTitle>
-                                    <CardDescription>Customize a estética industrial e o brilho da sua marca.</CardDescription>
+                                    <CardDescription>Personalize o motor visual e o brilho industrial da sua marca.</CardDescription>
                                 </div>
                                 <Button onClick={handleApplyAppearance} size="sm" className="bg-primary hover:bg-primary/90">
                                     <Sparkles className="mr-2 h-4 w-4" /> Aplicar Mudanças
@@ -328,11 +324,36 @@ export default function SettingsPage() {
                                         </RadioGroup>
                                     </div>
                                     <div className="space-y-4">
-                                        <div className="flex items-center gap-2"><Type className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Tipografia</h4></div>
+                                        <div className="flex items-center gap-2"><Type className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Tipografia de Elite</h4></div>
                                         <RadioGroup value={preview.fontStyle} onValueChange={(val) => setPreview(p => ({ ...p, fontStyle: val }))} className="grid grid-cols-2 gap-2">
                                             {['moderno', 'classico', 'mono', 'arredondado', 'industrial', 'futurista'].map((f) => (
                                                 <Label key={f} htmlFor={`f-${f}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold", preview.fontStyle === f ? "border-primary bg-primary/5" : "border-muted")}>
                                                     <RadioGroupItem value={f} id={`f-${f}`} className="sr-only" />{f}
+                                                </Label>
+                                            ))}
+                                        </RadioGroup>
+                                    </div>
+                                </div>
+
+                                <Separator />
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-2"><MoveHorizontal className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Ritmo (Motion Design)</h4></div>
+                                        <RadioGroup value={preview.animationStyle} onValueChange={(val) => setPreview(p => ({ ...p, animationStyle: val }))} className="grid grid-cols-2 gap-2">
+                                            {['instantaneo', 'sutil', 'atmosferico', 'cinematografico'].map((a) => (
+                                                <Label key={a} htmlFor={`a-${a}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold", preview.animationStyle === a ? "border-primary bg-primary/5" : "border-muted")}>
+                                                    <RadioGroupItem value={a} id={`a-${a}`} className="sr-only" />{a}
+                                                </Label>
+                                            ))}
+                                        </RadioGroup>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-2"><Layout className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Textura de Fundo</h4></div>
+                                        <RadioGroup value={preview.backgroundTexture} onValueChange={(val) => setPreview(p => ({ ...p, backgroundTexture: val }))} className="grid grid-cols-2 gap-2">
+                                            {['none', 'dots', 'grid', 'lines'].map((t) => (
+                                                <Label key={t} htmlFor={`t-${t}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold", preview.backgroundTexture === t ? "border-primary bg-primary/5" : "border-muted")}>
+                                                    <RadioGroupItem value={t} id={`t-${t}`} className="sr-only" />{t === 'none' ? 'Liso' : t === 'dots' ? 'Pontos' : t === 'grid' ? 'Grade' : 'Linhas'}
                                                 </Label>
                                             ))}
                                         </RadioGroup>
@@ -343,34 +364,38 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="lg:col-span-1">
-                        <Card className="sticky top-20 border-primary/20 bg-primary/[0.02]">
-                            <CardHeader>
+                        <Card className="sticky top-20 border-primary/20 bg-primary/[0.02] shadow-xl overflow-hidden">
+                            <CardHeader className="bg-primary/5 border-b border-primary/10">
                                 <CardTitle className="text-lg font-bold flex items-center gap-2">
                                     <Eye className="h-5 w-5 text-primary" />
                                     Laboratório de Visualização
                                 </CardTitle>
-                                <CardDescription>Simulação do card de status em tempo real.</CardDescription>
+                                <CardDescription>Teste sua marca antes de aplicar globalmente.</CardDescription>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="p-0">
                                 <div className={cn(
-                                    "p-6 rounded-2xl transition-all border shadow-sm",
+                                    "p-10 min-h-[400px] flex items-center justify-center transition-all",
                                     `texture-${preview.backgroundTexture}`,
                                     `radius-${preview.radius}`,
                                     `font-${preview.fontStyle}`,
-                                    `style-${preview.containerStyle}`,
-                                    `intensity-${preview.colorIntensity}`
+                                    `anim-${preview.animationStyle}`
                                 )}>
-                                    <StatsCard 
-                                        title="EM ANDAMENTO" 
-                                        value="R$ 45.000,00" 
-                                        icon={Zap} 
-                                        description="EXEMPLO DE STATUS"
-                                        isHot={preview.containerStyle === 'glow' || preview.colorIntensity === 'neon'}
-                                        overrideStatusColors={preview.statusColors}
-                                        overrideContainerStyle={preview.containerStyle}
-                                        overrideIntensity={preview.colorIntensity}
-                                        overrideRadius={preview.radius}
-                                    />
+                                    <div className="w-full max-w-sm">
+                                        <StatsCard 
+                                            title="EM ANDAMENTO" 
+                                            value="R$ 45.000,00" 
+                                            icon={Zap} 
+                                            description="SIMULAÇÃO DE STATUS"
+                                            isHot={preview.containerStyle === 'glow' || preview.colorIntensity === 'neon'}
+                                            overrideStatusColors={preview.statusColors}
+                                            overrideContainerStyle={preview.containerStyle}
+                                            overrideIntensity={preview.colorIntensity}
+                                            overrideRadius={preview.radius}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="p-4 bg-muted/30 border-t border-primary/10">
+                                    <p className="text-[10px] font-black uppercase text-center text-muted-foreground tracking-widest">Ritmo da Interface: {preview.animationStyle}</p>
                                 </div>
                             </CardContent>
                         </Card>
@@ -385,7 +410,6 @@ export default function SettingsPage() {
                         <CardDescription>Ajuste os itens disponíveis nos menus de seleção do sistema.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                    {isLoading ? <div className="space-y-4"><Skeleton className="h-12 w-full" /></div> : (
                         <Accordion type="multiple" className="w-full space-y-4">
                         <EditableList title="Tipos de Produto" items={userSettings?.productTypes || initialProductTypes} setItems={(n) => updateSettings({ productTypes: n as string[] })} />
                         <EditableList title="Status da Proposta" items={userSettings?.proposalStatuses || initialProposalStatuses} setItems={(n) => updateSettings({ proposalStatuses: n as string[] })} />
@@ -394,7 +418,6 @@ export default function SettingsPage() {
                         <EditableList title="Categorias de Despesas" items={userSettings?.expenseCategories || initialExpenseCategories} setItems={(n) => updateSettings({ expenseCategories: n as string[] })} />
                         <BankEditableList banks={userSettings?.banks || initialBanks} bankDomains={userSettings?.bankDomains || {}} onUpdate={(b, d) => updateSettings({ banks: b, bankDomains: d })} />
                         </Accordion>
-                    )}
                     </CardContent>
                 </Card>
             </TabsContent>
