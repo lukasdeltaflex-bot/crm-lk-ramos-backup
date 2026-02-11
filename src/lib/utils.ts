@@ -55,17 +55,27 @@ export function getWhatsAppUrl(phone: string): string {
 
 /**
  * Calculates the number of business days (Mon-Fri) between a start date and now.
+ * Robust version for "Portabilidade" alert monitoring.
  */
-export function calculateBusinessDays(startDate: Date): number {
+export function calculateBusinessDays(startDateStr: string | Date): number {
+    const start = typeof startDateStr === 'string' 
+        ? new Date(startDateStr.split('T')[0] + 'T00:00:00') 
+        : new Date(startDateStr);
+        
+    if (isNaN(start.getTime())) return 0;
+    
     let count = 0;
-    const curDate = new Date(startDate);
+    const curDate = new Date(start);
     const now = new Date();
+    
+    // Start counting from the day after digitization
     curDate.setDate(curDate.getDate() + 1);
     curDate.setHours(0, 0, 0, 0);
     now.setHours(0, 0, 0, 0);
 
     while (curDate <= now) {
         const dayOfWeek = curDate.getDay();
+        // 0 = Sunday, 6 = Saturday
         if (dayOfWeek !== 0 && dayOfWeek !== 6) {
             count++;
         }

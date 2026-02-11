@@ -1,6 +1,6 @@
 'use client';
 
-import { ColumnDef, Header, Table } from '@tanstack/react-table';
+import { ColumnDef, Header, Table, flexRender } from '@tanstack/react-table';
 import type { Proposal, ProposalStatus, UserSettings } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,7 +25,7 @@ import {
 import { MoreHorizontal, ArrowUpDown, GripVertical, ArrowUp, ArrowDown, Copy, AlertCircle } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatCurrency, cleanBankName, calculateBusinessDays } from '@/lib/utils';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusCell } from './status-cell';
 import { type ProposalWithCustomer } from './page';
 import { format, isValid } from 'date-fns';
@@ -34,7 +34,6 @@ import { cn } from '@/lib/utils';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TableHead } from '@/components/ui/table';
-import { flexRender } from '@tanstack/react-table';
 import { toast } from '@/hooks/use-toast';
 import type { DateRange } from 'react-day-picker';
 import { BankIcon } from '@/components/bank-icon';
@@ -78,7 +77,6 @@ const CopyButton = ({ text, label }: { text: string | undefined; label: string }
         </Button>
     );
 }
-
 
 const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit, onView, onDelete, onDuplicate }) => {
     const proposal = row.original;
@@ -190,6 +188,40 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
     )
 }
 
+/**
+ * 🛠️ COMPONENTE DE CÉLULA DE STATUS COM PULSAÇÃO
+ * Encapsula a lógica de monitoramento de dias úteis para portabilidade.
+ */
+const StatusCellWithPulse = ({ 
+    proposal, 
+    onStatusChange 
+}: { 
+    proposal: ProposalWithCustomer; 
+    onStatusChange: (proposalId: string, newStatus: ProposalStatus, product?: string) => void;
+}) => {
+    const [hasMounted, setHasMounted] = useState(false);
+    useEffect(() => setHasMounted(true), []);
+
+    const isPortAwaitingBalance = proposal.product === 'Portabilidade' && proposal.status === 'Aguardando Saldo';
+    const businessDays = hasMounted && proposal.dateDigitized ? calculateBusinessDays(proposal.dateDigitized) : 0;
+
+    return (
+        <div className="flex items-center gap-2">
+            <div className="w-28">
+                <StatusCell
+                    proposalId={proposal.id}
+                    currentStatus={proposal.status}
+                    product={proposal.product}
+                    onStatusChange={onStatusChange}
+                />
+            </div>
+            {isPortAwaitingBalance && businessDays >= 5 && (
+                <AlertCircle className="h-5 w-5 text-red-600 animate-alert-pulse shrink-0" />
+            )}
+        </div>
+    );
+}
+
 export const getColumns = (
     onEdit: (proposal: ProposalWithCustomer) => void,
     onView: (proposal: ProposalWithCustomer) => void,
@@ -298,27 +330,12 @@ export const getColumns = (
     accessorKey: 'status',
     id: 'status',
     header: 'Status',
-    cell: ({ row }) => {
-      const proposal = row.original;
-      const isPortAwaitingBalance = proposal.product === 'Portabilidade' && proposal.status === 'Aguardando Saldo';
-      const businessDays = proposal.dateDigitized ? calculateBusinessDays(new Date(proposal.dateDigitized)) : 0;
-
-      return (
-        <div className="flex items-center gap-2">
-            <div className="w-28">
-                <StatusCell
-                    proposalId={proposal.id}
-                    currentStatus={proposal.status}
-                    product={proposal.product}
-                    onStatusChange={onStatusChange}
-                />
-            </div>
-            {isPortAwaitingBalance && businessDays >= 5 && (
-                <AlertCircle className="h-5 w-5 text-red-600 animate-alert-pulse shrink-0" />
-            )}
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+        <StatusCellWithPulse 
+            proposal={row.original} 
+            onStatusChange={onStatusChange} 
+        />
+    ),
     filterFn: (row, id, value) => {
         return value.includes(row.getValue(id))
     }

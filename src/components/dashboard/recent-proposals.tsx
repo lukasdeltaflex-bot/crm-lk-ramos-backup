@@ -106,7 +106,7 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
             ) : (
                 recentProposals.map((proposal) => {
                     const isPortAwaitingBalance = proposal.product === 'Portabilidade' && proposal.status === 'Aguardando Saldo';
-                    const businessDays = hasMounted && proposal.dateDigitized ? calculateBusinessDays(new Date(proposal.dateDigitized)) : 0;
+                    const businessDays = hasMounted && proposal.dateDigitized ? calculateBusinessDays(proposal.dateDigitized) : 0;
                     const colorValue = statusColors[proposal.status];
 
                     const cleanBank = cleanBankName(proposal.bank);
