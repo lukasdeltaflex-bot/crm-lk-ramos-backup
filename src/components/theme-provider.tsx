@@ -11,6 +11,7 @@ const TEXTURE_OPTIONS = ["none", "dots", "grid", "lines"];
 const INTENSITY_OPTIONS = ["minima", "equilibrada", "impactante", "neon"];
 const FONT_OPTIONS = ["moderno", "classico", "mono", "arredondado", "industrial", "futurista", "elegante", "real", "espacial", "minimalista"];
 const ANIMATION_OPTIONS = ["instantaneo", "sutil", "atmosferico", "cinematografico"];
+const SIDEBAR_OPTIONS = ["padrão", "dark", "light"];
 
 type ColorThemeContextType = {
   colorTheme: string;
@@ -27,6 +28,8 @@ type ColorThemeContextType = {
   setAnimationStyle: (a: string) => void;
   fontStyle: string;
   setFontStyle: (f: string) => void;
+  sidebarStyle: string;
+  setSidebarStyle: (s: string) => void;
   statusColors: Record<string, string>;
   setStatusColors: (colors: Record<string, string>) => void;
 };
@@ -41,6 +44,7 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
   const [colorIntensity, setColorIntensity] = React.useState('equilibrada');
   const [animationStyle, setAnimationStyle] = React.useState('sutil');
   const [fontStyle, setFontStyle] = React.useState('moderno');
+  const [sidebarStyle, setSidebarStyle] = React.useState('padrão');
   const [statusColors, setStatusColors] = React.useState<Record<string, string>>({});
   const [isMounted, setIsMounted] = React.useState(false);
   const { resolvedTheme } = useNextTheme();
@@ -59,6 +63,7 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
     setColorIntensity(getSaved("lk-intensity-theme", "equilibrada"));
     setAnimationStyle(getSaved("lk-animation-theme", "sutil"));
     setFontStyle(getSaved("lk-font-theme", "moderno"));
+    setSidebarStyle(getSaved("lk-sidebar-style", "padrão"));
     
     const savedStatusColors = localStorage.getItem("lk-status-colors");
     if (savedStatusColors) {
@@ -91,9 +96,14 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
       root.classList.add(`font-${fontStyle}`);
       localStorage.setItem("lk-font-theme", fontStyle);
 
+      // Sidebar Style
+      root.classList.remove(...SIDEBAR_OPTIONS.map(s => `sidebar-${s}`));
+      root.classList.add(`sidebar-${sidebarStyle}`);
+      localStorage.setItem("lk-sidebar-style", sidebarStyle);
+
       localStorage.setItem("lk-status-colors", JSON.stringify(statusColors));
     }
-  }, [colorTheme, radius, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, statusColors, isMounted, resolvedTheme]);
+  }, [colorTheme, radius, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, sidebarStyle, statusColors, isMounted, resolvedTheme]);
 
   const value = React.useMemo(() => ({
     colorTheme, setColorTheme,
@@ -103,8 +113,9 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
     colorIntensity, setColorIntensity,
     animationStyle, setAnimationStyle,
     fontStyle, setFontStyle,
+    sidebarStyle, setSidebarStyle,
     statusColors, setStatusColors
-  }), [colorTheme, radius, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, statusColors]);
+  }), [colorTheme, radius, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, sidebarStyle, statusColors]);
 
   return (
     <ColorThemeContext.Provider value={value}>

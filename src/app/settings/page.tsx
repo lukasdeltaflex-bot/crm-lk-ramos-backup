@@ -39,7 +39,9 @@ import {
     MousePointer2,
     Eye,
     Layout,
-    FileDown
+    FileDown,
+    PanelLeft,
+    Image as ImageIcon
 } from 'lucide-react';
 import { EditableList } from '@/components/settings/editable-list';
 import { BankEditableList } from '@/components/settings/bank-editable-list';
@@ -58,6 +60,7 @@ import { THEMES } from '@/lib/themes';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { StatsCard } from '@/components/dashboard/stats-card';
+import { Switch } from '@/components/ui/switch';
 
 function StatusColorPalette({ 
     activeColor, 
@@ -107,7 +110,6 @@ export default function SettingsPage() {
 
   const { data: userSettings } = useDoc<UserSettings>(settingsDocRef);
 
-  // Preview local para o Simulador (evita loops sincronizando apenas no clique)
   const [preview, setPreview] = useState({
     radius: theme.radius,
     containerStyle: theme.containerStyle,
@@ -115,10 +117,10 @@ export default function SettingsPage() {
     colorIntensity: theme.colorIntensity,
     animationStyle: theme.animationStyle,
     fontStyle: theme.fontStyle,
+    sidebarStyle: theme.sidebarStyle,
     statusColors: theme.statusColors
   });
 
-  // Sincroniza o preview inicial UMA VEZ quando os dados carregam do banco
   useEffect(() => {
     if (userSettings) {
       setPreview(p => ({
@@ -129,6 +131,7 @@ export default function SettingsPage() {
         colorIntensity: userSettings.colorIntensity || theme.colorIntensity,
         animationStyle: userSettings.animationStyle || theme.animationStyle,
         fontStyle: userSettings.fontStyle || theme.fontStyle,
+        sidebarStyle: userSettings.sidebarStyle || theme.sidebarStyle,
         statusColors: userSettings.statusColors || theme.statusColors
       }));
     }
@@ -152,6 +155,7 @@ export default function SettingsPage() {
       theme.setColorIntensity(preview.colorIntensity);
       theme.setAnimationStyle(preview.animationStyle);
       theme.setFontStyle(preview.fontStyle);
+      theme.setSidebarStyle(preview.sidebarStyle);
       theme.setStatusColors(preview.statusColors);
       
       updateSettings({
@@ -161,6 +165,7 @@ export default function SettingsPage() {
           colorIntensity: preview.colorIntensity,
           animationStyle: preview.animationStyle,
           fontStyle: preview.fontStyle,
+          sidebarStyle: preview.sidebarStyle,
           statusColors: preview.statusColors
       });
   };
@@ -252,6 +257,35 @@ export default function SettingsPage() {
                                                 <Button size="sm" onClick={() => fileInputRef.current?.click()} disabled={isUploadingLogo}><Upload className="h-3 w-3 mr-2" /> Alterar Logo</Button>
                                                 {userSettings?.customLogoURL && <Button size="sm" variant="ghost" className="text-destructive" onClick={() => updateSettings({ customLogoURL: '' })}><X className="h-3 w-3 mr-2" /> Remover</Button>}
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <Separator />
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-2"><PanelLeft className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Barra Lateral</h4></div>
+                                        <RadioGroup value={preview.sidebarStyle} onValueChange={(val) => setPreview(p => ({ ...p, sidebarStyle: val }))} className="grid grid-cols-3 gap-2">
+                                            {['padrão', 'dark', 'light'].map((s) => (
+                                                <Label key={s} htmlFor={`sidebar-${s}`} className={cn("flex items-center justify-center rounded-md border-2 p-3 cursor-pointer capitalize text-xs font-bold", preview.sidebarStyle === s ? "border-primary bg-primary/5" : "border-muted")}>
+                                                    <RadioGroupItem value={s} id={`sidebar-${s}`} className="sr-only" />{s}
+                                                </Label>
+                                            ))}
+                                        </RadioGroup>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-2"><ImageIcon className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Logotipos dos Bancos</h4></div>
+                                        <div className="flex items-center justify-between p-4 border rounded-xl bg-muted/10">
+                                            <div className="space-y-0.5">
+                                                <Label className="text-sm font-bold">Exibir Ícones Oficiais</Label>
+                                                <p className="text-[10px] text-muted-foreground">Mostra os logos dos bancos nas tabelas e propostas.</p>
+                                            </div>
+                                            <Switch 
+                                                checked={userSettings?.showBankLogos ?? true} 
+                                                onCheckedChange={(val) => updateSettings({ showBankLogos: val })}
+                                            />
                                         </div>
                                     </div>
                                 </div>
