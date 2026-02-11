@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -42,7 +43,9 @@ import {
     PanelLeft,
     Image as ImageIcon,
     Play,
-    Bot
+    Bot,
+    FileDown,
+    Settings2
 } from 'lucide-react';
 import { EditableList } from '@/components/settings/editable-list';
 import { BankEditableList } from '@/components/settings/bank-editable-list';
@@ -62,6 +65,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Separator } from '@/components/ui/separator';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 function StatusColorPalette({ 
     activeColor, 
@@ -124,6 +128,7 @@ export default function SettingsPage() {
     statusColors: {} as Record<string, string>
   });
 
+  const [previewStatus, setPreviewStatus] = useState("EM ANDAMENTO");
   const [hasLoadedSettings, setHasLoadedSettings] = useState(false);
 
   useEffect(() => {
@@ -155,7 +160,6 @@ export default function SettingsPage() {
   };
 
   const handleApplyAppearance = () => {
-      // 1. Aplica no contexto global do ThemeProvider
       theme.setRadius(preview.radius);
       theme.setContainerStyle(preview.containerStyle);
       theme.setBackgroundTexture(preview.backgroundTexture);
@@ -166,7 +170,6 @@ export default function SettingsPage() {
       theme.setColorTheme(preview.colorTheme);
       theme.setStatusColors(preview.statusColors);
       
-      // 2. Salva permanentemente no Firebase
       saveSettingsToFirebase({
           radius: preview.radius,
           containerStyle: preview.containerStyle,
@@ -211,7 +214,6 @@ export default function SettingsPage() {
     "sharp": "Roboto Condensed", "script": "Cormorant"
   };
 
-  // Calcula a cor primária de preview baseada no tema selecionado no simulador
   const previewPrimaryColor = React.useMemo(() => {
     const selectedTheme = THEMES.find(t => t.name === preview.colorTheme) || THEMES[0];
     return theme.resolvedTheme === 'dark' ? selectedTheme.dark : selectedTheme.light;
@@ -459,7 +461,7 @@ export default function SettingsPage() {
                                 >
                                     {/* Teste de Barra Lateral (Miniatura) */}
                                     <div className="w-full max-w-sm space-y-2">
-                                        <p className="text-[9px] font-black uppercase text-center text-muted-foreground tracking-[0.2em]">Teste de Barra Lateral</p>
+                                        <p className="text-[9px] font-black uppercase text-center text-muted-foreground tracking-[0.2em]">Preview de Interface</p>
                                         <div className={cn(
                                             "flex gap-3 p-3 border-2 rounded-xl shadow-sm transition-colors duration-500",
                                             preview.sidebarStyle === 'dark' ? "bg-zinc-900 border-zinc-800 text-white" : 
@@ -477,13 +479,26 @@ export default function SettingsPage() {
                                         </div>
                                     </div>
 
-                                    {/* Teste de Card de Status */}
-                                    <div className="w-full max-w-sm">
+                                    {/* Teste de Card de Status Dinâmico */}
+                                    <div className="w-full max-w-sm space-y-4">
+                                        <div className="flex items-center gap-2 bg-background/80 backdrop-blur p-2 rounded-lg border shadow-sm">
+                                            <Settings2 className="h-3 w-3 text-muted-foreground" />
+                                            <Select value={previewStatus} onValueChange={setPreviewStatus}>
+                                                <SelectTrigger className="h-7 text-[10px] font-bold uppercase border-none bg-transparent focus:ring-0">
+                                                    <SelectValue placeholder="Escolher Status para Teste" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {colorableStatuses.map(s => (
+                                                        <SelectItem key={s} value={s} className="text-[10px] font-bold uppercase">{s}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                         <StatsCard 
-                                            title="EM ANDAMENTO" 
+                                            title={previewStatus} 
                                             value="R$ 150.000,00" 
                                             icon={Zap} 
-                                            description="TESTE DE CONTAINER"
+                                            description={`SIMULAÇÃO: ${previewStatus}`}
                                             isHot={preview.containerStyle === 'glow' || preview.colorIntensity === 'neon'}
                                             overrideStatusColors={preview.statusColors}
                                             overrideContainerStyle={preview.containerStyle}
