@@ -17,8 +17,11 @@ import {
     Type,
     MoveHorizontal,
     Bot,
-    MousePointer2,
-    Shapes
+    Shapes,
+    TrendingUp,
+    Layout,
+    PanelLeft,
+    Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -33,7 +36,7 @@ export default function ManualPage() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <ShieldCheck className="text-primary" />
-                        Sistema de Gestão de Elite
+                        Plataforma de Gestão Industrial de Elite
                     </CardTitle>
                     <CardDescription>
                         Este guia foi projetado para transformar você em um mestre na operação do LK RAMOS. 
@@ -43,44 +46,64 @@ export default function ManualPage() {
             </Card>
 
             <Accordion type="single" collapsible className="w-full space-y-4">
-                <AccordionItem value="appearance" className="border rounded-xl bg-card px-4 shadow-sm">
+                <AccordionItem value="branding" className="border rounded-xl bg-card px-4 shadow-sm">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-purple-100 text-purple-600"><Palette className="h-5 w-5" /></div>
+                            <div className="p-2 rounded-lg bg-blue-100 text-blue-600"><Palette className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold">1. Estúdio de Branding & Laboratório Visual</p>
-                                <p className="text-xs text-muted-foreground">Logo próprio, estilos de aura, tipografia de elite e movimento</p>
+                                <p className="font-bold">1. Estúdio de Branding & Laboratório 360°</p>
+                                <p className="text-xs text-muted-foreground">Preview isolado, logo própria e identidade total da marca</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
-                        <p>Personalize o sistema para que ele tenha a cara da sua marca.</p>
+                        <p>O LK RAMOS permite que o sistema tenha a alma da sua marca através de ferramentas de customização avançada.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Branding Próprio</strong>: Em Configurações, suba sua logomarca. Ela aparecerá no menu e em todos os relatórios PDF oficiais com Identidade Total.</li>
-                            <li><strong>Identidade Total</strong>: Ao escolher uma fonte ou cor, ela é aplicada forçadamente em 100% do sistema, garantindo consistência absoluta.</li>
-                            <li><strong>Estúdio de Arredondamento</strong>: Níveis como Reto, Extra-Discreto (2px), Discreto (8px) ou Moderno (12px).</li>
-                            <li><strong>Estúdio de Tipografia</strong>: 20 estilos de fontes profissionais como Industrial, Futurista, Real ou Elegante.</li>
-                            <li><strong>Motion Design (Ritmo)</strong>: Ajuste a velocidade de resposta. Use o modo <strong>Instantâneo</strong> para rapidez extrema ou <strong>Atmosférico</strong> para luxo.</li>
+                            <li><strong>Laboratório de Visualização (Sandbox)</strong>: Experimente cores e fontes em um ambiente seguro. As mudanças só afetam o sistema quando você clicar em "Aplicar Globalmente".</li>
+                            <li><strong>Branding Próprio</strong>: Faça o upload da sua logomarca. Ela aparecerá com destaque no menu lateral e em todos os relatórios PDF oficiais (Dossiês e Fechamentos).</li>
+                            <li><strong>Paleta Premium</strong>: Mais de 60 tonalidades calibradas para aplicação global instantânea.</li>
+                            <li><strong>Barra Lateral Independente</strong>: Escolha entre os modos <strong>Dark</strong> (Industrial), <strong>Light</strong> (Clean) ou <strong>Padrão</strong> para o menu de navegação.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="advanced-custom" className="border rounded-xl bg-card px-4 shadow-sm">
+                <AccordionItem value="typography" className="border rounded-xl bg-card px-4 shadow-sm">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-blue-100 text-blue-600"><Pipette className="h-5 w-5" /></div>
+                            <div className="p-2 rounded-lg bg-purple-100 text-purple-600"><Type className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold">2. Customização Avançada & Aura</p>
-                                <p className="text-xs text-muted-foreground">Controle de vidro dinâmico, cores de status e novos estilos de aura</p>
+                                <p className="font-bold">2. Tipografia Expandida & Arredondamento</p>
+                                <p className="text-xs text-muted-foreground">Estilos de elite e precisão de arredondamento industrial</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
-                        <p>Ferramentas de ajuste fino para sua interface de trabalho.</p>
+                        <p>Ajuste a personalidade do sistema através do Estúdio de Precisão.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Auras de Próxima Geração</strong>: Experimente os modos <strong>Glow (Neon)</strong>, <strong>Geométrico (Heavy Border)</strong> ou <strong>Glassmorphism</strong>.</li>
-                            <li><strong>Intensidade do Vidro</strong>: No estilo "Glassmorphism", utilize o slider para ajustar a opacidade e o nível de desfoque (blur).</li>
-                            <li><strong>Laboratório de Cores de Status</strong>: Defina cores personalizadas para cada status. As cores são aplicadas automaticamente em cards (com 12% de aura de fundo) e tabelas.</li>
+                            <li><strong>25+ Famílias de Fontes</strong>: Escolha entre estilos como <strong>Industrial (Bebas)</strong>, <strong>Futurista (Orbitron)</strong>, <strong>Real (Cinzel)</strong> ou <strong>Minimalista (Outfit)</strong>.</li>
+                            <li><strong>Arredondamento Cirúrgico</strong>: 8 níveis de precisão, do <strong>Reto Industrial (0px)</strong> para um visual agressivo até o <strong>Cápsula (32px)</strong> para suavidade moderna.</li>
+                            <li><strong>Intensidade de Brilho</strong>: 4 níveis de intensidade que afetam como as cores de status brilham nos cards e badges.</li>
+                        </ul>
+                    </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="motion" className="border rounded-xl bg-card px-4 shadow-sm">
+                    <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-orange-100 text-orange-600"><MoveHorizontal className="h-5 w-5" /></div>
+                            <div className="text-left">
+                                <p className="font-bold">3. Ritmo & Motion Design</p>
+                                <p className="text-xs text-muted-foreground">Controle da velocidade de resposta e animações</p>
+                            </div>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
+                        <p>O <strong>Ritmo</strong> define quão rápido os elementos aparecem e se movem na sua tela.</p>
+                        <ul className="list-disc pl-5 space-y-2">
+                            <li><strong>Instantâneo</strong>: Rapidez absoluta, sem delays de transição. Ideal para alta produtividade.</li>
+                            <li><strong>Sutil/Atmosférico</strong>: O equilíbrio perfeito entre beleza e velocidade.</li>
+                            <li><strong>Cinematográfico</strong>: Transições suaves e luxuosas que elevam a experiência visual.</li>
+                            <li><strong>Botão de Teste</strong>: Use o botão "Testar Ritmo" no Laboratório para sentir a velocidade antes de aplicar.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
@@ -88,58 +111,59 @@ export default function ManualPage() {
                 <AccordionItem value="navigation" className="border rounded-xl bg-card px-4 shadow-sm">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-orange-100 text-orange-600"><Filter className="h-5 w-5" /></div>
+                            <div className="p-2 rounded-lg bg-emerald-100 text-emerald-600"><Filter className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold">3. Navegação Cromática & Filtros Inteligentes</p>
-                                <p className="text-xs text-muted-foreground">Filtros coloridos e busca inteligente por ID ou CPF</p>
+                                <p className="font-bold">4. Navegação Cromática & Sparklines</p>
+                                <p className="text-xs text-muted-foreground">Sincronização entre cards, abas e gráficos de tendência</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
-                        <p>Agilize sua produtividade com a sinalização visual do sistema.</p>
+                        <p>O sistema utiliza cores para guiar seu olhar através da esteira de propostas.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Abas Coloridas</strong>: Botões de filtro com cores representativas que casam com o status da proposta.</li>
-                            <li><strong>Dashboard Inteligente</strong>: A ordem dos cards segue rigorosamente o fluxo: Digitado &rarr; Pendente &rarr; Em Andamento &rarr; Aguardando Saldo &rarr; Saldo Pago &rarr; Reprovado.</li>
-                            <li><strong>Visão de Esteira</strong>: Os cards de Pendente, Em Andamento, Aguardando Saldo e Saldo Pago mostram sempre o acumulado do mês atual e do anterior.</li>
+                            <li><strong>Sincronização de Status</strong>: A cor que você define no Laboratório é aplicada rigorosamente ao <strong>Card do Dashboard</strong>, ao <strong>Botão de Filtro (Abas)</strong> e aos <strong>Badges da Tabela</strong>.</li>
+                            <li><strong>Sparklines (Tendência)</strong>: As mini-linhas gráficas nos cards mostram a oscilação da sua produção nos últimos 7 dias, permitindo identificar picos ou quedas de produtividade.</li>
+                            <li><strong>Cálculo de Performance</strong>: Indicadores percentuais automáticos comparam o desempenho do mês atual com o mês anterior.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="dre" className="border rounded-xl bg-card px-4 shadow-sm">
+                <AccordionItem value="alerts" className="border rounded-xl bg-card px-4 shadow-sm">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-red-100 text-red-600"><Wallet className="h-5 w-5" /></div>
+                            <div className="p-2 rounded-lg bg-red-100 text-red-600"><Zap className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold">4. Gestão Financeira & DRE</p>
-                                <p className="text-xs text-muted-foreground">Saldo a receber, comissão esperada e livro de despesas</p>
+                                <p className="font-bold">5. Monitoramento Industrial & Pulsação</p>
+                                <p className="text-xs text-muted-foreground">Alertas agressivos para prazos críticos e retenção</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
-                        <p>Mantenha a saúde financeira da sua operação sob controle total.</p>
+                        <p>Ferramentas de alerta que garantem que nenhuma pendência seja esquecida.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Lançamento de Despesas</strong>: Registre custos operacionais e gerencie a situação (Pago/Pendente).</li>
-                            <li><strong>Categorias de Elite</strong>: Crie categorias próprias em Configurações &gt; Opções.</li>
-                            <li><strong>Conciliação com IA</strong>: Processe relatórios de pagamento colando apenas o texto do banco para baixar comissões automaticamente.</li>
+                            <li><strong>Pulsação de Alerta (Aura Vermelha)</strong>: Qualquer <strong>Portabilidade</strong> em status "Aguardando Saldo" com 5 ou mais dias úteis emitirá um brilho pulsante no Dashboard e na Tabela.</li>
+                            <li><strong>Radar de Vendas</strong>: Identifica automaticamente clientes com contratos pagos há mais de 12 meses, sugerindo oportunidades de retenção ou refinanciamento.</li>
+                            <li><strong>Inteligência Diária</strong>: O resumo IA processa aniversários, comissões pendentes e retornos agendados todas as manhãs.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="preview" className="border rounded-xl bg-card px-4 shadow-sm">
+                <AccordionItem value="productivity" className="border rounded-xl bg-card px-4 shadow-sm">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-zinc-100 text-zinc-600"><Eye className="h-5 w-5" /></div>
+                            <div className="p-2 rounded-lg bg-zinc-100 text-zinc-600"><Search className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold">5. Visualizador de Documentos & Central Fixa</p>
-                                <p className="text-xs text-muted-foreground">Conferência instantânea e documentos permanentes</p>
+                                <p className="font-bold">6. Produtividade & Comandos Rápidos</p>
+                                <p className="text-xs text-muted-foreground">Busca global, comandos de teclado e visualização segura</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
-                        <p>Agilize sua conferência de propostas e mantenha a conformidade com a LGPD.</p>
+                        <p>Agilize seu fluxo de trabalho com ferramentas de acesso rápido.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Visualização Segura</strong>: Veja imagens e PDFs sem precisar baixar arquivos usando o ícone do Olho (Eye).</li>
-                            <li><strong>Documentos Permanentes</strong>: Salve o RG/CPF na ficha do cliente para acesso em todas as propostas futuras automaticamente.</li>
+                            <li><strong>Busca Inteligente (⌘K / Ctrl+K)</strong>: Pressione o atalho para abrir a busca global. Encontre clientes por CPF/Nome ou propostas por número instantaneamente.</li>
+                            <li><strong>Visualizador de Documentos</strong>: Utilize o ícone do <strong>Olho (Eye)</strong> para conferir RGs, CPFs e contracheques sem precisar baixá-los para o seu computador.</li>
+                            <li><strong>Documentos Permanentes</strong>: Salve os documentos fixos na ficha do cliente. Eles ficarão disponíveis automaticamente em todas as futuras propostas deste CPF.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
@@ -164,6 +188,18 @@ export default function ManualPage() {
                     <Button variant="outline" className="w-full justify-start text-xs h-8" asChild>
                         <a href="/summary"><Bot className="mr-2 h-3 w-3 text-green-500" /> Relatório IA</a>
                     </Button>
+                    <Button variant="outline" className="w-full justify-start text-xs h-8" asChild>
+                        <a href="/financial?tab=expenses"><Wallet className="mr-2 h-3 w-3 text-orange-500" /> Livro de Despesas</a>
+                    </Button>
+                </CardContent>
+            </Card>
+
+            <Card className="bg-muted/30 border-dashed">
+                <CardHeader>
+                    <CardTitle className="text-xs font-bold uppercase">Suporte Técnico</CardTitle>
+                </CardHeader>
+                <CardContent className="text-[10px] text-muted-foreground leading-relaxed">
+                    Em caso de dúvidas operacionais ou necessidade de suporte exclusivo, utilize os canais oficiais do LK RAMOS.
                 </CardContent>
             </Card>
         </div>
