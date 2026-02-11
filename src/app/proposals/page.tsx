@@ -1,3 +1,4 @@
+
 'use client';
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -710,6 +711,7 @@ function ProposalsPageContent() {
           </DialogHeader>
           <ProposalForm 
             proposal={selectedProposal} 
+            allProposals={proposals || []}
             customers={nonAnonymizedCustomers}
             userSettings={userSettings || null}
             isReadOnly={sheetMode === 'view'}
@@ -725,12 +727,14 @@ function ProposalsPageContent() {
         </DialogContent>
       </Dialog>
 
-      <CustomerSearchDialog
-        open={isCustomerSearchOpen}
-        onOpenChange={setIsCustomerSearchOpen}
-        customers={nonAnonymizedCustomers}
-        onSelectCustomer={handleCustomerSelect}
-       />
+      <Dialog open={isCustomerSearchOpen} onOpenChange={setIsCustomerSearchOpen}>
+        <CustomerSearchDialog
+            open={isCustomerSearchOpen}
+            onOpenChange={setIsCustomerSearchOpen}
+            customers={nonAnonymizedCustomers}
+            onSelectCustomer={handleCustomerSelect}
+        />
+      </Dialog>
 
       {isLoading ? (
         <div className="rounded-md border border-border/50 p-4">

@@ -37,7 +37,8 @@ import {
     Send, 
     MessageSquareQuote,
     FileBadge,
-    Calendar as CalendarIcon
+    Calendar as CalendarIcon,
+    AlertTriangle
 } from 'lucide-react';
 import { format, parse, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -122,6 +123,7 @@ type ProposalFormData = Partial<Omit<Proposal, 'id' | 'ownerId'>>;
 
 interface ProposalFormProps {
   proposal?: Proposal;
+  allProposals: Proposal[];
   customers: Customer[];
   userSettings: UserSettings | null;
   isReadOnly?: boolean;
@@ -175,6 +177,7 @@ const MaskedDatePicker = ({ name, label, control, isReadOnly }: { name: any, lab
 
 export function ProposalForm({ 
     proposal, 
+    allProposals,
     customers, 
     userSettings, 
     isReadOnly, 
@@ -205,7 +208,6 @@ export function ProposalForm({
   }, []);
 
   useEffect(() => {
-    // CORREÇÃO CRÍTICA: Rota de coleção corrigida para loanProposals
     if (firestore && !proposal?.id && !tempProposalId) {
       setTempProposalId(doc(collection(firestore, 'loanProposals')).id);
     }
@@ -225,6 +227,7 @@ export function ProposalForm({
   const product = watch('product');
   const selectedCustomerId = watch('customerId');
   const status = watch('status');
+  const proposalNumberValue = watch('proposalNumber');
 
   const selectedCustomer = useMemo(() => {
     return customers.find(c => c.id === selectedCustomerId);
@@ -234,6 +237,11 @@ export function ProposalForm({
     if (!selectedCustomerId) return "Nenhum cliente selecionado";
     return customers.find(c => c.id === selectedCustomerId)?.name || "Cliente não encontrado";
   }, [customers, selectedCustomerId]);
+
+  const duplicateProposal = useMemo(() => {
+    if (!proposalNumberValue || proposalNumberValue.length < 3) return null;
+    return allProposals.find(p => p.proposalNumber === proposalNumberValue && p.id !== proposal?.id);
+  }, [proposalNumberValue, allProposals, proposal]);
 
   useEffect(() => {
     if (selectedCustomerFromSearch) {
@@ -349,7 +357,6 @@ export function ProposalForm({
             dateApproved: formatDateForForm(source.dateApproved),
             datePaidToClient: formatDateForForm(source.datePaidToClient),
             debtBalanceArrivalDate: formatDateForForm(source.debtBalanceArrivalDate),
-            // FIX: Removido cleanBankName para garantir que o valor coincida com as opções do Select
             bank: source.bank || '',
             bankOrigin: source.bankOrigin || '',
         }
@@ -360,6 +367,14 @@ export function ProposalForm({
   }, [proposal, defaultValues, form, isClient]);
 
   function handleFormSubmit(data: ProposalFormValues) {
+    if (duplicateProposal) {
+        toast({
+            variant: 'destructive',
+            title: 'Proposta Duplicada',
+            description: `O número ${data.proposalNumber} já existe no sistema.`,
+        });
+        return;
+    }
     onSubmit(data);
   }
 
@@ -609,6 +624,15 @@ export function ProposalForm({
                         />
                       </FormControl>
                       <FormMessage />
+                      {duplicateProposal && (
+                        <Alert variant="destructive" className="mt-2 py-2 px-3 border-2 animate-in slide-in-from-top-1">
+                            <AlertTriangle className="h-4 w-4" />
+                            <AlertTitle className="text-xs font-bold uppercase">Proposta Duplicada!</AlertTitle>
+                            <AlertDescription className="text-[10px] font-medium leading-tight">
+                                Este número já pertence à proposta de <strong>{customers.find(c => c.id === duplicateProposal.customerId)?.name || 'Outro Cliente'}</strong>.
+                            </AlertDescription>
+                        </Alert>
+                      )}
                     </FormItem>
                   )}
                 />
@@ -1149,7 +1173,7 @@ export function ProposalForm({
             </div>
 
             {!isReadOnly && (
-                <Button type="submit" disabled={isSaving}>
+                <Button type="submit" disabled={isSaving || !!duplicateProposal}>
                     {isSaving ? (
                         <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...</>
                     ) : (

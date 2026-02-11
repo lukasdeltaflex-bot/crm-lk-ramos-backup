@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, isValid, startOfDay, subDays, endOfDay, subMonths, parse, eachDayOfInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { formatCurrency, cn } from '@/lib/utils';
+import { formatCurrency, cn, calculateBusinessDays } from '@/lib/utils';
 import type { Proposal, Customer, UserProfile, UserSettings } from '@/lib/types';
 import {
   Dialog,
@@ -247,6 +247,14 @@ export default function DashboardPage() {
         .filter(([name]) => name !== 'Reprovado')
         .sort((a, b) => b[1].total - a[1].total)[0]?.[0];
 
+    // MONITORAMENTO DE PORTABILIDADES CRÍTICAS
+    const criticalPortabilityCount = proposals.filter(p => 
+        p.product === 'Portabilidade' && 
+        p.status === 'Aguardando Saldo' && 
+        p.dateDigitized && 
+        calculateBusinessDays(p.dateDigitized) >= 5
+    ).length;
+
     return {
         totalDigitado: totalDigitizedCurrent,
         digitizedTrendPercentage,
@@ -255,6 +263,7 @@ export default function DashboardPage() {
         topTotal: getTopOperator(digitizedInPeriod),
         statusAnalysis,
         hotStatus,
+        criticalPortabilityCount,
         proposals: {
             digitadoNoMes: digitizedInPeriod,
             pagoNoMes: paidInPeriod
@@ -380,6 +389,8 @@ export default function DashboardPage() {
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.statusAnalysis['Aguardando Saldo'].total)} 
                     icon={Clock} 
                     description="ESTEIRA (MÊS ATUAL + ANT)"
+                    subValue={stats.criticalPortabilityCount > 0 ? `${stats.criticalPortabilityCount} CRÍTICAS` : undefined}
+                    isCritical={stats.criticalPortabilityCount > 0}
                     topContributor={stats.statusAnalysis['Aguardando Saldo'].top}
                     isHot={stats.hotStatus === 'Aguardando Saldo'}
                     sparklineData={stats.statusAnalysis['Aguardando Saldo'].trend}

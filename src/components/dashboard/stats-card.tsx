@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -76,6 +77,7 @@ export function StatsCard({
         `anim-${animationStyle}`,
         'status-custom',
         isHot && 'card-hot-neon',
+        isCritical && 'border-red-500/50 ring-1 ring-red-500/20',
         className
     );
 
@@ -126,7 +128,7 @@ export function StatsCard({
             </CardTitle>
             {isCritical ? (
                 <div className="flex items-center gap-1 text-[8px] font-bold text-red-600 animate-alert-pulse">
-                    <AlertTriangle className="h-2.5 w-2.5 fill-current" /> PENDÊNCIA
+                    <AlertTriangle className="h-2.5 w-2.5 fill-current" /> CRÍTICO
                 </div>
             ) : isHot && (
                 <div className="flex items-center gap-1 text-[8px] font-black text-orange-600 dark:text-orange-400 bg-background/80 dark:bg-zinc-950/60 px-1.5 py-0.5 rounded-full border border-orange-200 dark:border-orange-900/50">
@@ -136,12 +138,16 @@ export function StatsCard({
         </div>
         <div className="flex items-center gap-2">
             {renderSparkline()}
-            <Icon className="h-4 w-4 opacity-80" />
+            <Icon className={cn("h-4 w-4 opacity-80", isCritical && "text-red-600")} />
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col justify-between p-0">
         <div className="flex items-baseline justify-between gap-2">
-            <div className={cn("text-2xl sm:text-3xl font-light tracking-tighter text-foreground dark:text-zinc-100", valueClassName)}>
+            <div className={cn(
+                "text-2xl sm:text-3xl font-light tracking-tighter text-foreground dark:text-zinc-100", 
+                valueClassName,
+                isCritical && "text-red-600 dark:text-red-400"
+            )}>
                 {value}
             </div>
             {percentage !== undefined && (
@@ -161,7 +167,10 @@ export function StatsCard({
                     {description}
                 </p>
                 {subValue && (
-                    <p className="text-[9px] font-black opacity-80 uppercase tracking-tighter mt-0.5 dark:text-zinc-300">
+                    <p className={cn(
+                        "text-[9px] font-black opacity-100 uppercase tracking-tighter mt-0.5",
+                        isCritical ? "text-red-600 dark:text-red-400" : "text-foreground dark:text-zinc-300"
+                    )}>
                         {subValue}
                     </p>
                 )}
