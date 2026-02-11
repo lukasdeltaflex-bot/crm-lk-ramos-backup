@@ -60,9 +60,9 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown, X, Filter, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, Calendar as CalendarIcon } from 'lucide-react';
+import { ChevronDown, X, Filter, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, Calendar as CalendarIcon, Landmark, Building2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { cn, formatCurrency, normalizeString } from '@/lib/utils';
+import { cn, formatCurrency, normalizeString, cleanBankName } from '@/lib/utils';
 import type { CommissionStatus, Proposal, Customer, UserSettings } from '@/lib/types';
 import { FinancialSummary } from '@/components/financial/financial-summary';
 import { DraggableHeader } from './columns';
@@ -114,6 +114,8 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   });
   const [statusFilter, setStatusFilter] = React.useState<CommissionStatus | 'Todos'>('Todos');
   const [globalFilter, setGlobalFilter] = React.useState('');
+  const [bankFilter, setBankFilter] = React.useState('all');
+  const [promoterFilter, setPromoterFilter] = React.useState('all');
 
   const [startDateInput, setStartDateInput] = React.useState('');
   const [endDateInput, setEndDateInput] = React.useState('');
@@ -127,6 +129,17 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
 
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(defaultVisibility);
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(defaultOrder);
+
+  // Extract unique banks and promoters for filters
+  const uniqueBanks = React.useMemo(() => {
+    const banks = new Set(data.map(p => p.bank));
+    return Array.from(banks).sort();
+  }, [data]);
+
+  const uniquePromoters = React.useMemo(() => {
+    const promoters = new Set(data.map(p => p.promoter));
+    return Array.from(promoters).sort();
+  }, [data]);
 
   React.useEffect(() => {
     setIsClient(true);
@@ -309,7 +322,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
       },
   });
 
-  const isAnyFilterActive = !!globalFilter || statusFilter !== 'Todos' || !!appliedDateRange;
+  const isAnyFilterActive = !!globalFilter || statusFilter !== 'Todos' || !!appliedDateRange || bankFilter !== 'all' || promoterFilter !== 'all';
   const selectedRows = table.getFilteredSelectedRowModel().rows;
   const totalSelectedCommission = React.useMemo(() => {
     return selectedRows.reduce((total, row) => total + (row.original.commissionValue || 0), 0);
@@ -322,6 +335,8 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   React.useEffect(() => {
     const statusColumn = table.getColumn('commissionStatus');
     const dateColumn = table.getColumn('commissionPaymentDate');
+    const bankColumn = table.getColumn('banco');
+    const promoterColumn = table.getColumn('promotora');
     
     const filterContext = {
         hasDateFilter: !!appliedDateRange,
@@ -330,12 +345,15 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
 
     if (statusFilter === 'Todos') {
         statusColumn?.setFilterValue({ id: '__CUSTOM_FILTER_TODOS__', ...filterContext });
-        dateColumn?.setFilterValue(appliedDateRange);
     } else {
         statusColumn?.setFilterValue({ id: statusFilter, ...filterContext });
-        dateColumn?.setFilterValue(appliedDateRange);
     }
-  }, [statusFilter, appliedDateRange, globalFilter, table]);
+    
+    dateColumn?.setFilterValue(appliedDateRange);
+    bankColumn?.setFilterValue(bankFilter === 'all' ? undefined : bankFilter);
+    promoterColumn?.setFilterValue(promoterFilter === 'all' ? undefined : promoterFilter);
+
+  }, [statusFilter, appliedDateRange, globalFilter, bankFilter, promoterFilter, table]);
 
   const idToLabelMap: { [key: string]: string } = {
     customerName: 'Cliente',
@@ -362,7 +380,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     >
         <div className="space-y-4 max-w-[1600px] mx-auto">
             <FinancialSummary 
-                rows={data} // Use full data for trend calculation
+                rows={data} 
                 currentMonthRange={appliedDateRange || currentMonthRange}
                 isPrivacyMode={isPrivacyMode}
                 isFiltered={isAnyFilterActive}
@@ -370,8 +388,8 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                 userSettings={userSettings}
             />
 
-            <div className="flex items-center justify-between py-4 print:hidden">
-                <div className="flex flex-wrap gap-2 items-center">
+            <div className="flex flex-col gap-4 py-4 print:hidden">
+                <div className="flex flex-wrap gap-3 items-center">
                     <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as CommissionStatus | 'Todos')}>
                         <TabsList className="bg-muted/50 p-1 h-auto flex-wrap">
                             <TabsTrigger value="Todos" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Todos</TabsTrigger>
@@ -391,40 +409,81 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                             })}
                         </TabsList>
                     </Tabs>
+
                     <div className="flex items-center gap-2 flex-wrap">
-                        <Select onValueChange={(val) => applyRange(val as any)}>
-                            <SelectTrigger className='w-[140px] h-9 bg-card'>
-                                <CalendarIcon className='mr-2 h-4 w-4 text-primary' />
-                                <SelectValue placeholder="Período" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="today">Hoje</SelectItem>
-                                <SelectItem value="yesterday">Ontem</SelectItem>
-                                <SelectItem value="week">Últimos 7 dias</SelectItem>
-                                <SelectItem value="month">Mês Atual</SelectItem>
-                                <SelectItem value="lastMonth">Mês Passado</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <div className="flex items-center gap-1">
-                            <Input 
-                                placeholder="De" 
-                                value={startDateInput}
-                                onChange={(e) => handleDateInputChange(e.target.value, 'start')}
-                                maxLength={10}
-                                className="h-9 w-28 bg-card"
-                            />
-                            <span className='text-muted-foreground'>-</span>
-                            <Input 
-                                placeholder="Até" 
-                                value={endDateInput}
-                                onChange={(e) => handleDateInputChange(e.target.value, 'end')}
-                                maxLength={10}
-                                className="h-9 w-28 bg-card"
-                            />
+                        <div className="flex items-center gap-2 bg-card border rounded-lg px-2 py-1 shadow-sm">
+                            <Landmark className="h-3.5 w-3.5 text-muted-foreground" />
+                            <Select value={bankFilter} onValueChange={setBankFilter}>
+                                <SelectTrigger className="h-7 w-[160px] border-none bg-transparent focus:ring-0 text-xs font-bold uppercase">
+                                    <SelectValue placeholder="Todos os Bancos" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Todos os Bancos</SelectItem>
+                                    {uniqueBanks.map(b => (
+                                        <SelectItem key={b} value={b}>{cleanBankName(b)}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
-                        <Button size="sm" onClick={handleApplyFilter}><Filter className="h-4 w-4" /> Aplicar</Button>
-                        {(startDateInput || endDateInput || appliedDateRange) && <Button variant="ghost" size="icon" className="h-9 w-9" onClick={clearDates}><X className="h-4 w-4" /></Button>}
+
+                        <div className="flex items-center gap-2 bg-card border rounded-lg px-2 py-1 shadow-sm">
+                            <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                            <Select value={promoterFilter} onValueChange={setPromoterFilter}>
+                                <SelectTrigger className="h-7 w-[160px] border-none bg-transparent focus:ring-0 text-xs font-bold uppercase">
+                                    <SelectValue placeholder="Todas Promotoras" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Todas Promotoras</SelectItem>
+                                    {uniquePromoters.map(p => (
+                                        <SelectItem key={p} value={p}>{p}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2 items-center">
+                    <Select onValueChange={(val) => applyRange(val as any)}>
+                        <SelectTrigger className='w-[140px] h-9 bg-card'>
+                            <CalendarIcon className='mr-2 h-4 w-4 text-primary' />
+                            <SelectValue placeholder="Período" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="today">Hoje</SelectItem>
+                            <SelectItem value="yesterday">Ontem</SelectItem>
+                            <SelectItem value="week">Últimos 7 dias</SelectItem>
+                            <SelectItem value="month">Mês Atual</SelectItem>
+                            <SelectItem value="lastMonth">Mês Passado</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <div className="flex items-center gap-1">
+                        <Input 
+                            placeholder="De" 
+                            value={startDateInput}
+                            onChange={(e) => handleDateInputChange(e.target.value, 'start')}
+                            maxLength={10}
+                            className="h-9 w-28 bg-card"
+                        />
+                        <span className='text-muted-foreground'>-</span>
+                        <Input 
+                            placeholder="Até" 
+                            value={endDateInput}
+                            onChange={(e) => handleDateInputChange(e.target.value, 'end')}
+                            maxLength={10}
+                            className="h-9 w-28 bg-card"
+                        />
+                    </div>
+                    <Button size="sm" onClick={handleApplyFilter}><Filter className="h-4 w-4" /> Aplicar</Button>
+                    {(startDateInput || endDateInput || appliedDateRange || bankFilter !== 'all' || promoterFilter !== 'all') && (
+                        <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => {
+                            clearDates();
+                            setBankFilter('all');
+                            setPromoterFilter('all');
+                        }}>
+                            <X className="h-4 w-4" />
+                        </Button>
+                    )}
                 </div>
             </div>
 

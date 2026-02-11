@@ -1,5 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { format, parseISO, isValid } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -54,12 +56,37 @@ export function getWhatsAppUrl(phone: string): string {
 }
 
 /**
+ * Robust date formatting that ignores timezone offsets for YYYY-MM-DD strings.
+ */
+export function formatDateSafe(dateString?: string, formatStr: string = "dd/MM/yyyy"): string {
+    if (!dateString) return '-';
+    try {
+        // If it's a ISO string with time, parse normally
+        if (dateString.includes('T')) {
+            const date = parseISO(dateString);
+            return isValid(date) ? format(date, formatStr, { locale: ptBR }) : '-';
+        }
+        
+        // If it's pure YYYY-MM-DD, parse manually to avoid TZ shift
+        const parts = dateString.split('-');
+        if (parts.length === 3) {
+            const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+            return format(date, formatStr, { locale: ptBR });
+        }
+        
+        return '-';
+    } catch (e) {
+        return '-';
+    }
+}
+
+/**
  * Calculates the number of business days (Mon-Fri) between a start date and now.
  * Robust version for "Portabilidade" alert monitoring.
  */
 export function calculateBusinessDays(startDateStr: string | Date): number {
     const start = typeof startDateStr === 'string' 
-        ? new Date(startDateStr.split('T')[0] + 'T00:00:00') 
+        ? (startDateStr.includes('T') ? parseISO(startDateStr) : new Date(startDateStr + 'T00:00:00'))
         : new Date(startDateStr);
         
     if (isNaN(start.getTime())) return 0;
@@ -121,9 +148,6 @@ export function validateCPF(cpf: string): boolean {
  */
 export function cleanBankName(name?: string): string {
   if (!name) return '';
-  
-  // Remove padrões de código numérico no início (ex: "001 - ", "104-", "237 ")
   const cleaned = name.replace(/^\d+[\s-]*[-]*[\s]*/, '').trim();
-  
   return cleaned || name;
 }

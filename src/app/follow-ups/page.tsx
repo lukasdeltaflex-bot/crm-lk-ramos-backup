@@ -59,7 +59,8 @@ export default function FollowUpsPage() {
     let list = followUps.filter(f => tab === 'history' ? f.status !== 'pending' : f.status === 'pending');
     
     if (dateFilter && tab === 'pending') {
-        list = list.filter(f => isSameDay(parseISO(f.dueDate), dateFilter));
+        const dateStr = format(dateFilter, 'yyyy-MM-dd');
+        list = list.filter(f => f.dueDate === dateStr);
     }
 
     if (searchTerm) {
@@ -86,36 +87,34 @@ export default function FollowUpsPage() {
   const handleUpdateStatus = async (status: FollowUp['status'], extraData: any = {}) => {
     if (!firestore || !selectedFollowUp || !user) return;
     setIsSaving(true);
-    try {
-      await setDoc(doc(firestore, 'users', user.uid, 'followUps', selectedFollowUp.id), {
+    const docRef = doc(firestore, 'users', user.uid, 'followUps', selectedFollowUp.id);
+    const updateData = {
         ...extraData,
         status,
         completedAt: new Date().toISOString(),
         notes: actionNotes
-      }, { merge: true });
-      
-      toast({ title: 'Ação realizada com sucesso' });
-      setIsActionDialogOpen(false);
-    } catch (e: any) {
-      console.error("❌ CRM ERROR:", e);
-      toast({ variant: 'destructive', title: 'Erro ao salvar', description: 'Não foi possível atualizar o status.' });
-    } finally {
-      setIsSaving(false);
-    }
+    };
+
+    setDoc(docRef, updateData, { merge: true })
+        .then(() => {
+            toast({ title: 'Ação realizada com sucesso' });
+            setIsActionDialogOpen(false);
+        })
+        .catch(async (e) => {
+            console.error("❌ CRM ERROR:", e);
+            toast({ variant: 'destructive', title: 'Erro ao salvar', description: 'Não foi possível atualizar o status.' });
+        })
+        .finally(() => setIsSaving(false));
   };
 
   const handleReschedule = async () => {
     if (!firestore || !selectedFollowUp || !user) return;
     setIsSaving(true);
-    try {
-      await setDoc(doc(firestore, 'users', user.uid, 'followUps', selectedFollowUp.id), {
-        status: 'rescheduled',
-        completedAt: new Date().toISOString(),
-        notes: actionNotes
-      }, { merge: true });
-
-      const newRef = doc(collection(firestore, 'users', user.uid, 'followUps'));
-      const newFollowUp: FollowUp = {
+    
+    const oldRef = doc(firestore, 'users', user.uid, 'followUps', selectedFollowUp.id);
+    const newRef = doc(collection(firestore, 'users', user.uid, 'followUps'));
+    
+    const newFollowUp: FollowUp = {
         ...selectedFollowUp,
         id: newRef.id,
         ownerId: user.uid,
@@ -125,44 +124,55 @@ export default function FollowUpsPage() {
         completedAt: undefined,
         notes: undefined,
         description: `(Reagendado) ${selectedFollowUp.description}`
-      };
-      
-      await setDoc(newRef, newFollowUp);
-      toast({ title: 'Reagendamento Concluído' });
-      setIsRescheduleOpen(false);
-      setIsActionDialogOpen(false);
+    };
+
+    try {
+        await setDoc(oldRef, {
+            status: 'rescheduled',
+            completedAt: new Date().toISOString(),
+            notes: actionNotes
+        }, { merge: true });
+
+        await setDoc(newRef, newFollowUp);
+        
+        toast({ title: 'Reagendamento Concluído' });
+        setIsRescheduleOpen(false);
+        setIsActionDialogOpen(false);
     } catch (e: any) {
-      console.error("❌ CRM ERROR:", e);
-      toast({ variant: 'destructive', title: 'Falha no reagendamento', description: 'Ocorreu um erro ao salvar.' });
+        console.error("❌ CRM ERROR:", e);
+        toast({ variant: 'destructive', title: 'Falha no reagendamento', description: 'Ocorreu um erro ao salvar.' });
     } finally {
-      setIsSaving(false);
+        setIsSaving(false);
     }
   };
 
   const handleFormSubmit = async (data: any) => {
     if (!firestore || !user) return;
     setIsSaving(true);
-    try {
-        const id = selectedFollowUp?.id || doc(collection(firestore, 'users', user.uid, 'followUps')).id;
-        const customerId = data.customerId === 'none' || !data.customerId ? null : data.customerId;
+    
+    const id = selectedFollowUp?.id || doc(collection(firestore, 'users', user.uid, 'followUps')).id;
+    const customerId = data.customerId === 'none' || !data.customerId ? null : data.customerId;
+    const docRef = doc(firestore, 'users', user.uid, 'followUps', id);
+    
+    const finalData = {
+        ...data,
+        customerId,
+        id,
+        ownerId: user.uid,
+        createdAt: selectedFollowUp?.createdAt || new Date().toISOString(),
+        status: 'pending'
+    };
 
-        await setDoc(doc(firestore, 'users', user.uid, 'followUps', id), {
-            ...data,
-            customerId,
-            id,
-            ownerId: user.uid,
-            createdAt: selectedFollowUp?.createdAt || new Date().toISOString(),
-            status: 'pending'
-        }, { merge: true });
-
-        toast({ title: 'Agendado com sucesso!' });
-        setIsFormOpen(false);
-    } catch (e: any) {
-        console.error("❌ CRM ERROR:", e);
-        toast({ variant: 'destructive', title: 'Falha ao Salvar', description: 'Verifique sua conexão ou permissões.' });
-    } finally {
-        setIsSaving(false);
-    }
+    setDoc(docRef, finalData, { merge: true })
+        .then(() => {
+            toast({ title: 'Agendado com sucesso!' });
+            setIsFormOpen(false);
+        })
+        .catch(async (e) => {
+            console.error("❌ CRM ERROR:", e);
+            toast({ variant: 'destructive', title: 'Falha ao Salvar', description: 'Verifique sua conexão ou permissões.' });
+        })
+        .finally(() => setIsSaving(false));
   };
 
   const handleCalendarDateSelect = (date: Date) => {
@@ -175,9 +185,13 @@ export default function FollowUpsPage() {
     if (followUp.status === 'cancelled') return <Badge variant="secondary" className="bg-slate-100 text-slate-500">Cancelado</Badge>;
     if (followUp.status === 'rescheduled') return <Badge variant="secondary" className="bg-blue-100 text-blue-700">Reagendado</Badge>;
     
-    const date = parseISO(followUp.dueDate);
-    if (isToday(date)) return <Badge className="bg-yellow-500 text-black border-none">Hoje</Badge>;
-    if (isBefore(date, startOfDay(new Date()))) return <Badge variant="destructive">Atrasado</Badge>;
+    // Normalização manual de fuso para comparação visual de badges
+    const [year, month, day] = followUp.dueDate.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    const today = startOfDay(new Date());
+
+    if (isSameDay(date, today)) return <Badge className="bg-yellow-500 text-black border-none">Hoje</Badge>;
+    if (isBefore(date, today)) return <Badge variant="destructive">Atrasado</Badge>;
     return <Badge variant="outline">Pendente</Badge>;
   };
 
@@ -202,7 +216,7 @@ export default function FollowUpsPage() {
                                 "gap-2 border border-transparent transition-all",
                                 tab === 'pending' && "status-custom"
                             )}
-                            style={statusColors['Pendente'] ? { '--status-color': statusColors['Pendente'] } as any : {}}
+                            style={statusColors['PENDENTE'] ? { '--status-color': statusColors['PENDENTE'] } as any : {}}
                         >
                             <CalendarIcon className="h-4 w-4" />
                             Pendentes
@@ -213,7 +227,7 @@ export default function FollowUpsPage() {
                                 "gap-2 border border-transparent transition-all",
                                 tab === 'calendar' && "status-custom"
                             )}
-                            style={statusColors['Em Andamento'] ? { '--status-color': statusColors['Em Andamento'] } as any : {}}
+                            style={statusColors['EM ANDAMENTO'] ? { '--status-color': statusColors['EM ANDAMENTO'] } as any : {}}
                         >
                             <CalendarIcon className="h-4 w-4" />
                             Calendário
@@ -224,7 +238,7 @@ export default function FollowUpsPage() {
                                 "gap-2 border border-transparent transition-all",
                                 tab === 'history' && "status-custom"
                             )}
-                            style={statusColors['Paga'] ? { '--status-color': statusColors['Paga'] } as any : {}}
+                            style={statusColors['PAGO'] ? { '--status-color': statusColors['PAGO'] } as any : {}}
                         >
                             <History className="h-4 w-4" />
                             Histórico
@@ -281,7 +295,7 @@ export default function FollowUpsPage() {
                                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                                                 <span className="flex items-center gap-1">
                                                     <CalendarIcon className="h-3 w-3" />
-                                                    {format(parseISO(f.dueDate), "dd 'de' MMMM", { locale: ptBR })}
+                                                    {format(new Date(f.dueDate.replace(/-/g, '/')), "dd 'de' MMMM", { locale: ptBR })}
                                                 </span>
                                                 {f.contactPhone && (
                                                     <span className="flex items-center gap-1">
@@ -397,7 +411,7 @@ export default function FollowUpsPage() {
           </div>
           <DialogFooter>
             <Button className="w-full" onClick={handleReschedule} disabled={isSaving}>
-                {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin mr-2" /> : null}
                 Confirmar Reagendamento
             </Button>
           </DialogFooter>

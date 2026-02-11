@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ColumnDef, flexRender, Header } from '@tanstack/react-table';
@@ -6,7 +5,7 @@ import type { Proposal, Customer, CommissionStatus, UserSettings } from '@/lib/t
 import { Button } from '@/components/ui/button';
 import { ArrowUpDown, MoreHorizontal, GripVertical, ArrowUp, ArrowDown, Copy } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { formatCurrency, cleanBankName } from '@/lib/utils';
+import { formatCurrency, cleanBankName, formatDateSafe } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -306,6 +305,9 @@ export const getColumns = (
 
         // REGRA PARA ABA "TODOS"
         if (filterId === '__CUSTOM_FILTER_TODOS__') {
+            // BLINDAGEM FINANCEIRA: Se for "Pendente" ou "Parcial", MOSTRA SEMPRE (não importa a data)
+            if (commissionStatus === 'Pendente' || commissionStatus === 'Parcial') return true;
+
             // Se for "Pago", mostramos apenas se for do mês vigente 
             // OU se houver busca ativa (termo de pesquisa ou filtro de data)
             if (mainStatus === 'Pago') {
@@ -352,9 +354,7 @@ export const getColumns = (
     accessorKey: 'commissionPaymentDate',
     header: 'Data Pagamento',
     cell: ({ row }) => {
-        const date = row.getValue('commissionPaymentDate') as string | undefined;
-        if (!date) return '-';
-        return format(new Date(date), "dd/MM/yyyy", { locale: ptBR });
+        return formatDateSafe(row.getValue('commissionPaymentDate'));
     },
     filterFn: (row, id, filterValue: DateRange) => {
       if (!filterValue || !filterValue.from) {
