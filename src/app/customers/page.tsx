@@ -1,4 +1,3 @@
-
 'use client';
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -281,6 +280,7 @@ const handleExportToPdf = async () => {
     
     setRowSelection({});
 
+    // Non-blocking update
     updateDoc(customerRef, anonymizedData)
         .then(() => {
             toast({

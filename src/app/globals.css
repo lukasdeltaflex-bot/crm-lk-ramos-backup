@@ -75,17 +75,18 @@
 
 /* 🎨 MOTORES DE DESIGN LK RAMOS */
 
-/* Ritmo (Motion Design) */
+/* Ritmo (Motion Design) - Corrigido para incluir o próprio elemento */
 .anim-instantaneo { --transition-speed: 0s; }
 .anim-sutil { --transition-speed: 0.2s; }
 .anim-atmosferico { --transition-speed: 0.5s; }
 .anim-cinematografico { --transition-speed: 1s; }
 
+[class*="anim-"],
 [class*="anim-"] *, 
-.anim-instantaneo *, 
-.anim-sutil *, 
-.anim-atmosferico *, 
-.anim-cinematografico * { 
+.anim-instantaneo, .anim-instantaneo *, 
+.anim-sutil, .anim-sutil *, 
+.anim-atmosferico, .anim-atmosferico *, 
+.anim-cinematografico, .anim-cinematografico * { 
     transition-duration: var(--transition-speed) !important; 
 }
 

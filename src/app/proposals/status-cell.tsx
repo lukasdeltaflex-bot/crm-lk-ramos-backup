@@ -56,6 +56,7 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
     const user = auth?.currentUser;
     const userName = user?.displayName || user?.email || 'Sistema';
 
+    // Linha do Tempo Automática
     const historyEntry: ProposalHistoryEntry = {
         id: crypto.randomUUID(),
         date: now,
@@ -65,6 +66,8 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
     dataToUpdate.history = arrayUnion(historyEntry);
 
     const docRef = doc(firestore, 'loanProposals', proposalId);
+    
+    // Non-blocking update
     updateDoc(docRef, dataToUpdate)
         .then(() => {
             toast({
@@ -73,11 +76,13 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
             });
         })
         .catch(async (error) => {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({
-                path: docRef.path,
-                operation: 'update',
-                requestResourceData: dataToUpdate
-            }));
+            if (error.code === 'permission-denied') {
+                errorEmitter.emit('permission-error', new FirestorePermissionError({
+                    path: docRef.path,
+                    operation: 'update',
+                    requestResourceData: dataToUpdate
+                }));
+            }
         });
   };
 

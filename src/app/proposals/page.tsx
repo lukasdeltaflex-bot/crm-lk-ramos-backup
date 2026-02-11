@@ -1,4 +1,3 @@
-
 'use client';
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -347,26 +346,28 @@ function ProposalsPageContent() {
   const handleDeleteProposal = React.useCallback(async (proposalId: string) => {
     if (!firestore) return;
     const docRef = doc(firestore, 'loanProposals', proposalId);
-    try {
-      await deleteDoc(docRef);
-      toast({
-        title: 'Proposta Cancelada!',
-        description: 'A proposta foi cancelada e removida com sucesso.',
-      });
-    } catch (error: any) {
-        if (error.code === 'permission-denied') {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({
-                path: docRef.path,
-                operation: 'delete'
-            }));
-        }
-        toast({
-            variant: 'destructive',
-            title: 'Erro ao cancelar',
-            description: 'Não foi possível remover a proposta. Tente novamente.',
+    
+    // Non-blocking delete
+    deleteDoc(docRef)
+        .then(() => {
+            toast({
+                title: 'Proposta Cancelada!',
+                description: 'A proposta foi cancelada e removida com sucesso.',
+            });
+        })
+        .catch(async (error: any) => {
+            if (error.code === 'permission-denied') {
+                errorEmitter.emit('permission-error', new FirestorePermissionError({
+                    path: docRef.path,
+                    operation: 'delete'
+                }));
+            }
+            toast({
+                variant: 'destructive',
+                title: 'Erro ao cancelar',
+                description: 'Não foi possível remover a proposta. Tente novamente.',
+            });
         });
-        console.error('Error deleting proposal: ', error);
-    }
   }, [firestore]);
 
   const handleStatusChange = React.useCallback(async (proposalId: string, newStatus: ProposalStatus, productType?: string) => {
@@ -375,13 +376,11 @@ function ProposalsPageContent() {
     const proposal = proposals?.find(p => p.id === proposalId);
     if (!proposal || proposal.status === newStatus) return;
 
+    const currentDate = new Date().toISOString();
     const dataToUpdate: any = {
         status: newStatus,
     };
-
-    const currentDate = new Date().toISOString();
     
-    // REGRA LK RAMOS: Portabilidade agora preenche averbação automática igual aos outros
     const isPortability = productType === 'Portabilidade';
 
     if (newStatus === 'Pago') {
@@ -404,27 +403,30 @@ function ProposalsPageContent() {
     dataToUpdate.history = arrayUnion(historyEntry);
 
     const docRef = doc(firestore, 'loanProposals', proposalId);
-    try {
-      await updateDoc(docRef, dataToUpdate);
-      toast({
-          title: 'Status Atualizado!',
-          description: `O status da proposta foi alterado para "${newStatus}".`,
-      });
-    } catch (error: any) {
-        if (error.code === 'permission-denied') {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({
-                path: docRef.path,
-                operation: 'update',
-                requestResourceData: dataToUpdate
-            }));
-        }
-        console.error('Error updating status:', error);
-        toast({
-            variant: 'destructive',
-            title: 'Erro ao Atualizar',
-            description: 'Não foi possível alterar o status da proposta.',
+    
+    // Non-blocking update
+    updateDoc(docRef, dataToUpdate)
+        .then(() => {
+            toast({
+                title: 'Status Atualizado!',
+                description: `O status da proposta foi alterado para "${newStatus}".`,
+            });
+        })
+        .catch(async (error: any) => {
+            if (error.code === 'permission-denied') {
+                errorEmitter.emit('permission-error', new FirestorePermissionError({
+                    path: docRef.path,
+                    operation: 'update',
+                    requestResourceData: dataToUpdate
+                }));
+            }
+            console.error('Error updating status:', error);
+            toast({
+                variant: 'destructive',
+                title: 'Erro ao Atualizar',
+                description: 'Não foi possível alterar o status da proposta.',
+            });
         });
-    }
   }, [firestore, proposals, user]);
 
   const handleBulkStatusChange = React.useCallback(async (newStatus: ProposalStatus) => {
@@ -539,6 +541,7 @@ function ProposalsPageContent() {
     
     setIsSaving(true);
     try {
+        const currentDate = new Date().toISOString();
         const dateApproved = toISO(data.dateApproved);
         let commissionStatus = data.commissionStatus;
 
@@ -557,7 +560,7 @@ function ProposalsPageContent() {
         const proposalData: any = {
             ...data,
             ownerId: user.uid,
-            dateDigitized: toISO(data.dateDigitized) || new Date().toISOString(),
+            dateDigitized: toISO(data.dateDigitized) || currentDate,
             dateApproved: dateApproved,
             datePaidToClient: toISO(data.datePaidToClient),
             debtBalanceArrivalDate: toISO(data.debtBalanceArrivalDate),
@@ -579,32 +582,49 @@ function ProposalsPageContent() {
         if (data.status !== selectedProposal.status) {
             const historyEntry: ProposalHistoryEntry = {
                 id: crypto.randomUUID(),
-                date: new Date().toISOString(),
-                message: `Status alterado de "${selectedProposal.status}" para "${data.status}" (Automático)`,
+                date: currentDate,
+                message: `Status alterado de "${selectedProposal.status}" para "${data.status}" (Formulário/Automático)`,
                 userName: user.displayName || user.email || 'Sistema'
             };
             proposalData.history = arrayUnion(historyEntry);
         }
 
-        await setDoc(docRef, proposalData, { merge: true });
+        // Non-blocking setDoc
+        setDoc(docRef, proposalData, { merge: true })
+            .catch(async (error) => {
+                if (error.code === 'permission-denied') {
+                    errorEmitter.emit('permission-error', new FirestorePermissionError({
+                        path: docRef.path,
+                        operation: 'update',
+                        requestResourceData: proposalData
+                    }));
+                }
+            });
+
         toast({ title: 'Proposta Atualizada!', description: `A proposta foi salva.` });
+        setIsDialogOpen(false);
       } else {
         const newDocRef = doc(collection(firestore, 'loanProposals'));
         const finalData = { ...proposalData, id: newDocRef.id };
-        await setDoc(newDocRef, finalData);
+        
+        // Non-blocking setDoc
+        setDoc(newDocRef, finalData)
+            .catch(async (error) => {
+                if (error.code === 'permission-denied') {
+                    errorEmitter.emit('permission-error', new FirestorePermissionError({
+                        path: newDocRef.path,
+                        operation: 'create',
+                        requestResourceData: finalData
+                    }));
+                }
+            });
+
         toast({ title: 'Proposta Salva!', description: `A nova proposta foi criada.` });
+        setIsDialogOpen(false);
       }
-      setIsDialogOpen(false);
     } catch (error: any) {
-      if (error.code === 'permission-denied') {
-          errorEmitter.emit('permission-error', new FirestorePermissionError({
-              path: 'loanProposals',
-              operation: 'write',
-              requestResourceData: data
-          }));
-      }
       console.error('Error saving proposal:', error);
-      toast({ variant: 'destructive', title: 'Falha Técnica', description: 'Não foi possível salvar os dados no banco.' });
+      toast({ variant: 'destructive', title: 'Falha Técnica', description: 'Não foi possível preparar os dados para salvamento.' });
     } finally {
         setIsSaving(false);
     }

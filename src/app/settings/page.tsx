@@ -49,9 +49,9 @@ import {
 } from 'lucide-react';
 import { EditableList } from '@/components/settings/editable-list';
 import { BankEditableList } from '@/components/settings/bank-editable-list';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc, setDoc } from 'firebase/firestore';
-import type { UserSettings } from '@/lib/types';
+import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
+import { collection, doc, setDoc, query, where } from 'firebase/firestore';
+import type { UserSettings, Customer, Proposal } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -106,6 +106,7 @@ export default function SettingsPage() {
   const theme = useTheme();
   
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [testAnimation, setTestAnimation] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -114,7 +115,19 @@ export default function SettingsPage() {
     return doc(firestore, 'userSettings', user.uid);
   }, [firestore, user]);
 
+  const customersQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return query(collection(firestore, 'customers'), where('ownerId', '==', user.uid));
+  }, [firestore, user]);
+
+  const proposalsQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return query(collection(firestore, 'loanProposals'), where('ownerId', '==', user.uid));
+  }, [firestore, user]);
+
   const { data: userSettings } = useDoc<UserSettings>(settingsDocRef);
+  const { data: customers } = useCollection<Customer>(customersQuery);
+  const { data: proposals } = useCollection<Proposal>(proposalsQuery);
 
   const [preview, setPreview] = useState({
     radius: 'moderno',
@@ -148,14 +161,11 @@ export default function SettingsPage() {
     }
   }, [userSettings, hasLoadedSettings]);
 
-  const saveSettingsToFirebase = async (updated: Partial<UserSettings>) => {
+  const saveSettingsToFirebase = (updated: Partial<UserSettings>) => {
     if (settingsDocRef) {
-      try {
-        await setDoc(settingsDocRef, updated, { merge: true });
-        toast({ title: "Configurações Salvas com Sucesso!" });
-      } catch (error) {
-        toast({ variant: "destructive", title: "Erro ao Salvar no Firebase" });
-      }
+        // Non-blocking write
+        setDoc(settingsDocRef, updated, { merge: true });
+        toast({ title: "Configurações Salvas!" });
     }
   };
 
@@ -216,12 +226,68 @@ export default function SettingsPage() {
     if (file) {
       setIsUploadingLogo(true);
       const reader = new FileReader();
-      reader.onloadend = async () => {
+      reader.onloadend = () => {
         const dataUrl = reader.result as string;
-        await saveSettingsToFirebase({ customLogoURL: dataUrl });
+        saveSettingsToFirebase({ customLogoURL: dataUrl });
         setIsUploadingLogo(false);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleBackupExport = async () => {
+    if (!customers || !proposals) {
+        toast({ variant: "destructive", title: "Erro no Backup", description: "Dados ainda não carregados." });
+        return;
+    }
+
+    setIsExporting(true);
+    try {
+        const { utils, writeFile } = await import('xlsx');
+        
+        // 1. Aba de Clientes
+        const customersSheetData = customers.map(c => ({
+            ID: c.numericId,
+            Nome: c.name,
+            CPF: c.cpf,
+            Telefone: c.phone,
+            Email: c.email || '',
+            Nascimento: c.birthDate,
+            Cidade: c.city || '',
+            Estado: c.state || '',
+            Status: c.status || 'active',
+            Observacoes: c.observations || ''
+        }));
+
+        // 2. Aba de Propostas
+        const proposalsSheetData = proposals.map(p => ({
+            Proposta: p.proposalNumber,
+            Cliente_ID: p.customerId,
+            Produto: p.product,
+            Banco: p.bank,
+            Valor_Bruto: p.grossAmount,
+            Valor_Liquido: p.netAmount,
+            Parcela: p.installmentAmount,
+            Status: p.status,
+            Promotora: p.promoter,
+            Operador: p.operator || '',
+            Comissao_R$: p.commissionValue,
+            Data_Digitacao: p.dateDigitized
+        }));
+
+        const wb = utils.book_new();
+        const wsCustomers = utils.json_to_sheet(customersSheetData);
+        const wsProposals = utils.json_to_sheet(proposalsSheetData);
+
+        utils.book_append_sheet(wb, wsCustomers, "Clientes");
+        utils.book_append_sheet(wb, wsProposals, "Propostas");
+
+        writeFile(wb, `BACKUP_TOTAL_${format(new Date(), 'dd_MM_yyyy')}.xlsx`);
+        toast({ title: "Backup Realizado!", description: "Sua base de dados foi exportada com sucesso." });
+    } catch (e) {
+        toast({ variant: "destructive", title: "Falha na Exportação" });
+    } finally {
+        setIsExporting(false);
     }
   };
 
@@ -631,8 +697,17 @@ export default function SettingsPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-6">
-                        <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold h-12 shadow-lg transition-all border-none" variant="default">
-                            <FileDown className="mr-2 h-5 w-5" /> Exportar Banco de Dados (Excel)
+                        <Button 
+                            className="w-full bg-green-600 hover:bg-green-700 text-white font-bold h-12 shadow-lg transition-all border-none" 
+                            variant="default"
+                            onClick={handleBackupExport}
+                            disabled={isExporting}
+                        >
+                            {isExporting ? (
+                                <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Gerando Backup...</>
+                            ) : (
+                                <><FileDown className="mr-2 h-5 w-5" /> Exportar Banco de Dados (Excel)</>
+                            )}
                         </Button>
                     </CardContent>
                 </Card>

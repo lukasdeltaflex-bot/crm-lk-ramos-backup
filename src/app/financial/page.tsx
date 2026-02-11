@@ -48,6 +48,8 @@ import { ExpenseForm } from '@/components/financial/expense-form';
 import { ExpenseTable } from '@/components/financial/expense-table';
 import { expenseCategories as initialExpenseCategories } from '@/lib/config-data';
 import { StatsCard } from '@/components/dashboard/stats-card';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 
 export type ProposalWithCustomer = Proposal & { customer: Customer | undefined };
@@ -309,16 +311,24 @@ export default function FinancialPage() {
         proposalToUpdate.commissionPaymentDate = deleteField() as any;
     }
   
-    try {
-      await setDoc(doc(firestore, 'loanProposals', proposal.id), proposalToUpdate, { merge: true });
-      toast({
+    const docRef = doc(firestore, 'loanProposals', proposal.id);
+    
+    // Non-blocking update
+    setDoc(docRef, proposalToUpdate, { merge: true })
+        .catch(async (error) => {
+            if (error.code === 'permission-denied') {
+                errorEmitter.emit('permission-error', new FirestorePermissionError({
+                    path: docRef.path,
+                    operation: 'update',
+                    requestResourceData: proposalToUpdate
+                }));
+            }
+        });
+
+    toast({
         title: 'Status Atualizado!',
         description: `O status da comissão foi alterado para "${newStatus}".`,
-      });
-    } catch (error) {
-      console.error('Error updating commission status:', error);
-      toast({ variant: 'destructive', title: 'Erro ao Atualizar', description: 'Não foi possível atualizar o status da comissão.' });
-    }
+    });
   }, [firestore, user])
 
   const handleFormSubmit = async (data: CommissionFormValues) => {
@@ -333,41 +343,67 @@ export default function FinancialPage() {
       ownerId: user.uid
     };
   
-    try {
-      await setDoc(doc(firestore, 'loanProposals', selectedProposal.id), proposalToUpdate, { merge: true });
-      toast({ title: 'Comissão Atualizada!', description: `Os dados financeiros foram salvos.` });
-    } catch (error) {
-      console.error('Error updating commission:', error);
-      toast({ variant: 'destructive', title: 'Erro ao Atualizar', description: 'Falha ao salvar os dados.' });
-    }
-  
+    const docRef = doc(firestore, 'loanProposals', selectedProposal.id);
+    
+    // Non-blocking update
+    setDoc(docRef, proposalToUpdate, { merge: true })
+        .catch(async (error) => {
+            if (error.code === 'permission-denied') {
+                errorEmitter.emit('permission-error', new FirestorePermissionError({
+                    path: docRef.path,
+                    operation: 'update',
+                    requestResourceData: proposalToUpdate
+                }));
+            }
+        });
+
+    toast({ title: 'Comissão Atualizada!', description: `Os dados financeiros foram salvos.` });
     setIsSheetOpen(false);
   };
 
   const handleExpenseSubmit = async (data: any) => {
     if (!firestore || !user) return;
     const expenseId = selectedExpense?.id || doc(collection(firestore, 'users', user.uid, 'expenses')).id;
-    try {
-        await setDoc(doc(firestore, 'users', user.uid, 'expenses', expenseId), {
-            ...data,
-            id: expenseId,
-            ownerId: user.uid,
-        }, { merge: true });
-        toast({ title: "Despesa Salva", description: "O gasto foi registrado com sucesso." });
-        setIsExpenseFormOpen(false);
-    } catch (e) {
-        toast({ variant: "destructive", title: "Erro ao salvar despesa" });
-    }
+    const expenseRef = doc(firestore, 'users', user.uid, 'expenses', expenseId);
+    const expenseData = {
+        ...data,
+        id: expenseId,
+        ownerId: user.uid,
+    };
+
+    // Non-blocking setDoc
+    setDoc(expenseRef, expenseData, { merge: true })
+        .catch(async (error) => {
+            if (error.code === 'permission-denied') {
+                errorEmitter.emit('permission-error', new FirestorePermissionError({
+                    path: expenseRef.path,
+                    operation: 'write',
+                    requestResourceData: expenseData
+                }));
+            }
+        });
+
+    toast({ title: "Despesa Salva", description: "O gasto foi registrado com sucesso." });
+    setIsExpenseFormOpen(false);
   };
 
   const handleExpenseDelete = async (id: string) => {
     if (!firestore || !user) return;
-    try {
-        await deleteDoc(doc(firestore, 'users', user.uid, 'expenses', id));
-        toast({ title: "Despesa Removida" });
-    } catch (e) {
-        toast({ variant: "destructive", title: "Erro ao remover" });
-    }
+    const docRef = doc(firestore, 'users', user.uid, 'expenses', id);
+    
+    // Non-blocking delete
+    deleteDoc(docRef)
+        .then(() => {
+            toast({ title: "Despesa Removida" });
+        })
+        .catch(async (error) => {
+            if (error.code === 'permission-denied') {
+                errorEmitter.emit('permission-error', new FirestorePermissionError({
+                    path: docRef.path,
+                    operation: 'delete'
+                }));
+            }
+        });
   };
 
   const handlePrint = React.useCallback(() => {
