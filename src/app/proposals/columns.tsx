@@ -21,20 +21,25 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, ArrowUpDown, GripVertical, ArrowUp, ArrowDown, Copy, AlertCircle } from 'lucide-react';
+import { MoreHorizontal, ArrowUpDown, GripVertical, ArrowUp, ArrowDown, Copy, AlertCircle, Info } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { formatCurrency, cleanBankName, calculateBusinessDays } from '@/lib/utils';
+import { formatCurrency, cleanBankName, calculateBusinessDays, cn } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
 import { StatusCell } from './status-cell';
 import { format, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TableHead } from '@/components/ui/table';
 import { toast } from '@/hooks/use-toast';
 import type { DateRange } from 'react-day-picker';
 import { BankIcon } from '@/components/bank-icon';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 type ProposalWithCustomer = Proposal & { customer: any };
 
@@ -201,8 +206,27 @@ const StatusCellWithPulse = ({
                     onStatusChange={onStatusChange}
                 />
             </div>
-            {isPortAwaitingBalance && businessDays >= 5 && (
-                <AlertCircle className="h-5 w-5 text-red-600 animate-alert-pulse shrink-0" />
+            {isPortAwaitingBalance && hasMounted && (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className={cn(
+                                "flex items-center justify-center h-5 w-5 rounded-full border cursor-help transition-all shadow-sm",
+                                businessDays >= 5 
+                                    ? "bg-red-50 border-red-200 text-red-600 animate-alert-pulse" 
+                                    : "bg-blue-50 border-blue-200 text-blue-500"
+                            )}>
+                                <span className="text-[10px] font-black">!</span>
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="bg-white text-zinc-950 border shadow-2xl p-4 rounded-[2rem] min-w-[200px] animate-in zoom-in-95 duration-200">
+                            <div className="space-y-1 text-center">
+                                <p className="font-bold text-sm text-blue-600">Monitoramento de Saldo</p>
+                                <p className="text-xs font-medium text-muted-foreground">Prazo decorrido: <span className="font-bold text-zinc-900">{businessDays} dia(s) úteis.</span></p>
+                            </div>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
             )}
         </div>
     );

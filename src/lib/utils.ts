@@ -82,7 +82,7 @@ export function formatDateSafe(dateString?: string, formatStr: string = "dd/MM/y
 
 /**
  * Calculates the number of business days (Mon-Fri) between a start date and now.
- * Robust version for "Portabilidade" alert monitoring.
+ * Start counting from the NEXT business day.
  */
 export function calculateBusinessDays(startDateStr: string | Date): number {
     const start = typeof startDateStr === 'string' 
@@ -95,7 +95,7 @@ export function calculateBusinessDays(startDateStr: string | Date): number {
     const curDate = new Date(start);
     const now = new Date();
     
-    // Start counting from the day after digitization
+    // Regra: Começa a contagem somente no próximo dia útil
     curDate.setDate(curDate.getDate() + 1);
     curDate.setHours(0, 0, 0, 0);
     now.setHours(0, 0, 0, 0);
