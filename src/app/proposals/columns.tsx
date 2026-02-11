@@ -188,9 +188,6 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
     )
 }
 
-/**
- * 🛠️ COMPONENTE DE CÉLULA DE STATUS COM PULSAÇÃO
- */
 const StatusCellWithPulse = ({ 
     proposal, 
     onStatusChange 

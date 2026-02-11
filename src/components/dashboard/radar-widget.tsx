@@ -23,7 +23,6 @@ export function RadarWidget({ proposals, customers, isLoading }: RadarWidgetProp
     
     const now = new Date();
     
-    // Filtra clientes ATIVOS (Status Ativo e Idade < 75) que têm contratos pagos há mais de 12 meses
     const opportunities = customers
       .filter(c => c.status !== 'inactive' && getAge(c.birthDate) < 75)
       .map(customer => {
@@ -36,7 +35,6 @@ export function RadarWidget({ proposals, customers, isLoading }: RadarWidgetProp
 
         if (maturedProposals.length === 0) return null;
 
-        // Pega a proposta mais antiga para mostrar o tempo de maturação
         const oldest = [...maturedProposals].sort((a,b) => a.datePaidToClient!.localeCompare(b.datePaidToClient!))[0];
         const months = differenceInMonths(now, new Date(oldest.datePaidToClient!));
 
@@ -54,18 +52,18 @@ export function RadarWidget({ proposals, customers, isLoading }: RadarWidgetProp
   }, [proposals, customers]);
 
   return (
-    <Card className="h-full flex flex-col border-orange-200/50 bg-orange-50/10 shadow-lg overflow-hidden">
-      <CardHeader className="pb-4 bg-orange-50/30 border-b border-orange-100">
+    <Card className="h-full flex flex-col border-orange-500/20 bg-orange-500/5 dark:bg-orange-500/[0.02] shadow-lg overflow-hidden">
+      <CardHeader className="pb-4 bg-orange-500/[0.08] dark:bg-orange-500/[0.05] border-b border-orange-500/10">
         <div className="flex items-center justify-between">
             <div className="space-y-1">
-                <CardTitle className="text-lg font-bold flex items-center gap-2 text-orange-700">
+                <CardTitle className="text-lg font-bold flex items-center gap-2 text-orange-600 dark:text-orange-400">
                     <Zap className="h-5 w-5 fill-orange-500 text-orange-500" />
                     Radar de Vendas
                 </CardTitle>
-                <CardDescription className="text-[10px] font-black uppercase text-orange-600/70 tracking-widest">Retenção e Refinanciamento</CardDescription>
+                <CardDescription className="text-[10px] font-black uppercase text-orange-600/70 dark:text-orange-400/60 tracking-widest">Retenção e Refinanciamento</CardDescription>
             </div>
             {!isLoading && radarOpportunities.length > 0 && (
-                <Badge variant="outline" className="bg-white border-orange-200 text-orange-700 font-bold">
+                <Badge variant="outline" className="bg-background border-orange-500/30 text-orange-600 dark:text-orange-400 font-bold">
                     {radarOpportunities.length} OPORTUNIDADES
                 </Badge>
             )}
@@ -79,9 +77,9 @@ export function RadarWidget({ proposals, customers, isLoading }: RadarWidgetProp
                 ))}
             </div>
         ) : radarOpportunities.length === 0 ? (
-            <div className="flex h-[400px] flex-col items-center justify-center text-center text-orange-600/40 p-8 border-2 border-dashed border-orange-200/30 rounded-xl bg-orange-50/5">
-                <Zap className="h-10 w-10 mb-4 opacity-20" />
-                <p className="font-bold text-sm text-orange-800/60">Radar Limpo</p>
+            <div className="flex h-[400px] flex-col items-center justify-center text-center text-muted-foreground p-8 border-2 border-dashed border-orange-500/10 rounded-xl bg-muted/5">
+                <Zap className="h-10 w-10 mb-4 opacity-10" />
+                <p className="font-bold text-sm">Radar Limpo</p>
                 <p className="text-[11px] opacity-60 mt-1">Nenhum contrato amadurecido para retenção no momento.</p>
             </div>
         ) : (
@@ -89,18 +87,18 @@ export function RadarWidget({ proposals, customers, isLoading }: RadarWidgetProp
                 <div className="space-y-3 pr-4 pb-6">
                     {radarOpportunities.map((opt) => (
                         <Link key={opt.customer.id} href={`/customers/${opt.customer.id}`}>
-                            <div className="group flex items-center gap-3 p-3 rounded-xl border border-orange-100 bg-white hover:border-orange-400 hover:shadow-md transition-all">
-                                <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
-                                    <User className="h-5 w-5 text-orange-600" />
+                            <div className="group flex items-center gap-3 p-3 rounded-xl border border-orange-500/10 bg-card hover:border-orange-500/40 hover:bg-orange-500/[0.02] transition-all">
+                                <div className="h-10 w-10 rounded-full bg-orange-500/10 flex items-center justify-center shrink-0">
+                                    <User className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-bold text-orange-900 truncate group-hover:text-orange-600 transition-colors">{opt.customer.name}</p>
-                                    <div className="flex items-center gap-2 text-[10px] font-bold text-orange-600/60 uppercase">
-                                        <TrendingUp className="h-3 w-3" />
+                                    <p className="text-sm font-bold text-foreground truncate group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">{opt.customer.name}</p>
+                                    <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase">
+                                        <TrendingUp className="h-3 w-3 text-orange-500" />
                                         Pago há {opt.months} meses • {formatCurrency(opt.lastProposal.grossAmount)}
                                     </div>
                                 </div>
-                                <ChevronRight className="h-4 w-4 text-orange-300 group-hover:text-orange-500 transition-all" />
+                                <ChevronRight className="h-4 w-4 text-orange-500/30 group-hover:text-orange-500 transition-all" />
                             </div>
                         </Link>
                     ))}
@@ -108,8 +106,8 @@ export function RadarWidget({ proposals, customers, isLoading }: RadarWidgetProp
             </ScrollArea>
         )}
       </CardContent>
-      <div className="px-6 py-3 border-t border-orange-100/50 bg-orange-50/30">
-          <p className="text-[9px] text-center text-orange-600/50 font-bold uppercase tracking-tighter">
+      <div className="px-6 py-3 border-t border-orange-500/10 bg-orange-500/[0.03]">
+          <p className="text-[9px] text-center text-muted-foreground font-bold uppercase tracking-tighter">
               Clientes ativos com contratos pagos há mais de 1 ano
           </p>
       </div>
