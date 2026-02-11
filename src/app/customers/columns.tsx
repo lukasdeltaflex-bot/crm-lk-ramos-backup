@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Column, ColumnDef, Header, flexRender } from '@tanstack/react-table';
@@ -129,10 +130,10 @@ export const DraggableHeader = ({ header }: { header: Header<Customer, unknown> 
 const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit, onDelete }) => {
   const customer = row.original;
   return (
-    <div className="text-right">
+    <div className="text-right" onClick={(e) => e.stopPropagation()}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
+          <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-muted transition-colors">
             <span className="sr-only">Abrir menu</span>
             <MoreHorizontal className="h-4 w-4" />
           </Button>

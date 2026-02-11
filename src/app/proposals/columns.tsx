@@ -21,6 +21,7 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { MoreHorizontal, ArrowUpDown, GripVertical, ArrowUp, ArrowDown, Copy, AlertCircle, Info } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -76,10 +77,10 @@ const CopyButton = ({ text, label }: { text: string | undefined; label: string }
 const ActionsCell = ({ row, onEdit, onView, onDelete, onDuplicate }: any) => {
     const proposal = row.original;
     return (
-      <div className="text-right">
+      <div className="text-right" onClick={(e) => e.stopPropagation()}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-muted transition-colors">
               <span className="sr-only">Abrir menu</span>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
@@ -91,14 +92,14 @@ const ActionsCell = ({ row, onEdit, onView, onDelete, onDuplicate }: any) => {
             <DropdownMenuItem onSelect={() => onDuplicate(proposal)}>Duplicar</DropdownMenuItem>
             <DropdownMenuSeparator />
             <AlertDialog>
-                <DropdownMenuTrigger asChild>
+                <AlertDialogTrigger asChild>
                     <DropdownMenuItem 
                         onSelect={(e) => e.preventDefault()}
                         className="text-destructive focus:text-destructive focus:bg-destructive/10"
                         >
                         Cancelar
                     </DropdownMenuItem>
-                </DropdownMenuTrigger>
+                </AlertDialogTrigger>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
@@ -196,7 +197,6 @@ const StatusCellWithPulse = ({
     const isPortAwaitingBalance = proposal.product === 'Portabilidade' && proposal.status === 'Aguardando Saldo';
     
     // REGRA: Usa a data da entrada no status ou fallback para a digitação.
-    // O cálculo de dias úteis já começa no próximo dia.
     const referenceDate = proposal.statusAwaitingBalanceAt || proposal.dateDigitized;
     const businessDays = hasMounted && referenceDate ? calculateBusinessDays(referenceDate) : 0;
 

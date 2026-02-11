@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ColumnDef, flexRender, Header } from '@tanstack/react-table';
@@ -56,10 +57,10 @@ interface ActionsCellProps {
 const ActionsCell: React.FC<ActionsCellProps> = ({ row, onEdit }) => {
   const proposal = row.original;
   return (
-    <div className="text-right print:hidden">
+    <div className="text-right print:hidden" onClick={(e) => e.stopPropagation()}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
+          <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-muted transition-colors">
             <span className="sr-only">Abrir menu</span>
             <MoreHorizontal className="h-4 w-4" />
           </Button>
