@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -45,7 +46,8 @@ import {
     Bot,
     FileDown,
     Settings2,
-    RotateCcw
+    RotateCcw,
+    CloudSun
 } from 'lucide-react';
 import { EditableList } from '@/components/settings/editable-list';
 import { BankEditableList } from '@/components/settings/bank-editable-list';
@@ -138,6 +140,7 @@ export default function SettingsPage() {
     fontStyle: 'moderno',
     sidebarStyle: 'padrão',
     colorTheme: 'padrão',
+    auraStyle: 'limpo',
     statusColors: {} as Record<string, string>
   });
 
@@ -155,6 +158,7 @@ export default function SettingsPage() {
         fontStyle: userSettings.fontStyle || 'moderno',
         sidebarStyle: userSettings.sidebarStyle || 'padrão',
         colorTheme: userSettings.colorTheme || 'padrão',
+        auraStyle: userSettings.auraStyle || 'limpo',
         statusColors: userSettings.statusColors || {}
       });
       setHasLoadedSettings(true);
@@ -178,6 +182,7 @@ export default function SettingsPage() {
       theme.setFontStyle(preview.fontStyle);
       theme.setSidebarStyle(preview.sidebarStyle);
       theme.setColorTheme(preview.colorTheme);
+      theme.setAuraStyle(preview.auraStyle);
       theme.setStatusColors(preview.statusColors);
       
       saveSettingsToFirebase({
@@ -189,6 +194,7 @@ export default function SettingsPage() {
           fontStyle: preview.fontStyle,
           sidebarStyle: preview.sidebarStyle,
           colorTheme: preview.colorTheme,
+          auraStyle: preview.auraStyle,
           statusColors: preview.statusColors
       });
   };
@@ -203,6 +209,7 @@ export default function SettingsPage() {
         fontStyle: 'moderno',
         sidebarStyle: 'padrão',
         colorTheme: 'padrão',
+        auraStyle: 'limpo',
         statusColors: {}
       };
       setPreview(defaults);
@@ -215,6 +222,7 @@ export default function SettingsPage() {
       theme.setFontStyle(defaults.fontStyle);
       theme.setSidebarStyle(defaults.sidebarStyle);
       theme.setColorTheme(defaults.colorTheme);
+      theme.setAuraStyle(defaults.auraStyle);
       theme.setStatusColors(defaults.statusColors);
 
       saveSettingsToFirebase(defaults);
@@ -313,6 +321,14 @@ export default function SettingsPage() {
     "sharp": "Roboto Condensed", "script": "Cormorant"
   };
 
+  const auraLabels: Record<string, string> = {
+    "limpo": "Liso (Padrão)",
+    "nebula": "Nebulosa (Dark)",
+    "aurora": "Aurora Escura",
+    "sunset": "Sunset Industrial",
+    "ocean": "Oceano Profundo"
+  };
+
   const previewPrimaryColor = React.useMemo(() => {
     const selectedTheme = THEMES.find(t => t.name === preview.colorTheme) || THEMES[0];
     return theme.resolvedTheme === 'dark' ? selectedTheme.dark : selectedTheme.light;
@@ -380,6 +396,22 @@ export default function SettingsPage() {
                                 <Separator />
 
                                 <div className="space-y-4">
+                                    <div className="flex items-center gap-2"><CloudSun className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Fundos Atmosféricos (Aura)</h4></div>
+                                    <RadioGroup value={preview.auraStyle} onValueChange={(val) => setPreview(p => ({ ...p, auraStyle: val }))} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                                        {Object.keys(auraLabels).map((a) => (
+                                            <Label key={a} htmlFor={`aura-${a}`} className={cn("flex flex-col items-center justify-center rounded-xl border-2 p-4 cursor-pointer text-center gap-2 transition-all", preview.auraStyle === a ? "border-primary bg-primary/5 ring-2 ring-primary/20" : "border-muted hover:border-primary/30")}>
+                                                <RadioGroupItem value={a} id={`aura-${a}`} className="sr-only" />
+                                                <div className={cn("h-8 w-8 rounded-full border shadow-inner", a === 'limpo' ? 'bg-background' : `aura-${a}`)} />
+                                                <span className="text-[10px] font-black uppercase tracking-tighter leading-tight">{auraLabels[a]}</span>
+                                            </Label>
+                                        ))}
+                                    </RadioGroup>
+                                    <p className="text-[10px] text-muted-foreground text-center font-bold uppercase tracking-widest animate-pulse mt-2">✨ Atmosferas animadas são otimizadas para alto desempenho</p>
+                                </div>
+
+                                <Separator />
+
+                                <div className="space-y-4">
                                     <div className="flex items-center gap-2"><Monitor className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Branding (Logomarca)</h4></div>
                                     <div className="flex items-center gap-6 p-6 border rounded-xl bg-muted/20">
                                         <div className="h-24 w-24 bg-white border flex items-center justify-center rounded-lg overflow-hidden shadow-inner">
@@ -411,16 +443,26 @@ export default function SettingsPage() {
                                     </div>
 
                                     <div className="space-y-4">
-                                        <div className="flex items-center gap-2"><ImageIcon className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Logotipos dos Bancos</h4></div>
-                                        <div className="flex items-center justify-between p-4 border rounded-xl bg-muted/10">
-                                            <div className="space-y-0.5">
-                                                <Label className="text-sm font-bold">Exibir Ícones Oficiais</Label>
-                                                <p className="text-[10px] text-muted-foreground">Mostra os logos dos bancos nas tabelas e propostas.</p>
+                                        <div className="flex items-center gap-2"><ImageIcon className="h-4 w-4 text-primary" /><h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Logotipos Inteligentes</h4></div>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center justify-between p-3 border rounded-xl bg-muted/10">
+                                                <div className="space-y-0.5">
+                                                    <Label className="text-xs font-bold uppercase">Ícones dos Bancos</Label>
+                                                </div>
+                                                <Switch 
+                                                    checked={userSettings?.showBankLogos ?? true} 
+                                                    onCheckedChange={(val) => saveSettingsToFirebase({ showBankLogos: val })}
+                                                />
                                             </div>
-                                            <Switch 
-                                                checked={userSettings?.showBankLogos ?? true} 
-                                                onCheckedChange={(val) => saveSettingsToFirebase({ showBankLogos: val })}
-                                            />
+                                            <div className="flex items-center justify-between p-3 border rounded-xl bg-muted/10">
+                                                <div className="space-y-0.5">
+                                                    <Label className="text-xs font-bold uppercase">Ícones das Promotoras</Label>
+                                                </div>
+                                                <Switch 
+                                                    checked={userSettings?.showPromoterLogos ?? true} 
+                                                    onCheckedChange={(val) => saveSettingsToFirebase({ showPromoterLogos: val })}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -559,7 +601,8 @@ export default function SettingsPage() {
                                         `texture-${preview.backgroundTexture}`,
                                         `radius-${preview.radius}`,
                                         `font-${preview.fontStyle}`,
-                                        `anim-${preview.animationStyle}`
+                                        `anim-${preview.animationStyle}`,
+                                        preview.auraStyle !== 'limpo' && `aura-${preview.auraStyle}`
                                     )}
                                     style={{ '--primary': previewPrimaryColor } as any}
                                 >
@@ -682,7 +725,20 @@ export default function SettingsPage() {
                         <EditableList title="Status da Comissão" items={userSettings?.commissionStatuses || initialCommissionStatuses} setItems={(n) => saveSettingsToFirebase({ commissionStatuses: n as string[] })} />
                         <EditableList title="Órgãos Aprovadores" items={userSettings?.approvingBodies || initialApprovingBodies} setItems={(n) => saveSettingsToFirebase({ approvingBodies: n as string[] })} />
                         <EditableList title="Categorias de Despesas" items={userSettings?.expenseCategories || initialExpenseCategories} setItems={(n) => saveSettingsToFirebase({ expenseCategories: n as string[] })} />
-                        <BankEditableList banks={userSettings?.banks || initialBanks} bankDomains={userSettings?.bankDomains || {}} onUpdate={(b, d) => saveSettingsToFirebase({ banks: b, bankDomains: d })} />
+                        
+                        <BankEditableList 
+                            banks={userSettings?.banks || initialBanks} 
+                            bankDomains={userSettings?.bankDomains || {}} 
+                            onUpdate={(b, d) => saveSettingsToFirebase({ banks: b, bankDomains: d })} 
+                        />
+
+                        {/* NOVO: Promotoras com IA */}
+                        <BankEditableList 
+                            title="Promotoras e Parceiros IA"
+                            banks={userSettings?.promoters || ["Promotora Exemplo"]} 
+                            bankDomains={userSettings?.promoterDomains || {}} 
+                            onUpdate={(p, d) => saveSettingsToFirebase({ promoters: p, promoterDomains: d })} 
+                        />
                         </Accordion>
                     </CardContent>
                 </Card>

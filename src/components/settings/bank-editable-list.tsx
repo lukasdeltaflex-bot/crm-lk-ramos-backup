@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -9,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, Trash2, Edit, Save, X, Globe, Sparkles, Loader2, Bot } from 'lucide-react';
+import { PlusCircle, Trash2, Edit, Save, X, Globe, Sparkles, Loader2, Bot, Building2 } from 'lucide-react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -26,12 +27,13 @@ import { BankIcon } from '@/components/bank-icon';
 import { toast } from '@/hooks/use-toast';
 
 interface BankEditableListProps {
+  title?: string;
   banks: string[];
   bankDomains: Record<string, string>;
   onUpdate: (banks: string[], domains: Record<string, string>) => void;
 }
 
-export function BankEditableList({ banks, bankDomains, onUpdate }: BankEditableListProps) {
+export function BankEditableList({ title = "Bancos e Ícones Inteligentes", banks, bankDomains, onUpdate }: BankEditableListProps) {
   const [newItemName, setNewItemName] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -50,7 +52,7 @@ export function BankEditableList({ banks, bankDomains, onUpdate }: BankEditableL
         
         onUpdate(newBanks, newDomains);
         setNewItemName('');
-        toast({ title: "Banco Adicionado!", description: domain ? "Ícone detectado via IA." : "Ícone não encontrado, defina manualmente se desejar." });
+        toast({ title: "Item Adicionado!", description: domain ? "Ícone detectado via IA." : "Ícone não encontrado, defina manualmente se desejar." });
     } catch (e) {
         onUpdate([...banks, newItemName.trim()], bankDomains);
         setNewItemName('');
@@ -87,8 +89,11 @@ export function BankEditableList({ banks, bankDomains, onUpdate }: BankEditableL
   };
 
   return (
-    <AccordionItem value="Bancos">
-      <AccordionTrigger>Bancos e Ícones Inteligentes</AccordionTrigger>
+    <AccordionItem value={title}>
+      <AccordionTrigger className="flex items-center gap-2">
+        {title.includes("Bancos") ? <Building2 className="h-4 w-4 text-blue-500" /> : <Bot className="h-4 w-4 text-purple-500" />}
+        {title}
+      </AccordionTrigger>
       <AccordionContent>
         <div className="space-y-4">
           <div className="flex flex-wrap gap-3">
@@ -117,7 +122,7 @@ export function BankEditableList({ banks, bankDomains, onUpdate }: BankEditableL
                             <AlertDialogContent>
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Remover {bank}?</AlertDialogTitle>
-                                    <AlertDialogDescription>O banco será excluído da sua lista de opções.</AlertDialogDescription>
+                                    <AlertDialogDescription>Este parceiro será excluído da sua lista de opções.</AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Voltar</AlertDialogCancel>
@@ -135,7 +140,7 @@ export function BankEditableList({ banks, bankDomains, onUpdate }: BankEditableL
           <div className="flex items-center gap-2 pt-4 border-t mt-4">
             <div className="relative flex-1">
                 <Input
-                    placeholder="Nome do novo banco (Ex: Banco X)..."
+                    placeholder="Nome do parceiro (IA buscará o logo)..."
                     value={newItemName}
                     onChange={(e) => setNewItemName(e.target.value)}
                     disabled={isAdding}
@@ -149,7 +154,7 @@ export function BankEditableList({ banks, bankDomains, onUpdate }: BankEditableL
             </Button>
           </div>
           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest flex items-center gap-2">
-            <Bot className="h-3 w-3" /> A IA buscará o logotipo oficial automaticamente.
+            <Bot className="h-3 w-3" /> A Inteligência Artificial buscará a identidade visual oficial automaticamente.
           </p>
         </div>
       </AccordionContent>

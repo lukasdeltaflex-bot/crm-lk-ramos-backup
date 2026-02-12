@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -17,6 +18,7 @@ const FONT_OPTIONS = [
 ];
 const ANIMATION_OPTIONS = ["instantaneo", "sutil", "atmosferico", "cinematografico"];
 const SIDEBAR_OPTIONS = ["padrão", "dark", "light"];
+const AURA_OPTIONS = ["limpo", "nebula", "aurora", "sunset", "ocean"];
 
 type ColorThemeContextType = {
   colorTheme: string;
@@ -35,6 +37,8 @@ type ColorThemeContextType = {
   setFontStyle: (f: string) => void;
   sidebarStyle: string;
   setSidebarStyle: (s: string) => void;
+  auraStyle: string;
+  setAuraStyle: (a: string) => void;
   statusColors: Record<string, string>;
   setStatusColors: (colors: Record<string, string>) => void;
 };
@@ -50,6 +54,7 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
   const [animationStyle, setAnimationStyle] = React.useState('sutil');
   const [fontStyle, setFontStyle] = React.useState('moderno');
   const [sidebarStyle, setSidebarStyle] = React.useState('padrão');
+  const [auraStyle, setAuraStyle] = React.useState('limpo');
   const [statusColors, setStatusColors] = React.useState<Record<string, string>>({});
   const [isMounted, setIsMounted] = React.useState(false);
   const { resolvedTheme } = useNextTheme();
@@ -69,6 +74,7 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
     setAnimationStyle(getSaved("lk-animation-theme", "sutil"));
     setFontStyle(getSaved("lk-font-theme", "moderno"));
     setSidebarStyle(getSaved("lk-sidebar-style", "padrão"));
+    setAuraStyle(getSaved("lk-aura-style", "limpo"));
     
     const savedStatusColors = localStorage.getItem("lk-status-colors");
     if (savedStatusColors) {
@@ -88,7 +94,7 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
       const clearAndAdd = (list: string[], prefix: string, current: string) => {
           [root, body].forEach(el => {
               el.classList.remove(...list.map(item => `${prefix}-${item}`));
-              if (current !== 'none' && current !== 'padrão') {
+              if (current !== 'none' && current !== 'padrão' && current !== 'limpo') {
                 el.classList.add(`${prefix}-${current}`);
               }
           });
@@ -100,6 +106,7 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
       clearAndAdd(INTENSITY_OPTIONS, "intensity", colorIntensity);
       clearAndAdd(ANIMATION_OPTIONS, "anim", animationStyle);
       clearAndAdd(FONT_OPTIONS, "font", fontStyle);
+      clearAndAdd(AURA_OPTIONS, "aura", auraStyle);
       
       [root, body].forEach(el => {
           el.classList.remove(...SIDEBAR_OPTIONS.map(s => `sidebar-${s}`));
@@ -108,7 +115,7 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
           }
       });
     }
-  }, [colorTheme, radius, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, sidebarStyle, isMounted, resolvedTheme]);
+  }, [colorTheme, radius, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, sidebarStyle, auraStyle, isMounted, resolvedTheme]);
 
   const value = React.useMemo(() => ({
     colorTheme, setColorTheme: (val: string) => { setColorTheme(val); localStorage.setItem("lk-color-theme", val); },
@@ -119,8 +126,9 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
     animationStyle, setAnimationStyle: (val: string) => { setAnimationStyle(val); localStorage.setItem("lk-animation-theme", val); },
     fontStyle, setFontStyle: (val: string) => { setFontStyle(val); localStorage.setItem("lk-font-theme", val); },
     sidebarStyle, setSidebarStyle: (val: string) => { setSidebarStyle(val); localStorage.setItem("lk-sidebar-style", val); },
+    auraStyle, setAuraStyle: (val: string) => { setAuraStyle(val); localStorage.setItem("lk-aura-style", val); },
     statusColors, setStatusColors: (val: Record<string, string>) => { setStatusColors(val); localStorage.setItem("lk-status-colors", JSON.stringify(val)); }
-  }), [colorTheme, radius, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, sidebarStyle, statusColors]);
+  }), [colorTheme, radius, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, sidebarStyle, auraStyle, statusColors]);
 
   return (
     <ColorThemeContext.Provider value={value}>

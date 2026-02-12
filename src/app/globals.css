@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&family=Lexend:wght@300;400;700&family=Bebas+Neue&family=Orbitron:wght@400;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;700&family=Cinzel:wght@400;700&family=Space+Grotesk:wght@300;400;700&family=Outfit:wght@300;400;700&family=Lora:ital,wght@0,400;0,700;1,400&family=Urbanist:wght@300;400;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;700&family=Kanit:wght@300;400;700&family=Work+Sans:wght@300;400;700&family=Quicksand:wght@300;500;700&family=Spectral:ital,wght@0,400;0,700;1,400&family=Manrope:wght@300;400;700&family=Roboto+Condensed:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&display=swap');
@@ -75,7 +76,7 @@
 
 /* 🎨 MOTORES DE DESIGN LK RAMOS */
 
-/* Tipografia Expandida - Reforço Total com Herança e Importância Máxima */
+/* Tipografia Expandida - Reforço Total */
 .font-moderno, .font-moderno * { font-family: 'Inter', sans-serif !important; }
 .font-classico, .font-classico * { font-family: 'Playfair Display', serif !important; }
 .font-mono, .font-mono * { font-family: 'JetBrains Mono', monospace !important; }
@@ -164,6 +165,37 @@
 .texture-dots { background-image: radial-gradient(hsl(var(--muted-foreground) / 0.15) 1px, transparent 1px); background-size: 20px 20px; }
 .texture-grid { background-image: linear-gradient(hsl(var(--muted-foreground) / 0.05) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--muted-foreground) / 0.05) 1px, transparent 1px); background-size: 20px 20px; }
 .texture-lines { background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, hsl(var(--muted-foreground) / 0.03) 10px, hsl(var(--muted-foreground) / 0.03) 11px); }
+
+/* ✨ ATMOSFERAS (FUNDOS ANIMADOS) */
+@keyframes nebula-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.aura-nebula {
+  background: linear-gradient(-45deg, #09090b, #18181b, #27272a, #09090b);
+  background-size: 400% 400%;
+  animation: nebula-flow 15s ease infinite;
+}
+
+.aura-aurora {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #0d9488 50%, #1e293b 75%, #0f172a 100%);
+  background-size: 400% 400%;
+  animation: nebula-flow 20s ease infinite;
+}
+
+.aura-sunset {
+  background: linear-gradient(135deg, #1e1b4b 0%, #451a03 50%, #1e1b4b 100%);
+  background-size: 200% 200%;
+  animation: nebula-flow 12s ease-in-out infinite;
+}
+
+.aura-ocean {
+  background: linear-gradient(135deg, #082f49 0%, #0c4a6e 50%, #082f49 100%);
+  background-size: 300% 300%;
+  animation: nebula-flow 18s ease infinite;
+}
 
 /* Status e Linhas */
 .status-custom {

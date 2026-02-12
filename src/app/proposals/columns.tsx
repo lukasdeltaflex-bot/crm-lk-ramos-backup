@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ColumnDef, Header, flexRender } from '@tanstack/react-table';
@@ -22,7 +23,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, ArrowUpDown, GripVertical, ArrowUp, ArrowDown, Copy, AlertCircle, Info } from 'lucide-react';
+import { MoreHorizontal, ArrowUpDown, GripVertical, ArrowUp, ArrowDown, Copy, AlertCircle, Info, Building2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatCurrency, cleanBankName, calculateBusinessDays, cn, isWhatsApp, getWhatsAppUrl } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
@@ -268,6 +269,19 @@ export const getColumns = (
     accessorKey: 'promoter',
     id: 'promoter',
     header: 'Promotora',
+    cell: ({ row, table }) => {
+        const promoter = row.original.promoter;
+        const settings = (table.options.meta as any)?.userSettings as UserSettings;
+        const showLogos = settings?.showPromoterLogos ?? true;
+        const domain = settings?.promoterDomains?.[promoter];
+
+        return (
+            <div className="flex items-center gap-2">
+                <BankIcon bankName={promoter} domain={domain} showLogo={showLogos} className="h-4 w-4" />
+                <span className="truncate max-w-[100px]">{promoter}</span>
+            </div>
+        )
+    }
   },
   {
     accessorKey: 'proposalNumber',

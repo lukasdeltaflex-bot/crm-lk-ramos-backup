@@ -112,9 +112,12 @@ export type UserSettings = {
   commissionStatuses: string[];
   approvingBodies: string[];
   banks: string[];
+  promoters?: string[];
   expenseCategories: string[];
   bankDomains?: Record<string, string>;
+  promoterDomains?: Record<string, string>;
   showBankLogos?: boolean;
+  showPromoterLogos?: boolean;
   // Appearance Elite
   customLogoURL?: string;
   containerStyle?: string;
@@ -126,6 +129,7 @@ export type UserSettings = {
   sidebarStyle?: string;
   colorTheme?: string;
   statusColors?: Record<string, string>;
+  auraStyle?: string;
   // Cloud Sync
   monthlyGoal?: number;
   dismissedAlerts?: string[];
