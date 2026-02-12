@@ -69,7 +69,7 @@ export default function ManualPage() {
                         <p>O LK RAMOS permite que o sistema tenha a alma da sua marca através de ferramentas de customização avançada.</p>
                         <ul className="list-disc pl-5 space-y-2">
                             <li><strong>Laboratório 360°</strong>: Experimente cores, fontes e ritmos em tempo real antes de aplicar globalmente.</li>
-                            <li><strong>Atmosferas Claras & Equilibradas</strong>: Ative fundos animados sutis (Nebulosa Suave, Aurora Boreal, Sunset Pastel) otimizados para máxima legibilidade e conforto visual.</li>
+                            <li><strong>Atmosferas Claras & Equilibradas</strong>: Ative fundos animados sutis otimizados para máxima legibilidade. Agora com coleções exclusivas como <em>Lavanda Suave</em>, <em>Menta Fresca</em> e <em>Pérola Shimmer</em>.</li>
                             <li><strong>Branding Próprio</strong>: Upload de logomarca própria, exibida no menu lateral e em todos os relatórios PDF oficiais.</li>
                         </ul>
                     </AccordionContent>
@@ -187,7 +187,7 @@ export default function ManualPage() {
                 <CardContent className="text-[10px] text-muted-foreground leading-relaxed">
                     Sua conta está blindada com regras de acesso por proprietário. Somente você pode visualizar e editar os dados da sua carteira. O backup total está disponível na aba de Configurações.
                 </CardContent>
-            </Card>
+            </div>
         </div>
       </div>
     </AppLayout>

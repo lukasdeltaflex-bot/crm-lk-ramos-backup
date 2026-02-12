@@ -318,7 +318,11 @@ export default function SettingsPage() {
     "nebula": "Nebulosa Suave",
     "aurora": "Aurora Boreal",
     "sunset": "Sunset Pastel",
-    "ocean": "Mar Cristalino"
+    "ocean": "Mar Cristalino",
+    "lavender": "Lavanda Suave",
+    "mint": "Menta Fresca",
+    "pearl": "Pérola Shimmer",
+    "desert": "Dunas Douradas"
   };
 
   const previewPrimaryColor = React.useMemo(() => {

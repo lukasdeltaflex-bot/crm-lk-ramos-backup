@@ -18,7 +18,7 @@ const FONT_OPTIONS = [
 ];
 const ANIMATION_OPTIONS = ["instantaneo", "sutil", "atmosferico", "cinematografico"];
 const SIDEBAR_OPTIONS = ["padrão", "dark", "light"];
-const AURA_OPTIONS = ["limpo", "nebula", "aurora", "sunset", "ocean"];
+const AURA_OPTIONS = ["limpo", "nebula", "aurora", "sunset", "ocean", "lavender", "mint", "pearl", "desert"];
 
 type ColorThemeContextType = {
   colorTheme: string;
