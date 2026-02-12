@@ -102,12 +102,15 @@ export default function DashboardPage() {
   };
 
   const handleDateInputChange = (value: string, type: 'start' | 'end') => {
-    let formattedValue = value.replace(/\D/g, '');
-    if (formattedValue.length > 8) formattedValue = formattedValue.substring(0, 8);
-    formattedValue = formattedValue.replace(/(\d{2})(\d)/, '$1/$2');
-    formattedValue = formattedValue.replace(/(\d{2})(\d)/, '$1/$2');
-    if (type === 'start') setStartDateInput(formattedValue);
-    else setEndDateInput(formattedValue);
+    let v = value.replace(/\D/g, '').slice(0, 8);
+    if (v.length >= 5) {
+      v = `${v.slice(0, 2)}/${v.slice(2, 4)}/${v.slice(4)}`;
+    } else if (v.length >= 3) {
+      v = `${v.slice(0, 2)}/${v.slice(2)}`;
+    }
+    
+    if (type === 'start') setStartDateInput(v);
+    else setEndDateInput(v);
   };
 
   const applyRange = (range: 'today' | 'yesterday' | 'week' | 'month' | 'lastMonth') => {
@@ -130,8 +133,15 @@ export default function DashboardPage() {
   const handleApplyFilter = () => {
     const startDate = parse(startDateInput, 'dd/MM/yyyy', new Date());
     const endDate = parse(endDateInput, 'dd/MM/yyyy', new Date());
-    if (isValid(startDate) && isValid(endDate)) {
-        setAppliedDateRange({ from: startDate, to: endDate });
+    const isValidStart = isValid(startDate) && startDateInput.length === 10;
+    const isValidEnd = isValid(endDate) && endDateInput.length === 10;
+
+    if (isValidStart && isValidEnd) {
+        setAppliedDateRange({ from: startOfDay(startDate), to: endOfDay(endDate) });
+    } else if (isValidStart) {
+        setAppliedDateRange({ from: startOfDay(startDate), to: endOfDay(startDate) });
+    } else {
+        setAppliedDateRange(undefined);
     }
   };
 
@@ -290,7 +300,7 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-center gap-2 flex-wrap bg-card p-2 rounded-xl border border-border/50 shadow-sm">
                 <Select onValueChange={(val) => applyRange(val as any)}>
-                    <SelectTrigger className='w-[140px] h-9 border-none shadow-none focus:ring-0'>
+                    <SelectTrigger className='w-[140px] h-9 border-none shadow-none focus:ring-0 font-medium'>
                         <CalendarIcon className='mr-2 h-4 w-4 text-primary' />
                         <SelectValue placeholder="Período" />
                     </SelectTrigger>
@@ -304,25 +314,23 @@ export default function DashboardPage() {
                 </Select>
                 <Separator orientation="vertical" className="h-6 mx-1 hidden sm:block" />
                 <div className="flex items-center gap-1">
-                    <span className='text-xs text-muted-foreground px-1'>De</span>
                     <Input 
-                        placeholder="--" 
+                        placeholder="De" 
                         value={startDateInput}
                         onChange={(e) => handleDateInputChange(e.target.value, 'start')}
                         maxLength={10}
-                        className="h-9 w-24 border-none shadow-none text-center"
+                        className="h-9 w-24 border-none shadow-none text-center bg-muted/30 focus-visible:bg-muted/50 transition-colors"
                     />
                     <span className='text-muted-foreground'>-</span>
-                    <span className='text-xs text-muted-foreground px-1'>Até</span>
                     <Input 
-                        placeholder="--" 
+                        placeholder="Até" 
                         value={endDateInput}
                         onChange={(e) => handleDateInputChange(e.target.value, 'end')}
                         maxLength={10}
-                        className="h-9 w-24 border-none shadow-none text-center"
+                        className="h-9 w-24 border-none shadow-none text-center bg-muted/30 focus-visible:bg-muted/50 transition-colors"
                     />
                 </div>
-                <Button size="sm" onClick={handleApplyFilter} className='h-8 bg-primary hover:bg-primary/90'><Filter className="h-3 w-3 mr-1" /> Filtrar</Button>
+                <Button size="sm" onClick={handleApplyFilter} className='h-8 bg-primary hover:bg-primary/90 rounded-full px-4'><Filter className="h-3.5 w-3.5 mr-1.5" /> Aplicar</Button>
                 {(startDateInput || appliedDateRange) && (
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={clearDates}><X className="h-4 w-4" /></Button>
                 )}

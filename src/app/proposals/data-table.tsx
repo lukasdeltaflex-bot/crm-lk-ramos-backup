@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -182,12 +183,15 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   };
 
   const handleDateInputChange = (value: string, type: 'start' | 'end') => {
-    let formattedValue = value.replace(/\D/g, '');
-    if (formattedValue.length > 8) formattedValue = formattedValue.substring(0, 8);
-    formattedValue = formattedValue.replace(/(\d{2})(\d)/, '$1/$2');
-    formattedValue = formattedValue.replace(/(\d{2})(\d)/, '$1/$2');
-    if (type === 'start') setStartDateInput(formattedValue);
-    else setEndDateInput(formattedValue);
+    let v = value.replace(/\D/g, '').slice(0, 8);
+    if (v.length >= 5) {
+      v = `${v.slice(0, 2)}/${v.slice(2, 4)}/${v.slice(4)}`;
+    } else if (v.length >= 3) {
+      v = `${v.slice(0, 2)}/${v.slice(2)}`;
+    }
+    
+    if (type === 'start') setStartDateInput(v);
+    else setEndDateInput(v);
   };
 
   const applyRange = (range: 'today' | 'yesterday' | 'week' | 'month' | 'lastMonth') => {
@@ -210,10 +214,13 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const handleApplyFilter = () => {
     const startDate = parse(startDateInput, 'dd/MM/yyyy', new Date());
     const endDate = parse(endDateInput, 'dd/MM/yyyy', new Date());
-    if (isValid(startDate) && isValid(endDate) && startDateInput.length === 10 && endDateInput.length === 10) {
-        setAppliedDateRange({ from: startDate, to: endDate });
-    } else if (isValid(startDate) && startDateInput.length === 10) {
-        setAppliedDateRange({ from: startDate, to: startDate });
+    const isValidStart = isValid(startDate) && startDateInput.length === 10;
+    const isValidEnd = isValid(endDate) && endDateInput.length === 10;
+
+    if (isValidStart && isValidEnd) {
+        setAppliedDateRange({ from: startOfDay(startDate), to: endOfDay(endDate) });
+    } else if (isValidStart) {
+        setAppliedDateRange({ from: startOfDay(startDate), to: endOfDay(startDate) });
     } else {
         setAppliedDateRange(undefined);
     }
@@ -337,7 +344,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                 </Tabs>
                 <div className="flex items-center gap-2 flex-wrap">
                     <Select onValueChange={(val) => applyRange(val as any)}>
-                        <SelectTrigger className='w-[140px] h-9 bg-card'><CalendarIcon className='mr-2 h-4 w-4 text-primary' /><SelectValue placeholder="Período" /></SelectTrigger>
+                        <SelectTrigger className='w-[140px] h-9 bg-card font-medium'><CalendarIcon className='mr-2 h-4 w-4 text-primary' /><SelectValue placeholder="Período" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="today">Hoje</SelectItem>
                             <SelectItem value="yesterday">Ontem</SelectItem>
@@ -347,11 +354,23 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                         </SelectContent>
                     </Select>
                     <div className="flex items-center gap-1">
-                        <Input placeholder="De" value={startDateInput} onChange={(e) => handleDateInputChange(e.target.value, 'start')} maxLength={10} className="h-9 w-28 bg-card" />
+                        <Input 
+                            placeholder="De" 
+                            value={startDateInput} 
+                            onChange={(e) => handleDateInputChange(e.target.value, 'start')} 
+                            maxLength={10} 
+                            className="h-9 w-28 bg-card text-center bg-muted/30 focus-visible:bg-muted/50 transition-colors" 
+                        />
                         <span className='text-muted-foreground'>-</span>
-                        <Input placeholder="Até" value={endDateInput} onChange={(e) => handleDateInputChange(e.target.value, 'end')} maxLength={10} className="h-9 w-28 bg-card" />
+                        <Input 
+                            placeholder="Até" 
+                            value={endDateInput} 
+                            onChange={(e) => handleDateInputChange(e.target.value, 'end')} 
+                            maxLength={10} 
+                            className="h-9 w-28 bg-card text-center bg-muted/30 focus-visible:bg-muted/50 transition-colors" 
+                        />
                     </div>
-                    <Button size="sm" onClick={handleApplyFilter}><Filter className="h-4 w-4" /> Aplicar</Button>
+                    <Button size="sm" onClick={handleApplyFilter} className="rounded-full px-4"><Filter className="h-3.5 w-3.5 mr-1.5" /> Aplicar</Button>
                     {(startDateInput || endDateInput || appliedDateRange) && <Button variant="ghost" size="icon" className="h-9 w-9" onClick={clearDates}><X className="h-4 w-4" /></Button>}
                 </div>
             </div>
