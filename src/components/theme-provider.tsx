@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -93,8 +92,10 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
 
       const clearAndAdd = (list: string[], prefix: string, current: string) => {
           [root, body].forEach(el => {
-              el.classList.remove(...list.map(item => `${prefix}-${item}`));
-              if (current !== 'none' && current !== 'padrão' && current !== 'limpo') {
+              // Remove classes antigas
+              list.forEach(opt => el.classList.remove(`${prefix}-${opt}`));
+              // Adiciona a nova
+              if (current && current !== 'none' && current !== 'padrão' && current !== 'limpo') {
                 el.classList.add(`${prefix}-${current}`);
               }
           });
