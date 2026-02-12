@@ -4,7 +4,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Bot, Send, X, Loader2, CalendarClock, Cake, Hourglass, BadgePercent, Zap, Info, ChevronRight } from 'lucide-react';
+import { Bot, Send, X, Loader2, CalendarClock, Cake, Hourglass, BadgePercent, Zap, Info, ChevronRight, MessageSquareText } from 'lucide-react';
 import type { Customer, Proposal, UserProfile, FollowUp, UserSettings } from '@/lib/types';
 import { differenceInDays, format, differenceInMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
