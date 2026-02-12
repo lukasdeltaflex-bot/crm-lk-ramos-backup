@@ -80,7 +80,6 @@
 }
 
 /* 🎨 MOTOR DE TIPOGRAFIA LK RAMOS */
-
 .font-moderno { --font-main: 'Inter', sans-serif; }
 .font-classico { --font-main: 'Playfair Display', serif; }
 .font-mono { --font-main: 'JetBrains Mono', monospace; }
@@ -101,11 +100,6 @@
 .font-corp { --font-main: 'Manrope', sans-serif; }
 .font-sharp { --font-main: 'Roboto Condensed', sans-serif; }
 .font-script { --font-main: 'Cormorant Garamond', serif; }
-
-/* Aplicação forçada em herança */
-[class*="font-"] *, [class*="font-"] button, [class*="font-"] input {
-  font-family: inherit !important;
-}
 
 /* 🛡️ ESTILOS DA BARRA LATERAL */
 .sidebar-dark {
@@ -175,7 +169,7 @@
 .texture-grid { background-image: linear-gradient(hsl(var(--muted-foreground) / 0.05) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--muted-foreground) / 0.05) 1px, transparent 1px); background-size: 20px 20px; }
 .texture-lines { background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, hsl(var(--muted-foreground) / 0.03) 10px, hsl(var(--muted-foreground) / 0.03) 11px); }
 
-/* ✨ ATMOSFERAS (FUNDOS ANIMADOS) - VERSÃO CLARA/EQUILIBRADA */
+/* ✨ ATMOSFERAS ANIMADAS */
 @keyframes nebula-flow {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -187,50 +181,43 @@
   background-size: 400% 400%;
   animation: nebula-flow 15s ease infinite;
 }
-
 .aura-aurora {
   background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 25%, #f0fdf4 50%, #ccfbf1 75%, #f0fdfa 100%);
   background-size: 400% 400%;
   animation: nebula-flow 20s ease infinite;
 }
-
 .aura-sunset {
   background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 50%, #fff1f2 100%);
   background-size: 200% 200%;
   animation: nebula-flow 12s ease-in-out infinite;
 }
-
 .aura-ocean {
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0fdff 100%);
   background-size: 300% 300%;
   animation: nebula-flow 18s ease infinite;
 }
-
 .aura-lavender {
   background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #faf5ff 100%);
   background-size: 400% 400%;
   animation: nebula-flow 15s ease infinite;
 }
-
 .aura-mint {
   background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%);
   background-size: 400% 400%;
   animation: nebula-flow 15s ease infinite;
 }
-
 .aura-pearl {
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 25%, #ffffff 50%, #f1f5f9 75%, #f8fafc 100%);
   background-size: 400% 400%;
   animation: nebula-flow 20s ease infinite;
 }
-
 .aura-desert {
   background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 50%, #fffbeb 100%);
   background-size: 200% 200%;
   animation: nebula-flow 12s ease-in-out infinite;
 }
 
-/* 🌙 VERSÃO ESCURA (EQUALIZADA) - CORES PROFUNDAS E ELEGANTES */
+/* 🌙 TEMA ESCURO (EQUALIZAÇÃO) */
 .dark .aura-nebula { background: linear-gradient(-45deg, #0f172a, #1e293b, #334155, #0f172a); }
 .dark .aura-aurora { background: linear-gradient(135deg, #022c22 0%, #064e3b 25%, #065f46 50%, #064e3b 75%, #022c22 100%); }
 .dark .aura-sunset { background: linear-gradient(135deg, #451a03 0%, #78350f 50%, #991b1b 100%); }

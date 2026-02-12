@@ -84,37 +84,30 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
   React.useLayoutEffect(() => {
     if (isMounted) {
       const root = document.documentElement;
-      const body = document.body;
       
       const activeTheme = THEMES.find(t => t.name === colorTheme) || THEMES[0];
       const primaryValue = resolvedTheme === 'dark' ? activeTheme.dark : activeTheme.light;
       root.style.setProperty('--primary', primaryValue);
 
-      const clearAndAdd = (list: string[], prefix: string, current: string) => {
-          [root, body].forEach(el => {
-              // Remove classes antigas
-              list.forEach(opt => el.classList.remove(`${prefix}-${opt}`));
-              // Adiciona a nova
-              if (current && current !== 'none' && current !== 'padrão' && current !== 'limpo') {
-                el.classList.add(`${prefix}-${current}`);
-              }
-          });
+      const applyClass = (list: string[], prefix: string, current: string) => {
+          list.forEach(opt => root.classList.remove(`${prefix}-${opt}`));
+          if (current && current !== 'none' && current !== 'padrão' && current !== 'limpo') {
+            root.classList.add(`${prefix}-${current}`);
+          }
       };
 
-      clearAndAdd(RADIUS_OPTIONS, "radius", radius);
-      clearAndAdd(CONTAINER_STYLES, "style", containerStyle);
-      clearAndAdd(TEXTURE_OPTIONS, "texture", backgroundTexture);
-      clearAndAdd(INTENSITY_OPTIONS, "intensity", colorIntensity);
-      clearAndAdd(ANIMATION_OPTIONS, "anim", animationStyle);
-      clearAndAdd(FONT_OPTIONS, "font", fontStyle);
-      clearAndAdd(AURA_OPTIONS, "aura", auraStyle);
+      applyClass(RADIUS_OPTIONS, "radius", radius);
+      applyClass(CONTAINER_STYLES, "style", containerStyle);
+      applyClass(TEXTURE_OPTIONS, "texture", backgroundTexture);
+      applyClass(INTENSITY_OPTIONS, "intensity", colorIntensity);
+      applyClass(ANIMATION_OPTIONS, "anim", animationStyle);
+      applyClass(FONT_OPTIONS, "font", fontStyle);
+      applyClass(AURA_OPTIONS, "aura", auraStyle);
       
-      [root, body].forEach(el => {
-          el.classList.remove(...SIDEBAR_OPTIONS.map(s => `sidebar-${s}`));
-          if (sidebarStyle !== 'padrão') {
-            el.classList.add(`sidebar-${sidebarStyle}`);
-          }
-      });
+      SIDEBAR_OPTIONS.forEach(s => root.classList.remove(`sidebar-${s}`));
+      if (sidebarStyle !== 'padrão') {
+        root.classList.add(`sidebar-${sidebarStyle}`);
+      }
     }
   }, [colorTheme, radius, containerStyle, backgroundTexture, colorIntensity, animationStyle, fontStyle, sidebarStyle, auraStyle, isMounted, resolvedTheme]);
 
