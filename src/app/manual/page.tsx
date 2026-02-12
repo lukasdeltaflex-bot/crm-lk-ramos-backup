@@ -108,7 +108,7 @@ export default function ManualPage() {
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
-                        <p>O sistema atua como um vigia constante da sua esteira de produção.</p>
+                        <p>O sistema atuará como um vigia constante da sua esteira de produção.</p>
                         <ul className="list-disc pl-5 space-y-2">
                             <li><strong>Monitoramento de Saldo</strong>: Portabilidades em "Aguardando Saldo" exibem pulsação vermelha ao atingir 5 dias úteis de espera.</li>
                             <li><strong>Aura Big Win (Dourada)</strong>: Propostas com comissão superior a <strong>R$ 3.000,00</strong> ganham destaque dourado exclusivo.</li>
@@ -187,7 +187,7 @@ export default function ManualPage() {
                 <CardContent className="text-[10px] text-muted-foreground leading-relaxed">
                     Sua conta está blindada com regras de acesso por proprietário. Somente você pode visualizar e editar os dados da sua carteira. O backup total está disponível na aba de Configurações.
                 </CardContent>
-            </div>
+            </Card>
         </div>
       </div>
     </AppLayout>
