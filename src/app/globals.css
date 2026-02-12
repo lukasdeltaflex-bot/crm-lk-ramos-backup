@@ -221,15 +221,15 @@
   animation: nebula-flow 12s ease-in-out infinite;
 }
 
-/* No Dark mode, mantemos equilibradas para não ofuscar o texto claro */
-.dark .aura-nebula { background: linear-gradient(-45deg, #0f172a, #1e293b, #0f172a); }
-.dark .aura-aurora { background: linear-gradient(135deg, #064e3b, #065f46, #064e3b); }
-.dark .aura-sunset { background: linear-gradient(135deg, #451a03, #78350f, #451a03); }
-.dark .aura-ocean { background: linear-gradient(135deg, #0c4a6e, #075985, #0c4a6e); }
-.dark .aura-lavender { background: linear-gradient(-45deg, #2e1065, #4c1d95, #2e1065); }
-.dark .aura-mint { background: linear-gradient(-45deg, #064e3b, #065f46, #064e3b); }
-.dark .aura-pearl { background: linear-gradient(-45deg, #1e293b, #334155, #1e293b); }
-.dark .aura-desert { background: linear-gradient(-45deg, #451a03, #78350f, #451a03); }
+/* 🌙 VERSÃO ESCURA (EQUALIZADA) - CORES PROFUNDAS E ELEGANTES */
+.dark .aura-nebula { background: linear-gradient(-45deg, #0f172a, #1e293b, #334155, #0f172a); }
+.dark .aura-aurora { background: linear-gradient(135deg, #022c22 0%, #064e3b 25%, #065f46 50%, #064e3b 75%, #022c22 100%); }
+.dark .aura-sunset { background: linear-gradient(135deg, #451a03 0%, #78350f 50%, #991b1b 100%); }
+.dark .aura-ocean { background: linear-gradient(135deg, #0c4a6e 0%, #075985 50%, #082f49 100%); }
+.dark .aura-lavender { background: linear-gradient(135deg, #2e1065 0%, #4c1d95 50%, #1e1b4b 100%); }
+.dark .aura-mint { background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #022c22 100%); }
+.dark .aura-pearl { background: linear-gradient(135deg, #1e293b 0%, #334155 25%, #0f172a 50%, #334155 75%, #1e293b 100%); }
+.dark .aura-desert { background: linear-gradient(135deg, #451a03 0%, #78350f 50%, #451a03 100%); }
 
 /* Status e Linhas */
 .status-custom {
