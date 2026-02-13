@@ -380,6 +380,7 @@ function ProposalsPageContent() {
     const currentDate = new Date().toISOString();
     const dataToUpdate: any = {
         status: newStatus,
+        statusUpdatedAt: currentDate
     };
     
     const isPortability = productType === 'Portabilidade';
@@ -444,7 +445,10 @@ function ProposalsPageContent() {
       const proposal = proposals?.find(p => p.id === id);
       const isPortability = proposal?.product === 'Portabilidade';
 
-      const dataToUpdate: any = { status: newStatus };
+      const dataToUpdate: any = { 
+        status: newStatus,
+        statusUpdatedAt: currentDate
+      };
 
       if (newStatus === 'Pago') {
           dataToUpdate.dateApproved = currentDate;
@@ -588,6 +592,7 @@ function ProposalsPageContent() {
                 userName: user.displayName || user.email || 'Sistema'
             };
             proposalData.history = arrayUnion(historyEntry);
+            proposalData.statusUpdatedAt = currentDate;
         }
 
         // Non-blocking setDoc
@@ -606,7 +611,11 @@ function ProposalsPageContent() {
         setIsDialogOpen(false);
       } else {
         const newDocRef = doc(collection(firestore, 'loanProposals'));
-        const finalData = { ...proposalData, id: newDocRef.id };
+        const finalData = { 
+          ...proposalData, 
+          id: newDocRef.id,
+          statusUpdatedAt: currentDate 
+        };
         
         // Non-blocking setDoc
         setDoc(newDocRef, finalData)

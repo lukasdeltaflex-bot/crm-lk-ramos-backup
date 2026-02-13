@@ -29,7 +29,8 @@ import {
     CalendarClock,
     FileBadge,
     Fingerprint,
-    CloudSun
+    CloudSun,
+    Timer
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -54,13 +55,34 @@ export default function ManualPage() {
             </Card>
 
             <Accordion type="single" collapsible className="w-full space-y-4">
+                {/* MONITORAMENTO DE PRAZOS */}
+                <AccordionItem value="deadlines" className="border rounded-xl bg-card px-4 shadow-sm">
+                    <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-red-100 text-red-600"><Timer className="h-5 w-5" /></div>
+                            <div className="text-left">
+                                <p className="font-bold">1. Monitor de Prazo Crítico (Industrial)</p>
+                                <p className="text-xs text-muted-foreground">Alertas visuais para contratos parados na esteira</p>
+                            </div>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
+                        <p>O LK RAMOS vigia cada segundo do seu dinheiro. Se uma proposta ultrapassa o tempo saudável em um status, o sistema exibe um alerta piscante.</p>
+                        <ul className="list-disc pl-5 space-y-2">
+                            <li><strong>Regras de Alerta</strong>: 2 dias em "Pendente", 3 dias em "Em Andamento" ou 5 dias úteis em "Aguardando Saldo".</li>
+                            <li><strong>Identificação</strong>: Um ícone de cronômetro vermelho pulsará ao lado do status na tabela de propostas.</li>
+                            <li><strong>Ação Sugerida</strong>: Ao ver o alerta, entre em contato imediato com a promotora para destravar o contrato.</li>
+                        </ul>
+                    </AccordionContent>
+                </AccordionItem>
+
                 {/* BRANDING */}
                 <AccordionItem value="branding" className="border rounded-xl bg-card px-4 shadow-sm">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-blue-100 text-blue-600"><Palette className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold">1. Estúdio de Branding & Atmosferas</p>
+                                <p className="font-bold">2. Estúdio de Branding & Atmosferas</p>
                                 <p className="text-xs text-muted-foreground">Logo própria, paletas premium e fundos animados suaves</p>
                             </div>
                         </div>
@@ -81,7 +103,7 @@ export default function ManualPage() {
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-purple-100 text-purple-600"><Bot className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold">2. Identidade Visual Inteligente (Parceiros)</p>
+                                <p className="font-bold">3. Identidade Visual Inteligente (Parceiros)</p>
                                 <p className="text-xs text-muted-foreground">Logotipos automáticos de Bancos e Promotoras via IA</p>
                             </div>
                         </div>
@@ -92,27 +114,6 @@ export default function ManualPage() {
                             <li><strong>Detecção Automática</strong>: Ao cadastrar um Banco ou Promotora, a IA busca o logotipo oficial e o domínio da empresa.</li>
                             <li><strong>Reconhecimento nas Tabelas</strong>: Propostas e extratos financeiros exibem ícones coloridos, permitindo identificar o parceiro em milissegundos sem ler o texto.</li>
                             <li><strong>Gestão de Domínios</strong>: Nas configurações, você pode ajustar manualmente o site do parceiro para forçar o carregamento de uma marca específica.</li>
-                        </ul>
-                    </AccordionContent>
-                </AccordionItem>
-
-                {/* MONITORAMENTO & PULSAÇÃO */}
-                <AccordionItem value="alerts" className="border rounded-xl bg-card px-4 shadow-sm">
-                    <AccordionTrigger className="hover:no-underline">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-red-100 text-red-600"><Zap className="h-5 w-5" /></div>
-                            <div className="text-left">
-                                <p className="font-bold">3. Monitoramento Industrial & Big Wins</p>
-                                <p className="text-xs text-muted-foreground">Alertas de saldo, pulsação de urgência e auras de performance</p>
-                            </div>
-                        </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
-                        <p>O sistema atuará como um vigia constante da sua esteira de produção.</p>
-                        <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Monitoramento de Saldo</strong>: Portabilidades em "Aguardando Saldo" exibem pulsação vermelha ao atingir 5 dias úteis de espera.</li>
-                            <li><strong>Aura Big Win (Dourada)</strong>: Propostas com comissão superior a <strong>R$ 3.000,00</strong> ganham destaque dourado exclusivo.</li>
-                            <li><strong>Navegação Inteligente por Alerta</strong>: Ao clicar em um alerta no Dashboard, o sistema leva você direto para a Proposta ou Cliente, aplicando filtros automaticamente.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>

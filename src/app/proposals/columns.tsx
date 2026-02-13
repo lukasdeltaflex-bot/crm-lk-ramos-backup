@@ -23,12 +23,12 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, ArrowUpDown, GripVertical, ArrowUp, ArrowDown, Copy, AlertCircle, Info, Building2 } from 'lucide-react';
+import { MoreHorizontal, ArrowUpDown, GripVertical, ArrowUp, ArrowDown, Copy, AlertCircle, Info, Building2, Timer } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatCurrency, cleanBankName, calculateBusinessDays, cn, isWhatsApp, getWhatsAppUrl } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
 import { StatusCell } from './status-cell';
-import { format, isValid } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -40,6 +40,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
+  TooltipProvider
 } from "@/components/ui/tooltip"
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
 
@@ -185,7 +186,7 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
     )
 }
 
-const StatusCellWithPulse = ({ 
+const StatusCellWithMonitor = ({ 
     proposal, 
     onStatusChange 
 }: { 
@@ -195,11 +196,18 @@ const StatusCellWithPulse = ({
     const [hasMounted, setHasMounted] = useState(false);
     useEffect(() => setHasMounted(true), []);
 
-    const isPortAwaitingBalance = proposal.product === 'Portabilidade' && proposal.status === 'Aguardando Saldo';
-    
-    // REGRA: Usa a data da entrada no status ou fallback para a digitação.
-    const referenceDate = proposal.statusAwaitingBalanceAt || proposal.dateDigitized;
-    const businessDays = hasMounted && referenceDate ? calculateBusinessDays(referenceDate) : 0;
+    // Lógica do Monitor de Prazo Crítico
+    const status = proposal.status;
+    const refDate = proposal.statusUpdatedAt || proposal.statusAwaitingBalanceAt || proposal.dateDigitized;
+    const daysSince = hasMounted && refDate ? calculateBusinessDays(refDate) : 0;
+
+    let isCritical = false;
+    let threshold = 0;
+
+    if (status === 'Em Andamento' && daysSince >= 3) { isCritical = true; threshold = 3; }
+    else if (status === 'Aguardando Saldo' && daysSince >= 5) { isCritical = true; threshold = 5; }
+    else if (status === 'Pendente' && daysSince >= 2) { isCritical = true; threshold = 2; }
+    else if (status === 'Saldo Pago' && daysSince >= 3) { isCritical = true; threshold = 3; }
 
     return (
         <div className="flex items-center gap-2">
@@ -211,25 +219,25 @@ const StatusCellWithPulse = ({
                     onStatusChange={onStatusChange}
                 />
             </div>
-            {isPortAwaitingBalance && hasMounted && (
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div className={cn(
-                            "flex items-center justify-center h-5 w-5 rounded-full border cursor-help transition-all shadow-sm",
-                            businessDays >= 5 
-                                ? "bg-red-50 border-red-200 text-red-600 animate-alert-pulse" 
-                                : "bg-blue-50 border-blue-200 text-blue-500"
-                        )}>
-                            <span className="text-[10px] font-black">!</span>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="bg-white text-zinc-950 border shadow-2xl p-4 rounded-[2rem] min-w-[200px] animate-in zoom-in-95 duration-200">
-                        <div className="space-y-1 text-center">
-                            <p className="font-bold text-sm text-blue-600">Monitoramento de Saldo</p>
-                            <p className="text-xs font-medium text-muted-foreground">Prazo decorrido: <span className="font-bold text-zinc-900">{businessDays} dia(s) úteis.</span></p>
-                        </div>
-                    </TooltipContent>
-                </Tooltip>
+            {isCritical && hasMounted && (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className="flex items-center justify-center h-5 w-5 rounded-full border border-red-200 bg-red-50 text-red-600 animate-alert-pulse cursor-help shadow-sm">
+                                <Timer className="h-3 w-3" />
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="bg-white text-zinc-950 border shadow-2xl p-4 rounded-[2rem] min-w-[220px]">
+                            <div className="space-y-1 text-center">
+                                <p className="font-bold text-sm text-red-600">Alerta de Prazo Crítico</p>
+                                <p className="text-xs font-medium text-muted-foreground">
+                                    Este contrato está em <span className="font-bold text-zinc-900">{status}</span> há <span className="font-bold text-red-600">{daysSince} dia(s)</span>.
+                                </p>
+                                <p className="text-[10px] text-muted-foreground italic mt-1">Limite sugerido: {threshold} dias.</p>
+                            </div>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
             )}
         </div>
     );
@@ -379,7 +387,7 @@ export const getColumns = (
     id: 'status',
     header: 'Status',
     cell: ({ row }) => (
-        <StatusCellWithPulse 
+        <StatusCellWithMonitor 
             proposal={row.original} 
             onStatusChange={onStatusChange} 
         />

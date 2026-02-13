@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -41,7 +42,10 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
     if (!firestore) return;
 
     const now = new Date().toISOString();
-    const dataToUpdate: any = { status: newStatus };
+    const dataToUpdate: any = { 
+      status: newStatus,
+      statusUpdatedAt: now
+    };
     
     const isPortability = product === 'Portabilidade';
 
