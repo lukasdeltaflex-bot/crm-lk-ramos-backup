@@ -60,7 +60,7 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
         dataToUpdate.statusAwaitingBalanceAt = now;
     }
 
-    // Automação Financeira: Se entrar no perfil "Saldo a Receber", define como Pendente se estiver vazio
+    // BLINDAGEM FINANCEIRA: Se for elegível (averbado e não reprovado), define como Pendente se estiver vazio
     try {
         const docRef = doc(firestore, 'loanProposals', proposalId);
         const snap = await getDoc(docRef);

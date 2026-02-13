@@ -134,7 +134,7 @@ export default function ManualPage() {
                         <p>Controle financeiro de nível contábil para sua operação.</p>
                         <ul className="list-disc pl-5 space-y-2">
                             <li><strong>Blindagem de Pendências</strong>: Comissões "Pendente" ou "Parcial" nunca saem da vista até serem baixadas.</li>
-                            <li><strong>Automação de Entrada</strong>: Propostas com data de averbação que não estão reprovadas são automaticamente marcadas como "Pendente" no financeiro, evitando que você esqueça de cobrar qualquer contrato.</li>
+                            <li><strong>Automação de Entrada</strong>: Propostas que possuem <strong>Data de Averbação</strong> e não estão reprovadas são automaticamente marcadas como <strong>"Pendente"</strong> no financeiro. Isso garante que nenhum contrato aprovado seja esquecido.</li>
                             <li><strong>Balanço Mensal (PDF)</strong>: Relatório que subtrai despesas de comissões, apresentando o <strong>Lucro Líquido Real</strong>.</li>
                             <li><strong>Eficiência de Parceiros</strong>: Gráficos que mostram qual promotora paga mais rápido e gera maior ticket médio.</li>
                         </ul>
@@ -179,7 +179,7 @@ export default function ManualPage() {
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
                         <p>O LK RAMOS conta com um motor de validação industrial para garantir que nenhuma informação seja perdida ou digitada incorretamente.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Preservação de Campos</strong>: O sistema agora garante que campos sensíveis como "Gênero" não sejam resetados durante a edição de registros existentes.</li>
+                            <li><strong>Preservação de Campos</strong>: O sistema garante que o campo de "Gênero" e outros dados sensíveis sejam preservados e carregados corretamente durante a edição.</li>
                             <li><strong>Validação de Data</strong>: Proteção contra formatos de data inválidos que antes causavam interrupções no salvamento.</li>
                             <li><strong>Limpeza Automática</strong>: Antes de enviar dados para o servidor, o sistema remove valores nulos ou indefinidos, garantindo 100% de compatibilidade com o banco de dados em nuvem.</li>
                         </ul>

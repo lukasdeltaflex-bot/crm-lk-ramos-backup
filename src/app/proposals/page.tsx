@@ -395,7 +395,7 @@ function ProposalsPageContent() {
         }
     }
 
-    // Automação: Perfil Saldo a Receber (Averbado e não Reprovado) -> Status Comissão Pendente
+    // BLINDAGEM FINANCEIRA: Se for elegível (averbado e não reprovado), define como Pendente
     const willHaveApprovalDate = dataToUpdate.dateApproved || proposal.dateApproved;
     const isNotReprovado = newStatus !== 'Reprovado';
     
@@ -467,7 +467,7 @@ function ProposalsPageContent() {
           dataToUpdate.debtBalanceArrivalDate = currentDate;
       }
 
-      // Automação: Perfil Saldo a Receber (Averbado e não Reprovado) -> Status Comissão Pendente
+      // BLINDAGEM FINANCEIRA: Se for elegível (averbado e não reprovado), define como Pendente
       const willHaveApprovalDate = dataToUpdate.dateApproved || proposal?.dateApproved;
       const isNotReprovado = newStatus !== 'Reprovado';
       
@@ -570,16 +570,13 @@ function ProposalsPageContent() {
         const dateApproved = toISO(data.dateApproved);
         let commissionStatus = data.commissionStatus;
 
-        // Automação: Perfil Saldo a Receber (Averbado e não Reprovado) -> Status Comissão Pendente
+        // BLINDAGEM FINANCEIRA: Se for elegível (averbado e não reprovado), define como Pendente se estiver vazio
         const isEligibleForFinancialFlow = 
             data.status !== 'Reprovado' && 
             (!!dateApproved || data.status === 'Pago' || data.status === 'Saldo Pago');
         
         if (isEligibleForFinancialFlow && (!commissionStatus || commissionStatus === '')) {
             commissionStatus = 'Pendente';
-        } 
-        else if (!isEligibleForFinancialFlow && (!commissionStatus || commissionStatus === 'Pendente')) {
-            commissionStatus = '';
         }
 
         const proposalData: any = {
