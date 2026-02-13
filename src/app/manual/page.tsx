@@ -1,4 +1,3 @@
-
 "use client"
 
 import React from 'react';
@@ -30,7 +29,8 @@ import {
     FileBadge,
     Fingerprint,
     CloudSun,
-    Timer
+    Timer,
+    History
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -143,19 +143,19 @@ export default function ManualPage() {
                 <AccordionItem value="crm" className="border rounded-xl bg-card px-4 shadow-sm">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-blue-100 text-blue-600"><CalendarClock className="h-5 w-5" /></div>
+                            <div className="p-2 rounded-lg bg-blue-100 text-blue-600"><History className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold">5. CRM de Retornos & Linha do Tempo Global</p>
+                                <p className="font-bold">5. Linha do Tempo Global (Feed de Auditoria)</p>
                                 <p className="text-xs text-muted-foreground">Histórico unificado do cliente e agenda estratégica</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
-                        <p>Nunca perca uma oportunidade de refinanciamento.</p>
+                        <p>Centralize o conhecimento sobre o seu cliente para aumentar a taxa de conversão.</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Linha do Tempo Global</strong>: Na ficha do cliente, veja todos os trâmites de todas as propostas dele em ordem cronológica.</li>
-                            <li><strong>Radar de Retenção</strong>: Alertas automáticos para clientes com contratos pagos há mais de 12 meses.</li>
-                            <li><strong>WhatsApp de Um Clique</strong>: Inicie conversas direto das listas de propostas ou clientes.</li>
+                            <li><strong>Histórico Unificado</strong>: Na Ficha do Cliente, o sistema mescla todos os eventos de todas as propostas em uma única linha do tempo cronológica.</li>
+                            <li><strong>Radar de Retenção</strong>: Alertas automáticos para clientes com contratos pagos há mais de 12 meses, ideal para oferecer portabilidade ou refinanciamento.</li>
+                            <li><strong>Gestão de Documentos Fixos</strong>: Salve documentos que não mudam (RG, CPF) uma única vez e eles estarão disponíveis em todas as futuras propostas do cliente.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
