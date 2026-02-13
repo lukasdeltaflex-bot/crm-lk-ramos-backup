@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -35,11 +34,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </SidebarContent>
             </Sidebar>
             <SidebarInset className={cn(
-                "print:m-0 print:p-0 flex flex-col relative transition-all duration-1000",
+                "print:m-0 print:p-0 flex flex-col relative transition-all duration-1000 overflow-x-hidden min-w-0",
                 auraStyle !== 'limpo' && `aura-${auraStyle}`
             )}>
             <Header className="print:hidden z-20" />
-            <main className="flex-1 p-4 sm:p-6 print:p-0 z-10">{children}</main>
+            <main className="flex-1 p-4 sm:p-6 print:p-0 z-10 w-full overflow-hidden">
+                <div className="max-w-full overflow-hidden">
+                    {children}
+                </div>
+            </main>
             
             <footer className="mt-auto py-4 px-6 border-t bg-muted/20 text-[10px] text-muted-foreground flex flex-col sm:flex-row justify-between items-center gap-2 print:hidden z-10">
                 <p>© {currentYear} LK RAMOS Gestão de Propostas. Todos os direitos reservados.</p>

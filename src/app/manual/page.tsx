@@ -1,4 +1,3 @@
-
 "use client"
 
 import React from 'react';
@@ -31,7 +30,8 @@ import {
     Fingerprint,
     CloudSun,
     Timer,
-    History
+    History,
+    Move
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -182,6 +182,27 @@ export default function ManualPage() {
                             <li><strong>Preservação de Campos</strong>: O sistema garante que o campo de "Gênero" e outros dados sensíveis sejam preservados e carregados corretamente durante a edição.</li>
                             <li><strong>Validação de Data</strong>: Proteção contra formatos de data inválidos que antes causavam interrupções no salvamento.</li>
                             <li><strong>Limpeza Automática</strong>: Antes de enviar dados para o servidor, o sistema remove valores nulos ou indefinidos, garantindo 100% de compatibilidade com o banco de dados em nuvem.</li>
+                        </ul>
+                    </AccordionContent>
+                </AccordionItem>
+
+                {/* NAVEGAÇÃO INDUSTRIAL */}
+                <AccordionItem value="navigation" className="border rounded-xl bg-card px-4 shadow-sm">
+                    <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-amber-100 text-amber-600"><Move className="h-5 w-5" /></div>
+                            <div className="text-left">
+                                <p className="font-bold">7. Navegação Industrial de Precisão (Tabelas)</p>
+                                <p className="text-xs text-muted-foreground">Colunas fixas e indicadores de seleção resilientes</p>
+                            </div>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
+                        <p>Gerencie centenas de contratos com o mesmo conforto de uma planilha de alta performance.</p>
+                        <ul className="list-disc pl-5 space-y-2">
+                            <li><strong>Coluna de Seleção Fixa</strong>: A primeira coluna (Checkbox) agora fica travada no lado esquerdo. Mesmo que você role a tabela para ver valores distantes, você nunca perde o vínculo da linha selecionada.</li>
+                            <li><strong>Blindagem de Overflow</strong>: O sistema agora isola o movimento das tabelas, impedindo que a barra de rolagem "quebre" o layout lateral do dashboard.</li>
+                            <li><strong>Destaque de Big Wins</strong>: Contratos com comissão superior a R$ 3.000,00 recebem uma borda dourada resiliente, visível em qualquer ponto da rolagem.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
