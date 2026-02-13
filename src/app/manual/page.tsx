@@ -1,3 +1,4 @@
+
 "use client"
 
 import React from 'react';
@@ -159,6 +160,27 @@ export default function ManualPage() {
                             <li><strong>Capa de Proposta</strong>: Dentro de cada proposta, emita uma capa executiva profissional com o resumo da operação para o cliente assinar.</li>
                             <li><strong>Radar de Retenção</strong>: Alertas automáticos para clientes com contratos pagos há mais de 12 meses, ideal para oferecer portabilidade ou refinanciamento.</li>
                             <li><strong>Gestão de Documentos Fixos</strong>: Salve documentos que não mudam (RG, CPF) uma única vez e eles estarão disponíveis em todas as futuras propostas do cliente.</li>
+                        </ul>
+                    </AccordionContent>
+                </AccordionItem>
+
+                {/* ESTABILIDADE E SEGURANÇA */}
+                <AccordionItem value="safety" className="border rounded-xl bg-card px-4 shadow-sm">
+                    <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-zinc-100 text-zinc-600"><Fingerprint className="h-5 w-5" /></div>
+                            <div className="text-left">
+                                <p className="font-bold">6. Estabilização & Proteção de Dados</p>
+                                <p className="text-xs text-muted-foreground">Edição segura e blindagem contra erros de servidor</p>
+                            </div>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2 pb-4 space-y-4 text-sm leading-relaxed">
+                        <p>O LK RAMOS conta com um motor de validação industrial para garantir que nenhuma informação seja perdida ou digitada incorretamente.</p>
+                        <ul className="list-disc pl-5 space-y-2">
+                            <li><strong>Preservação de Campos</strong>: O sistema agora garante que campos sensíveis como "Gênero" não sejam resetados durante a edição de registros existentes.</li>
+                            <li><strong>Validação de Data</strong>: Proteção contra formatos de data inválidos que antes causavam interrupções no salvamento.</li>
+                            <li><strong>Limpeza Automática</strong>: Antes de enviar dados para o servidor, o sistema remove valores nulos ou indefinidos, garantindo 100% de compatibilidade com o banco de dados em nuvem.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>

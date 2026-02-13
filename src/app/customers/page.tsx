@@ -1,3 +1,4 @@
+
 'use client';
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -280,7 +281,6 @@ const handleExportToPdf = async () => {
     
     setRowSelection({});
 
-    // Non-blocking update
     updateDoc(customerRef, anonymizedData)
         .then(() => {
             toast({
@@ -364,7 +364,6 @@ const handleExportToPdf = async () => {
 
     setIsSaving(true);
     try {
-        // Limpeza de campos indefinidos para evitar erros de servidor Firebase
         const cleanedData = Object.fromEntries(
             Object.entries(formData).filter(([_, v]) => v !== undefined)
         );
@@ -386,12 +385,18 @@ const handleExportToPdf = async () => {
             const customerToUpdate: Customer = {
                 ...selectedCustomer,
                 ...cleanedData,
-                ownerId: user.uid // Garante a propriedade para segurança
+                ownerId: user.uid
             };
             const docRef = doc(firestore, 'customers', selectedCustomer.id);
             
-            // Non-blocking setDoc
             setDoc(docRef, customerToUpdate, { merge: true })
+                .then(() => {
+                    toast({
+                        title: 'Cliente Atualizado!',
+                        description: `O cliente ${formData.name} foi atualizado com sucesso.`,
+                    });
+                    setIsDialog(false);
+                })
                 .catch(async (error) => {
                     if (error.code === 'permission-denied') {
                         errorEmitter.emit('permission-error', new FirestorePermissionError({
@@ -400,13 +405,8 @@ const handleExportToPdf = async () => {
                             requestResourceData: customerToUpdate
                         }));
                     }
+                    toast({ variant: 'destructive', title: 'Erro ao salvar', description: 'Permissão negada ou erro de rede.' });
                 });
-
-            toast({
-                title: 'Cliente Atualizado!',
-                description: `O cliente ${formData.name} foi atualizado com sucesso.`,
-            });
-            setIsDialog(false);
         } else {
             const newDocRef = doc(collection(firestore, 'customers'));
             
@@ -424,8 +424,14 @@ const handleExportToPdf = async () => {
               status: formData.status || 'active',
             } as Customer;
 
-            // Non-blocking setDoc
             setDoc(newDocRef, newCustomerWithId)
+                .then(() => {
+                    toast({
+                        title: 'Cliente Salvo!',
+                        description: `O cliente ${formData.name} foi salvo com sucesso.`,
+                    });
+                    setIsDialog(false);
+                })
                 .catch(async (error) => {
                     if (error.code === 'permission-denied') {
                         errorEmitter.emit('permission-error', new FirestorePermissionError({
@@ -434,13 +440,8 @@ const handleExportToPdf = async () => {
                             requestResourceData: newCustomerWithId
                         }));
                     }
+                    toast({ variant: 'destructive', title: 'Erro ao criar', description: 'Não foi possível salvar os dados.' });
                 });
-
-            toast({
-              title: 'Cliente Salvo!',
-              description: `O cliente ${formData.name} foi salvo com sucesso.`,
-            });
-            setIsDialog(false);
         }
     } catch (error) {
         console.error("Error saving customer:", error);

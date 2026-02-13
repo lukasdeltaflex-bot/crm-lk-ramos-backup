@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Sparkles, AlertCircle, Loader2, PlusCircle, Trash2, FileText as FileIcon, UserCheck, UserX, AlertTriangle } from 'lucide-react';
-import { format, parse } from 'date-fns';
+import { format, parse, isValid } from 'date-fns';
 import { cn, getAge, validateCPF } from '@/lib/utils';
 import type { Customer, Benefit, Attachment } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -64,13 +65,12 @@ const customerSchema = z.object({
     try {
       if (!date) return false;
       const parsedDate = parse(date, 'dd/MM/yyyy', new Date());
-      return !isNaN(parsedDate.getTime());
+      return isValid(parsedDate);
     } catch {
       return false;
     }
   }, { message: 'Data inválida. Use o formato dd/mm/aaaa.' }),
   observations: z.string().nullable().optional(),
-  // Address
   cep: z.string().nullable().optional(),
   street: z.string().nullable().optional(),
   number: z.string().nullable().optional(),
@@ -154,7 +154,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     if (birthDateValue && birthDateValue.length === 10) {
       try {
         const parsedDate = parse(birthDateValue, 'dd/MM/yyyy', new Date());
-        if (!isNaN(parsedDate.getTime())) {
+        if (isValid(parsedDate)) {
           const formattedForUtil = format(parsedDate, 'yyyy-MM-dd');
           setAge(getAge(formattedForUtil));
         } else {
@@ -176,7 +176,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       if (source.birthDate) {
           try {
               const date = parse(source.birthDate, 'yyyy-MM-dd', new Date());
-              if (!isNaN(date.getTime())) {
+              if (isValid(date)) {
                   formattedBirthDate = format(date, 'dd/MM/yyyy');
               }
           } catch (e) {}
@@ -185,7 +185,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       form.reset({
         name: source.name || '',
         cpf: source.cpf || '',
-        gender: source.gender || undefined,
+        gender: (source.gender as any) || undefined,
         status: (source.status as any) || 'active',
         benefits: source.benefits || [],
         phone: source.phone || '',
@@ -216,6 +216,11 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     }
 
     const parsedDate = parse(data.birthDate, 'dd/MM/yyyy', new Date());
+    if (!isValid(parsedDate)) {
+        toast({ variant: 'destructive', title: 'Data de Nascimento inválida' });
+        return;
+    }
+
     const newCustomerData: FormCustomer = {
       ...data,
       birthDate: format(parsedDate, 'yyyy-MM-dd'),
@@ -398,7 +403,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Gênero</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value || undefined}>
+                          <Select onValueChange={field.onChange} value={field.value || ""}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Selecione o gênero" />
