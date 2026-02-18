@@ -55,7 +55,7 @@ const customerSchema = z.object({
   cpf: z.string().min(11, 'CPF incompleto.').refine((val) => validateCPF(val), {
     message: "CPF inválido. Verifique se há erro de digitação.",
   }),
-  gender: z.string().nullable().optional(),
+  gender: z.string().optional().nullable(),
   status: z.enum(['active', 'inactive']).default('active'),
   benefits: z.array(benefitSchema).optional(),
   phone: z.string().min(10, 'O telefone é obrigatório.'),
@@ -403,7 +403,10 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Gênero</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value || ""}>
+                          <Select 
+                            onValueChange={field.onChange} 
+                            value={field.value || ""}
+                          >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Selecione o gênero" />

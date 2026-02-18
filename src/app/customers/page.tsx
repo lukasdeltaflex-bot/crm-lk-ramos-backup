@@ -48,6 +48,27 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 type CustomerFormData = Partial<Omit<Customer, 'id' | 'ownerId'>>;
 
+/**
+ * Função utilitária robusta para limpar dados antes do salvamento no Firestore.
+ * Remove propriedades undefined que causam crash no servidor.
+ */
+function cleanCustomerData(data: any): any {
+    const cleaned: any = {};
+    Object.keys(data).forEach(key => {
+        const val = data[key];
+        if (val !== undefined) {
+            if (Array.isArray(val)) {
+                cleaned[key] = val.map(item => typeof item === 'object' ? cleanCustomerData(item) : item);
+            } else if (val !== null && typeof val === 'object') {
+                cleaned[key] = cleanCustomerData(val);
+            } else {
+                cleaned[key] = val;
+            }
+        }
+    });
+    return cleaned;
+}
+
 function CustomersPageContent() {
   const { user } = useUser();
   const firestore = useFirestore();
@@ -364,10 +385,8 @@ const handleExportToPdf = async () => {
 
     setIsSaving(true);
     try {
-        // MOTOR DE LIMPEZA AVANÇADO: Remove undefined para evitar erros de servidor
-        const cleanedData = Object.fromEntries(
-            Object.entries(formData).filter(([_, v]) => v !== undefined)
-        );
+        // MOTOR DE LIMPEZA AVANÇADO: Remove undefined recursivamente
+        const cleanedData = cleanCustomerData(formData);
 
         const cpfExists = customers?.find(
           (c) => c.cpf === formData.cpf && c.id !== selectedCustomer?.id

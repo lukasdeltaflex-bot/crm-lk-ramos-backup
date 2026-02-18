@@ -182,7 +182,7 @@ export default function ManualPage() {
                         <p>O LK RAMOS conta com um motor de validação industrial para garantir que nenhuma informação seja perdida ou digitada incorretamente.</p>
                         <ul className="list-disc pl-5 space-y-2">
                             <li><strong>Preservação de Campos</strong>: O sistema agora garante que o campo de **Gênero** e outros dados sensíveis sejam preservados e carregados corretamente durante a edição, sem resets automáticos.</li>
-                            <li><strong>Motor de Limpeza de Dados</strong>: Antes de enviar qualquer alteração para o banco de dados, o sistema remove valores "indefinidos" (undefined), eliminando o erro de salvamento no servidor.</li>
+                            <li><strong>Motor de Limpeza de Dados</strong>: Antes de enviar qualquer alteração para o banco de dados, o sistema agora remove recursivamente valores "indefinidos" (undefined), eliminando o erro de salvamento no servidor.</li>
                             <li><strong>Validação de Data</strong>: Proteção contra formatos de data inválidos que antes causavam interrupções no salvamento.</li>
                         </ul>
                     </AccordionContent>

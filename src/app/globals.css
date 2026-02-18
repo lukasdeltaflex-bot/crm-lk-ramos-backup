@@ -289,30 +289,32 @@
 .financial-table tr td:first-child {
     position: sticky !important;
     left: 0;
-    z-index: 20;
-    background-color: inherit;
-    border-right: 1px solid hsl(var(--border) / 0.5);
-    box-shadow: 4px 0 8px -4px rgba(0,0,0,0.15); /* Sombra mais forte para separar visualmente */
+    z-index: 30 !important;
+    background-color: white !important; /* Fundo sólido para evitar transparência */
+    border-right: 2px solid hsl(var(--border) / 0.8);
+    box-shadow: 6px 0 12px -4px rgba(0,0,0,0.2); 
 }
 
-/* Ajuste de fundo para cabeçalhos fixos para evitar transparência */
+/* Ajuste de fundo para cabeçalhos fixos */
 .proposals-table tr th:first-child,
 .financial-table tr th:first-child {
     background-color: hsl(var(--muted)) !important;
 }
 
-/* Garante que o corpo da linha mantenha o fundo ao rolar */
-.proposals-table tr td:first-child,
-.financial-table tr td:first-child {
-    background-color: var(--background-row, white);
-}
-
+/* Garante que o corpo da linha mantenha o fundo ao rolar no modo escuro */
 .dark .proposals-table tr td:first-child,
 .dark .financial-table tr td:first-child {
-    background-color: #0a0a0a !important;
+    background-color: #050505 !important;
+    border-right-color: #333;
 }
 
 .dark .proposals-table tr th:first-child,
 .dark .financial-table tr th:first-child {
     background-color: #1a1a1a !important;
+}
+
+/* Corrige o vácuo visual na lateral da tabela */
+.proposals-table > div, .financial-table > div {
+    overflow-x: auto;
+    scrollbar-gutter: stable;
 }
