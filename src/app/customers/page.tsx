@@ -49,24 +49,29 @@ import { Skeleton } from '@/components/ui/skeleton';
 type CustomerFormData = Partial<Omit<Customer, 'id' | 'ownerId'>>;
 
 /**
- * Função utilitária robusta para limpar dados antes do salvamento no Firestore.
- * Remove propriedades undefined que causam crash no servidor.
+ * 🔥 MOTOR DE LIMPEZA INDUSTRIAL (RECURSIVO)
+ * Remove propriedades undefined que causam crash no Firebase.
+ * Esta função garante que apenas dados válidos cheguem ao servidor.
  */
 function cleanCustomerData(data: any): any {
-    const cleaned: any = {};
-    Object.keys(data).forEach(key => {
-        const val = data[key];
-        if (val !== undefined) {
-            if (Array.isArray(val)) {
-                cleaned[key] = val.map(item => typeof item === 'object' ? cleanCustomerData(item) : item);
-            } else if (val !== null && typeof val === 'object') {
+    if (data === null || data === undefined) return null;
+    
+    if (Array.isArray(data)) {
+        return data.map(item => cleanCustomerData(item)).filter(i => i !== undefined);
+    }
+    
+    if (typeof data === 'object') {
+        const cleaned: any = {};
+        Object.keys(data).forEach(key => {
+            const val = data[key];
+            if (val !== undefined) {
                 cleaned[key] = cleanCustomerData(val);
-            } else {
-                cleaned[key] = val;
             }
-        }
-    });
-    return cleaned;
+        });
+        return cleaned;
+    }
+    
+    return data;
 }
 
 function CustomersPageContent() {
@@ -385,8 +390,12 @@ const handleExportToPdf = async () => {
 
     setIsSaving(true);
     try {
-        // MOTOR DE LIMPEZA AVANÇADO: Remove undefined recursivamente
-        const cleanedData = cleanCustomerData(formData);
+        // 🔥 LIMPEZA TOTAL ANTES DE SALVAR (Previne Erro de Servidor)
+        const rawFinalData = {
+            ...formData,
+            ownerId: user.uid
+        };
+        const cleanedData = cleanCustomerData(rawFinalData);
 
         const cpfExists = customers?.find(
           (c) => c.cpf === formData.cpf && c.id !== selectedCustomer?.id
@@ -402,14 +411,13 @@ const handleExportToPdf = async () => {
         }
 
         if (sheetMode === 'edit' && selectedCustomer) {
-            const customerToUpdate: Customer = {
-                ...selectedCustomer,
-                ...cleanedData,
-                ownerId: user.uid
-            };
             const docRef = doc(firestore, 'customers', selectedCustomer.id);
+            const updateObject = {
+                ...cleanedData,
+                numericId: selectedCustomer.numericId // Preserva o ID numérico
+            };
             
-            setDoc(docRef, customerToUpdate, { merge: true })
+            setDoc(docRef, updateObject, { merge: true })
                 .then(() => {
                     toast({
                         title: 'Cliente Atualizado!',
@@ -422,10 +430,10 @@ const handleExportToPdf = async () => {
                         errorEmitter.emit('permission-error', new FirestorePermissionError({
                             path: docRef.path,
                             operation: 'update',
-                            requestResourceData: customerToUpdate
+                            requestResourceData: updateObject
                         }));
                     }
-                    toast({ variant: "destructive", title: "Erro ao salvar", description: "Falha na comunicação com o servidor. Tente novamente." });
+                    toast({ variant: "destructive", title: "Erro ao salvar", description: "Falha na comunicação com o servidor." });
                 });
         } else {
             const newDocRef = doc(collection(firestore, 'customers'));
@@ -436,13 +444,12 @@ const handleExportToPdf = async () => {
                 nextNumericId = maxId + 1;
             }
 
-            const newCustomerWithId: Customer = {
+            const newCustomerWithId = {
               ...cleanedData,
               id: newDocRef.id,
               numericId: nextNumericId,
-              ownerId: user.uid,
               status: formData.status || 'active',
-            } as Customer;
+            };
 
             setDoc(newDocRef, newCustomerWithId)
                 .then(() => {
