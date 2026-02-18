@@ -567,14 +567,14 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
     return (
         <AppLayout>
             <div className="space-y-4">
-                <Skeleton className="h-48 w-full" />
-                <Skeleton className="h-32 w-full" />
+                <div className="h-48 w-full bg-muted animate-pulse rounded-lg" />
+                <div className="h-32 w-full bg-muted animate-pulse rounded-lg" />
                 <div className="grid gap-4 md:grid-cols-3">
-                    <Skeleton className="h-24 w-full" />
-                    <Skeleton className="h-24 w-full" />
-                    <Skeleton className="h-24 w-full" />
+                    <div className="h-24 w-full bg-muted animate-pulse rounded-lg" />
+                    <div className="h-24 w-full bg-muted animate-pulse rounded-lg" />
+                    <div className="h-24 w-full bg-muted animate-pulse rounded-lg" />
                 </div>
-                <Skeleton className="h-96 w-full" />
+                <div className="h-96 w-full bg-muted animate-pulse rounded-lg" />
             </div>
         </AppLayout>
     )

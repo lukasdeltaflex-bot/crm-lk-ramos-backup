@@ -132,7 +132,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     name: "benefits"
   });
 
-  // 🔥 FIX CRÍTICO: Sincronização de valores para edição sem perda de Gênero
+  // 🛡️ BLINDAGEM DE CARREGAMENTO (Fix Gênero e Dados)
   useEffect(() => {
     const source = customer || defaultValues;
     if (source) {
@@ -146,10 +146,11 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
           } catch (e) {}
       }
       
+      // Reinicializa o formulário garantindo strings vazias para Selects em vez de undefined
       form.reset({
         name: source.name || '',
         cpf: source.cpf || '',
-        gender: source.gender || '', // Garante que o valor salvo seja injetado ou fique vazio, mas nunca indefinido
+        gender: source.gender || '', // GARANTE QUE O VALOR NÃO SEJA UNDEFINED
         status: source.status || 'active',
         benefits: source.benefits || [],
         phone: source.phone || '',

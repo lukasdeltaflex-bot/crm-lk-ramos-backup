@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -258,7 +259,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
       onDragEnd={handleDragEnd}
       sensors={sensors}
     >
-      <Card>
+      <Card className="customers-table">
         <div className="p-4">
           <div className="flex items-center justify-between py-4">
             <div className='relative w-full max-w-sm'>

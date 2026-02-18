@@ -292,9 +292,10 @@
     position: sticky !important;
     left: 0;
     z-index: 40 !important;
-    background-color: hsl(var(--background)) !important;
+    background-color: hsl(var(--background)) !important; /* FUNDO SÓLIDO OBRIGATÓRIO */
     border-right: 2px solid hsl(var(--border) / 0.8);
     box-shadow: 6px 0 12px -4px rgba(0,0,0,0.2); 
+    opacity: 1 !important; /* GARANTE QUE NÃO SEJA TRANSPARENTE */
 }
 
 /* Ajuste de fundo para cabeçalhos fixos */

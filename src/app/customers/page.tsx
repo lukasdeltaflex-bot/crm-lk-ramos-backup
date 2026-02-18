@@ -49,9 +49,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 type CustomerFormData = Partial<Omit<Customer, 'id' | 'ownerId'>>;
 
 /**
- * 🔥 MOTOR DE LIMPEZA INDUSTRIAL (RECURSIVO)
- * Remove propriedades undefined que causam crash no Firebase.
- * Esta função garante que apenas dados válidos cheguem ao servidor.
+ * 🛡️ MOTOR DE LIMPEZA RECURSIVA (Fix Erro de Servidor)
+ * Remove categoricamente qualquer propriedade 'undefined' antes do envio.
  */
 function cleanCustomerData(data: any): any {
     if (data === null || data === undefined) return null;
@@ -390,7 +389,7 @@ const handleExportToPdf = async () => {
 
     setIsSaving(true);
     try {
-        // 🔥 LIMPEZA TOTAL ANTES DE SALVAR (Previne Erro de Servidor)
+        // 🔥 LIMPEZA TOTAL (Peneira dados inválidos para evitar Erro de Servidor)
         const rawFinalData = {
             ...formData,
             ownerId: user.uid
@@ -417,6 +416,7 @@ const handleExportToPdf = async () => {
                 numericId: selectedCustomer.numericId // Preserva o ID numérico
             };
             
+            // Non-blocking update
             setDoc(docRef, updateObject, { merge: true })
                 .then(() => {
                     toast({
@@ -440,8 +440,10 @@ const handleExportToPdf = async () => {
             
             let nextNumericId = 1;
             if (customers && customers.length > 0) {
-                const maxId = Math.max(...customers.map(c => c.numericId || 0));
-                nextNumericId = maxId + 1;
+                const validIds = customers.map(c => c.numericId || 0);
+                if (validIds.length > 0) {
+                    nextNumericId = Math.max(...validIds) + 1;
+                }
             }
 
             const newCustomerWithId = {
@@ -451,6 +453,7 @@ const handleExportToPdf = async () => {
               status: formData.status || 'active',
             };
 
+            // Non-blocking creation
             setDoc(newDocRef, newCustomerWithId)
                 .then(() => {
                     toast({
