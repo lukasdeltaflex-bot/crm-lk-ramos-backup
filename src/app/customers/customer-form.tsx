@@ -326,7 +326,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger className={cn(
-                                "h-8 text-xs font-bold uppercase border-2",
+                                "h-8 text-[10px] font-bold uppercase border-2",
                                 field.value === 'active' ? "border-green-500/20 text-green-600 bg-green-50" : "border-zinc-500/20 text-zinc-600 bg-zinc-50"
                               )}>
                                 <div className="flex items-center gap-2">

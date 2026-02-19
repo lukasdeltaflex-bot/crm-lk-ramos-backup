@@ -271,7 +271,7 @@ function ProposalsPageContent() {
       </Dialog>
 
       {isLoading ? (
-        <div className="rounded-xl border-2 border-zinc-200 p-4"><Skeleton className="h-64 w-full" /></div>
+        <ProposalsPageSkeleton />
       ) : (
         <ProposalsDataTable 
             ref={tableRef}

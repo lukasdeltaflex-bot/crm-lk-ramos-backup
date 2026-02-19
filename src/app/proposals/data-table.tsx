@@ -14,7 +14,18 @@ import {
   VisibilityState,
   SortingState,
   ColumnSizingState,
+  ColumnOrderState,
 } from '@tanstack/react-table';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent,
+} from '@dnd-kit/core';
+import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { parse, isValid, startOfDay, endOfDay, subDays, startOfMonth, format } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 
@@ -84,7 +95,11 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const [endDateInput, setEndDateInput] = React.useState('');
   const [appliedDateRange, setAppliedDateRange] = React.useState<DateRange | undefined>(undefined);
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
+  const [sorting, setSorting] = React.useState<SortingState>([]);
   
+  const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
+  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(initialColumns);
+
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
       'Promotora': true,
       'No Proposta': true,
@@ -102,6 +117,19 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
       'Chegada Saldo': false,
       'Actions': true
   });
+
+  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (active.id !== over?.id) {
+      setColumnOrder((items) => {
+        const oldIndex = items.indexOf(active.id as string);
+        const newIndex = items.indexOf(over!.id as string);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
 
   const filteredData = React.useMemo(() => {
     let list = data;
@@ -145,9 +173,11 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onColumnSizingChange: setColumnSizing,
+    onColumnOrderChange: setColumnOrder,
+    onSortingChange: setSorting,
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
-    state: { globalFilter, rowSelection, columnVisibility, columnSizing },
+    state: { sorting, globalFilter, rowSelection, columnVisibility, columnSizing, columnOrder },
     meta: { userSettings },
   });
 
@@ -174,157 +204,161 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   };
 
   return (
-    <div className="space-y-4">
-        <div className="flex items-center justify-between flex-wrap gap-4 bg-muted/10 dark:bg-zinc-900/30 p-2 rounded-xl border-2 border-zinc-200 dark:border-primary/20 shadow-sm">
-            <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-                <TabsList className="h-auto flex-wrap justify-start bg-transparent p-0 gap-1">
-                    <TabsTrigger value="Todos" className="font-bold px-4 h-9">Todos</TabsTrigger>
-                    {['Em Andamento', 'Aguardando Saldo', 'Pago', 'Saldo Pago', 'Pendente', 'Reprovado'].map(s => {
-                        const colorValue = statusColors[s.toUpperCase()] || statusColors[s];
-                        return (
-                            <TabsTrigger 
-                                key={s} 
-                                value={s} 
-                                className="status-tab font-black uppercase text-[10px] tracking-widest px-4 h-9 border-2 border-transparent data-[state=active]:bg-background"
-                                style={colorValue ? { '--status-color': colorValue } as any : {}}
-                            >
-                                {s}
-                            </TabsTrigger>
-                        );
-                    })}
-                </TabsList>
-            </Tabs>
+    <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
+        <div className="space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-4 bg-muted/10 dark:bg-zinc-900/30 p-2 rounded-xl border-2 border-zinc-200 dark:border-primary/20 shadow-sm">
+                <Tabs value={statusFilter} onValueChange={setStatusFilter}>
+                    <TabsList className="h-auto flex-wrap justify-start bg-transparent p-0 gap-1">
+                        <TabsTrigger value="Todos" className="font-bold px-4 h-9">Todos</TabsTrigger>
+                        {['Em Andamento', 'Aguardando Saldo', 'Pago', 'Saldo Pago', 'Pendente', 'Reprovado'].map(s => {
+                            const colorValue = statusColors[s.toUpperCase()] || statusColors[s];
+                            return (
+                                <TabsTrigger 
+                                    key={s} 
+                                    value={s} 
+                                    className="status-tab font-black uppercase text-[10px] tracking-widest px-4 h-9 border-2 border-transparent data-[state=active]:bg-background"
+                                    style={colorValue ? { '--status-color': colorValue } as any : {}}
+                                >
+                                    {s}
+                                </TabsTrigger>
+                            );
+                        })}
+                    </TabsList>
+                </Tabs>
 
-            <div className="flex items-center gap-3 bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full px-3 py-1 shadow-sm ml-auto">
-                <Select onValueChange={(val) => {
-                    const now = new Date();
-                    let from: Date;
-                    switch(val) {
-                        case 'today': from = startOfDay(now); break;
-                        case 'yesterday': from = startOfDay(subDays(now, 1)); break;
-                        case 'week': from = startOfDay(subDays(now, 7)); break;
-                        default: from = startOfMonth(now);
-                    }
-                    setStartDateInput(format(from, 'dd/MM/yyyy'));
-                    setEndDateInput(format(now, 'dd/MM/yyyy'));
-                    setAppliedDateRange({ from, to: now });
-                }}>
-                    <SelectTrigger className="h-7 w-[120px] border-none bg-transparent focus:ring-0 text-xs font-black uppercase p-0">
-                        <CalendarIcon className="mr-2 h-3 w-3 text-primary" />
-                        <SelectValue placeholder="PERÍODO" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="today">Hoje</SelectItem>
-                        <SelectItem value="yesterday">Ontem</SelectItem>
-                        <SelectItem value="week">Últimos 7 dias</SelectItem>
-                        <SelectItem value="month">Mês Atual</SelectItem>
-                    </SelectContent>
-                </Select>
-                <Separator orientation="vertical" className="h-4 bg-zinc-300" />
-                <div className="flex items-center gap-1">
-                    <Input 
-                        placeholder="De" 
-                        value={startDateInput}
-                        onChange={(e) => handleDateInputChange(e.target.value, 'start')}
-                        className="h-7 w-20 border-none bg-muted/40 text-[10px] text-center font-black"
-                    />
-                    <span className="text-muted-foreground font-black">-</span>
-                    <Input 
-                        placeholder="Até" 
-                        value={endDateInput}
-                        onChange={(e) => handleDateInputChange(e.target.value, 'end')}
-                        className="h-7 w-20 border-none bg-muted/40 text-[10px] text-center font-black"
-                    />
-                </div>
-                <Button size="sm" onClick={handleApplyFilter} className="h-7 bg-primary text-white rounded-full px-4 text-[10px] font-black uppercase transition-all shadow-md">
-                    <Filter className="h-3 w-3 mr-1" /> Aplicar
-                </Button>
-            </div>
-        </div>
-
-        <div className="flex items-center justify-between gap-4">
-            <div className='relative w-full max-w-md group'>
-                <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80 group-focus-within:opacity-100 transition-opacity' />
-                <Input
-                    placeholder="Busca Inteligente (Nome, CPF, Proposta...)"
-                    value={globalFilter ?? ''}
-                    onChange={(e) => setGlobalFilter(e.target.value)}
-                    className="pl-10 h-11 bg-background border-2 border-zinc-300 dark:border-primary/40 rounded-full text-sm font-bold shadow-md focus-visible:ring-primary/20 transition-all placeholder:text-muted-foreground/80"
-                />
-            </div>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="h-11 rounded-full px-6 font-black border-2 border-zinc-300 dark:border-primary/20 bg-background shadow-md gap-2 text-[10px] uppercase tracking-widest">
-                        Colunas <ChevronDown className="h-4 w-4" />
+                <div className="flex items-center gap-3 bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full px-3 py-1 shadow-sm ml-auto">
+                    <Select onValueChange={(val) => {
+                        const now = new Date();
+                        let from: Date;
+                        switch(val) {
+                            case 'today': from = startOfDay(now); break;
+                            case 'yesterday': from = startOfDay(subDays(now, 1)); break;
+                            case 'week': from = startOfDay(subDays(now, 7)); break;
+                            default: from = startOfMonth(now);
+                        }
+                        setStartDateInput(format(from, 'dd/MM/yyyy'));
+                        setEndDateInput(format(now, 'dd/MM/yyyy'));
+                        setAppliedDateRange({ from, to: now });
+                    }}>
+                        <SelectTrigger className="h-7 w-[120px] border-none bg-transparent focus:ring-0 text-xs font-black uppercase p-0">
+                            <CalendarIcon className="mr-2 h-3 w-3 text-primary" />
+                            <SelectValue placeholder="PERÍODO" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="today">Hoje</SelectItem>
+                            <SelectItem value="yesterday">Ontem</SelectItem>
+                            <SelectItem value="week">Últimos 7 dias</SelectItem>
+                            <SelectItem value="month">Mês Atual</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Separator orientation="vertical" className="h-4 bg-zinc-300" />
+                    <div className="flex items-center gap-1">
+                        <Input 
+                            placeholder="De" 
+                            value={startDateInput}
+                            onChange={(e) => handleDateInputChange(e.target.value, 'start')}
+                            className="h-7 w-20 border-none bg-muted/40 text-[10px] text-center font-black"
+                        />
+                        <span className="text-muted-foreground font-black">-</span>
+                        <Input 
+                            placeholder="Até" 
+                            value={endDateInput}
+                            onChange={(e) => handleDateInputChange(e.target.value, 'end')}
+                            className="h-7 w-20 border-none bg-muted/40 text-[10px] text-center font-black"
+                        />
+                    </div>
+                    <Button size="sm" onClick={handleApplyFilter} className="h-7 bg-primary text-white rounded-full px-4 text-[10px] font-black uppercase transition-all shadow-md">
+                        <Filter className="h-3 w-3 mr-1" /> Aplicar
                     </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 shadow-2xl border-2">
-                    <DropdownMenuLabel>Exibir/Ocultar</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {table.getAllColumns().filter(c => c.getCanHide()).map(column => (
-                        <DropdownMenuCheckboxItem
-                            key={column.id}
-                            className="capitalize text-xs font-bold"
-                            checked={column.getIsVisible()}
-                            onCheckedChange={v => column.toggleVisibility(!!v)}
-                        >
-                            {column.id}
-                        </DropdownMenuCheckboxItem>
-                    ))}
-                </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
-
-        <Card className="proposals-table border-2 border-zinc-200 dark:border-primary/30 shadow-xl rounded-xl overflow-hidden bg-card p-1">
-            <div className="p-0">
-                <div className="overflow-x-auto">
-                    <Table style={{ width: table.getTotalSize() }}>
-                        <TableHeader className="bg-muted/40 dark:bg-zinc-900/60 border-b-2">
-                            {table.getHeaderGroups().map(hg => (
-                                <TableRow key={hg.id} className="hover:bg-transparent">
-                                    {hg.headers.map(h => <DraggableHeader key={h.id} header={h} />)}
-                                </TableRow>
-                            ))}
-                        </TableHeader>
-                        <TableBody>
-                            {table.getRowModel().rows.length > 0 ? (
-                                table.getRowModel().rows.map(row => {
-                                    const status = row.original.status;
-                                    const colorValue = statusColors[status.toUpperCase()] || statusColors[status];
-                                    return (
-                                        <TableRow 
-                                            key={row.id} 
-                                            className={cn(
-                                                "transition-colors border-b h-12 hover:bg-primary/[0.03] dark:hover:bg-primary/5",
-                                                colorValue && "status-row-custom"
-                                            )}
-                                            style={colorValue ? { '--status-color': colorValue } as any : {}}
-                                        >
-                                            {row.getVisibleCells().map(cell => (
-                                                <TableCell 
-                                                    key={cell.id} 
-                                                    style={{ width: cell.column.getSize() }} 
-                                                    className="p-2 text-sm border-none"
-                                                >
-                                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                                </TableCell>
-                                            ))}
-                                        </TableRow>
-                                    )
-                                })
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={columns.length} className="h-32 text-center text-muted-foreground font-black uppercase text-[10px] tracking-widest opacity-40">
-                                        Nenhuma proposta encontrada.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
                 </div>
             </div>
-        </Card>
-    </div>
+
+            <div className="flex items-center justify-between gap-4">
+                <div className='relative w-full max-w-md group'>
+                    <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80 group-focus-within:opacity-100 transition-opacity' />
+                    <Input
+                        placeholder="Busca Inteligente (Nome, CPF, Proposta...)"
+                        value={globalFilter ?? ''}
+                        onChange={(e) => setGlobalFilter(e.target.value)}
+                        className="pl-10 h-11 bg-background border-2 border-zinc-300 dark:border-primary/40 rounded-full text-sm font-bold shadow-md focus-visible:ring-primary/20 transition-all placeholder:text-muted-foreground/80"
+                    />
+                </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="h-11 rounded-full px-6 font-black border-2 border-zinc-300 dark:border-primary/20 bg-background shadow-md gap-2 text-[10px] uppercase tracking-widest">
+                            Colunas <ChevronDown className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 shadow-2xl border-2">
+                        <DropdownMenuLabel>Exibir/Ocultar</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {table.getAllColumns().filter(c => c.getCanHide()).map(column => (
+                            <DropdownMenuCheckboxItem
+                                key={column.id}
+                                className="capitalize text-xs font-bold"
+                                checked={column.getIsVisible()}
+                                onCheckedChange={v => column.toggleVisibility(!!v)}
+                            >
+                                {column.id}
+                            </DropdownMenuCheckboxItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+
+            <Card className="proposals-table border-2 border-zinc-200 dark:border-primary/30 shadow-xl rounded-xl overflow-hidden bg-card p-1">
+                <div className="p-0">
+                    <div className="overflow-x-auto">
+                        <Table style={{ width: table.getTotalSize(), tableLayout: 'fixed' }}>
+                            <TableHeader className="bg-muted/40 dark:bg-zinc-900/60 border-b-2">
+                                {table.getHeaderGroups().map(hg => (
+                                    <TableRow key={hg.id} className="hover:bg-transparent">
+                                        <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
+                                            {hg.headers.map(h => <DraggableHeader key={h.id} header={h as any} />)}
+                                        </SortableContext>
+                                    </TableRow>
+                                ))}
+                            </TableHeader>
+                            <TableBody>
+                                {table.getRowModel().rows.length > 0 ? (
+                                    table.getRowModel().rows.map(row => {
+                                        const status = row.original.status;
+                                        const colorValue = statusColors[status.toUpperCase()] || statusColors[status];
+                                        return (
+                                            <TableRow 
+                                                key={row.id} 
+                                                className={cn(
+                                                    "transition-colors border-b h-12 hover:bg-primary/[0.03] dark:hover:bg-primary/5",
+                                                    colorValue && "status-row-custom"
+                                                )}
+                                                style={colorValue ? { '--status-color': colorValue } as any : {}}
+                                            >
+                                                {row.getVisibleCells().map(cell => (
+                                                    <TableCell 
+                                                        key={cell.id} 
+                                                        style={{ width: cell.column.getSize() }} 
+                                                        className="p-2 text-sm border-none"
+                                                    >
+                                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                                    </TableCell>
+                                                ))}
+                                            </TableRow>
+                                        )
+                                    })
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={columns.length} className="h-32 text-center text-muted-foreground font-black uppercase text-[10px] tracking-widest opacity-40">
+                                            Nenhuma proposta encontrada.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </div>
+            </Card>
+        </div>
+    </DndContext>
   );
 });
 
