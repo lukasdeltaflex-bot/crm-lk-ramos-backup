@@ -242,7 +242,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     setAppliedDateRange(undefined);
   }
 
-  // 🛡️ REATIVIDADE INSTANTÂNEA: Filtra os dados ANTES de passar para o motor da tabela
   const filteredData = React.useMemo(() => {
     if (statusFilter === 'Todos') return data;
     return data.filter(p => p.status === statusFilter);

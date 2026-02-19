@@ -131,7 +131,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(defaultVisibility);
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(defaultOrder);
 
-  // Extract unique banks and promoters for filters
   const uniqueBanks = React.useMemo(() => {
     const banks = new Set(data.map(p => p.bank));
     return Array.from(banks).sort();
@@ -414,7 +413,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                         <div className="flex items-center gap-2 bg-card border rounded-lg px-2 py-1 shadow-sm">
                             <Select value={bankFilter} onValueChange={setBankFilter}>
                                 <SelectTrigger className="h-7 w-auto min-w-[160px] border-none bg-transparent focus:ring-0 text-xs font-bold uppercase">
-                                    {/* 🛡️ FIX ÍCONE DUPLICADO: O SelectValue já renderiza o ícone do SelectItem selecionado */}
                                     <SelectValue placeholder="Todos os Bancos" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -567,7 +565,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                         {table.getRowModel().rows?.length ? (
                             table.getRowModel().rows.map((row) => {
                                 const proposal = row.original;
-                                // Prioridade para cor de status de comissão no financeiro
                                 const statusKey = (proposal.commissionStatus || proposal.status).toUpperCase();
                                 const colorValue = statusColors[statusKey] || statusColors[proposal.commissionStatus || proposal.status];
                                 const isBigWin = proposal.commissionValue >= 3000;
