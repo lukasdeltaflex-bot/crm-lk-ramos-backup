@@ -276,7 +276,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
                                     key={cell.id} 
                                     style={{ width: cell.column.getSize() }}
                                     className={cn(
-                                        "p-2 text-sm border-zinc-100 dark:border-zinc-800/50",
+                                        "p-2 text-sm border-zinc-100/50 dark:border-zinc-800/50",
                                         cell.column.id === 'Selecionar' && 'px-0 text-center'
                                     )}
                                 >

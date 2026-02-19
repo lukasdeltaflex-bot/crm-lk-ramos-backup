@@ -1,3 +1,4 @@
+
 'use client';
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -6,7 +7,7 @@ import { PageHeader } from '@/components/page-header';
 import { ProposalsDataTable, type ProposalsDataTableHandle } from './data-table';
 import { getColumns } from './columns';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Trash2, FileDown, Printer } from 'lucide-react';
+import { PlusCircle, FileDown } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -17,21 +18,8 @@ import { ProposalForm } from './proposal-form';
 import type { Proposal, Customer, ProposalStatus, UserSettings, ProposalHistoryEntry } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from '@/firebase';
-import { collection, doc, query, where, writeBatch, setDoc, updateDoc, arrayUnion, deleteDoc } from 'firebase/firestore';
+import { collection, doc, query, where, setDoc, updateDoc, arrayUnion, deleteDoc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format, parse } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
 import { CustomerSearchDialog } from '@/components/proposals/customer-search-dialog';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -98,7 +86,6 @@ function ProposalsPageContent() {
   const { data: customers, isLoading: customersLoading } = useCollection<Customer>(customersQuery);
   const { data: userSettings, isLoading: settingsLoading } = useDoc<UserSettings>(settingsDocRef);
 
-  // FIX: Define isLoading unificando todos os estados
   const isLoading = proposalsLoading || customersLoading || isUserLoading || settingsLoading;
 
   const nonAnonymizedCustomers = React.useMemo(() => {
@@ -239,8 +226,6 @@ function ProposalsPageContent() {
     handleStatusChange, 
     handleDuplicateProposal
   ), [firestore, handleEditProposal, handleViewProposal, handleStatusChange, handleDuplicateProposal]);
-
-  const selectedCount = Object.keys(rowSelection).length;
 
   return (
     <>

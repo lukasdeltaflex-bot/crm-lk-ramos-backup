@@ -8,6 +8,7 @@ import {
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  getFilteredRowModel,
   useReactTable,
   RowSelectionState,
   Table as ReactTable,
@@ -182,7 +183,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                 </TabsList>
             </Tabs>
 
-            <div className="flex items-center gap-3 bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-lg px-2 py-1 shadow-sm ml-auto">
+            <div className="flex items-center gap-3 bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full px-3 py-1 shadow-sm ml-auto">
                 <Select onValueChange={(val) => {
                     const now = new Date();
                     let from: Date;
@@ -288,7 +289,11 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                             style={colorValue ? { '--status-color': colorValue } as any : {}}
                                         >
                                             {row.getVisibleCells().map(cell => (
-                                                <TableCell key={cell.id} style={{ width: cell.column.getSize() }} className="p-2 text-sm border-zinc-100 dark:border-zinc-800/50">
+                                                <TableCell 
+                                                    key={cell.id} 
+                                                    style={{ width: cell.column.getSize() }} 
+                                                    className="p-2 text-sm border-zinc-100/50 dark:border-zinc-800/50"
+                                                >
                                                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                                 </TableCell>
                                             ))}

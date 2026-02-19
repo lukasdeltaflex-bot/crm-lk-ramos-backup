@@ -8,6 +8,7 @@ import {
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  getFilteredRowModel,
   useReactTable,
   RowSelectionState,
   Table as ReactTable,
@@ -145,6 +146,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onColumnSizingChange: setColumnSizing,
@@ -318,7 +320,11 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                                             style={colorValue ? { '--status-color': colorValue } as any : {}}
                                         >
                                             {row.getVisibleCells().map(cell => (
-                                                <TableCell key={cell.id} style={{ width: cell.column.getSize() }} className="p-2 text-sm border-zinc-100 dark:border-zinc-800/50">
+                                                <TableCell 
+                                                    key={cell.id} 
+                                                    style={{ width: cell.column.getSize() }} 
+                                                    className="p-2 text-sm border-zinc-100/50 dark:border-zinc-800/50"
+                                                >
                                                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                                 </TableCell>
                                             ))}
