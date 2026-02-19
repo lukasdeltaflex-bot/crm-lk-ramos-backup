@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ColumnDef, flexRender, Header } from '@tanstack/react-table';
@@ -39,7 +38,7 @@ const CopyButton = ({ text, label }: { text: string | undefined; label: string }
     };
     return (
         <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleCopy}>
-            <Copy className="h-3 w-3" />
+            <Copy className="h-3.5 w-3.5" />
             <span className="sr-only">Copiar {label}</span>
         </Button>
     );
@@ -59,13 +58,14 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
     };
 
     const isActions = header.column.id === 'Ações';
+    const isSelect = header.column.id === 'Selecionar';
 
     return (
         <TableHead
             ref={setNodeRef}
             colSpan={header.colSpan}
             style={style}
-            className={cn('relative p-0 h-14 border-r last:border-r-0 bg-muted/30 group')}
+            className={cn('relative p-0 h-14 border-r last:border-r-0 bg-muted/30 group transition-colors hover:bg-muted/50')}
         >
             <div className="flex flex-col h-full justify-center">
                 <div
@@ -76,7 +76,7 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
                     )}
                     onClick={header.column.getToggleSortingHandler()}
                 >
-                    {isDraggable && !isActions && (
+                    {isDraggable && !isActions && !isSelect && (
                         <div
                             {...attributes}
                             {...listeners}
@@ -87,16 +87,18 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
                         </div>
                     )}
                     <div className={cn(
-                        "overflow-hidden font-bold text-[10px] uppercase tracking-widest text-muted-foreground leading-tight",
-                        isActions && "text-right pr-2"
+                        "overflow-hidden font-bold text-[11px] uppercase tracking-wider text-muted-foreground leading-tight flex items-center gap-1",
+                        isActions && "text-right pr-2",
+                        isSelect && "justify-center w-full pr-0"
                     )}>
                         {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                        
+                        {header.column.getIsSorted() && (
+                            <div className="text-primary shrink-0">
+                                {header.column.getIsSorted() === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+                            </div>
+                        )}
                     </div>
-                    {header.column.getIsSorted() && (
-                        <div className="text-primary">
-                            {header.column.getIsSorted() === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
-                        </div>
-                    )}
                 </div>
             </div>
 
@@ -131,7 +133,7 @@ export const getColumns = (
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Selecionar tudo"
-        className="rounded-full"
+        className="rounded-full h-5 w-5"
       />
     ),
     cell: ({ row }) => (
@@ -139,7 +141,7 @@ export const getColumns = (
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Selecionar linha"
-        className="rounded-full"
+        className="rounded-full h-5 w-5"
       />
     ),
     enableSorting: false,
@@ -149,13 +151,13 @@ export const getColumns = (
   {
     id: 'Promotora',
     header: 'Promotora',
-    cell: ({ row }) => row.original.promoter,
+    cell: ({ row }) => <span className="text-[11px] font-medium">{row.original.promoter}</span>,
     size: 150,
   },
   {
     id: 'Cliente',
     header: 'Cliente',
-    cell: ({ row }) => <span className="font-bold text-primary">{row.original.customer?.name}</span>,
+    cell: ({ row }) => <span className="font-bold text-primary uppercase text-[11px] tracking-tight">{row.original.customer?.name}</span>,
     size: 200,
   },
   {
@@ -164,7 +166,7 @@ export const getColumns = (
     cell: ({ row }) => {
         const cpf = row.original.customer?.cpf;
         return (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
                 <span>{cpf || '-'}</span>
                 {cpf && <CopyButton text={cpf} label="CPF" />}
             </div>
@@ -176,8 +178,8 @@ export const getColumns = (
     id: 'Nº Proposta',
     header: 'Nº Proposta',
     cell: ({ row }) => (
-        <div className="flex items-center gap-1">
-            <Link href={`/proposals?open=${row.original.id}`} className="text-primary hover:underline font-medium">
+        <div className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+            <Link href={`/proposals?open=${row.original.id}`} className="text-primary hover:underline font-bold">
                 {row.original.proposalNumber}
             </Link>
             <CopyButton text={row.original.proposalNumber} label="Proposta" />
@@ -188,7 +190,7 @@ export const getColumns = (
   {
     id: 'Produto',
     header: 'Produto',
-    cell: ({ row }) => row.original.product,
+    cell: ({ row }) => <span className="text-[11px] font-medium">{row.original.product}</span>,
     size: 120,
   },
   {
@@ -200,7 +202,7 @@ export const getColumns = (
         return (
             <div className="flex items-center gap-2">
                 <BankIcon bankName={bankRaw} domain={settings?.bankDomains?.[bankRaw]} showLogo={settings?.showBankLogos ?? true} />
-                <span className="truncate">{cleanBankName(bankRaw)}</span>
+                <span className="truncate text-[11px] font-medium">{cleanBankName(bankRaw)}</span>
             </div>
         )
     },
@@ -212,14 +214,14 @@ export const getColumns = (
     cell: ({ row, table }) => {
       const isPrivacyMode = (table.options.meta as {isPrivacyMode?: boolean})?.isPrivacyMode;
       if (isPrivacyMode) return <div className="text-left font-medium">•••••</div>;
-      return <div className="text-right font-medium">{formatCurrency(row.original.grossAmount)}</div>;
+      return <div className="text-right font-bold text-[11px]">{formatCurrency(row.original.grossAmount)}</div>;
     },
     size: 120,
   },
   {
     id: 'Comissão (%)',
     header: 'Comissão (%)',
-    cell: ({ row }) => `${row.original.commissionPercentage.toFixed(2)}%`,
+    cell: ({ row }) => <span className="text-[11px] font-medium">{row.original.commissionPercentage.toFixed(2)}%</span>,
     size: 100,
   },
   {
@@ -227,7 +229,7 @@ export const getColumns = (
     header: 'Valor Comissão',
     cell: ({ row, table }) => {
         const isPrivacyMode = (table.options.meta as {isPrivacyMode?: boolean})?.isPrivacyMode;
-        return isPrivacyMode ? '•••••' : formatCurrency(row.original.commissionValue);
+        return isPrivacyMode ? '•••••' : <span className="text-[11px] font-bold">{formatCurrency(row.original.commissionValue)}</span>;
     },
     size: 120,
   },
@@ -240,7 +242,7 @@ export const getColumns = (
   {
     id: 'Data Pagamento',
     header: 'Data Pagamento',
-    cell: ({ row }) => formatDateSafe(row.original.commissionPaymentDate),
+    cell: ({ row }) => <span className="text-[11px] font-medium">{formatDateSafe(row.original.commissionPaymentDate)}</span>,
     size: 120,
   },
   {
@@ -251,9 +253,10 @@ export const getColumns = (
   },
   {
     id: 'Ações',
+    header: '',
     cell: ({ row }) => (
         <div className="text-right print:hidden">
-            <Button variant="ghost" size="icon" className="rounded-full" onClick={() => onEdit(row.original)}>
+            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={() => onEdit(row.original)}>
                 <MoreHorizontal className="h-4 w-4" />
             </Button>
         </div>

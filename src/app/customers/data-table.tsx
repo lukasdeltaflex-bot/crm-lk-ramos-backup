@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -54,17 +53,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DraggableHeader } from './columns';
 import type { Customer } from '@/lib/types';
 import { normalizeString, cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
-const STORAGE_KEY_VISIBILITY = 'lk-ramos-customer-columns-visibility-v6';
-const STORAGE_KEY_ORDER = 'lk-ramos-customer-columns-order-v6';
-const STORAGE_KEY_SIZING = 'lk-ramos-customer-columns-sizing-v6';
-const STORAGE_KEY_PAGESIZE = 'lk-ramos-customer-page-size-v2';
+const STORAGE_KEY_VISIBILITY = 'lk-ramos-customer-columns-visibility-v7';
+const STORAGE_KEY_ORDER = 'lk-ramos-customer-columns-order-v7';
+const STORAGE_KEY_SIZING = 'lk-ramos-customer-columns-sizing-v7';
+const STORAGE_KEY_PAGESIZE = 'lk-ramos-customer-page-size-v3';
 
 
 interface DataTableProps {
@@ -102,7 +102,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
     'Estado': false,
     'Observações': false,
   };
-  const initialColumns = React.useMemo(() => columns.map(c => c.id!), [columns]);
+  const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
 
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>([...initialColumns]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(defaultVisibility);
@@ -212,7 +212,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
       <Card className="border-none shadow-none bg-transparent">
         <div className="py-2">
-          <div className="flex items-center justify-between py-4">
+          <div className="flex items-center justify-between py-4 gap-4">
             <div className='relative w-full max-w-sm'>
                 <Search className='absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground opacity-60' />
                 <Input
@@ -224,7 +224,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="ml-auto rounded-full font-bold h-11 border-primary/10 bg-card px-6">
+                <Button variant="outline" className="ml-auto rounded-full font-bold h-11 border-primary/10 bg-card px-6 shadow-sm hover:bg-muted/50 transition-all">
                   Colunas <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -251,48 +251,54 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
           </div>
           
           <div className="rounded-2xl border border-border/50 overflow-hidden bg-card shadow-sm customers-table">
-            <Table style={{ width: table.getTotalSize(), tableLayout: 'fixed' }}>
-                <TableHeader>
-                    {table.getHeaderGroups().map(headerGroup => (
-                    <TableRow key={headerGroup.id} className="hover:bg-transparent border-b">
-                        <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
-                        {headerGroup.headers.map(header => (
-                            <DraggableHeader key={header.id} header={header as Header<Customer, unknown>} />
-                        ))}
-                        </SortableContext>
-                    </TableRow>
-                    ))}
-                </TableHeader>
-                <TableBody>
-                    {isLoading ? (
-                    Array.from({ length: 10 }).map((_, i) => (
-                        <TableRow key={i}>
-                        {columns.map((column, j) => (
-                            <TableCell key={j}><Skeleton className="h-6 w-full" /></TableCell>
-                        ))}
+            <div className="overflow-x-auto">
+                <Table style={{ width: table.getTotalSize(), tableLayout: 'fixed' }}>
+                    <TableHeader>
+                        {table.getHeaderGroups().map(headerGroup => (
+                        <TableRow key={headerGroup.id} className="hover:bg-transparent border-b bg-muted/20">
+                            <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
+                            {headerGroup.headers.map(header => (
+                                <DraggableHeader key={header.id} header={header as Header<Customer, unknown>} />
+                            ))}
+                            </SortableContext>
                         </TableRow>
-                    ))
-                    ) : table.getRowModel().rows?.length ? (
-                    table.getRowModel().rows.map((row) => (
-                        <TableRow
-                        key={row.id}
-                        data-state={row.getIsSelected() && 'selected'}
-                        className="hover:bg-muted/10 transition-colors border-b last:border-0"
-                        >
-                        {row.getVisibleCells().map((cell) => (
-                            <TableCell key={cell.id} style={{ width: cell.column.getSize() }}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </TableCell>
                         ))}
+                    </TableHeader>
+                    <TableBody>
+                        {isLoading ? (
+                        Array.from({ length: 10 }).map((_, i) => (
+                            <TableRow key={i}>
+                            {columns.map((column, j) => (
+                                <TableCell key={j}><Skeleton className="h-6 w-full" /></TableCell>
+                            ))}
+                            </TableRow>
+                        ))
+                        ) : table.getRowModel().rows?.length ? (
+                        table.getRowModel().rows.map((row) => (
+                            <TableRow
+                            key={row.id}
+                            data-state={row.getIsSelected() && 'selected'}
+                            className="hover:bg-muted/10 transition-colors border-b last:border-0 h-14"
+                            >
+                            {row.getVisibleCells().map((cell) => (
+                                <TableCell 
+                                    key={cell.id} 
+                                    style={{ width: cell.column.getSize() }}
+                                    className={cn(cell.column.id === 'Selecionar' && 'px-0 text-center')}
+                                >
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                </TableCell>
+                            ))}
+                            </TableRow>
+                        ))
+                        ) : (
+                        <TableRow>
+                            <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground font-medium italic">Nenhum cliente na base de dados.</TableCell>
                         </TableRow>
-                    ))
-                    ) : (
-                    <TableRow>
-                        <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground font-medium italic">Nenhum cliente na base de dados.</TableCell>
-                    </TableRow>
-                    )}
-                </TableBody>
-            </Table>
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
           </div>
 
           <div className="flex items-center justify-between py-4">
