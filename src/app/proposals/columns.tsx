@@ -63,7 +63,7 @@ const ActionsCell = ({ row, onEdit, onView, onDelete, onDuplicate }: any) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48 shadow-xl border-2">
-            <DropdownMenuLabel>Ações da Proposta</DropdownMenuLabel>
+            <DropdownMenuLabel>Opções da Proposta</DropdownMenuLabel>
             <DropdownMenuItem onSelect={() => onView(proposal)} className="font-bold">Ver detalhes</DropdownMenuItem>
             <DropdownMenuItem onSelect={() => onEdit(proposal)} className="font-bold">Editar Registro</DropdownMenuItem>
             <DropdownMenuItem onSelect={() => onDuplicate(proposal)} className="font-bold">Duplicar Proposta</DropdownMenuItem>
@@ -73,12 +73,12 @@ const ActionsCell = ({ row, onEdit, onView, onDelete, onDuplicate }: any) => {
                     onSelect={(e) => e.preventDefault()}
                     className="text-destructive focus:text-destructive focus:bg-destructive/10 font-bold"
                     >
-                    Cancelar Proposta
+                    Remover Registro
                 </DropdownMenuItem>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Cancelar proposta?</AlertDialogTitle>
-                        <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+                        <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                        <AlertDialogDescription>Esta ação irá excluir permanentemente a proposta do sistema.</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Voltar</AlertDialogCancel>
@@ -105,7 +105,7 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
         opacity: isDragging ? 0.5 : 1,
     };
 
-    const isActions = header.column.id === 'Ações';
+    const isActions = header.column.id === 'Actions';
     const isSelect = header.column.id === 'Selecionar';
 
     return (
@@ -216,9 +216,9 @@ export const getColumns = (
     size: 150,
   },
   {
-    id: 'Nº Proposta',
+    id: 'No Proposta',
     accessorKey: 'proposalNumber',
-    header: 'Nº Proposta',
+    header: 'No Proposta',
     cell: ({ row }) => {
         const num = row.original.proposalNumber;
         return (
@@ -242,6 +242,13 @@ export const getColumns = (
     size: 200,
   },
   {
+    id: 'CPF',
+    accessorFn: (row) => row.customer?.cpf,
+    header: 'CPF',
+    cell: ({ row }) => <span className="text-sm font-black text-foreground/80">{row.original.customer?.cpf || '-'}</span>,
+    size: 150,
+  },
+  {
     id: 'Produto',
     accessorKey: 'product',
     header: 'Produto',
@@ -256,9 +263,9 @@ export const getColumns = (
     size: 120,
   },
   {
-    id: 'Banco',
+    id: 'Banco Digitado',
     accessorKey: 'bank',
-    header: 'Banco',
+    header: 'Banco Digitado',
     cell: ({ row, table }) => {
         const bankRaw = row.original.bank;
         const settings = (table.options.meta as any)?.userSettings as UserSettings;
@@ -291,6 +298,20 @@ export const getColumns = (
     size: 140,
   },
   {
+    id: 'Operador',
+    accessorKey: 'operator',
+    header: 'Operador',
+    cell: ({ row }) => <span className="text-sm font-bold text-foreground/70">{row.original.operator || '-'}</span>,
+    size: 150,
+  },
+  {
+    id: 'Comissão',
+    accessorKey: 'commissionValue',
+    header: 'Comissão',
+    cell: ({ row }) => <div className="text-right font-black text-sm text-foreground">{formatCurrency(row.original.commissionValue)}</div>,
+    size: 120,
+  },
+  {
     id: 'Data Digitação',
     accessorKey: 'dateDigitized',
     header: 'Data Digitação',
@@ -298,8 +319,29 @@ export const getColumns = (
     size: 120,
   },
   {
-    id: 'Ações',
-    header: '',
+    id: 'Data Averbação',
+    accessorKey: 'dateApproved',
+    header: 'Data Averbação',
+    cell: ({ row }) => <span className="text-sm font-bold text-foreground/70">{formatDateSafe(row.original.dateApproved)}</span>,
+    size: 120,
+  },
+  {
+    id: 'Data Pgto. Cliente',
+    accessorKey: 'datePaidToClient',
+    header: 'Data Pgto. Cliente',
+    cell: ({ row }) => <span className="text-sm font-bold text-foreground/70">{formatDateSafe(row.original.datePaidToClient)}</span>,
+    size: 120,
+  },
+  {
+    id: 'Chegada Saldo',
+    accessorKey: 'debtBalanceArrivalDate',
+    header: 'Chegada Saldo',
+    cell: ({ row }) => <span className="text-sm font-bold text-foreground/70">{formatDateSafe(row.original.debtBalanceArrivalDate)}</span>,
+    size: 120,
+  },
+  {
+    id: 'Actions',
+    header: 'Actions',
     cell: (props) => <ActionsCell {...props} onEdit={onEdit} onView={onView} onDelete={onDelete} onDuplicate={onDuplicate} />,
     enableHiding: false,
     size: 80,

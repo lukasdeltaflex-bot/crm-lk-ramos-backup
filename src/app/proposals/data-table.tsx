@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -87,8 +86,21 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
   
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
-      'Promotora': false,
-      'Data Digitação': true
+      'Promotora': true,
+      'No Proposta': true,
+      'Cliente': true,
+      'CPF': true,
+      'Produto': true,
+      'Valor Bruto': true,
+      'Banco Digitado': true,
+      'Status': true,
+      'Operador': false,
+      'Comissão': true,
+      'Data Digitação': true,
+      'Data Averbação': false,
+      'Data Pgto. Cliente': false,
+      'Chegada Saldo': false,
+      'Actions': true
   });
 
   const filteredData = React.useMemo(() => {
@@ -292,7 +304,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                                 <TableCell 
                                                     key={cell.id} 
                                                     style={{ width: cell.column.getSize() }} 
-                                                    className="p-2 text-sm border-zinc-100/50 dark:border-zinc-800/50"
+                                                    className="p-2 text-sm border-none"
                                                 >
                                                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                                 </TableCell>
