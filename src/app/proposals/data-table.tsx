@@ -58,7 +58,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Filter, X, Search, Calendar as CalendarIcon, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Filter, X, Search, Calendar as CalendarIcon, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, GripVertical } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import type { ProposalStatus, UserSettings } from '@/lib/types';
 import { DraggableHeader } from './columns';
@@ -183,13 +183,16 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 
   React.useImperativeHandle(ref, () => ({ table }));
 
+  // CÁLCULO DOS TOTAIS APENAS PARA AS LINHAS SELECIONADAS (Regra de Negócio solicitada)
+  const selectedRows = table.getFilteredSelectedRowModel().rows;
+  
   const totalGross = React.useMemo(() => 
-    table.getFilteredRowModel().rows.reduce((acc, row) => acc + (row.original.grossAmount || 0), 0),
-  [table.getFilteredRowModel().rows]);
+    selectedRows.reduce((acc, row) => acc + (row.original.grossAmount || 0), 0),
+  [selectedRows]);
 
   const totalCommission = React.useMemo(() => 
-    table.getFilteredRowModel().rows.reduce((acc, row) => acc + (row.original.commissionValue || 0), 0),
-  [table.getFilteredRowModel().rows]);
+    selectedRows.reduce((acc, row) => acc + (row.original.commissionValue || 0), 0),
+  [selectedRows]);
 
   const handleDateInputChange = (value: string, type: 'start' | 'end') => {
     let v = value.replace(/\D/g, '').slice(0, 8);
@@ -314,7 +317,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                 </DropdownMenu>
             </div>
 
-            <Card className="proposals-table border-2 border-zinc-200 dark:border-primary/30 shadow-xl rounded-xl overflow-hidden bg-card p-1">
+            <Card className="proposals-table border-2 border-zinc-300 dark:border-primary/30 shadow-xl rounded-xl overflow-hidden bg-card p-1">
                 <div className="p-0">
                     <div className="overflow-x-auto">
                         <Table style={{ width: table.getTotalSize(), tableLayout: 'fixed' }}>
