@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ColumnDef, Header, flexRender } from '@tanstack/react-table';
@@ -22,7 +21,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, GripVertical, ArrowUp, ArrowDown, Copy, ExternalLink } from 'lucide-react';
+import { MoreHorizontal, GripVertical, ArrowUp, ArrowDown, Copy } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatCurrency, cleanBankName, cn, formatDateSafe, isWhatsApp, getWhatsAppUrl } from '@/lib/utils';
 import React from 'react';
@@ -209,9 +208,9 @@ export const getColumns = (
         const domain = settings?.promoterDomains?.[promoter];
 
         return (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full">
                 <BankIcon bankName={promoter} domain={domain} showLogo={showLogos} className="h-4 w-4" />
-                <span className="truncate text-sm font-bold text-foreground/90 w-full">{promoter}</span>
+                <span className="truncate text-sm font-bold text-foreground/90 flex-1">{promoter}</span>
             </div>
         )
     },
@@ -240,14 +239,14 @@ export const getColumns = (
         const customer = row.original.customer;
         const hasWhatsApp = customer?.phone && isWhatsApp(customer.phone);
         return (
-            <div className="flex items-center gap-2 font-black text-primary uppercase text-sm tracking-tight w-full overflow-hidden">
-                <span className="truncate w-full">{customer?.name || '---'}</span>
+            <div className="flex items-center gap-2 font-black text-primary uppercase text-sm tracking-tight w-full">
+                <span className="truncate flex-1">{customer?.name || '---'}</span>
                 {hasWhatsApp && (
                     <a 
                         href={getWhatsAppUrl(customer.phone)} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-green-600 hover:text-green-700 transition-colors"
+                        className="text-green-600 hover:text-green-700 transition-colors shrink-0"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <WhatsAppIcon className="h-3.5 w-3.5" />
@@ -298,9 +297,9 @@ export const getColumns = (
         const customDomain = settings?.bankDomains?.[bankRaw];
         
         return (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full">
                 <BankIcon bankName={bankRaw} domain={customDomain} showLogo={showLogos} />
-                <span className="truncate text-sm font-bold text-foreground/90 w-full">{cleanBankName(bankRaw)}</span>
+                <span className="truncate text-sm font-bold text-foreground/90 flex-1">{cleanBankName(bankRaw)}</span>
             </div>
         )
     },
@@ -367,7 +366,7 @@ export const getColumns = (
   {
     id: 'Actions',
     header: '',
-    cell: (props) => <ActionsCell {...props} onEdit={onEdit} onView={onView} onDelete={onDelete} onDuplicate={onDuplicate} />,
+    cell: (props) => <ActionsCell {...props} onEdit={onEdit} onDelete={onDelete} />,
     enableHiding: false,
     size: 80,
   },

@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -59,7 +58,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Filter, X, Search, Calendar as CalendarIcon, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, GripVertical } from 'lucide-react';
+import { Filter, X, Search, Calendar as CalendarIcon, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import type { ProposalStatus, UserSettings } from '@/lib/types';
 import { DraggableHeader } from './columns';
@@ -185,14 +184,18 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   React.useImperativeHandle(ref, () => ({ table }));
 
   const selectedRows = table.getFilteredSelectedRowModel().rows;
+  const allFilteredRows = table.getFilteredRowModel().rows;
   
+  // Lógica Inteligente: Se houver seleção, mostra o total da seleção. Se não, mostra o total da lista filtrada.
+  const displayRows = selectedRows.length > 0 ? selectedRows : allFilteredRows;
+
   const totalGross = React.useMemo(() => 
-    selectedRows.reduce((acc, row) => acc + (row.original.grossAmount || 0), 0),
-  [selectedRows]);
+    displayRows.reduce((acc, row) => acc + (row.original.grossAmount || 0), 0),
+  [displayRows]);
 
   const totalCommission = React.useMemo(() => 
-    selectedRows.reduce((acc, row) => acc + (row.original.commissionValue || 0), 0),
-  [selectedRows]);
+    displayRows.reduce((acc, row) => acc + (row.original.commissionValue || 0), 0),
+  [displayRows]);
 
   const handleDateInputChange = (value: string, type: 'start' | 'end') => {
     let v = value.replace(/\D/g, '').slice(0, 8);
@@ -375,11 +378,11 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                             {table.getFilteredRowModel().rows.length} SELECIONADOS.
                         </div>
                         <Separator orientation="vertical" className="h-4 bg-zinc-300 dark:bg-zinc-700" />
-                        <div className="text-primary font-black">
+                        <div className="text-[#00AEEF] font-black">
                             VALOR BRUTO: <span className="text-foreground">{formatCurrency(totalGross)}</span>
                         </div>
                         <Separator orientation="vertical" className="h-4 bg-zinc-300 dark:bg-zinc-700" />
-                        <div className="text-primary font-black">
+                        <div className="text-[#00AEEF] font-black">
                             COMISSÃO: <span className="text-foreground">{formatCurrency(totalCommission)}</span>
                         </div>
                     </div>
