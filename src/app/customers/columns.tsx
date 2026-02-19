@@ -74,7 +74,7 @@ export const DraggableHeader = ({ header }: { header: Header<Customer, unknown> 
             colSpan={header.colSpan}
             style={style}
             className={cn(
-                'relative p-0 h-12 border-r last:border-r-0 bg-transparent group transition-colors hover:bg-muted/10',
+                'relative p-0 h-14 border-r last:border-r-0 bg-transparent group transition-colors hover:bg-muted/10',
                 isSelect && 'w-[50px] min-w-[50px]'
             )}
         >
@@ -91,7 +91,7 @@ export const DraggableHeader = ({ header }: { header: Header<Customer, unknown> 
                         <div
                             {...attributes}
                             {...listeners}
-                            className="p-1 hover:bg-primary/5 rounded cursor-grab active:cursor-grabbing text-muted-foreground/30 hover:text-primary transition-colors"
+                            className="p-1.5 hover:bg-primary/10 rounded cursor-grab active:cursor-grabbing text-primary opacity-40 group-hover:opacity-100 transition-all"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <GripVertical className="h-3.5 w-3.5" />
@@ -99,7 +99,7 @@ export const DraggableHeader = ({ header }: { header: Header<Customer, unknown> 
                     )}
 
                     <div className={cn(
-                        "overflow-hidden font-black text-[10px] uppercase tracking-[0.1em] text-muted-foreground/60 leading-tight flex items-center gap-1",
+                        "overflow-hidden font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 leading-tight flex items-center gap-1.5",
                         isActions && "text-right pr-2",
                         isSelect && "justify-center w-full pr-0"
                     )}>
@@ -124,8 +124,8 @@ export const DraggableHeader = ({ header }: { header: Header<Customer, unknown> 
                     onMouseDown={header.getResizeHandler()}
                     onTouchStart={header.getResizeHandler()}
                     className={cn(
-                        "absolute right-0 top-0 h-full w-1.5 cursor-col-resize select-none touch-none hover:bg-primary/20 z-20 transition-colors",
-                        header.column.getIsResizing() ? "bg-primary w-0.5" : "opacity-0"
+                        "absolute right-0 top-0 h-full w-1.5 cursor-col-resize select-none touch-none hover:bg-primary/40 z-20 transition-colors",
+                        header.column.getIsResizing() ? "bg-primary w-1" : "opacity-0 group-hover:opacity-100"
                     )}
                 />
             )}
@@ -145,7 +145,7 @@ const ActionsCell = ({ row, onEdit, onDelete }: any) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuLabel>Ações Disponíveis</DropdownMenuLabel>
+          <DropdownMenuLabel>Opções do Registro</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => onEdit(customer)}>
             Editar Cadastro
@@ -210,14 +210,14 @@ export const getColumns = (
   },
   {
     id: 'ID',
-    accessorKey: 'numericId',
+    accessorFn: (row) => row.numericId,
     header: 'ID',
-    cell: ({ row }) => <span className="text-xs font-medium text-muted-foreground/60">{row.original.numericId}</span>,
+    cell: ({ row }) => <span className="text-xs font-bold text-muted-foreground/60">{row.original.numericId}</span>,
     size: 80,
   },
   {
     id: 'Nome',
-    accessorKey: 'name',
+    accessorFn: (row) => row.name,
     header: 'Nome',
     cell: ({ row }) => {
         const customer = row.original;
@@ -231,7 +231,7 @@ export const getColumns = (
   },
   {
     id: 'CPF',
-    accessorKey: 'cpf',
+    accessorFn: (row) => row.cpf,
     header: 'CPF',
     cell: ({ row }) => {
         const cpf = row.original.cpf;
@@ -246,7 +246,7 @@ export const getColumns = (
   },
   {
     id: 'Telefone',
-    accessorKey: 'phone',
+    accessorFn: (row) => row.phone,
     header: 'Telefone',
     cell: ({ row }) => {
         const phone = row.original.phone;
@@ -266,7 +266,7 @@ export const getColumns = (
   },
   {
     id: 'Telefone 2',
-    accessorKey: 'phone2',
+    accessorFn: (row) => row.phone2,
     header: 'Telefone 2',
     cell: ({ row }) => {
         const phone = row.original.phone2;
@@ -287,21 +287,21 @@ export const getColumns = (
   },
   {
     id: 'Cidade',
-    accessorKey: 'city',
+    accessorFn: (row) => row.city,
     header: 'Cidade',
     cell: ({ row }) => <span className="text-xs text-muted-foreground truncate block">{row.original.city || '-'}</span>,
     size: 150,
   },
   {
     id: 'Estado',
-    accessorKey: 'state',
+    accessorFn: (row) => row.state,
     header: 'Estado',
     cell: ({ row }) => <span className="text-xs text-muted-foreground font-bold">{row.original.state || '-'}</span>,
     size: 80,
   },
   {
     id: 'Observações',
-    accessorKey: 'observations',
+    accessorFn: (row) => row.observations,
     header: 'Observações',
     cell: ({ row }) => <div className="truncate max-w-[200px] text-zinc-400 italic text-[10px]">{row.original.observations}</div>,
     size: 200,

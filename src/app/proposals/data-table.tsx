@@ -165,7 +165,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 
   return (
     <div className="space-y-4">
-        <div className="flex items-center justify-between flex-wrap gap-4 bg-muted/10 p-2 rounded-xl border border-border/50 shadow-sm">
+        <div className="flex items-center justify-between flex-wrap gap-4 bg-muted/10 dark:bg-zinc-900/30 p-2 rounded-xl border border-border/50 shadow-sm">
             <Tabs value={statusFilter} onValueChange={setStatusFilter}>
                 <TabsList className="h-auto flex-wrap justify-start bg-transparent p-0 gap-1">
                     <TabsTrigger value="Todos" className="font-bold px-4 h-9">Todos</TabsTrigger>
@@ -185,7 +185,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                 </TabsList>
             </Tabs>
 
-            <div className="flex items-center gap-3 bg-card border rounded-lg px-2 py-1 shadow-sm ml-auto">
+            <div className="flex items-center gap-3 bg-background border border-primary/10 dark:border-primary/20 rounded-lg px-2 py-1 shadow-sm ml-auto">
                 <Select onValueChange={(val) => {
                     const now = new Date();
                     let from: Date;
@@ -233,18 +233,18 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         </div>
 
         <div className="flex items-center justify-between gap-4">
-            <div className='relative w-full max-w-md'>
-                <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground opacity-60' />
+            <div className='relative w-full max-w-md group'>
+                <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary opacity-60 group-focus-within:opacity-100 transition-opacity' />
                 <Input
                     placeholder="Busca Inteligente (Nome, CPF, Proposta...)"
                     value={globalFilter ?? ''}
                     onChange={(e) => setGlobalFilter(e.target.value)}
-                    className="pl-9 h-11 bg-card border-primary/10 rounded-full text-sm font-medium shadow-sm focus-visible:ring-primary/20 transition-all"
+                    className="pl-9 h-11 bg-background border-primary/20 dark:border-primary/30 rounded-full text-sm font-medium shadow-sm focus-visible:ring-primary/20 transition-all placeholder:text-muted-foreground/60"
                 />
             </div>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="h-11 rounded-full px-6 font-bold border-primary/10 bg-card shadow-sm gap-2">
+                    <Button variant="outline" className="h-11 rounded-full px-6 font-bold border-border dark:border-primary/20 bg-background shadow-sm gap-2">
                         Colunas <ChevronDown className="h-4 w-4" />
                     </Button>
                 </DropdownMenuTrigger>
@@ -265,11 +265,11 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
             </DropdownMenu>
         </div>
 
-        <Card className="proposals-table border-border/50 shadow-md rounded-xl overflow-hidden bg-card">
+        <Card className="proposals-table border-border/50 dark:border-primary/20 shadow-md rounded-xl overflow-hidden bg-card p-1">
             <div className="p-0">
                 <div className="overflow-x-auto">
                     <Table style={{ width: table.getTotalSize() }}>
-                        <TableHeader className="bg-muted/20">
+                        <TableHeader className="bg-muted/20 dark:bg-zinc-900/50">
                             {table.getHeaderGroups().map(hg => (
                                 <TableRow key={hg.id} className="hover:bg-transparent border-b-2">
                                     {hg.headers.map(h => <DraggableHeader key={h.id} header={h} />)}
@@ -285,13 +285,13 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                         <TableRow 
                                             key={row.id} 
                                             className={cn(
-                                                "transition-colors border-b",
+                                                "transition-colors border-b h-11 hover:bg-muted/5 dark:hover:bg-primary/5",
                                                 colorValue && "status-row-custom"
                                             )}
                                             style={colorValue ? { '--status-color': colorValue } as any : {}}
                                         >
                                             {row.getVisibleCells().map(cell => (
-                                                <TableCell key={cell.id} style={{ width: cell.column.getSize() }}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                                                <TableCell key={cell.id} style={{ width: cell.column.getSize() }} className="p-2 text-xs">{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                                             ))}
                                         </TableRow>
                                     )

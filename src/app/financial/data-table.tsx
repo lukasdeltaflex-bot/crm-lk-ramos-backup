@@ -183,7 +183,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             userSettings={userSettings}
         />
 
-        <div className="flex flex-wrap items-center justify-between gap-4 bg-muted/10 p-2 rounded-xl border border-border/50 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4 bg-muted/10 dark:bg-zinc-900/30 p-2 rounded-xl border border-border/50 shadow-sm">
             <Tabs value={statusFilter} onValueChange={setStatusFilter}>
                 <TabsList className="bg-transparent p-0 gap-1 h-auto flex-wrap">
                     <TabsTrigger value="Todos" className="font-bold px-4 h-9">Todos</TabsTrigger>
@@ -206,7 +206,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
 
             <div className="flex items-center gap-2 ml-auto">
                 <Select value={bankFilter} onValueChange={setBankFilter}>
-                    <SelectTrigger className="h-9 min-w-[180px] bg-card rounded-full text-xs font-bold uppercase px-4 border-primary/10">
+                    <SelectTrigger className="h-9 min-w-[180px] bg-background dark:border-primary/20 rounded-full text-xs font-bold uppercase px-4 border-primary/10">
                         <SelectValue placeholder="TODOS OS BANCOS" />
                     </SelectTrigger>
                     <SelectContent>
@@ -218,7 +218,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                 </Select>
 
                 <Select value={promoterFilter} onValueChange={setPromoterFilter}>
-                    <SelectTrigger className="h-9 min-w-[180px] bg-card rounded-full text-xs font-bold uppercase px-4 border-primary/10">
+                    <SelectTrigger className="h-9 min-w-[180px] bg-background dark:border-primary/20 rounded-full text-xs font-bold uppercase px-4 border-primary/10">
                         <SelectValue placeholder="TODAS PROMOTORAS" />
                     </SelectTrigger>
                     <SelectContent>
@@ -232,7 +232,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         </div>
 
         <div className="flex flex-wrap items-center gap-3 bg-muted/5 p-2 rounded-xl border border-border/50">
-            <div className="flex items-center gap-2 bg-card border rounded-full px-3 py-1 shadow-sm">
+            <div className="flex items-center gap-2 bg-background border border-primary/10 dark:border-primary/20 rounded-full px-3 py-1 shadow-sm">
                 <Select onValueChange={(val) => {
                     const now = new Date();
                     let from = startOfMonth(now);
@@ -265,20 +265,20 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             {appliedDateRange && <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { setStartDateInput(''); setEndDateInput(''); setAppliedDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
         </div>
 
-        <Card className="rounded-[2rem] border border-border/50 bg-card shadow-sm overflow-hidden p-2">
+        <Card className="rounded-[1.5rem] border border-border/50 dark:border-primary/20 bg-card shadow-lg overflow-hidden p-1">
             <div className="flex items-center justify-between px-4 py-2 gap-4">
-                <div className='relative w-full max-w-md'>
-                    <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground opacity-40' />
+                <div className='relative w-full max-w-md group'>
+                    <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary opacity-60 group-focus-within:opacity-100 transition-opacity' />
                     <Input 
-                        placeholder="Busca Inteligente..." 
+                        placeholder="Busca Inteligente (Nome, CPF, Banco...)" 
                         value={globalFilter} 
                         onChange={(e) => setGlobalFilter(e.target.value)} 
-                        className="pl-9 h-10 bg-muted/20 border-transparent rounded-full text-xs font-medium placeholder:text-muted-foreground/50 focus-visible:ring-primary/20" 
+                        className="pl-9 h-10 bg-background border-primary/20 dark:border-primary/30 rounded-full text-xs font-medium shadow-sm focus-visible:ring-primary/20 transition-all placeholder:text-muted-foreground/60" 
                     />
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="h-10 rounded-full px-6 font-bold border-border/50 bg-card shadow-sm gap-2 text-xs text-muted-foreground">
+                        <Button variant="outline" className="h-10 rounded-full px-6 font-bold border-border dark:border-primary/20 bg-background shadow-sm gap-2 text-xs">
                             Colunas <ChevronDown className="h-4 w-4 opacity-50" />
                         </Button>
                     </DropdownMenuTrigger>
@@ -294,10 +294,10 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                 </DropdownMenu>
             </div>
 
-            <div className="rounded-2xl border-none overflow-hidden financial-table">
+            <div className="financial-table">
                 <div className="overflow-x-auto">
                     <Table style={{ width: table.getTotalSize() }}>
-                        <TableHeader className="bg-muted/10">
+                        <TableHeader className="bg-muted/20 dark:bg-zinc-900/50">
                             {table.getHeaderGroups().map(hg => (
                                 <TableRow key={hg.id} className="border-b">
                                     {hg.headers.map(h => <DraggableHeader key={h.id} header={h as any} />)}
@@ -312,17 +312,20 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                                     return (
                                         <TableRow 
                                             key={row.id} 
-                                            className={cn("transition-colors border-b h-12 hover:bg-muted/5", colorValue && "status-row-custom")} 
+                                            className={cn(
+                                                "transition-colors border-b h-11 hover:bg-muted/5 dark:hover:bg-primary/5", 
+                                                colorValue && "status-row-custom"
+                                            )} 
                                             style={colorValue ? { '--status-color': colorValue } as any : {}}
                                         >
                                             {row.getVisibleCells().map(cell => (
-                                                <TableCell key={cell.id} style={{ width: cell.column.getSize() }}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                                                <TableCell key={cell.id} style={{ width: cell.column.getSize() }} className="p-2 text-xs">{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                                             ))}
                                         </TableRow>
                                     )
                                 })
                             ) : (
-                                <TableRow><TableCell colSpan={columns.length} className="h-32 text-center text-muted-foreground font-bold uppercase text-[10px] tracking-widest opacity-40">Sem registros para este filtro.</TableCell></TableRow>
+                                <TableRow><TableCell colSpan={columns.length} className="h-32 text-center text-muted-foreground font-bold uppercase text-[10px] tracking-widest opacity-40">Sem registros para este período.</TableCell></TableRow>
                             )}
                         </TableBody>
                     </Table>
