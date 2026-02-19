@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ColumnDef, flexRender, Header } from '@tanstack/react-table';
@@ -87,7 +88,7 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
                         </div>
                     )}
                     <div className={cn(
-                        "overflow-hidden font-black text-[10px] uppercase tracking-wider text-foreground leading-tight flex items-center gap-1",
+                        "overflow-hidden font-black text-xs uppercase tracking-wider text-foreground leading-tight flex items-center gap-1",
                         isActions && "text-right pr-2",
                         isSelect && "justify-center w-full pr-0"
                     )}>
@@ -107,7 +108,7 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
                     onMouseDown={header.getResizeHandler()}
                     onTouchStart={header.getResizeHandler()}
                     className={cn(
-                        "absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none hover:bg-primary/40 z-20 transition-colors",
+                        "absolute right-0 top-0 h-full w-1.5 cursor-col-resize select-none touch-none hover:bg-primary/40 z-20 transition-colors",
                         header.column.getIsResizing() ? "bg-primary" : "opacity-0 group-hover:opacity-100"
                     )}
                 />
@@ -151,14 +152,14 @@ export const getColumns = (
     id: 'Promotora',
     accessorKey: 'promoter',
     header: 'Promotora',
-    cell: ({ row }) => <span className="text-sm font-bold text-foreground/90">{row.original.promoter}</span>,
+    cell: ({ row }) => <span className="text-sm font-bold text-foreground/90 w-full truncate">{row.original.promoter}</span>,
     size: 150,
   },
   {
     id: 'Cliente',
     accessorFn: (row) => row.customer?.name,
     header: 'Cliente',
-    cell: ({ row }) => <span className="font-black text-primary uppercase text-sm tracking-tight">{row.original.customer?.name}</span>,
+    cell: ({ row }) => <span className="font-black text-primary uppercase text-sm tracking-tight w-full truncate">{row.original.customer?.name}</span>,
     size: 200,
   },
   {
@@ -207,7 +208,7 @@ export const getColumns = (
         return (
             <div className="flex items-center gap-2">
                 <BankIcon bankName={bankRaw} domain={settings?.bankDomains?.[bankRaw]} showLogo={settings?.showBankLogos ?? true} />
-                <span className="truncate text-sm font-bold text-foreground/90">{cleanBankName(bankRaw)}</span>
+                <span className="truncate text-sm font-bold text-foreground/90 w-full">{cleanBankName(bankRaw)}</span>
             </div>
         )
     },

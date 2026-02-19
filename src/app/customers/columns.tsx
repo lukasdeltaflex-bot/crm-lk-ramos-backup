@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ColumnDef, Header, flexRender } from '@tanstack/react-table';
@@ -97,7 +98,7 @@ export const DraggableHeader = ({ header }: { header: Header<Customer, unknown> 
                     )}
 
                     <div className={cn(
-                        "overflow-hidden font-black text-[10px] uppercase tracking-widest text-foreground leading-tight flex items-center gap-1",
+                        "overflow-hidden font-black text-xs uppercase tracking-widest text-foreground leading-tight flex items-center gap-1",
                         isActions && "text-right pr-2",
                         isSelect && "justify-center w-full pr-0"
                     )}>
@@ -122,7 +123,7 @@ export const DraggableHeader = ({ header }: { header: Header<Customer, unknown> 
                     onMouseDown={header.getResizeHandler()}
                     onTouchStart={header.getResizeHandler()}
                     className={cn(
-                        "absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none hover:bg-primary/40 z-20 transition-colors",
+                        "absolute right-0 top-0 h-full w-1.5 cursor-col-resize select-none touch-none hover:bg-primary/40 z-20 transition-colors",
                         header.column.getIsResizing() ? "bg-primary" : "opacity-0 group-hover:opacity-100"
                     )}
                 />
@@ -218,7 +219,7 @@ export const getColumns = (
     cell: ({ row }) => {
         const customer = row.original;
         return (
-            <Link href={`/customers/${customer.id}`} className="font-bold text-primary hover:underline uppercase text-sm tracking-tight truncate block max-w-[220px]">
+            <Link href={`/customers/${customer.id}`} className="font-bold text-primary hover:underline uppercase text-sm tracking-tight truncate block w-full">
                 {customer.name}
             </Link>
         )
@@ -285,7 +286,7 @@ export const getColumns = (
     id: 'Cidade',
     accessorFn: (row) => row.city,
     header: 'Cidade',
-    cell: ({ row }) => <span className="text-sm text-foreground font-medium truncate block">{row.original.city || '-'}</span>,
+    cell: ({ row }) => <span className="text-sm text-foreground font-medium truncate block w-full">{row.original.city || '-'}</span>,
     size: 150,
   },
   {
@@ -299,7 +300,7 @@ export const getColumns = (
     id: 'Observações',
     accessorFn: (row) => row.observations,
     header: 'Observações',
-    cell: ({ row }) => <div className="truncate max-w-[200px] text-muted-foreground italic text-xs">{row.original.observations}</div>,
+    cell: ({ row }) => <div className="truncate w-full text-muted-foreground italic text-xs">{row.original.observations}</div>,
     size: 200,
   },
   {

@@ -204,7 +204,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
       <Card className="rounded-[1.5rem] border-2 border-zinc-200 dark:border-primary/30 bg-card shadow-xl overflow-hidden p-1">
         <div className="py-2">
           <div className="flex items-center justify-between px-4 py-2 gap-4">
-            <div className='relative w-full max-w-sm group'>
+            <div className='relative w-full max-w-md group'>
                 <Search className='absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80 group-focus-within:opacity-100 transition-opacity' />
                 <Input
                     placeholder="Busca Inteligente (Nome, CPF, ID...)"
@@ -215,7 +215,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="ml-auto rounded-full font-black h-11 border-2 border-zinc-300 dark:border-primary/30 bg-background px-6 shadow-md hover:bg-muted/50 transition-all text-[10px] uppercase tracking-widest">
+                <Button variant="outline" className="ml-auto rounded-full font-black h-11 border-2 border-zinc-300 dark:border-primary/30 bg-background px-6 shadow-md hover:bg-muted/50 transition-all text-xs uppercase tracking-widest">
                   Colunas <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
                 </Button>
               </DropdownMenuTrigger>
@@ -276,7 +276,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
                                     key={cell.id} 
                                     style={{ width: cell.column.getSize() }}
                                     className={cn(
-                                        "p-2 text-sm border-zinc-100/50 dark:border-zinc-800/50",
+                                        "p-2 text-sm border-none",
                                         cell.column.id === 'Selecionar' && 'px-0 text-center'
                                     )}
                                 >

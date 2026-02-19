@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -295,7 +296,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="h-11 rounded-full px-6 font-black border-2 border-zinc-300 dark:border-primary/20 bg-background shadow-md gap-2 text-[10px] uppercase tracking-widest">
+                        <Button variant="outline" className="h-11 rounded-full px-6 font-black border-2 border-zinc-300 dark:border-primary/20 bg-background shadow-md gap-2 text-xs uppercase tracking-widest">
                             Colunas <ChevronDown className="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>

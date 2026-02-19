@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ColumnDef, Header, flexRender } from '@tanstack/react-table';
@@ -136,7 +137,7 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
                         </div>
                     )}
                     <div className={cn(
-                        "overflow-hidden font-black text-[12px] uppercase tracking-wider text-foreground leading-tight flex items-center gap-1",
+                        "overflow-hidden font-black text-xs uppercase tracking-wider text-foreground leading-tight flex items-center gap-1",
                         isActions && "text-right pr-2",
                         isSelect && "justify-center w-full pr-0"
                     )}>
@@ -156,7 +157,7 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
                     onMouseDown={header.getResizeHandler()}
                     onTouchStart={header.getResizeHandler()}
                     className={cn(
-                        "absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none hover:bg-primary/40 z-20 transition-colors",
+                        "absolute right-0 top-0 h-full w-1.5 cursor-col-resize select-none touch-none hover:bg-primary/40 z-20 transition-colors",
                         header.column.getIsResizing() ? "bg-primary" : "opacity-0 group-hover:opacity-100"
                     )}
                 />
@@ -210,7 +211,7 @@ export const getColumns = (
         return (
             <div className="flex items-center gap-2">
                 <BankIcon bankName={promoter} domain={domain} showLogo={showLogos} className="h-4 w-4" />
-                <span className="truncate text-sm font-bold text-foreground/90">{promoter}</span>
+                <span className="truncate text-sm font-bold text-foreground/90 w-full">{promoter}</span>
             </div>
         )
     },
@@ -239,8 +240,8 @@ export const getColumns = (
         const customer = row.original.customer;
         const hasWhatsApp = customer?.phone && isWhatsApp(customer.phone);
         return (
-            <div className="flex items-center gap-2 font-black text-primary uppercase text-sm tracking-tight">
-                <span className="truncate max-w-[180px]">{customer?.name || '---'}</span>
+            <div className="flex items-center gap-2 font-black text-primary uppercase text-sm tracking-tight w-full overflow-hidden">
+                <span className="truncate w-full">{customer?.name || '---'}</span>
                 {hasWhatsApp && (
                     <a 
                         href={getWhatsAppUrl(customer.phone)} 
@@ -299,7 +300,7 @@ export const getColumns = (
         return (
             <div className="flex items-center gap-2">
                 <BankIcon bankName={bankRaw} domain={customDomain} showLogo={showLogos} />
-                <span className="truncate text-sm font-bold text-foreground/90">{cleanBankName(bankRaw)}</span>
+                <span className="truncate text-sm font-bold text-foreground/90 w-full">{cleanBankName(bankRaw)}</span>
             </div>
         )
     },
@@ -325,7 +326,7 @@ export const getColumns = (
     id: 'Operador',
     accessorKey: 'operator',
     header: 'Operador',
-    cell: ({ row }) => <span className="text-sm font-bold text-foreground/70">{row.original.operator || '-'}</span>,
+    cell: ({ row }) => <span className="text-sm font-bold text-foreground/70 w-full truncate">{row.original.operator || '-'}</span>,
     size: 150,
   },
   {
