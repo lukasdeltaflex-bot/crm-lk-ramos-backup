@@ -21,9 +21,9 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, GripVertical, ArrowUp, ArrowDown, Copy } from 'lucide-react';
+import { MoreHorizontal, GripVertical, ArrowUp, ArrowDown, Copy, ExternalLink } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { formatCurrency, cleanBankName, cn, formatDateSafe } from '@/lib/utils';
+import { formatCurrency, cleanBankName, cn, formatDateSafe, isWhatsApp, getWhatsAppUrl } from '@/lib/utils';
 import React from 'react';
 import { StatusCell } from './status-cell';
 import { useSortable } from '@dnd-kit/sortable';
@@ -31,6 +31,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { TableHead } from '@/components/ui/table';
 import { toast } from '@/hooks/use-toast';
 import { BankIcon } from '@/components/bank-icon';
+import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
 
 const CopyButton = ({ text, label }: { text: string | undefined; label: string }) => {
     if (!text) return null;
@@ -234,19 +235,42 @@ export const getColumns = (
     id: 'Cliente',
     accessorFn: (row) => row.customer?.name,
     header: 'Cliente',
-    cell: ({ row }) => (
-        <div className="flex items-center gap-2 font-black text-primary uppercase text-sm tracking-tight">
-            {row.original.customer?.name || '---'}
-        </div>
-    ),
-    size: 200,
+    cell: ({ row }) => {
+        const customer = row.original.customer;
+        const hasWhatsApp = customer?.phone && isWhatsApp(customer.phone);
+        return (
+            <div className="flex items-center gap-2 font-black text-primary uppercase text-sm tracking-tight">
+                <span className="truncate max-w-[180px]">{customer?.name || '---'}</span>
+                {hasWhatsApp && (
+                    <a 
+                        href={getWhatsAppUrl(customer.phone)} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-green-600 hover:text-green-700 transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <WhatsAppIcon className="h-3.5 w-3.5" />
+                    </a>
+                )}
+            </div>
+        )
+    },
+    size: 220,
   },
   {
     id: 'CPF',
     accessorFn: (row) => row.customer?.cpf,
     header: 'CPF',
-    cell: ({ row }) => <span className="text-sm font-black text-foreground/80">{row.original.customer?.cpf || '-'}</span>,
-    size: 150,
+    cell: ({ row }) => {
+        const cpf = row.original.customer?.cpf;
+        return (
+            <div className="flex items-center gap-1 text-sm font-black text-foreground/80">
+                <span>{cpf || '-'}</span>
+                {cpf && <CopyButton text={cpf} label="CPF" />}
+            </div>
+        );
+    },
+    size: 160,
   },
   {
     id: 'Produto',
@@ -341,7 +365,7 @@ export const getColumns = (
   },
   {
     id: 'Actions',
-    header: 'Actions',
+    header: '',
     cell: (props) => <ActionsCell {...props} onEdit={onEdit} onView={onView} onDelete={onDelete} onDuplicate={onDuplicate} />,
     enableHiding: false,
     size: 80,
