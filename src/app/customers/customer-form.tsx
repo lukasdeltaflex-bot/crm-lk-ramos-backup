@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -171,9 +170,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       
       // SINCRONIZAÇÃO FORÇADA: Garante que o Select não perca o valor após o reset
       if (genderValue) {
-          setTimeout(() => {
-              form.setValue('gender', genderValue, { shouldValidate: true });
-          }, 50);
+          form.setValue('gender', genderValue, { shouldValidate: true });
       }
     }
   }, [customer, defaultValues, form]);
@@ -416,6 +413,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         <FormItem>
                           <FormLabel>Gênero</FormLabel>
                           <Select 
+                            key={currentCustomerId}
                             onValueChange={field.onChange} 
                             value={field.value || ""}
                           >

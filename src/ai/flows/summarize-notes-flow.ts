@@ -3,21 +3,26 @@
  * @fileOverview Um fluxo Genkit para resumir anotações de clientes.
  *
  * - summarizeNotes - A função para chamar o fluxo de sumarização.
- * - SummarizeNotesInput - O tipo de entrada (string).
- * - SummarizeNotesOutput - O tipo de saída (string).
+ * - SummarizeNotesInput - O tipo de entrada (objeto com a string).
+ * - SummarizeNotesOutput - O tipo de saída (objeto com a string).
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const SummarizeNotesInputSchema = z.string().describe('As anotações do cliente a serem resumidas.');
+const SummarizeNotesInputSchema = z.object({
+  notes: z.string().describe('As anotações do cliente a serem resumidas.'),
+});
 export type SummarizeNotesInput = z.infer<typeof SummarizeNotesInputSchema>;
 
-const SummarizeNotesOutputSchema = z.string().describe('As anotações do cliente resumidas e bem formatadas.');
+const SummarizeNotesOutputSchema = z.object({
+  summary: z.string().describe('As anotações do cliente resumidas e bem formatadas.'),
+});
 export type SummarizeNotesOutput = z.infer<typeof SummarizeNotesOutputSchema>;
 
-export async function summarizeNotes(input: SummarizeNotesInput): Promise<SummarizeNotesOutput> {
-  return summarizeNotesFlow(input);
+export async function summarizeNotes(notes: string): Promise<string> {
+  const result = await summarizeNotesFlow({ notes });
+  return result.summary;
 }
 
 const prompt = ai.definePrompt({
@@ -31,9 +36,9 @@ Use marcadores para informações importantes.
 A saída deve ser em português do Brasil.
 
 Aqui estão as anotações:
-{{{input}}}
+{{{notes}}}
 
-Gere um resumo bem estruturado.`,
+Gere um resumo bem estruturado no campo "summary" do JSON de saída.`,
 });
 
 const summarizeNotesFlow = ai.defineFlow(
