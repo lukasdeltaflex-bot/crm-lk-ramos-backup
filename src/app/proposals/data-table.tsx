@@ -58,13 +58,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Filter, X, Search, Calendar as CalendarIcon, ChevronDown } from 'lucide-react';
+import { Filter, X, Search, Calendar as CalendarIcon, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import type { ProposalStatus, UserSettings } from '@/lib/types';
 import { DraggableHeader } from './columns';
 import type { ProposalWithCustomer } from './page';
 import { Separator } from '@/components/ui/separator';
-import { normalizeString, cn } from '@/lib/utils';
+import { normalizeString, cn, formatCurrency } from '@/lib/utils';
 import { useTheme } from '@/components/theme-provider';
 
 interface DataTableProps {
@@ -182,6 +182,14 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   });
 
   React.useImperativeHandle(ref, () => ({ table }));
+
+  const totalGross = React.useMemo(() => 
+    table.getFilteredRowModel().rows.reduce((acc, row) => acc + (row.original.grossAmount || 0), 0),
+  [table.getFilteredRowModel().rows]);
+
+  const totalCommission = React.useMemo(() => 
+    table.getFilteredRowModel().rows.reduce((acc, row) => acc + (row.original.commissionValue || 0), 0),
+  [table.getFilteredRowModel().rows]);
 
   const handleDateInputChange = (value: string, type: 'start' | 'end') => {
     let v = value.replace(/\D/g, '').slice(0, 8);
@@ -354,6 +362,51 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                 )}
                             </TableBody>
                         </Table>
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-between px-6 py-3 border-t-2 bg-muted/10 font-black text-[10px] uppercase tracking-[0.1em] text-foreground/60">
+                    <div className="flex items-center gap-4">
+                        <div>
+                            {table.getFilteredSelectedRowModel().rows.length} DE{' '}
+                            {table.getFilteredRowModel().rows.length} SELECIONADOS.
+                        </div>
+                        <Separator orientation="vertical" className="h-4 bg-zinc-300 dark:bg-zinc-700" />
+                        <div className="text-primary font-black">
+                            VALOR BRUTO: <span className="text-foreground">{formatCurrency(totalGross)}</span>
+                        </div>
+                        <Separator orientation="vertical" className="h-4 bg-zinc-300 dark:bg-zinc-700" />
+                        <div className="text-primary font-black">
+                            COMISSÃO: <span className="text-foreground">{formatCurrency(totalCommission)}</span>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-2">
+                            <span>LINHAS</span>
+                            <Select
+                                value={`${table.getState().pagination.pageSize}`}
+                                onValueChange={(value) => table.setPageSize(Number(value))}
+                            >
+                                <SelectTrigger className="h-8 w-[70px] bg-background border-2 border-zinc-200 dark:border-zinc-800 rounded-full text-[10px] font-black shadow-sm">
+                                    <SelectValue placeholder={table.getState().pagination.pageSize} />
+                                </SelectTrigger>
+                                <SelectContent side="top">
+                                    {[10, 20, 50, 100].map((pageSize) => (
+                                        <SelectItem key={pageSize} value={`${pageSize}`} className="text-[10px] font-black uppercase">{pageSize}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="text-primary font-black">
+                            PÁG {table.getState().pagination.pageIndex + 1} DE {table.getPageCount()}
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <Button variant="outline" size="icon" className="h-8 w-8 rounded-full border-2" onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()}><ChevronsLeft className="h-4 w-4" /></Button>
+                            <Button variant="outline" size="icon" className="h-8 w-8 rounded-full border-2" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}><ChevronLeft className="h-4 w-4" /></Button>
+                            <Button variant="outline" size="icon" className="h-8 w-8 rounded-full border-2" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}><ChevronRight className="h-4 w-4" /></Button>
+                            <Button variant="outline" size="icon" className="h-8 w-8 rounded-full border-2" onClick={() => table.setPageIndex(table.getPageCount() - 1)} disabled={!table.getCanNextPage()}><ChevronsRight className="h-4 w-4" /></Button>
+                        </div>
                     </div>
                 </div>
             </Card>

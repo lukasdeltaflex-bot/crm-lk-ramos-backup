@@ -14,10 +14,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ProposalForm } from './proposal-form';
-import type { Proposal, Customer, ProposalStatus, UserSettings, ProposalHistoryEntry } from '@/lib/types';
+import type { Proposal, Customer, ProposalStatus, UserSettings } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from '@/firebase';
-import { collection, doc, query, where, setDoc, updateDoc, arrayUnion, deleteDoc } from 'firebase/firestore';
+import { collection, doc, query, where, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CustomerSearchDialog } from '@/components/proposals/customer-search-dialog';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -228,10 +228,10 @@ function ProposalsPageContent() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <PageHeader title="Propostas" />
-        <div className="flex items-center gap-3">
-            <Button variant="outline" className="h-10 px-6 rounded-full font-bold border-zinc-300 text-xs" onClick={handleExportToExcel}>
+        <div className="flex items-center gap-3 flex-wrap">
+            <Button variant="outline" className="h-10 px-6 rounded-full font-bold border-border/50 hover:bg-muted/50 transition-all text-xs" onClick={handleExportToExcel}>
                 <FileDown className="mr-2 h-4 w-4" /> Exportar
             </Button>
             <Button onClick={handleNewProposal} className="h-10 px-8 rounded-full font-bold bg-[#00AEEF] hover:bg-[#0096D1] text-white shadow-lg shadow-[#00AEEF]/20 transition-all border-none text-xs">
