@@ -24,27 +24,14 @@ import {
 } from "@/components/ui/alert-dialog"
 import { MoreHorizontal, GripVertical, ArrowUp, ArrowDown, Copy } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { formatCurrency, cleanBankName, cn } from '@/lib/utils';
+import { formatCurrency, cleanBankName, cn, formatDateSafe } from '@/lib/utils';
 import React from 'react';
 import { StatusCell } from './status-cell';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TableHead } from '@/components/ui/table';
 import { toast } from '@/hooks/use-toast';
 import { BankIcon } from '@/components/bank-icon';
-
-const formatDate = (dateString?: string) => {
-    if (!dateString) return '-';
-    try {
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) return '-';
-        return format(date, "dd/MM/yyyy", { locale: ptBR });
-    } catch (e) {
-        return '-';
-    }
-}
 
 const CopyButton = ({ text, label }: { text: string | undefined; label: string }) => {
     if (!text) return null;
@@ -76,18 +63,18 @@ const ActionsCell = ({ row, onEdit, onView, onDelete, onDuplicate }: any) => {
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuLabel>Ações da Proposta</DropdownMenuLabel>
             <DropdownMenuItem onSelect={() => onView(proposal)}>Ver detalhes</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => onEdit(proposal)}>Editar</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => onDuplicate(proposal)}>Duplicar</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onEdit(proposal)}>Editar Registro</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onDuplicate(proposal)}>Duplicar Proposta</DropdownMenuItem>
             <DropdownMenuSeparator />
             <AlertDialog>
                 <DropdownMenuItem 
                     onSelect={(e) => e.preventDefault()}
                     className="text-destructive focus:text-destructive focus:bg-destructive/10"
                     >
-                    Cancelar
+                    Cancelar Proposta
                 </DropdownMenuItem>
             </AlertDialog>
           </DropdownMenuContent>
@@ -109,6 +96,8 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
         opacity: isDragging ? 0.5 : 1,
     };
 
+    const isActions = header.column.id === 'Ações';
+
     return (
         <TableHead
             ref={setNodeRef}
@@ -120,11 +109,12 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
                 <div
                     className={cn(
                         'flex items-center gap-2 h-full px-3',
-                        isDraggable && 'cursor-pointer select-none'
+                        isDraggable && 'cursor-pointer select-none',
+                        isActions && 'justify-end'
                     )}
                     onClick={header.column.getToggleSortingHandler()}
                 >
-                    {isDraggable && (
+                    {isDraggable && !isActions && (
                         <div
                             {...attributes}
                             {...listeners}
@@ -134,7 +124,10 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
                             <GripVertical className="h-3.5 w-3.5" />
                         </div>
                     )}
-                    <div className="flex-1 overflow-hidden font-bold text-[10px] uppercase tracking-widest text-muted-foreground leading-tight">
+                    <div className={cn(
+                        "overflow-hidden font-bold text-[10px] uppercase tracking-widest text-muted-foreground leading-tight",
+                        isActions && "text-right pr-2"
+                    )}>
                         {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                     </div>
                     {header.column.getIsSorted() && (
@@ -194,7 +187,7 @@ export const getColumns = (
   },
   {
     id: 'Promotora',
-    accessorKey: 'promoter',
+    header: 'Promotora',
     cell: ({ row, table }) => {
         const promoter = row.original.promoter;
         const settings = (table.options.meta as any)?.userSettings as UserSettings;
@@ -212,7 +205,7 @@ export const getColumns = (
   },
   {
     id: 'Nº Proposta',
-    accessorKey: 'proposalNumber',
+    header: 'Nº Proposta',
     cell: ({ row }) => {
         const num = row.original.proposalNumber;
         return (
@@ -226,7 +219,7 @@ export const getColumns = (
   },
   {
     id: 'Cliente',
-    accessorFn: (row) => row.customer?.name,
+    header: 'Cliente',
     cell: ({ row }) => (
         <div className="flex items-center gap-2 font-bold text-primary">
             {row.original.customer?.name || '---'}
@@ -236,7 +229,8 @@ export const getColumns = (
   },
   {
     id: 'Produto',
-    accessorKey: 'product',
+    header: 'Produto',
+    cell: ({ row }) => row.original.product,
     size: 120,
   },
   {
@@ -247,7 +241,7 @@ export const getColumns = (
   },
   {
     id: 'Banco',
-    accessorKey: 'bank',
+    header: 'Banco',
     cell: ({ row, table }) => {
         const bankRaw = row.original.bank;
         const settings = (table.options.meta as any)?.userSettings as UserSettings;
@@ -280,8 +274,8 @@ export const getColumns = (
   },
   {
     id: 'Data Digitação',
-    accessorKey: 'dateDigitized',
-    cell: ({ row }) => formatDate(row.original.dateDigitized),
+    header: 'Data Digitação',
+    cell: ({ row }) => formatDateSafe(row.original.dateDigitized),
     size: 120,
   },
   {
@@ -290,4 +284,4 @@ export const getColumns = (
     enableHiding: false,
     size: 80,
   },
-].map(column => ({ ...column, id: column.id || column.accessorKey as string}));
+];

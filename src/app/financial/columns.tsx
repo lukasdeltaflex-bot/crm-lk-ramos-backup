@@ -6,14 +6,14 @@ import type { Proposal, Customer, CommissionStatus, UserSettings } from '@/lib/t
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, GripVertical, Copy, ArrowUp, ArrowDown } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { formatCurrency, cleanBankName, formatDateSafe } from '@/lib/utils';
-import { cn } from '@/lib/utils';
+import { formatCurrency, cleanBankName, formatDateSafe, cn } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -58,6 +58,8 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
         opacity: isDragging ? 0.5 : 1,
     };
 
+    const isActions = header.column.id === 'Ações';
+
     return (
         <TableHead
             ref={setNodeRef}
@@ -69,11 +71,12 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
                 <div
                     className={cn(
                         'flex items-center gap-2 h-full px-3',
-                        isDraggable && 'cursor-pointer select-none'
+                        isDraggable && 'cursor-pointer select-none',
+                        isActions && 'justify-end'
                     )}
                     onClick={header.column.getToggleSortingHandler()}
                 >
-                    {isDraggable && (
+                    {isDraggable && !isActions && (
                         <div
                             {...attributes}
                             {...listeners}
@@ -83,7 +86,10 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
                             <GripVertical className="h-3.5 w-3.5" />
                         </div>
                     )}
-                    <div className="flex-1 overflow-hidden font-bold text-[10px] uppercase tracking-widest text-muted-foreground leading-tight">
+                    <div className={cn(
+                        "overflow-hidden font-bold text-[10px] uppercase tracking-widest text-muted-foreground leading-tight",
+                        isActions && "text-right pr-2"
+                    )}>
                         {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                     </div>
                     {header.column.getIsSorted() && (
@@ -142,20 +148,18 @@ export const getColumns = (
   },
   {
     id: 'Promotora',
-    accessorFn: (row) => row.promoter,
     header: 'Promotora',
+    cell: ({ row }) => row.original.promoter,
     size: 150,
   },
   {
     id: 'Cliente',
-    accessorFn: (row) => row.customer?.name,
     header: 'Cliente',
     cell: ({ row }) => <span className="font-bold text-primary">{row.original.customer?.name}</span>,
     size: 200,
   },
   {
     id: 'CPF',
-    accessorFn: (row) => row.customer?.cpf,
     header: 'CPF',
     cell: ({ row }) => {
         const cpf = row.original.customer?.cpf;
@@ -170,7 +174,6 @@ export const getColumns = (
   },
   {
     id: 'Nº Proposta',
-    accessorFn: (row) => row.proposalNumber,
     header: 'Nº Proposta',
     cell: ({ row }) => (
         <div className="flex items-center gap-1">
@@ -184,13 +187,12 @@ export const getColumns = (
   },
   {
     id: 'Produto',
-    accessorFn: (row) => row.product,
     header: 'Produto',
+    cell: ({ row }) => row.original.product,
     size: 120,
   },
   {
     id: 'Banco',
-    accessorFn: (row) => row.bank,
     header: 'Banco',
     cell: ({ row, table }) => {
         const bankRaw = row.original.bank;
@@ -259,4 +261,4 @@ export const getColumns = (
     enableHiding: false,
     size: 80,
   },
-].map(column => ({ ...column, id: column.id || (column as any).accessorKey }));
+];

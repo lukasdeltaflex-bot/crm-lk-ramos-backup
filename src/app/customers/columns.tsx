@@ -64,6 +64,8 @@ export const DraggableHeader = ({ header }: { header: Header<Customer, unknown> 
         opacity: isDragging ? 0.5 : 1,
     };
 
+    const isActions = header.column.id === 'Ações';
+
     return (
         <TableHead
             ref={setNodeRef}
@@ -75,11 +77,12 @@ export const DraggableHeader = ({ header }: { header: Header<Customer, unknown> 
                 <div
                     className={cn(
                         'flex items-center gap-2 h-full px-3',
-                        isDraggable && 'cursor-pointer select-none'
+                        isDraggable && 'cursor-pointer select-none',
+                        isActions && 'justify-end'
                     )}
                     onClick={header.column.getToggleSortingHandler()}
                 >
-                    {isDraggable && (
+                    {isDraggable && !isActions && (
                         <div
                             {...attributes}
                             {...listeners}
@@ -90,7 +93,10 @@ export const DraggableHeader = ({ header }: { header: Header<Customer, unknown> 
                         </div>
                     )}
 
-                    <div className="flex-1 overflow-hidden font-bold text-[10px] uppercase tracking-widest text-muted-foreground leading-tight">
+                    <div className={cn(
+                        "overflow-hidden font-bold text-[10px] uppercase tracking-widest text-muted-foreground leading-tight",
+                        isActions && "text-right pr-2"
+                    )}>
                         {header.isPlaceholder
                             ? null
                             : flexRender(
@@ -133,10 +139,11 @@ const ActionsCell = ({ row, onEdit, onDelete }: any) => {
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Ações</DropdownMenuLabel>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuLabel>Ações Disponíveis</DropdownMenuLabel>
+          <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => onEdit(customer)}>
-            Editar
+            Editar Cadastro
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <AlertDialog>
@@ -144,7 +151,7 @@ const ActionsCell = ({ row, onEdit, onDelete }: any) => {
                 onSelect={(e) => e.preventDefault()}
                 className="text-destructive focus:text-destructive focus:bg-destructive/10"
             >
-                Remover
+                Remover Registro
             </DropdownMenuItem>
           </AlertDialog>
         </DropdownMenuContent>
@@ -183,13 +190,12 @@ export const getColumns = (
     size: 50,
   },
   {
-    accessorKey: 'numericId',
     id: 'ID',
     header: 'ID',
+    cell: ({ row }) => row.original.numericId,
     size: 80,
   },
   {
-    accessorKey: 'name',
     id: 'Nome',
     header: 'Nome',
     cell: ({ row }) => {
@@ -203,7 +209,6 @@ export const getColumns = (
     size: 250,
   },
   {
-    accessorKey: 'cpf',
     id: 'CPF',
     header: 'CPF',
     cell: ({ row }) => {
@@ -218,7 +223,6 @@ export const getColumns = (
     size: 150,
   },
   {
-    accessorKey: 'phone',
     id: 'Telefone',
     header: 'Telefone',
     cell: ({ row }) => {
@@ -238,7 +242,6 @@ export const getColumns = (
     size: 150,
   },
   {
-    accessorKey: 'phone2',
     id: 'Telefone 2',
     header: 'Telefone 2',
     cell: ({ row }) => {
@@ -259,19 +262,18 @@ export const getColumns = (
     size: 150,
   },
   {
-    accessorKey: 'city',
     id: 'Cidade',
     header: 'Cidade',
+    cell: ({ row }) => row.original.city || '-',
     size: 150,
   },
   {
-    accessorKey: 'state',
     id: 'Estado',
     header: 'Estado',
+    cell: ({ row }) => row.original.state || '-',
     size: 80,
   },
   {
-    accessorKey: 'observations',
     id: 'Observações',
     header: 'Observações',
     cell: ({ row }) => <div className="truncate max-w-[200px] text-zinc-500 italic text-xs">{row.original.observations}</div>,
@@ -283,4 +285,4 @@ export const getColumns = (
     enableHiding: false,
     size: 80,
   },
-].map(column => ({ ...column, id: column.id || column.accessorKey as string}));
+];
