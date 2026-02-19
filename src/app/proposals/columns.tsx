@@ -251,7 +251,7 @@ export const getColumns = (
     onDuplicate: any
     ): ColumnDef<ProposalWithCustomer>[] => [
   {
-    id: 'select',
+    id: 'selecionar',
     header: ({ table }) => (
       <Checkbox
         checked={
@@ -275,7 +275,7 @@ export const getColumns = (
   },
   {
     accessorKey: 'promoter',
-    id: 'promoter',
+    id: 'Promotora',
     header: 'Promotora',
     cell: ({ row, table }) => {
         const promoter = row.original.promoter;
@@ -293,7 +293,7 @@ export const getColumns = (
   },
   {
     accessorKey: 'proposalNumber',
-    id: 'proposalNumber',
+    id: 'Nº Proposta',
     header: 'Nº Proposta',
     cell: ({ row }) => {
         const proposalNumber = row.getValue('proposalNumber') as string;
@@ -306,7 +306,7 @@ export const getColumns = (
     }
   },
   {
-    id: 'customerName',
+    id: 'Cliente',
     accessorFn: (row) => row.customer?.name,
     header: 'Cliente',
     cell: ({ row }) => {
@@ -334,7 +334,7 @@ export const getColumns = (
     }
   },
   {
-    id: 'customerCpf',
+    id: 'CPF',
     accessorFn: (row) => row.customer?.cpf,
     header: 'CPF',
     cell: ({ row }) => {
@@ -349,12 +349,12 @@ export const getColumns = (
   },
   {
     accessorKey: 'product',
-    id: 'product',
+    id: 'Produto',
     header: 'Produto',
   },
   {
     accessorKey: 'grossAmount',
-    id: 'grossAmount',
+    id: 'Valor Bruto',
     header: () => <div className="text-right">Valor Bruto</div>,
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue('grossAmount'));
@@ -366,7 +366,7 @@ export const getColumns = (
   {
     accessorKey: 'bank',
     header: 'Banco Digitado',
-    id: 'banco_digitado_v6',
+    id: 'Banco Digitado',
     cell: ({ row, table }) => {
         const bankRaw = row.original.bank;
         const bank = cleanBankName(bankRaw);
@@ -384,7 +384,7 @@ export const getColumns = (
   },
   {
     accessorKey: 'status',
-    id: 'status',
+    id: 'Status',
     header: 'Status',
     cell: ({ row }) => (
         <StatusCellWithMonitor 
@@ -395,18 +395,17 @@ export const getColumns = (
     filterFn: (row, id, value) => {
         if (!value || (Array.isArray(value) && value.length === 0)) return true;
         const status = row.getValue(id);
-        // Garantimos que a comparação funcione mesmo com arrays ou valores únicos vindos das abas
         return Array.isArray(value) ? value.includes(status) : status === value;
     }
   },
   {
     accessorKey: 'operator',
-    id: 'operator',
+    id: 'Operador',
     header: 'Operador',
   },
   {
     accessorKey: 'commissionValue',
-    id: 'commissionValue',
+    id: 'Comissão',
     header: () => <div className="text-right">Comissão</div>,
     cell: ({ row }) => {
         const amount = parseFloat(row.getValue('commissionValue'));
@@ -415,7 +414,7 @@ export const getColumns = (
   },
   {
     accessorKey: 'dateDigitized',
-    id: 'dateDigitized',
+    id: 'Data Digitação',
     header: 'Data Digitação',
     cell: ({ row }) => formatDate(row.getValue('dateDigitized')),
     filterFn: (row, id, filterValue: DateRange) => {
@@ -442,24 +441,24 @@ export const getColumns = (
   },
   {
     accessorKey: 'dateApproved',
-    id: 'dateApproved',
+    id: 'Data Averbação',
     header: 'Data Averbação',
     cell: ({ row }) => formatDate(row.getValue('dateApproved'))
   },
   {
     accessorKey: 'datePaidToClient',
-    id: 'datePaidToClient',
+    id: 'Data Pgto. Cliente',
     header: 'Data Pgto. Cliente',
     cell: ({ row }) => formatDate(row.getValue('datePaidToClient'))
   },
   {
     accessorKey: 'debtBalanceArrivalDate',
-    id: 'debtBalanceArrivalDate',
+    id: 'Chegada Saldo',
     header: 'Chegada Saldo',
     cell: ({ row }) => formatDate(row.getValue('debtBalanceArrivalDate'))
   },
   {
-    id: 'actions',
+    id: 'ações',
     cell: (props) => <ActionsCell {...props} onEdit={onEdit} onView={onView} onDelete={onDelete} onDuplicate={onDuplicate} />,
     enableColumnOrdering: false,
     enableSorting: false,

@@ -179,7 +179,7 @@ export const getColumns = (
   { onEdit, onDelete }: { onEdit: (customer: Customer) => void; onDelete: (customerId: string) => void; }
 ): ColumnDef<Customer>[] => [
   {
-    id: 'select',
+    id: 'selecionar',
     header: ({ table }) => (
       <Checkbox
         checked={
@@ -203,13 +203,13 @@ export const getColumns = (
   },
   {
     accessorKey: 'numericId',
-    id: 'numericId',
+    id: 'ID',
     header: 'ID',
     enableHiding: false,
   },
   {
     accessorKey: 'name',
-    id: 'name',
+    id: 'Nome',
     header: 'Nome',
     cell: ({ row }) => {
         const customer = row.original;
@@ -223,7 +223,7 @@ export const getColumns = (
   },
   {
     accessorKey: 'cpf',
-    id: 'cpf',
+    id: 'CPF',
     header: 'CPF',
     cell: ({ row }) => {
         const cpf = row.getValue('cpf') as string;
@@ -237,7 +237,7 @@ export const getColumns = (
   },
   {
     accessorKey: 'phone',
-    id: 'phone',
+    id: 'Telefone',
     header: 'Telefone',
     cell: ({ row }) => {
         const phone = row.getValue('phone') as string;
@@ -256,7 +256,7 @@ export const getColumns = (
   },
   {
     accessorKey: 'phone2',
-    id: 'phone2',
+    id: 'Telefone 2',
     header: 'Telefone 2',
     cell: ({ row }) => {
         const phone = row.getValue('phone2') as string;
@@ -276,17 +276,17 @@ export const getColumns = (
   },
   {
     accessorKey: 'city',
-    id: 'city',
+    id: 'Cidade',
     header: 'Cidade',
   },
   {
     accessorKey: 'state',
-    id: 'state',
+    id: 'Estado',
     header: 'Estado',
   },
   {
     accessorKey: 'observations',
-    id: 'observations',
+    id: 'Observações',
     header: 'Observações',
     cell: ({ row }) => {
         const obs = row.getValue('observations') as string;
@@ -294,7 +294,7 @@ export const getColumns = (
     }
   },
   {
-    id: 'actions',
+    id: 'ações',
     cell: (props) => <ActionsCell {...props} onEdit={onEdit} onDelete={onDelete} />,
     enableColumnOrdering: false,
     enableHiding: false,
