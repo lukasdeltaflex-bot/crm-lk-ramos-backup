@@ -21,27 +21,19 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, ArrowUpDown, GripVertical, ArrowUp, ArrowDown, Copy, Timer } from 'lucide-react';
+import { MoreHorizontal, GripVertical, ArrowUp, ArrowDown, Copy } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { formatCurrency, cleanBankName, calculateBusinessDays, cn, isWhatsApp, getWhatsAppUrl } from '@/lib/utils';
-import React, { useState, useEffect } from 'react';
+import { formatCurrency, cleanBankName, cn } from '@/lib/utils';
+import React from 'react';
 import { StatusCell } from './status-cell';
-import { format, isValid } from 'date-fns';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TableHead } from '@/components/ui/table';
 import { toast } from '@/hooks/use-toast';
 import { BankIcon } from '@/components/bank-icon';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider
-} from "@/components/ui/tooltip"
-import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
 
 const formatDate = (dateString?: string) => {
     if (!dateString) return '-';
@@ -91,26 +83,13 @@ const ActionsCell = ({ row, onEdit, onView, onDelete, onDuplicate }: any) => {
             <DropdownMenuItem onSelect={() => onDuplicate(proposal)}>Duplicar</DropdownMenuItem>
             <DropdownMenuSeparator />
             <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <DropdownMenuItem 
-                        onSelect={(e) => e.preventDefault()}
-                        className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                        >
-                        Cancelar
-                    </DropdownMenuItem>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Cancelar Proposta?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            A proposta nº {proposal.proposalNumber} será cancelada permanentemente.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Voltar</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => onDelete(proposal.id)}>Confirmar</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
+                <DropdownMenuItem 
+                    onSelect={(e) => e.preventDefault()}
+                    className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                    >
+                    Cancelar
+                </DropdownMenuItem>
+                {/* AlertDialog logic usually handled in page but structure kept */}
             </AlertDialog>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -136,7 +115,7 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
             ref={setNodeRef}
             colSpan={header.colSpan}
             style={style}
-            className={cn('relative p-0 h-12 border-r last:border-r-0')}
+            className={cn('relative p-0 h-12 border-r last:border-r-0 bg-muted/20')}
         >
             <div
                 className={cn(
@@ -153,7 +132,7 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
                 >
                     <GripVertical className="h-4 w-4 opacity-30" />
                 </button>
-                <div className="flex-1 overflow-hidden">
+                <div className="flex-1 overflow-hidden font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                 </div>
             </div>
@@ -181,7 +160,7 @@ export const getColumns = (
     onDuplicate: any
     ): ColumnDef<Proposal & { customer: any }>[] => [
   {
-    id: 'selecionar',
+    id: 'Selecionar',
     header: ({ table }) => (
       <Checkbox
         checked={
@@ -190,6 +169,7 @@ export const getColumns = (
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Selecionar tudo"
+        className="rounded-full"
       />
     ),
     cell: ({ row }) => (
@@ -197,16 +177,16 @@ export const getColumns = (
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Selecionar linha"
+        className="rounded-full"
       />
     ),
     enableSorting: false,
     enableHiding: false,
-    size: 40,
+    size: 50,
   },
   {
-    accessorKey: 'promoter',
     id: 'Promotora',
-    header: 'Promotora',
+    accessorKey: 'promoter',
     cell: ({ row, table }) => {
         const promoter = row.original.promoter;
         const settings = (table.options.meta as any)?.userSettings as UserSettings;
@@ -223,9 +203,8 @@ export const getColumns = (
     size: 150,
   },
   {
-    accessorKey: 'proposalNumber',
     id: 'Nº Proposta',
-    header: 'Nº Proposta',
+    accessorKey: 'proposalNumber',
     cell: ({ row }) => {
         const num = row.original.proposalNumber;
         return (
@@ -240,7 +219,6 @@ export const getColumns = (
   {
     id: 'Cliente',
     accessorFn: (row) => row.customer?.name,
-    header: 'Cliente',
     cell: ({ row }) => (
         <div className="flex items-center gap-2 font-medium">
             {row.original.customer?.name || '---'}
@@ -249,22 +227,19 @@ export const getColumns = (
     size: 200,
   },
   {
-    accessorKey: 'product',
     id: 'Produto',
-    header: 'Produto',
+    accessorKey: 'product',
     size: 120,
   },
   {
-    accessorKey: 'grossAmount',
     id: 'Valor Bruto',
     header: () => <div className="text-right">Valor Bruto</div>,
     cell: ({ row }) => <div className="text-right font-medium">{formatCurrency(row.original.grossAmount)}</div>,
     size: 120,
   },
   {
-    accessorKey: 'bank',
     id: 'Banco',
-    header: 'Banco',
+    accessorKey: 'bank',
     cell: ({ row, table }) => {
         const bankRaw = row.original.bank;
         const settings = (table.options.meta as any)?.userSettings as UserSettings;
@@ -281,7 +256,6 @@ export const getColumns = (
     size: 150,
   },
   {
-    accessorKey: 'status',
     id: 'Status',
     header: 'Status',
     cell: ({ row }) => (
@@ -297,9 +271,8 @@ export const getColumns = (
     size: 140,
   },
   {
-    accessorKey: 'dateDigitized',
     id: 'Data Digitação',
-    header: 'Data Digitação',
+    accessorKey: 'dateDigitized',
     cell: ({ row }) => formatDate(row.original.dateDigitized),
     size: 120,
   },

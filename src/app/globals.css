@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&family=Lexend:wght@300;400;700&family=Bebas+Neue&family=Orbitron:wght@400;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;700&family=Cinzel:wght@400;700&family=Space+Grotesk:wght@300;400;700&family=Outfit:wght@300;400;700&family=Lora:ital,wght@0,400;0,700;1,400&family=Urbanist:wght@300;400;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;700&family=Kanit:wght@300;400;700&family=Work+Sans:wght@300;400;700&family=Quicksand:wght@300;500;700&family=Spectral:ital,wght@0,400;0,700;1,400&family=Manrope:wght@300;400;700&family=Roboto+Condensed:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&display=swap');
@@ -27,10 +28,10 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 217 33% 25%;
-    --radius: 0.5rem;
+    --radius: 1rem;
 
-    --status-bg-opacity: 0.08;
-    --status-border-opacity: 0.4;
+    --status-bg-opacity: 0.1;
+    --status-border-opacity: 0.3;
     --transition-speed: 0.2s;
 
     --sidebar-background: 0 0% 98%;
@@ -124,114 +125,11 @@
   --sidebar-ring: 217.2 91.2% 59.8% !important;
 }
 
-/* Ritmo (Motion Design) */
-.anim-instantaneo { --transition-speed: 0s; }
-.anim-sutil { --transition-speed: 0.2s; }
-.anim-atmosferico { --transition-speed: 0.5s; }
-.anim-cinematografico { --transition-speed: 1s; }
-
-[class*="anim-"], [class*="anim-"] *, .anim-instantaneo, .anim-instantaneo * { transition-duration: var(--transition-speed) !important; }
-
-/* Intensidade */
-.intensity-minima { --status-bg-opacity: 0.02; --status-border-opacity: 0.2; }
-.intensity-equilibrada { --status-bg-opacity: 0.08; --status-border-opacity: 0.4; }
-.intensity-impactante { --status-bg-opacity: 0.15; --status-border-opacity: 0.7; }
-.intensity-neon { --status-bg-opacity: 0.25; --status-border-opacity: 1; }
-
-/* Arredondamento */
-.radius-reto { --radius: 0rem !important; }
-.radius-extra-discreto { --radius: 0.125rem !important; }
-.radius-discreto { --radius: 0.25rem !important; }
-.radius-suave { --radius: 0.5rem !important; }
-.radius-moderno { --radius: 0.75rem !important; }
-.radius-amigavel { --radius: 1rem !important; }
-.radius-organico { --radius: 1.5rem !important; }
-.radius-capsula { --radius: 2.5rem !important; }
-
-/* Aura Styles */
-.style-moderno { @apply border shadow-sm; }
-.style-glass { 
-    background-color: hsla(var(--background) / 0.45) !important;
-    backdrop-filter: blur(16px) saturate(180%) !important;
-    border: 1px solid hsla(var(--primary) / 0.12) !important;
-    box-shadow: 0 8px 32px 0 hsla(0, 0%, 0%, 0.08) !important;
-}
-.style-deep { @apply border-2 shadow-2xl; }
-.style-flat { @apply border shadow-none; }
-.style-glow {
-    border-color: hsl(var(--status-color) / 0.6) !important;
-    box-shadow: 0 0 25px hsl(var(--status-color) / 0.3), inset 0 0 10px hsl(var(--status-color) / 0.05) !important;
-}
-.style-geometrico { @apply border-2 border-primary/20 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]; }
-
-/* Texturas */
-.texture-dots { background-image: radial-gradient(hsl(var(--muted-foreground) / 0.15) 1px, transparent 1px); background-size: 20px 20px; }
-.texture-grid { background-image: linear-gradient(hsl(var(--muted-foreground) / 0.05) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--muted-foreground) / 0.05) 1px, transparent 1px); background-size: 20px 20px; }
-.texture-texture-lines { background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, hsl(var(--muted-foreground) / 0.03) 10px, hsl(var(--muted-foreground) / 0.03) 11px); }
-
-/* ✨ ATMOSFERAS ANIMADAS */
-@keyframes nebula-flow {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-.aura-nebula {
-  background: linear-gradient(-45deg, #f8fafc, #f1f5f9, #e2e8f0, #f8fafc);
-  background-size: 400% 400%;
-  animation: nebula-flow 15s ease infinite;
-}
-.aura-aurora {
-  background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 25%, #f0fdf4 50%, #ccfbf1 75%, #f0fdfa 100%);
-  background-size: 400% 400%;
-  animation: nebula-flow 20s ease infinite;
-}
-.aura-sunset {
-  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 50%, #fff1f2 100%);
-  background-size: 200% 200%;
-  animation: nebula-flow 12s ease-in-out infinite;
-}
-.aura-ocean {
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0fdff 100%);
-  background-size: 300% 300%;
-  animation: nebula-flow 18s ease infinite;
-}
-.aura-lavender {
-  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #faf5ff 100%);
-  background-size: 400% 400%;
-  animation: nebula-flow 15s ease infinite;
-}
-.aura-mint {
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%);
-  background-size: 400% 400%;
-  animation: nebula-flow 15s ease infinite;
-}
-.aura-pearl {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 25%, #ffffff 50%, #f1f5f9 75%, #f8fafc 100%);
-  background-size: 400% 400%;
-  animation: nebula-flow 20s ease infinite;
-}
-.aura-desert {
-  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 50%, #fffbeb 100%);
-  background-size: 200% 200%;
-  animation: nebula-flow 12s ease-in-out infinite;
-}
-
-/* 🌙 TEMA ESCURO (EQUALIZAÇÃO) */
-.dark .aura-nebula { background: linear-gradient(-45deg, #0f172a, #1e293b, #334155, #0f172a); }
-.dark .aura-aurora { background: linear-gradient(135deg, #022c22 0%, #064e3b 25%, #065f46 50%, #064e3b 75%, #022c22 100%); }
-.dark .aura-sunset { background: linear-gradient(135deg, #451a03 0%, #78350f 50%, #991b1b 100%); }
-.dark .aura-ocean { background: linear-gradient(135deg, #0c4a6e 0%, #075985 50%, #082f49 100%); }
-.dark .aura-lavender { background: linear-gradient(135deg, #2e1065 0%, #4c1d95 50%, #1e1b4b 100%); }
-.dark .aura-mint { background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #022c22 100%); }
-.dark .aura-pearl { background: linear-gradient(135deg, #1e293b 0%, #334155 25%, #0f172a 50%, #334155 75%, #1e293b 100%); }
-.dark .aura-desert { background: linear-gradient(135deg, #451a03 0%, #78350f 50%, #451a03 100%); }
-
 /* Status e Linhas */
 .status-custom {
     color: hsl(var(--status-color)) !important;
-    background-color: hsl(var(--status-color) / var(--status-bg-opacity, 0.08)) !important;
-    border-color: hsl(var(--status-color) / var(--status-border-opacity, 0.4)) !important;
+    background-color: hsl(var(--status-color) / var(--status-bg-opacity, 0.1)) !important;
+    border-color: hsl(var(--status-color) / var(--status-border-opacity, 0.3)) !important;
 }
 
 .status-row-custom {
@@ -256,31 +154,6 @@
   body { @apply bg-background text-foreground antialiased; }
 }
 
-@keyframes alert-pulse-industrial {
-  0% { transform: scale(1); filter: drop-shadow(0 0 0px rgba(220, 38, 38, 0)); opacity: 1; }
-  50% { transform: scale(1.2); filter: drop-shadow(0 0 15px rgba(220, 38, 38, 0.9)); opacity: 0.8; }
-  100% { transform: scale(1); filter: drop-shadow(0 0 0px rgba(220, 38, 38, 0)); opacity: 1; }
-}
-.animate-alert-pulse {
-  animation: alert-pulse-industrial 0.8s ease-in-out infinite !important;
-}
-
-.big-win-row {
-    position: relative !important;
-    background-color: hsla(45, 100%, 50%, 0.05) !important;
-}
-.big-win-row::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: linear-gradient(to bottom, #d4af37, #ffd700, #d4af37);
-    box-shadow: 2px 0 5px rgba(212, 175, 55, 0.2);
-    z-index: 5;
-}
-
 /* 💎 BLINDAGEM DE TABELAS (STICKY COLUMNS) */
 .proposals-table tr th:first-child,
 .proposals-table tr td:first-child,
@@ -293,24 +166,20 @@
     z-index: 40 !important;
     background-color: inherit !important;
     border-right: 2px solid hsl(var(--border) / 0.8);
-    box-shadow: 6px 0 12px -4px rgba(0,0,0,0.2); 
 }
 
-/* Fundo padrão para quando a linha não tem cor customizada */
 .proposals-table tr td:first-child,
 .financial-table tr td:first-child,
 .customers-table tr td:first-child {
     background-color: hsl(var(--background)) !important;
 }
 
-/* Cabeçalhos fixos com fundo muted */
 .proposals-table tr th:first-child,
 .financial-table tr th:first-child,
 .customers-table tr th:first-child {
-    background-color: hsl(var(--muted)) !important;
+    background-color: hsl(var(--muted) / 0.5) !important;
 }
 
-/* Sobrescrita para linhas com status colorido */
 .proposals-table tr.status-row-custom td:first-child,
 .financial-table tr.status-row-custom td:first-child {
     background-color: hsl(var(--status-color) / 0.06) !important;
@@ -320,10 +189,4 @@
 .dark .financial-table tr td:first-child,
 .dark .customers-table tr td:first-child {
     background-color: #050505 !important;
-}
-
-/* Corrige o vácuo visual na lateral da tabela */
-.proposals-table > div, .financial-table > div, .customers-table > div {
-    overflow-x: auto;
-    scrollbar-gutter: stable;
 }

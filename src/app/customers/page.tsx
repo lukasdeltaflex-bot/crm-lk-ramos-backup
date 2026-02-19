@@ -18,7 +18,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { CustomerAiForm } from '@/components/customers/customer-ai-form';
 import {
@@ -69,8 +68,17 @@ function CustomersPageContent() {
 
   const { data: customers, isLoading: isCustomersLoading } = useCollection<Customer>(customersQuery);
 
-  const [activeCustomers, setActiveCustomers] = React.useState<Customer[]>([]);
-  const [inactiveCustomers, setInactiveCustomers] = React.useState<Customer[]>([]);
+  const activeCustomers = React.useMemo(() => {
+    return (customers || []).filter(c => c.name !== 'Cliente Removido' && (c.status !== 'inactive' && getAge(c.birthDate) < 75));
+  }, [customers]);
+
+  const inactiveCustomers = React.useMemo(() => {
+    return (customers || []).filter(c => c.name !== 'Cliente Removido' && (c.status === 'inactive' || getAge(c.birthDate) >= 75));
+  }, [customers]);
+
+  const displayedCustomers = React.useMemo(() => {
+    return filter === 'active' ? activeCustomers : inactiveCustomers;
+  }, [filter, activeCustomers, inactiveCustomers]);
 
   const handleNewCustomer = React.useCallback(() => {
     setSelectedCustomer(undefined);
@@ -101,27 +109,6 @@ function CustomersPageContent() {
     setIsAiModalOpen(false);
     setIsDialog(true);
   }
-  
-  const nonAnonymizedCustomers = React.useMemo(() => customers?.filter(c => c.name !== 'Cliente Removido') || [], [customers]);
-
-  React.useEffect(() => {
-    const active: Customer[] = [];
-    const inactive: Customer[] = [];
-
-    nonAnonymizedCustomers.forEach(customer => {
-      const status = customer.status || 'active';
-      const age = getAge(customer.birthDate);
-      if (status === 'inactive' || age >= 75) inactive.push(customer);
-      else active.push(customer);
-    });
-
-    setActiveCustomers(active);
-    setInactiveCustomers(inactive);
-  }, [nonAnonymizedCustomers]);
-
-  const displayedCustomers = React.useMemo(() => {
-    return filter === 'active' ? activeCustomers : inactiveCustomers;
-  }, [filter, activeCustomers, inactiveCustomers]);
 
   const handleExportToExcel = async () => {
     const table = tableRef.current?.table;
@@ -168,12 +155,12 @@ function CustomersPageContent() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <PageHeader title="Clientes" />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="h-10 px-4 font-bold border-primary/20 hover:bg-primary/5">
+                    <Button variant="outline" className="h-10 px-6 rounded-full font-bold border-primary/10 hover:bg-primary/5 transition-all">
                         <FileDown className="mr-2 h-4 w-4" /> Exportar
                     </Button>
                 </DropdownMenuTrigger>
@@ -182,39 +169,44 @@ function CustomersPageContent() {
                 </DropdownMenuContent>
             </DropdownMenu>
             <Dialog open={isAiModalOpen} onOpenChange={setIsAiModalOpen}>
-                <DialogTrigger asChild>
-                    <Button variant="outline" className="h-10 px-4 font-bold bg-orange-50/50 text-orange-600 border-orange-200/50 hover:bg-orange-100/50">
-                        <Sparkles className="h-4 w-4 mr-2" /> Cadastrar via IA / Foto
-                    </Button>
-                </DialogTrigger>
+                <Button 
+                    variant="outline" 
+                    className="h-10 px-6 rounded-full font-bold bg-zinc-50/50 text-zinc-700 border-zinc-200 hover:bg-zinc-100"
+                    onClick={() => setIsAiModalOpen(true)}
+                >
+                    <Sparkles className="h-4 w-4 mr-2" /> Novo Cliente com IA
+                </Button>
                 <DialogContent className="max-w-xl">
                     <DialogHeader><DialogTitle>Assistente Visual de Cadastro</DialogTitle></DialogHeader>
                     <CustomerAiForm onSubmit={handleAiFormSubmit} />
                 </DialogContent>
             </Dialog>
-            <Button onClick={handleNewCustomer} className="h-10 px-6 font-bold bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 border-2 shadow-none transition-all">
+            <Button 
+                onClick={handleNewCustomer} 
+                className="h-10 px-8 rounded-full font-bold bg-sky-500 hover:bg-sky-600 text-white shadow-lg shadow-sky-500/20 transition-all border-none"
+            >
                 <PlusCircle className="mr-2 h-4 w-4" /> Novo Cliente
             </Button>
         </div>
       </div>
 
-      <Tabs value={filter} onValueChange={setFilter} className="mb-6">
-        <TabsList className="bg-muted/30 p-1 rounded-full border border-border/50 h-12">
+      <Tabs value={filter} onValueChange={setFilter} className="mb-8">
+        <TabsList className="bg-muted/30 p-1 rounded-full border border-border/50 h-12 flex w-fit gap-2">
           <TabsTrigger 
             value="active" 
-            className="gap-2 rounded-full font-bold px-8 h-full transition-all border-2 border-transparent data-[state=active]:bg-green-50 data-[state=active]:text-green-600 data-[state=active]:border-green-500/20"
+            className="gap-2 rounded-full font-bold px-8 h-full transition-all data-[state=active]:bg-green-50 data-[state=active]:text-green-600 border border-transparent data-[state=active]:border-green-500/20"
           >
             <UserCheck className="h-4 w-4" />
             Ativos 
-            <Badge variant="secondary" className="bg-green-100 text-green-700 ml-1 border-none">{activeCustomers.length}</Badge>
+            <Badge variant="secondary" className="bg-green-100 text-green-700 ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full border-none text-[10px] font-black">{activeCustomers.length}</Badge>
           </TabsTrigger>
           <TabsTrigger 
             value="inactive" 
-            className="gap-2 rounded-full font-bold px-8 h-full transition-all border-2 border-transparent data-[state=active]:bg-zinc-100 data-[state=active]:text-zinc-600 data-[state=active]:border-zinc-500/20"
+            className="gap-2 rounded-full font-bold px-8 h-full transition-all data-[state=active]:bg-zinc-100 data-[state=active]:text-zinc-600 border border-transparent data-[state=active]:border-zinc-500/20"
           >
             <UserX className="h-4 w-4" />
             Inativos 
-            <Badge variant="secondary" className="bg-zinc-200 text-zinc-700 ml-1 border-none">{inactiveCustomers.length}</Badge>
+            <Badge variant="secondary" className="bg-zinc-200 text-zinc-700 ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full border-none text-[10px] font-black">{inactiveCustomers.length}</Badge>
           </TabsTrigger>
         </TabsList>
       </Tabs>

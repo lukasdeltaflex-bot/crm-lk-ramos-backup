@@ -61,10 +61,10 @@ import { DraggableHeader } from './columns';
 import type { Customer } from '@/lib/types';
 import { normalizeString, cn } from '@/lib/utils';
 
-const STORAGE_KEY_VISIBILITY = 'lk-ramos-customer-columns-visibility-v3';
-const STORAGE_KEY_ORDER = 'lk-ramos-customer-columns-order-v3';
-const STORAGE_KEY_SIZING = 'lk-ramos-customer-columns-sizing-v3';
-const STORAGE_KEY_PAGESIZE = 'lk-ramos-customer-page-size-v1';
+const STORAGE_KEY_VISIBILITY = 'lk-ramos-customer-columns-visibility-v4';
+const STORAGE_KEY_ORDER = 'lk-ramos-customer-columns-order-v4';
+const STORAGE_KEY_SIZING = 'lk-ramos-customer-columns-sizing-v4';
+const STORAGE_KEY_PAGESIZE = 'lk-ramos-customer-page-size-v2';
 
 
 interface DataTableProps {
@@ -97,9 +97,10 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
   });
 
   const defaultVisibility: VisibilityState = {
-    'Observações': false,
+    'Telefone 2': false,
     'Cidade': false,
     'Estado': false,
+    'Observações': false,
   };
   const initialColumns = React.useMemo(() => columns.map(c => c.id!), [columns]);
 
@@ -128,7 +129,6 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             setPagination(prev => ({ ...prev, pageSize: Number(savedPageSize) }));
         }
     } catch (e) {
-        console.error("Failed to parse column settings from localStorage", e);
         setColumnOrder(initialColumns);
     }
   }, [initialColumns]);
@@ -136,26 +136,11 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
   React.useEffect(() => {
     if (isClient) {
         localStorage.setItem(STORAGE_KEY_VISIBILITY, JSON.stringify(columnVisibility));
-    }
-  }, [columnVisibility, isClient]);
-
-  React.useEffect(() => {
-    if (isClient) {
         localStorage.setItem(STORAGE_KEY_ORDER, JSON.stringify(columnOrder));
-    }
-  }, [columnOrder, isClient]);
-
-  React.useEffect(() => {
-    if (isClient) {
         localStorage.setItem(STORAGE_KEY_SIZING, JSON.stringify(columnSizing));
-    }
-  }, [columnSizing, isClient]);
-
-  React.useEffect(() => {
-    if (isClient) {
         localStorage.setItem(STORAGE_KEY_PAGESIZE, String(pagination.pageSize));
     }
-  }, [pagination.pageSize, isClient]);
+  }, [columnVisibility, columnOrder, columnSizing, pagination.pageSize, isClient]);
 
 
   const sensors = useSensors(
@@ -204,19 +189,8 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
     },
     globalFilterFn: (row, columnId, filterValue) => {
         const searchTerm = normalizeString(String(filterValue ?? ''));
-
-        if (!searchTerm) {
-          return true;
-        }
-    
+        if (!searchTerm) return true;
         const customer = row.original;
-        
-        if (/^\d+$/.test(searchTerm)) {
-            const isExactId = String(customer.numericId) === searchTerm;
-            if (isExactId) return true;
-            if (searchTerm.length < 7) return false;
-        } 
-        
         const fieldsToSearch = [
             customer.name,
             customer.cpf,
@@ -228,46 +202,34 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             customer.observations,
             ...(customer.benefits?.map(b => b.number) || [])
         ];
-
-        return fieldsToSearch.some(field => {
-            if (!field) return false;
-            return normalizeString(field).includes(searchTerm);
-        });
+        return fieldsToSearch.some(field => field && normalizeString(field).includes(searchTerm));
       },
   });
 
-  React.useImperativeHandle(ref, () => ({
-    table,
-  }));
+  React.useImperativeHandle(ref, () => ({ table }));
 
   return (
-    <DndContext
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-      sensors={sensors}
-    >
-      <Card className="customers-table border-border/50 shadow-sm">
-        <div className="p-4">
+    <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
+      <Card className="border-none shadow-none bg-transparent">
+        <div className="py-2">
           <div className="flex items-center justify-between py-4">
             <div className='relative w-full max-w-sm'>
-                <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground opacity-60' />
+                <Search className='absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground opacity-60' />
                 <Input
-                placeholder="Busca Inteligente (Nome, CPF, ID...)"
-                value={globalFilter ?? ''}
-                onChange={(event) =>
-                    setGlobalFilter(event.target.value)
-                }
-                className="pl-9 w-full bg-muted/20 border-primary/10 h-11 rounded-full focus-visible:ring-primary/20 transition-all font-medium"
+                    placeholder="Busca (ID exato, nome, CPF...)"
+                    value={globalFilter ?? ''}
+                    onChange={(event) => setGlobalFilter(event.target.value)}
+                    className="pl-10 w-full bg-muted/30 border-primary/5 h-11 rounded-full focus-visible:ring-primary/20 transition-all font-medium text-sm"
                 />
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="ml-auto rounded-full font-bold h-11 border-primary/10 bg-card">
+                <Button variant="outline" className="ml-auto rounded-full font-bold h-11 border-primary/10 bg-card px-6">
                   Colunas <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Personalizar Colunas</DropdownMenuLabel>
+                <DropdownMenuLabel>Personalizar Visão</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {table
                   .getAllColumns()
@@ -278,9 +240,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
                         key={column.id}
                         className="capitalize text-xs font-medium"
                         checked={column.getIsVisible()}
-                        onCheckedChange={(value) =>
-                          column.toggleVisibility(!!value)
-                        }
+                        onCheckedChange={(value) => column.toggleVisibility(!!value)}
                       >
                         {column.id}
                       </DropdownMenuCheckboxItem>
@@ -289,126 +249,78 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <div className="rounded-xl border overflow-hidden">
-          <Table style={{ width: table.getTotalSize() }}>
-            <TableHeader className="bg-muted/30">
-                {table.getHeaderGroups().map(headerGroup => (
-                <TableRow key={headerGroup.id}>
-                    <SortableContext
-                    items={columnOrder}
-                    strategy={horizontalListSortingStrategy}
-                    >
-                    {headerGroup.headers.map(header => (
-                        <DraggableHeader key={header.id} header={header as Header<Customer, unknown>} />
+          
+          <div className="rounded-2xl border border-border/50 overflow-hidden bg-card shadow-sm customers-table">
+            <Table style={{ width: table.getTotalSize() }}>
+                <TableHeader>
+                    {table.getHeaderGroups().map(headerGroup => (
+                    <TableRow key={headerGroup.id} className="hover:bg-transparent border-b">
+                        <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
+                        {headerGroup.headers.map(header => (
+                            <DraggableHeader key={header.id} header={header as Header<Customer, unknown>} />
+                        ))}
+                        </SortableContext>
+                    </TableRow>
                     ))}
-                    </SortableContext>
-                </TableRow>
-                ))}
-            </TableHeader>
-            <TableBody>
-                {isLoading ? (
-                  Array.from({ length: 10 }).map((_, i) => (
-                    <TableRow key={i}>
-                      {columns.map((column, j) => (
-                        <TableCell key={j}>
-                          <Skeleton className="h-6 w-full" />
-                        </TableCell>
-                      ))}
+                </TableHeader>
+                <TableBody>
+                    {isLoading ? (
+                    Array.from({ length: 10 }).map((_, i) => (
+                        <TableRow key={i}>
+                        {columns.map((column, j) => (
+                            <TableCell key={j}><Skeleton className="h-6 w-full" /></TableCell>
+                        ))}
+                        </TableRow>
+                    ))
+                    ) : table.getRowModel().rows?.length ? (
+                    table.getRowModel().rows.map((row) => (
+                        <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && 'selected'}
+                        className="hover:bg-muted/10 transition-colors border-b last:border-0"
+                        >
+                        {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id} style={{ width: cell.column.getSize() }}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </TableCell>
+                        ))}
+                        </TableRow>
+                    ))
+                    ) : (
+                    <TableRow>
+                        <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground font-medium italic">Nenhum cliente na base de dados.</TableCell>
                     </TableRow>
-                  ))
-                ) : table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && 'selected'}
-                      className="hover:bg-muted/10 transition-colors"
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id} style={{ width: cell.column.getSize() }}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length}
-                      className="h-24 text-center"
-                    >
-                      Nenhum cliente encontrado.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
+                    )}
+                </TableBody>
             </Table>
           </div>
+
           <div className="flex items-center justify-between py-4">
-            <div className="flex-1 text-xs text-muted-foreground font-medium">
+            <div className="flex-1 text-[10px] font-black uppercase text-muted-foreground tracking-widest">
               {table.getFilteredSelectedRowModel().rows.length} de{' '}
               {table.getFilteredRowModel().rows.length} cliente(s) selecionados.
             </div>
             <div className="flex items-center space-x-6 lg:space-x-8">
                 <div className="flex items-center space-x-2">
-                    <p className="text-xs font-bold uppercase text-muted-foreground">Linhas</p>
+                    <p className="text-[10px] font-black uppercase text-muted-foreground">Linhas</p>
                     <Select
                         value={`${table.getState().pagination.pageSize}`}
-                        onValueChange={(value) => {
-                            table.setPageSize(Number(value))
-                        }}
+                        onValueChange={(value) => table.setPageSize(Number(value))}
                     >
-                        <SelectTrigger className="h-8 w-[70px] bg-card border-primary/10">
+                        <SelectTrigger className="h-8 w-[70px] bg-card border-primary/10 rounded-md">
                             <SelectValue placeholder={table.getState().pagination.pageSize} />
                         </SelectTrigger>
                         <SelectContent side="top">
                             {[10, 20, 50, 100].map((pageSize) => (
-                                <SelectItem key={pageSize} value={`${pageSize}`}>
-                                    {pageSize}
-                                </SelectItem>
+                                <SelectItem key={pageSize} value={`${pageSize}`}>{pageSize}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="flex w-[100px] items-center justify-center text-xs font-bold uppercase text-muted-foreground">
-                    Página {table.getState().pagination.pageIndex + 1} de{" "}
-                    {table.getPageCount()}
-                </div>
                 <div className="flex items-center space-x-2">
-                    <Button
-                        variant="outline"
-                        className="hidden h-8 w-8 p-0 lg:flex border-primary/10"
-                        onClick={() => table.setPageIndex(0)}
-                        disabled={!table.getCanPreviousPage()}
-                    >
-                        <ChevronsLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="outline"
-                        className="h-8 w-8 p-0 border-primary/10"
-                        onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage()}
-                    >
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="outline"
-                        className="h-8 w-8 p-0 border-primary/10"
-                        onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage()}
-                    >
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="outline"
-                        className="hidden h-8 w-8 p-0 lg:flex border-primary/10"
-                        onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                        disabled={!table.getCanNextPage()}
-                    >
-                        <ChevronsRight className="h-4 w-4" />
-                    </Button>
+                    <Button variant="outline" className="h-8 w-8 p-0 border-primary/10" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}><ChevronLeft className="h-4 w-4" /></Button>
+                    <div className="flex w-[80px] items-center justify-center text-[10px] font-black uppercase text-muted-foreground tracking-tighter">Pág {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}</div>
+                    <Button variant="outline" className="h-8 w-8 p-0 border-primary/10" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}><ChevronRight className="h-4 w-4" /></Button>
                 </div>
             </div>
           </div>

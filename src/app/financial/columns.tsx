@@ -63,7 +63,7 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
             ref={setNodeRef}
             colSpan={header.colSpan}
             style={style}
-            className={cn('relative p-0 h-12 border-r last:border-r-0')}
+            className={cn('relative p-0 h-12 border-r last:border-r-0 bg-muted/20')}
         >
             <div className="flex items-center gap-1 h-full px-4">
                 <button
@@ -74,7 +74,7 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
                 >
                     <GripVertical className="h-4 w-4 opacity-30" />
                 </button>
-                <div className="flex-1 overflow-hidden">
+                <div className="flex-1 overflow-hidden font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                 </div>
             </div>
@@ -101,7 +101,7 @@ export const getColumns = (
   }
 ): ColumnDef<ProposalWithCustomer>[] => [
   {
-    id: 'selecionar',
+    id: 'Selecionar',
     header: ({ table }) => (
       <Checkbox
         checked={
@@ -110,6 +110,7 @@ export const getColumns = (
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Selecionar tudo"
+        className="rounded-full"
       />
     ),
     cell: ({ row }) => (
@@ -117,11 +118,12 @@ export const getColumns = (
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Selecionar linha"
+        className="rounded-full"
       />
     ),
     enableSorting: false,
     enableHiding: false,
-    size: 40,
+    size: 50,
   },
   {
     id: 'Promotora',
@@ -188,7 +190,6 @@ export const getColumns = (
   },
   {
     id: 'Valor Bruto',
-    accessorFn: (row) => row.grossAmount,
     header: () => <div className="text-right">Valor Bruto</div>,
     cell: ({ row, table }) => {
       const isPrivacyMode = (table.options.meta as {isPrivacyMode?: boolean})?.isPrivacyMode;
@@ -199,14 +200,12 @@ export const getColumns = (
   },
   {
     id: 'Comissão (%)',
-    accessorFn: (row) => row.commissionPercentage,
     header: 'Comissão (%)',
     cell: ({ row }) => `${row.original.commissionPercentage.toFixed(2)}%`,
     size: 100,
   },
   {
     id: 'Valor Comissão',
-    accessorFn: (row) => row.commissionValue,
     header: 'Valor Comissão',
     cell: ({ row, table }) => {
         const isPrivacyMode = (table.options.meta as {isPrivacyMode?: boolean})?.isPrivacyMode;
@@ -216,14 +215,12 @@ export const getColumns = (
   },
   {
     id: 'Status Comissão',
-    accessorFn: (row) => row.commissionStatus,
     header: 'Status Comissão',
     cell: ({ row }) => <CommissionStatusCell proposal={row.original} onStatusUpdate={onStatusUpdate} onEdit={onEdit} />,
     size: 140,
   },
   {
     id: 'Data Pagamento',
-    accessorFn: (row) => row.commissionPaymentDate,
     header: 'Data Pagamento',
     cell: ({ row }) => formatDateSafe(row.original.commissionPaymentDate),
     size: 120,
