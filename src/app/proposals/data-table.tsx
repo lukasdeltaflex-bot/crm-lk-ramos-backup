@@ -268,14 +268,14 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                             placeholder="De" 
                             value={startDateInput}
                             onChange={(e) => handleDateInputChange(e.target.value, 'start')}
-                            className="h-7 w-20 border-none bg-muted/40 text-[10px] text-center font-black"
+                            className="h-7 w-24 border-none bg-muted/40 text-[10px] text-center font-black rounded-full"
                         />
                         <span className="text-muted-foreground font-black">-</span>
                         <Input 
                             placeholder="Até" 
                             value={endDateInput}
                             onChange={(e) => handleDateInputChange(e.target.value, 'end')}
-                            className="h-7 w-20 border-none bg-muted/40 text-[10px] text-center font-black"
+                            className="h-7 w-24 border-none bg-muted/40 text-[10px] text-center font-black rounded-full"
                         />
                     </div>
                     <Button size="sm" onClick={handleApplyFilter} className="h-7 bg-primary text-white rounded-full px-4 text-[10px] font-black uppercase transition-all shadow-md">

@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -255,9 +254,9 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                 </Select>
                 <Separator orientation="vertical" className="h-4 mx-1 bg-zinc-300" />
                 <div className="flex items-center gap-1">
-                    <Input placeholder="De" value={startDateInput} onChange={(e) => setStartDateInput(handleDateMask(e))} className="h-7 w-20 border-none bg-muted/40 text-[10px] text-center font-black" />
+                    <Input placeholder="De" value={startDateInput} onChange={(e) => setStartDateInput(handleDateMask(e))} className="h-7 w-24 border-none bg-muted/40 text-[10px] text-center font-black rounded-full" />
                     <span className="text-muted-foreground font-black">-</span>
-                    <Input placeholder="Até" value={endDateInput} onChange={(e) => setEndDateInput(handleDateMask(e))} className="h-7 w-20 border-none bg-muted/40 text-[10px] text-center font-black" />
+                    <Input placeholder="Até" value={endDateInput} onChange={(e) => setEndDateInput(handleDateMask(e))} className="h-7 w-24 border-none bg-muted/40 text-[10px] text-center font-black rounded-full" />
                 </div>
             </div>
             <Button size="sm" onClick={handleApplyFilter} className="h-9 bg-primary text-white hover:bg-primary/90 rounded-full px-6 text-xs font-black uppercase shadow-lg gap-2">
