@@ -68,9 +68,8 @@ export function StatsCard({
     }
 
     const cardClasses = cn(
-        'hover:shadow-lg transition-all group relative overflow-hidden flex flex-col border-2 py-3.5 px-5 min-h-[160px] h-full card',
+        'hover:shadow-lg transition-all group relative overflow-hidden flex flex-col py-3.5 px-5 min-h-[160px] h-full card border-2',
         `style-${containerStyle}`,
-        containerStyle === 'glow' && 'style-glow',
         `intensity-${intensity}`,
         `radius-${radius}`,
         `anim-${animationStyle}`,
@@ -120,7 +119,7 @@ export function StatsCard({
         className={cn(themeStyles.card)}
         style={{ ...themeStyles.style, ...style }}
     >
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 mb-1.5">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 mb-1.5 bg-transparent border-none">
         <div className="flex flex-col gap-0.5">
             <CardTitle className="text-[10px] font-black uppercase tracking-[0.1em]">
                 {title}
@@ -140,7 +139,7 @@ export function StatsCard({
             <Icon className={cn("h-4 w-4 opacity-80", isCritical && "text-red-600")} />
         </div>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col justify-between p-0">
+      <CardContent className="flex-1 flex flex-col justify-between p-0 bg-transparent">
         <div className="flex items-baseline justify-between gap-2">
             <div className={cn(
                 "text-2xl sm:text-3xl font-light tracking-tighter text-foreground dark:text-zinc-100", 

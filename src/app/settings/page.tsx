@@ -299,8 +299,7 @@ export default function SettingsPage() {
   const colorableStatuses = [
     "EM ANDAMENTO", "AGUARDANDO SALDO", "PAGO", 
     "SALDO PAGO", "PENDENTE", "REPROVADO", 
-    "PAGA", "PARCIAL", "COMISSÃO ESPERADA", 
-    "SALDO A RECEBER", "DIGITADO", "COMISSÃO RECEBIDA"
+    "PAGA", "PARCIAL", "ATIVO", "INATIVO"
   ];
 
   const FONT_LABELS: Record<string, string> = {
@@ -580,8 +579,8 @@ export default function SettingsPage() {
                         </Card>
                     </div>
 
-                    <div className="lg:col-span-1 h-full">
-                        <div className="sticky top-24 z-30 transition-all duration-500">
+                    <div className="lg:col-span-1 h-full flex flex-col">
+                        <div className="sticky top-24 z-30 transition-all duration-500 w-full">
                             <Card className="border-primary/20 bg-primary/[0.02] shadow-xl overflow-hidden">
                                 <CardHeader className="bg-primary/5 border-b border-primary/10">
                                     <CardTitle className="text-lg font-bold flex items-center gap-2">
