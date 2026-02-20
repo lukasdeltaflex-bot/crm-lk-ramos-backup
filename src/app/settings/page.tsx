@@ -598,7 +598,7 @@ export default function SettingsPage() {
                                         `anim-${preview.animationStyle}`,
                                         preview.auraStyle !== 'limpo' && `aura-${preview.auraStyle}`
                                     )}
-                                    style={{ '--primary': previewPrimaryColor } as any}
+                                    style={{ '--primary': previewPrimaryColor, '--font-main': FONT_LABELS[preview.fontStyle] } as any}
                                 >
                                     <div className="w-full max-w-sm space-y-2">
                                         <p className="text-[9px] font-black uppercase text-center text-muted-foreground tracking-[0.2em]">Preview de Interface</p>
@@ -652,7 +652,8 @@ export default function SettingsPage() {
                                                 variant="outline" 
                                                 className={cn(
                                                     "status-tab font-black uppercase text-[10px] tracking-widest px-6 h-9 border-2",
-                                                    `radius-${preview.radius}`
+                                                    `radius-${preview.radius}`,
+                                                    `anim-${preview.animationStyle}`
                                                 )}
                                                 data-state="active"
                                                 style={{ '--status-color': preview.statusColors[previewStatus] || '217 33% 25%' } as any}
