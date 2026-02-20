@@ -115,7 +115,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     'Operador': true
   });
   
-  // 🛡️ FIX: Garante que todas as colunas, incluindo 'Operador', existam no columnOrder
+  // 🛡️ SINCRONIZAÇÃO NUCLEAR: Garante que TODAS as colunas definidas estejam no motor de ordenação
   const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>([...initialColumns]);
 
@@ -124,12 +124,35 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     try {
         const savedPageSize = localStorage.getItem('lk-financial-pageSize');
         if (savedPageSize) setPagination(p => ({ ...p, pageSize: Number(savedPageSize) }));
+        
         const savedVisibility = localStorage.getItem('lk-financial-visibility');
         if (savedVisibility) setColumnVisibility(JSON.parse(savedVisibility));
+
+        // 🛡️ BLINDAGEM DE MEMÓRIA: Crucial para o arraste de colunas novas
         const savedOrder = localStorage.getItem('lk-financial-order');
-        if (savedOrder) setColumnOrder(JSON.parse(savedOrder));
-        else setColumnOrder([...initialColumns]);
-    } catch (e) {}
+        if (savedOrder) {
+            const parsedOrder = JSON.parse(savedOrder) as string[];
+            // Identifica se alguma coluna nova (ex: Operador) não está na memória salva
+            const missingColumns = initialColumns.filter(id => !parsedOrder.includes(id));
+            if (missingColumns.length > 0) {
+                // Injeta as colunas faltantes antes da coluna de Ações
+                const newOrder = [...parsedOrder];
+                const actionsIdx = newOrder.indexOf('Ações');
+                if (actionsIdx !== -1) {
+                    newOrder.splice(actionsIdx, 0, ...missingColumns);
+                } else {
+                    newOrder.push(...missingColumns);
+                }
+                setColumnOrder(newOrder);
+            } else {
+                setColumnOrder(parsedOrder);
+            }
+        } else {
+            setColumnOrder([...initialColumns]);
+        }
+    } catch (e) {
+        setColumnOrder([...initialColumns]);
+    }
   }, [initialColumns]);
 
   const handlePaginationChange = (updater: any) => {
@@ -142,7 +165,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   };
 
   React.useEffect(() => {
-    if (isClient) {
+    if (isClient && columnOrder.length > 0) {
       localStorage.setItem('lk-financial-visibility', JSON.stringify(columnVisibility));
       localStorage.setItem('lk-financial-order', JSON.stringify(columnOrder));
     }
