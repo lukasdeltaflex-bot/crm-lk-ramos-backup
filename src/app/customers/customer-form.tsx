@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Sparkles, Loader2, PlusCircle, Trash2, FileText as FileIcon, UserCheck, UserX, Phone, FolderLock, Info } from 'lucide-react';
+import { Sparkles, Loader2, PlusCircle, Trash2, FileText as FileIcon, UserCheck, UserX, FolderLock } from 'lucide-react';
 import { format, parse, isValid } from 'date-fns';
 import { cn, getAge, validateCPF } from '@/lib/utils';
 import type { Customer, Attachment } from '@/lib/types';
@@ -31,7 +30,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { summarizeNotes } from '@/ai/flows/summarize-notes-flow';
 import { toast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
-import { isWhatsApp, getWhatsAppUrl } from '@/lib/utils';
+import { isWhatsApp, handlePhoneMask } from '@/lib/utils';
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
 import { CustomerAttachmentUploader } from '@/components/customers/customer-attachment-uploader';
 import { useUser, useFirestore } from '@/firebase';
@@ -131,7 +130,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     name: "benefits"
   });
 
-  // 🛡️ BLINDAGEM DE RESET: Garante que o Gênero e outros campos sejam carregados sem perdas
+  // 🛡️ BLINDAGEM DE RESET: Força a carga do Gênero sem perdas
   useEffect(() => {
     const source = customer || defaultValues;
     if (source) {
@@ -148,7 +147,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       form.reset({
         name: source.name || '',
         cpf: source.cpf || '',
-        gender: source.gender || '',
+        gender: source.gender || '', // Proteção direta
         status: source.status || 'active',
         benefits: source.benefits || [],
         phone: source.phone || '',
@@ -246,38 +245,16 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     value = value.replace(/(\d{3})(\d)/, "$1.$2");
     value = value.replace(/(\d{3})(\d)/, "$1.$2");
     value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-    e.target.value = value;
     form.setValue('cpf', value, { shouldValidate: true });
   };
   
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'phone' | 'phone2') => {
-    let value = e.target.value.replace(/\D/g, "");
-    if (value.length > 11) value = value.substring(0, 11);
-    value = value.replace(/^(\d{2})(\d)/, "($1) $2");
-    if (value.length > 9) {
-        value = value.replace(/(\d{5})(\d)/, "$1-$2");
-    }
-    e.target.value = value;
-    form.setValue(fieldName, value, { shouldValidate: true });
-  };
-
-  const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, "");
-    if (value.length > 8) value = value.substring(0, 8);
-    value = value.replace(/(\d{5})(\d)/, "$1-$2");
-    e.target.value = value;
-    form.setValue('cep', value, { shouldValidate: true });
-  }
-
   const handleBirthDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "");
     if (value.length > 8) value = value.substring(0, 8);
     value = value.replace(/(\d{2})(\d)/, '$1/$2');
     value = value.replace(/(\d{2})(\d)/, '$1/$2');
-    e.target.value = value;
     form.setValue('birthDate', value, { shouldValidate: true });
   };
-
 
   const handleCepBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
     const cep = e.target.value.replace(/\D/g, '');
@@ -324,9 +301,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger 
-                                className={cn(
-                                    "h-9 text-[10px] font-black uppercase tracking-widest border-2 status-custom rounded-full transition-all shadow-sm",
-                                )}
+                                className="h-9 text-[10px] font-black uppercase tracking-widest border-2 status-custom rounded-full transition-all shadow-sm"
                                 style={{ '--status-color': statusColor } as any}
                               >
                                 <div className="flex items-center gap-2">
@@ -369,7 +344,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         </FormControl>
                         <FormMessage />
                         {duplicateCpfCustomer && (
-                            <p className="text-xs text-destructive font-bold">Este CPF já está cadastrado para: {duplicateCpfCustomer.name}</p>
+                            <p className="text-xs text-destructive font-bold">CPF já cadastrado para: {duplicateCpfCustomer.name}</p>
                         )}
                         </FormItem>
                     )}
@@ -381,7 +356,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         <FormItem>
                           <FormLabel>Gênero</FormLabel>
                           <Select 
-                            key={customer?.id || 'new'}
+                            key={customer?.id || 'new'} 
                             onValueChange={field.onChange} 
                             value={field.value || ""}
                           >
@@ -425,7 +400,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                                         <Input
                                             placeholder="(11) 98765-4321"
                                             {...field}
-                                            onChange={(e) => handlePhoneChange(e, 'phone')}
+                                            onChange={(e) => form.setValue('phone', handlePhoneMask(e.target.value), { shouldValidate: true })}
                                             maxLength={15}
                                         />
                                         {isWhatsApp(phone1Value) && (
@@ -448,7 +423,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                                         placeholder="(11) 98765-4321"
                                         {...field}
                                         value={field.value || ''}
-                                        onChange={(e) => handlePhoneChange(e, 'phone2')}
+                                        onChange={(e) => form.setValue('phone2', handlePhoneMask(e.target.value), { shouldValidate: true })}
                                         maxLength={15}
                                     />
                                 </FormControl>
@@ -526,7 +501,11 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         <FormLabel>CEP</FormLabel>
                         <FormControl>
                             <div className='relative max-w-[240px]'>
-                                <Input placeholder="00000-000" {...field} onChange={handleCepChange} onBlur={handleCepBlur} maxLength={9} value={field.value || ''} />
+                                <Input placeholder="00000-000" {...field} onBlur={handleCepBlur} maxLength={9} value={field.value || ''} onChange={(e) => {
+                                    let v = e.target.value.replace(/\D/g, "").substring(0, 8);
+                                    if (v.length > 5) v = v.replace(/(\d{5})(\d)/, "$1-$2");
+                                    form.setValue('cep', v, { shouldValidate: true });
+                                }} />
                                 {isFetchingCep && <Loader2 className="absolute right-3 top-2.5 h-5 w-5 animate-spin text-muted-foreground" />}
                             </div>
                         </FormControl>
