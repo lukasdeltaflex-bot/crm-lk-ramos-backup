@@ -130,7 +130,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         const savedSizing = localStorage.getItem('lk-financial-sizing');
         if (savedSizing) setColumnSizing(JSON.parse(savedSizing));
 
-        // 🛡️ BLINDAGEM DE MEMÓRIA: Sincroniza colunas novas com o estado salvo
         const savedOrder = localStorage.getItem('lk-financial-order');
         if (savedOrder) {
             const parsedOrder = JSON.parse(savedOrder) as string[];
@@ -150,9 +149,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         } else {
             setColumnOrder([...initialColumns]);
         }
-    } catch (e) {
-        setColumnOrder([...initialColumns]);
-    }
+    } catch (e) {}
   }, [initialColumns]);
 
   const handlePaginationChange = (updater: any) => {
@@ -160,9 +157,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
       const next = typeof updater === 'function' ? updater(old) : updater;
       if (typeof window !== 'undefined') {
         try { localStorage.setItem('lk-financial-pageSize', String(next.pageSize)); } catch(e) {}
-      }
-      if (tableContainerRef.current) {
-          tableContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
       return next;
     });
@@ -178,27 +172,9 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     }
   }, [columnVisibility, columnOrder, columnSizing, isClient]);
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (active.id !== over?.id) {
-      setColumnOrder((items) => {
-        const oldIndex = items.indexOf(active.id as string);
-        const newIndex = items.indexOf(over!.id as string);
-        return arrayMove(items, oldIndex, newIndex);
-      });
-    }
-  };
-
   const [startDateInput, setStartDateInput] = React.useState('');
   const [endDateInput, setEndDateInput] = React.useState('');
   const [appliedDateRange, setAppliedDateRange] = React.useState<DateRange | undefined>(undefined);
-
-  const summaryRange = React.useMemo(() => {
-    if (appliedDateRange?.from) {
-      return { from: startOfMonth(appliedDateRange.from), to: endOfMonth(appliedDateRange.to || appliedDateRange.from) };
-    }
-    return currentMonthRange;
-  }, [appliedDateRange, currentMonthRange]);
 
   const filteredData = React.useMemo(() => {
     const today = new Date();
@@ -251,14 +227,30 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     columnResizeMode: 'onChange',
     state: { sorting, rowSelection, columnVisibility, columnSizing, columnOrder, pagination, globalFilter },
     globalFilterFn: (row, columnId, filterValue) => {
-        const searchTerm = normalizeString(String(filterValue));
+        const searchTerm = String(filterValue ?? '').trim();
+        if (!searchTerm) return true;
         const customer = row.original.customer;
         const p = row.original;
-        return normalizeString(customer?.name || '').includes(searchTerm) || 
-               customer?.cpf?.replace(/\D/g, '').includes(searchTerm) ||
-               normalizeString(p.proposalNumber).includes(searchTerm) ||
-               normalizeString(p.operator || '').includes(searchTerm) ||
-               normalizeString(p.bank).includes(searchTerm);
+
+        const normalizedSearch = normalizeString(searchTerm);
+        const searchDigits = searchTerm.replace(/\D/g, '');
+
+        const searchableFields = [
+            customer?.name,
+            customer?.cpf,
+            p.proposalNumber,
+            p.operator,
+            p.bank,
+            p.promoter
+        ];
+
+        return searchableFields.some(field => {
+            if (!field) return false;
+            const normField = normalizeString(field);
+            const fieldDigits = field.replace(/\D/g, '');
+            return normField.includes(normalizedSearch) || 
+                   (searchDigits && searchDigits.length >= 3 && fieldDigits.includes(searchDigits));
+        });
     },
     meta: { isPrivacyMode, userSettings }
   });
@@ -274,12 +266,23 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     selectedRows.reduce((acc, row) => acc + (row.original.commissionValue || 0), 0),
   [selectedRows]);
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (active.id !== over?.id) {
+      setColumnOrder((items) => {
+        const oldIndex = items.indexOf(active.id as string);
+        const newIndex = items.indexOf(over!.id as string);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
   React.useImperativeHandle(ref, () => ({ table }));
 
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor))}>
         <div className="space-y-4 w-full">
-            <FinancialSummary rows={data} currentMonthRange={summaryRange} isPrivacyMode={isPrivacyMode} isFiltered={!!globalFilter || statusFilter !== 'Todos'} onShowDetails={onShowDetails} userSettings={userSettings} />
+            <FinancialSummary rows={data} currentMonthRange={startOfMonth(new Date()) as any} isPrivacyMode={isPrivacyMode} isFiltered={!!globalFilter} onShowDetails={onShowDetails} userSettings={userSettings} />
 
             <div className="flex flex-wrap items-center justify-between gap-4 bg-muted/10 dark:bg-zinc-900/30 p-2 rounded-xl border-2 border-zinc-200 dark:border-primary/20 shadow-sm">
                 <Tabs value={statusFilter} onValueChange={setStatusFilter}>
@@ -296,7 +299,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                         <SelectTrigger className="h-10 min-w-[200px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-[11px] font-black uppercase px-6 shadow-sm">
                             <div className="flex items-center gap-2">
                                 {bankFilter === 'all' ? <Landmark className="h-4 w-4 text-primary" /> : <BankIcon bankName={bankFilter} domain={userSettings?.bankDomains?.[bankFilter]} className="h-4 w-4" />}
-                                <SelectValue placeholder="TODOS OS BANCOS" />
+                                <SelectValue placeholder="BANCO" />
                             </div>
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-2">
@@ -304,7 +307,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                             {Array.from(new Set(data.map(p => p.bank))).sort().map(b => (
                                 <SelectItem key={b} value={b} className="font-bold text-[11px] uppercase">
                                     <div className="flex items-center gap-3">
-                                        <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={userSettings?.showBankLogos ?? true} className="h-4 w-4" />
+                                        <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} className="h-4 w-4" />
                                         <span>{cleanBankName(b)}</span>
                                     </div>
                                 </SelectItem>
@@ -316,18 +319,13 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                         <SelectTrigger className="h-10 min-w-[200px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-[11px] font-black uppercase px-6 shadow-sm">
                             <div className="flex items-center gap-2">
                                 {promoterFilter === 'all' ? <Building2 className="h-4 w-4 text-primary" /> : <BankIcon bankName={promoterFilter} domain={userSettings?.promoterDomains?.[promoterFilter]} className="h-4 w-4" />}
-                                <SelectValue placeholder="TODAS PROMOTORAS" />
+                                <SelectValue placeholder="PROMOTORA" />
                             </div>
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-2">
                             <SelectItem value="all" className="font-black text-[10px] uppercase">Todas Promotoras</SelectItem>
                             {Array.from(new Set(data.map(p => p.promoter))).sort().map(p => (
-                                <SelectItem key={p} value={p} className="font-bold text-[11px] uppercase">
-                                    <div className="flex items-center gap-3">
-                                        <BankIcon bankName={p} domain={userSettings?.promoterDomains?.[p]} showLogo={userSettings?.showPromoterLogos ?? true} className="h-4 w-4" />
-                                        <span>{p}</span>
-                                    </div>
-                                </SelectItem>
+                                <SelectItem key={p} value={p} className="font-bold text-[11px] uppercase">{p}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>

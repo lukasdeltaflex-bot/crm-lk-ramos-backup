@@ -136,7 +136,6 @@ export default function FinancialPage() {
       }))
       .filter(p => p.customer);
 
-    // Estatísticas de Operadores
     const opMap: Record<string, { name: string; totalPaid: number; count: number; potential: number }> = {};
     tableData.forEach(p => {
         const op = p.operator || 'Sem Operador';
@@ -184,11 +183,7 @@ export default function FinancialPage() {
     });
 
     if (reportProposals.length === 0 && reportExpenses.length === 0) {
-        toast({
-            variant: "destructive",
-            title: "Sem dados para o período",
-            description: "Nenhuma proposta ou despesa encontrada para o mês selecionado."
-        });
+        toast({ variant: "destructive", title: "Sem dados para o período" });
         return;
     }
 
@@ -199,134 +194,53 @@ export default function FinancialPage() {
     const targetDate = new Date(targetYear, targetMonth, 1);
     const monthYear = format(targetDate, "MMMM 'de' yyyy", { locale: ptBR });
 
-    doc.setFontSize(20);
-    doc.setTextColor(40, 74, 127);
-    doc.text("Fechamento Mensal & Balanço Empresarial", 14, 20);
-    doc.setFontSize(12);
-    doc.setTextColor(100);
-    doc.text(`Período de Competência: ${monthYear}`, 14, 28);
-    doc.text(`Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 34);
+    doc.setFontSize(20); doc.setTextColor(40, 74, 127); doc.text("Balanço Empresarial", 14, 20);
+    doc.setFontSize(10); doc.setTextColor(100); doc.text(`Período: ${monthYear}`, 14, 28);
 
-    const totalComissaoDigitada = reportProposals.reduce((sum, p) => sum + (p.commissionValue || 0), 0);
     const recebido = reportProposals.filter(p => p.commissionStatus === 'Paga' || p.commissionStatus === 'Parcial').reduce((sum, p) => sum + (p.amountPaid || 0), 0);
-    const pendente = reportProposals.reduce((sum, p) => sum + ((p.commissionValue || 0) - (p.amountPaid || 0)), 0);
     const totalDespesas = reportExpenses.reduce((sum, e) => sum + e.amount, 0);
     const lucroLiquido = recebido - totalDespesas;
 
-    doc.setDrawColor(200);
-    doc.line(14, 40, 196, 40);
-
-    doc.setFontSize(14);
-    doc.setTextColor(0);
-    doc.text("Resumo Financeiro Executivo", 14, 50);
-    
     autoTable(doc, {
-        startY: 55,
+        startY: 45,
         body: [
-            ['Comissões Digitadas no Mês', formatCurrency(totalComissaoDigitada)],
-            ['Comissões Efetivamente Recebidas (Entrada)', formatCurrency(recebido)],
-            ['Despesas Totais do Período (Saída)', formatCurrency(totalDespesas)],
-            ['LUCRO LÍQUIDO REAL (Entradas - Saídas)', { content: formatCurrency(lucroLiquido), styles: { fontStyle: 'bold', textColor: lucroLiquido >= 0 ? [22, 101, 52] : [185, 28, 28] } }],
-            ['Saldo Pendente de Recebimento', formatCurrency(pendente)],
+            ['Entradas (Comissões)', formatCurrency(recebido)],
+            ['Saídas (Despesas)', formatCurrency(totalDespesas)],
+            ['LUCRO LÍQUIDO', { content: formatCurrency(lucroLiquido), styles: { fontStyle: 'bold', textColor: lucroLiquido >= 0 ? [22, 101, 52] : [185, 28, 28] } }],
         ],
         theme: 'striped',
-        headStyles: { fillColor: [40, 74, 127] },
     });
-
-    const getSafeY = () => (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY : 100;
-
-    const operatorRanking: Record<string, { count: number; volume: number }> = {};
-    reportProposals.forEach(p => {
-        const op = p.operator || 'Sem Operador';
-        if (!operatorRanking[op]) operatorRanking[op] = { count: 0, volume: 0 };
-        operatorRanking[op].count++;
-        operatorRanking[op].volume += p.grossAmount || 0;
-    });
-
-    const rankingRows = Object.entries(operatorRanking)
-        .sort((a, b) => b[1].volume - a[1].volume)
-        .map(([name, stats]) => [name, stats.count, formatCurrency(stats.volume)]);
-
-    if (rankingRows.length > 0) {
-        doc.text("Ranking de Performance (Mês)", 14, getSafeY() + 15);
-        autoTable(doc, {
-            startY: getSafeY() + 20,
-            head: [['Operador', 'Qtd. Contratos', 'Volume Bruto']],
-            body: rankingRows,
-            theme: 'grid',
-            headStyles: { fillColor: [70, 70, 70] },
-            styles: { fontSize: 9 }
-        });
-    }
-
-    if (reportProposals.length > 0) {
-        doc.addPage();
-        doc.text("Detalhamento das Propostas Digitadas", 14, 20);
-
-        const tableRows = reportProposals.map(p => [
-            p.customer?.name || '-',
-            p.proposalNumber,
-            p.product,
-            formatCurrency(p.grossAmount),
-            formatCurrency(p.commissionValue),
-            p.status
-        ]);
-
-        autoTable(doc, {
-            startY: 25,
-            head: [['Cliente', 'Nº Proposta', 'Produto', 'Vlr. Bruto', 'Comissão', 'Status Prop.']],
-            body: tableRows,
-            styles: { fontSize: 8 },
-            headStyles: { fillColor: [40, 74, 127] },
-        });
-    }
-
-    if (reportExpenses.length > 0) {
-        const lastY = getSafeY();
-        const pageHeight = doc.internal.pageSize.height;
-        
-        if (lastY > pageHeight - 60) {
-            doc.addPage();
-            doc.text("Detalhamento de Despesas", 14, 20);
-            autoTable(doc, {
-                startY: 25,
-                head: [['Data', 'Descrição', 'Categoria', 'Valor']],
-                body: reportExpenses.map(e => [
-                    format(new Date(e.date), 'dd/MM/yyyy'),
-                    e.description,
-                    e.category,
-                    formatCurrency(e.amount)
-                ]),
-                styles: { fontSize: 8 },
-                headStyles: { fillColor: [185, 28, 28] }, 
-            });
-        } else {
-            doc.text("Detalhamento de Despesas", 14, lastY + 15);
-            autoTable(doc, {
-                startY: lastY + 20,
-                head: [['Data', 'Descrição', 'Categoria', 'Valor']],
-                body: reportExpenses.map(e => [
-                    format(new Date(e.date), 'dd/MM/yyyy'),
-                    e.description,
-                    e.category,
-                    formatCurrency(e.amount)
-                ]),
-                styles: { fontSize: 8 },
-                headStyles: { fillColor: [185, 28, 28] }, 
-            });
-        }
-    }
 
     doc.save(`Balanco_${monthYear.replace(/\s+/g, '_')}.pdf`);
-    toast({ title: "Relatório Gerado!" });
     setIsReportDialogOpen(false);
   };
 
-  const isLoading = proposalsLoading || customersLoading || isUserLoading || expensesLoading;
+  const handleExportToExcel = async () => {
+    const table = tableRef.current?.table;
+    if (!table) return;
+    const { utils, writeFile } = await import('xlsx');
+    
+    const rows = table.getFilteredRowModel().rows.map(r => {
+        const p = r.original;
+        return {
+            'Cliente': p.customer?.name,
+            'CPF': p.customer?.cpf,
+            'Proposta': p.proposalNumber,
+            'Banco': cleanBankName(p.bank),
+            'Produto': p.product,
+            'Vlr Bruto': p.grossAmount,
+            'Comissão R$': p.commissionValue,
+            'Vlr Pago': p.amountPaid || 0,
+            'Status': p.commissionStatus,
+            'Pagamento': p.commissionPaymentDate ? format(new Date(p.commissionPaymentDate), 'dd/MM/yyyy') : '-',
+            'Operador': p.operator || '-'
+        };
+    });
 
-  const handleShowDetails = (title: string, props: ProposalWithCustomer[]) => {
-    if (!props || props.length === 0) return;
-    setDialogData({ title, proposals: props });
+    const ws = utils.json_to_sheet(rows);
+    const wb = utils.book_new();
+    utils.book_append_sheet(wb, ws, 'Financeiro');
+    writeFile(wb, 'financeiro_lk_ramos.xlsx');
   };
 
   const handleEditCommission = React.useCallback((proposal: ProposalWithCustomer) => {
@@ -351,63 +265,24 @@ export default function FinancialPage() {
     }
   
     const docRef = doc(firestore, 'loanProposals', proposal.id);
-    
-    setDoc(docRef, proposalToUpdate, { merge: true })
-        .catch(async (error) => {
-            if (error.code === 'permission-denied') {
-                errorEmitter.emit('permission-error', new FirestorePermissionError({
-                    path: docRef.path,
-                    operation: 'update',
-                    requestResourceData: proposalToUpdate
-                }));
-            }
-        });
-
+    setDoc(docRef, proposalToUpdate, { merge: true });
     toast({ title: 'Status Atualizado!' });
-  }, [firestore, user])
+  }, [firestore, user]);
 
   const handleFormSubmit = async (data: CommissionFormValues) => {
     if (!firestore || !selectedProposal || !user) return;
-  
     const proposalToUpdate: Partial<Proposal> = {
       commissionStatus: data.commissionStatus as CommissionStatus,
       amountPaid: data.amountPaid,
       commissionPaymentDate: data.commissionPaymentDate
         ? parse(data.commissionPaymentDate, 'dd/MM/yyyy', new Date()).toISOString()
-        : (data.commissionStatus === 'Pendente' ? (deleteField() as any) : undefined),
+        : undefined,
       ownerId: user.uid
     };
-  
-    const docRef = doc(firestore, 'loanProposals', selectedProposal.id);
-    setDoc(docRef, proposalToUpdate, { merge: true });
-    toast({ title: 'Comissão Atualizada!' });
+    setDoc(doc(firestore, 'loanProposals', selectedProposal.id), proposalToUpdate, { merge: true });
     setIsSheetOpen(false);
+    toast({ title: 'Salvo!' });
   };
-
-  const handleExpenseSubmit = async (data: any) => {
-    if (!firestore || !user) return;
-    const expenseId = selectedExpense?.id || doc(collection(firestore, 'users', user.uid, 'expenses')).id;
-    const expenseRef = doc(firestore, 'users', user.uid, 'expenses', expenseId);
-    const expenseData = { ...data, id: expenseId, ownerId: user.uid };
-    setDoc(expenseRef, expenseData, { merge: true });
-    toast({ title: "Despesa Salva" });
-    setIsExpenseFormOpen(false);
-  };
-
-  const handleExpenseDelete = async (id: string) => {
-    if (!firestore || !user) return;
-    deleteDoc(doc(firestore, 'users', user.uid, 'expenses', id));
-    toast({ title: "Despesa Removida" });
-  };
-
-  const handlePrint = React.useCallback(() => {
-    const hasSelection = Object.keys(rowSelection).length > 0;
-    if (hasSelection) document.body.classList.add('print-selection');
-    window.print();
-    if (hasSelection) document.body.classList.remove('print-selection');
-  }, [rowSelection]);
-
-  const columns = React.useMemo(() => getColumns({ onEdit: handleEditCommission, onStatusUpdate: handleCommissionStatusUpdate }), [handleEditCommission, handleCommissionStatusUpdate]);
 
   return (
     <AppLayout>
@@ -415,109 +290,34 @@ export default function FinancialPage() {
         <PageHeader title="Controle Financeiro & Fluxo" />
         <div className="flex items-center gap-2">
             <Dialog open={isOperatorsDialogOpen} onOpenChange={setIsOperatorsDialogOpen}>
-                <DialogTrigger asChild>
-                    <Button variant="outline" className="bg-primary/5 border-primary/20 text-primary">
-                        <Users2 className="mr-2 h-4 w-4" />
-                        Performance Operadores
-                    </Button>
-                </DialogTrigger>
+                <DialogTrigger asChild><Button variant="outline"><Users2 className="mr-2 h-4 w-4" /> Performance Operadores</Button></DialogTrigger>
                 <DialogContent className="max-w-3xl">
-                    <DialogHeader>
-                        <DialogTitle>Extrato de Comissões por Operador</DialogTitle>
-                    </DialogHeader>
-                    <div className="py-4">
-                        <ScrollArea className="h-[400px]">
-                            <div className="space-y-4 pr-4">
-                                {operatorStats.map((op) => (
-                                    <Card key={op.name} className="overflow-hidden border-border/50">
-                                        <div className="p-4 flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">{op.name.charAt(0).toUpperCase()}</div>
-                                                <div>
-                                                    <p className="font-bold text-sm">{op.name}</p>
-                                                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{op.count} Propostas</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-6">
-                                                <div className="text-right">
-                                                    <p className="text-[10px] font-bold text-muted-foreground uppercase">Potencial</p>
-                                                    <p className="text-sm font-medium">{formatCurrency(op.potential)}</p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="text-[10px] font-bold text-green-600 uppercase">Recebido</p>
-                                                    <p className="text-sm font-bold text-green-600">{formatCurrency(op.totalPaid)}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="h-1.5 w-full bg-muted">
-                                            <div className="h-full bg-primary transition-all" style={{ width: `${Math.min((op.totalPaid / (op.potential || 1)) * 100, 100)}%` }} />
-                                        </div>
-                                    </Card>
-                                ))}
-                            </div>
-                        </ScrollArea>
-                    </div>
+                    <DialogHeader><DialogTitle>Comissões por Operador</DialogTitle></DialogHeader>
+                    <div className="py-4"><ScrollArea className="h-[400px]"><div className="space-y-4">{operatorStats.map((op) => (
+                        <Card key={op.name} className="p-4 flex items-center justify-between">
+                            <div><p className="font-bold">{op.name}</p><p className="text-[10px] uppercase text-muted-foreground">{op.count} Propostas</p></div>
+                            <div className="text-right"><p className="text-xs uppercase font-bold text-muted-foreground">Recebido</p><p className="font-bold text-green-600">{formatCurrency(op.totalPaid)}</p></div>
+                        </Card>
+                    ))}</div></ScrollArea></div>
                 </DialogContent>
             </Dialog>
 
             <Dialog open={isEfficiencyOpen} onOpenChange={setIsEfficiencyOpen}>
-                <DialogTrigger asChild><Button variant="outline"><BarChart3 className="mr-2 h-4 w-4" /> Eficiência Parceiros</Button></DialogTrigger>
+                <DialogTrigger asChild><Button variant="outline"><BarChart3 className="mr-2 h-4 w-4" /> Eficiência</Button></DialogTrigger>
                 <DialogContent className="max-w-5xl h-[90vh] flex flex-col">
-                    <DialogHeader><DialogTitle>Análise de Eficiência por Parceiro</DialogTitle></DialogHeader>
+                    <DialogHeader><DialogTitle>Análise de Eficiência</DialogTitle></DialogHeader>
                     <div className="flex-1 overflow-y-auto"><PromoterEfficiencyReport proposals={summaryProposals} /></div>
                 </DialogContent>
             </Dialog>
 
-            <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
-                <DialogTrigger asChild><Button variant="outline"><FileBadge className="mr-2 h-4 w-4" /> Fechamento (PDF)</Button></DialogTrigger>
-                <DialogContent className="max-w-sm">
-                    <DialogHeader>
-                        <DialogTitle>Configurar Balanço Mensal</DialogTitle>
-                        <DialogDescription>Unifica Comissões e Despesas no mesmo PDF.</DialogDescription>
-                    </DialogHeader>
-                    <div className="grid grid-cols-2 gap-4 py-4">
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold uppercase text-muted-foreground">Mês</label>
-                            <Select value={reportMonth} onValueChange={setReportMonth}>
-                                <SelectTrigger><SelectValue placeholder="Mês" /></SelectTrigger>
-                                <SelectContent>{MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold uppercase text-muted-foreground">Ano</label>
-                            <Select value={reportYear} onValueChange={setReportYear}>
-                                <SelectTrigger><SelectValue placeholder="Ano" /></SelectTrigger>
-                                <SelectContent>{[getYear(new Date()) - 1, getYear(new Date()), getYear(new Date()) + 1].map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}</SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsReportDialogOpen(false)}>Cancelar</Button>
-                        <Button onClick={handleGenerateMonthlyReport}><FileDown className="mr-2 h-4 w-4" /> Gerar PDF</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild><Button variant="outline"><FileDown /> Exportar</Button></DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => tableRef.current?.table && import('xlsx').then(xlsx => {
-                        const ws = xlsx.utils.json_to_sheet(proposalsWithCustomerData.map(p => ({ Cliente: p.customer?.name, Proposta: p.proposalNumber, Valor: p.grossAmount, Status: p.commissionStatus, Operador: p.operator })));
-                        const wb = xlsx.utils.book_new();
-                        xlsx.utils.book_append_sheet(wb, ws, 'Financeiro');
-                        xlsx.writeFile(wb, 'financeiro.xlsx');
-                    })}>Exportar para Excel (.xlsx)</DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+            <Button variant="outline" onClick={handleExportToExcel}><FileDown className="mr-2 h-4 w-4" /> Excel</Button>
+            
             <Dialog open={isReconciliationOpen} onOpenChange={setIsReconciliationOpen}>
                 <DialogTrigger asChild><Button variant="outline"><FileCheck2 /> Conciliar IA</Button></DialogTrigger>
-                <DialogContent className="max-w-4xl">
-                    <DialogHeader><DialogTitle>Conciliação de Comissões com IA</DialogTitle></DialogHeader>
-                    <CommissionReconciliation proposals={summaryProposals} onFinished={() => setIsReconciliationOpen(false)} />
-                </DialogContent>
+                <DialogContent className="max-w-4xl"><DialogHeader><DialogTitle>Conciliação IA</DialogTitle></DialogHeader><CommissionReconciliation proposals={summaryProposals} onFinished={() => setIsReconciliationOpen(false)} /></DialogContent>
             </Dialog>
             <Button variant="ghost" size="icon" onClick={() => setIsPrivacyMode(!isPrivacyMode)}>{isPrivacyMode ? <EyeOff /> : <Eye />}</Button>
-            <Button onClick={handlePrint}><Printer /> Imprimir</Button>
+            <Button onClick={() => window.print()}><Printer /> Imprimir</Button>
         </div>
       </div>
 
@@ -528,49 +328,36 @@ export default function FinancialPage() {
         </SheetContent>
       </Sheet>
 
-      <Dialog open={!!dialogData} onOpenChange={(isOpen) => !isOpen && setDialogData(null)}>
-        <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
-            <DialogHeader><DialogTitle>{dialogData?.title}</DialogTitle></DialogHeader>
-            <div className="flex-1 overflow-y-auto"><ProposalsStatusTable proposals={dialogData?.proposals || []} customers={customers || []} /></div>
-        </DialogContent>
-      </Dialog>
-
       {isLoading ? (
         <div className="space-y-4"><Skeleton className="h-32 w-full" /><Skeleton className="h-[400px] w-full" /></div>
       ) : (
         <div className="space-y-8">
             <Tabs defaultValue="commissions" className="w-full">
                 <TabsList className="bg-muted/50 mb-4">
-                    <TabsTrigger value="commissions" className="gap-2"><CircleDollarSign className="h-4 w-4" /> Comissões & Fluxo</TabsTrigger>
-                    <TabsTrigger value="expenses" className="gap-2"><Wallet className="h-4 w-4" /> Despesas & DRE</TabsTrigger>
+                    <TabsTrigger value="commissions" className="gap-2"><CircleDollarSign className="h-4 w-4" /> Comissões</TabsTrigger>
+                    <TabsTrigger value="expenses" className="gap-2"><Wallet className="h-4 w-4" /> Despesas</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="commissions" className="space-y-4">
+                <TabsContent value="commissions">
                     <FinancialDataTable 
                         ref={tableRef}
-                        columns={columns} 
+                        columns={getColumns({ onEdit: handleEditCommission, onStatusUpdate: handleCommissionStatusUpdate })} 
                         data={proposalsWithCustomerData}
                         currentMonthRange={currentMonthRange}
                         isPrivacyMode={isPrivacyMode} 
                         rowSelection={rowSelection}
                         setRowSelection={setRowSelection}
-                        onShowDetails={handleShowDetails}
+                        onShowDetails={(t, p) => setDialogData({ title: t, proposals: p })}
                         userSettings={userSettings || null}
                     />
                 </TabsContent>
 
                 <TabsContent value="expenses" className="space-y-6">
-                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-                        <div className="space-y-1">
-                            <h2 className="text-xl font-bold flex items-center gap-2"><ReceiptText className="text-primary" /> Livro de Despesas</h2>
-                            <p className="text-sm text-muted-foreground">Registre seus custos fixos e variáveis para controle financeiro.</p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <StatsCard title="Total de Despesas" value={isPrivacyMode ? '•••••' : formatCurrency(totalExpensesAmount)} icon={Wallet} description="GASTOS TOTAIS DO MÊS ATUAL" className="border-red-200 bg-red-50/10 min-w-[250px]" valueClassName="text-red-600" />
-                            <Button onClick={() => { setSelectedExpense(undefined); setIsExpenseFormOpen(true); }}><PlusCircle className="mr-2 h-4 w-4" /> Lançar Despesa</Button>
-                        </div>
+                    <div className="flex justify-between items-center">
+                        <StatsCard title="Total Despesas (Mês)" value={isPrivacyMode ? '•••••' : formatCurrency(totalExpensesAmount)} icon={Wallet} className="bg-red-50/10 border-red-200" />
+                        <Button onClick={() => { setSelectedExpense(undefined); setIsExpenseFormOpen(true); }}><PlusCircle className="mr-2 h-4 w-4" /> Lançar Despesa</Button>
                     </div>
-                    <ExpenseTable expenses={expenses || []} onEdit={(e) => { setSelectedExpense(e); setIsExpenseFormOpen(true); }} onDelete={handleExpenseDelete} />
+                    <ExpenseTable expenses={expenses || []} onEdit={(e) => { setSelectedExpense(e); setIsExpenseFormOpen(true); }} onDelete={(id) => deleteDoc(doc(firestore!, 'users', user!.uid, 'expenses', id))} />
                 </TabsContent>
             </Tabs>
         </div>
@@ -578,8 +365,20 @@ export default function FinancialPage() {
 
       <Dialog open={isExpenseFormOpen} onOpenChange={setIsExpenseFormOpen}>
         <DialogContent className="max-w-md">
-            <DialogHeader><DialogTitle>{selectedExpense ? 'Editar Gasto' : 'Novo Gasto Operacional'}</DialogTitle></DialogHeader>
-            <ExpenseForm expense={selectedExpense} categories={userSettings?.expenseCategories || initialExpenseCategories} onSubmit={handleExpenseSubmit} />
+            <DialogHeader><DialogTitle>Gasto Operacional</DialogTitle></DialogHeader>
+            <ExpenseForm expense={selectedExpense} categories={userSettings?.expenseCategories || initialExpenseCategories} onSubmit={(data) => {
+                const id = selectedExpense?.id || doc(collection(firestore!, 'users', user!.uid, 'expenses')).id;
+                setDoc(doc(firestore!, 'users', user!.uid, 'expenses', id), { ...data, id, ownerId: user!.uid });
+                setIsExpenseFormOpen(false);
+                toast({ title: 'Gasto Salvo!' });
+            }} />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!dialogData} onOpenChange={(o) => !o && setDialogData(null)}>
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+            <DialogHeader><DialogTitle>{dialogData?.title}</DialogTitle></DialogHeader>
+            <div className="flex-1 overflow-y-auto"><ProposalsStatusTable proposals={dialogData?.proposals || []} customers={customers || []} /></div>
         </DialogContent>
       </Dialog>
     </AppLayout>

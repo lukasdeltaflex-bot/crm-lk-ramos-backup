@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ColumnDef, Header, flexRender } from '@tanstack/react-table';
@@ -31,6 +30,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TableHead } from '@/components/ui/table';
 import { toast } from '@/hooks/use-toast';
+import React, { useState } from 'react';
 
 const CopyButton = ({ text, label }: { text: string | undefined; label: string }) => {
     if (!text) return null;
@@ -134,6 +134,8 @@ export const DraggableHeader = ({ header }: { header: Header<Customer, unknown> 
 
 const ActionsCell = ({ row, onEdit, onDelete }: any) => {
   const customer = row.original;
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+
   return (
     <div className="text-right" onClick={(e) => e.stopPropagation()}>
       <DropdownMenu>
@@ -150,28 +152,32 @@ const ActionsCell = ({ row, onEdit, onDelete }: any) => {
             Editar Cadastro
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <AlertDialog>
-            <DropdownMenuItem
-                onSelect={(e) => e.preventDefault()}
-                className="text-destructive focus:text-destructive focus:bg-destructive/10 font-bold"
-            >
-                Remover Registro
-            </DropdownMenuItem>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Esta ação irá inativar o cliente. Você poderá reativá-lo mais tarde.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>Voltar</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => onDelete(customer.id)}>Confirmar</AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <DropdownMenuItem
+            onSelect={() => setIsAlertOpen(true)}
+            className="text-destructive focus:text-destructive focus:bg-destructive/10 font-bold"
+          >
+            Remover Registro
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Esta ação irá inativar o cliente. Você poderá reativá-lo mais tarde.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Voltar</AlertDialogCancel>
+                <AlertDialogAction onClick={() => {
+                    onDelete(customer.id);
+                    setIsAlertOpen(false);
+                }}>Confirmar</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

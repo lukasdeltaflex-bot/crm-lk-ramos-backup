@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ColumnDef, Header, flexRender } from '@tanstack/react-table';
@@ -25,7 +24,7 @@ import {
 import { MoreHorizontal, GripVertical, ArrowUp, ArrowDown, Copy, Timer } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatCurrency, cleanBankName, cn, formatDateSafe, isWhatsApp, getWhatsAppUrl, calculateBusinessDays } from '@/lib/utils';
-import React from 'react';
+import React, { useState } from 'react';
 import { StatusCell } from './status-cell';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -56,6 +55,8 @@ const CopyButton = ({ text, label }: { text: string | undefined; label: string }
 
 const ActionsCell = ({ row, onEdit, onView, onDelete, onDuplicate }: any) => {
     const proposal = row.original;
+    const [isAlertOpen, setIsAlertOpen] = useState(false);
+
     return (
       <div className="text-right" onClick={(e) => e.stopPropagation()}>
         <DropdownMenu>
@@ -71,26 +72,30 @@ const ActionsCell = ({ row, onEdit, onView, onDelete, onDuplicate }: any) => {
             <DropdownMenuItem onSelect={() => onEdit(proposal)} className="font-bold">Editar Registro</DropdownMenuItem>
             <DropdownMenuItem onSelect={() => onDuplicate(proposal)} className="font-bold">Duplicar Proposta</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <AlertDialog>
-                <DropdownMenuItem 
-                    onSelect={(e) => e.preventDefault()}
-                    className="text-destructive focus:text-destructive focus:bg-destructive/10 font-bold"
-                    >
-                    Remover Registro
-                </DropdownMenuItem>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                        <AlertDialogDescription>Esta ação irá excluir permanentemente a proposta do sistema.</AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Voltar</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => onDelete(proposal.id)}>Confirmar</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <DropdownMenuItem 
+                onSelect={() => setIsAlertOpen(true)}
+                className="text-destructive focus:text-destructive focus:bg-destructive/10 font-bold"
+            >
+                Remover Registro
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                    <AlertDialogDescription>Esta ação irá excluir permanentemente a proposta do sistema.</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Voltar</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => {
+                        onDelete(proposal.id);
+                        setIsAlertOpen(false);
+                    }}>Confirmar</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
       </div>
     );
 };

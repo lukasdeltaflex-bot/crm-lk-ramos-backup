@@ -108,7 +108,6 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         const savedSizing = localStorage.getItem('lk-customers-sizing');
         if (savedSizing) setColumnSizing(JSON.parse(savedSizing));
 
-        // 🛡️ BLINDAGEM DE MEMÓRIA: Sincroniza colunas novas com o estado salvo
         const savedOrder = localStorage.getItem('lk-customers-order');
         if (savedOrder) {
             const parsedOrder = JSON.parse(savedOrder) as string[];
@@ -205,23 +204,29 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         const customer = row.original;
 
         if (/^\d+$/.test(searchTerm)) {
-            return customer.numericId.toString() === searchTerm;
+            if (customer.numericId.toString() === searchTerm) return true;
         }
 
         const normalizedSearch = normalizeString(searchTerm);
+        const searchDigits = searchTerm.replace(/\D/g, '');
 
         const fieldsToSearch = [
             customer.name,
             customer.cpf,
             customer.phone,
-            customer.phone2,
             customer.city,
-            customer.state,
             customer.email,
-            customer.observations,
             ...(customer.benefits?.map(b => b.number) || [])
         ];
-        return fieldsToSearch.some(field => field && normalizeString(field).includes(normalizedSearch));
+
+        return fieldsToSearch.some(field => {
+            if (!field) return false;
+            const normField = normalizeString(field);
+            const fieldDigits = field.replace(/\D/g, '');
+            
+            return normField.includes(normalizedSearch) || 
+                   (searchDigits && searchDigits.length >= 3 && fieldDigits.includes(searchDigits));
+        });
       },
   });
 
