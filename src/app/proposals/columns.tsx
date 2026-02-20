@@ -313,8 +313,8 @@ export const getColumns = (
     cell: ({ row }) => {
         const p = row.original;
         
-        // Lógica de Alerta Crítico Visual (Identidade da Foto)
-        const referenceDate = p.statusUpdatedAt || p.dateDigitized;
+        // Lógica de Alerta Crítico Visual
+        const referenceDate = p.statusAwaitingBalanceAt || p.statusUpdatedAt || p.dateDigitized;
         const bizDays = referenceDate ? calculateBusinessDays(referenceDate) : 0;
         
         let isCritical = false;

@@ -79,6 +79,29 @@
   }
 }
 
+/* 🌑 MOTOR DE BARRA LATERAL (Overrides) */
+.sidebar-dark {
+  --sidebar-background: 240 5.9% 10% !important;
+  --sidebar-foreground: 240 4.8% 95.9% !important;
+  --sidebar-primary: 224.3 76.3% 48% !important;
+  --sidebar-primary-foreground: 0 0% 100% !important;
+  --sidebar-accent: 240 3.7% 15.9% !important;
+  --sidebar-accent-foreground: 240 4.8% 95.9% !important;
+  --sidebar-border: 240 3.7% 15.9% !important;
+  --sidebar-ring: 217.2 91.2% 59.8% !important;
+}
+
+.sidebar-light {
+  --sidebar-background: 0 0% 100% !important;
+  --sidebar-foreground: 240 5.3% 26.1% !important;
+  --sidebar-primary: 240 5.9% 10% !important;
+  --sidebar-primary-foreground: 0 0% 98% !important;
+  --sidebar-accent: 240 4.8% 95.9% !important;
+  --sidebar-accent-foreground: 240 5.9% 10% !important;
+  --sidebar-border: 220 13% 91% !important;
+  --sidebar-ring: 217.2 91.2% 59.8% !important;
+}
+
 /* 🎨 MOTOR DE TIPOGRAFIA LK RAMOS */
 .font-moderno { --font-main: 'Inter', sans-serif; }
 .font-classico { --font-main: 'Playfair Display', serif; }
