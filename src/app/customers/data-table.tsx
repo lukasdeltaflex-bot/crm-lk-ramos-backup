@@ -182,9 +182,16 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         const searchTerm = normalizeString(String(filterValue ?? ''));
         if (!searchTerm) return true;
         const customer = row.original;
+
+        // BUSCA POR ID EXATO (IGUAL ERA ANTES)
+        if (!isNaN(Number(searchTerm)) && Number(searchTerm) === customer.numericId) {
+            return true;
+        }
+
         const fieldsToSearch = [
             customer.name,
             customer.cpf,
+            String(customer.numericId),
             customer.phone,
             customer.phone2,
             customer.city,
