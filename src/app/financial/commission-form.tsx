@@ -30,9 +30,9 @@ const commissionSchema = z.object({
   amountPaid: z.coerce.number().min(0, 'O valor pago é obrigatório.'),
   commissionPaymentDate: z.string().optional().refine(val => {
     if (!val) return true;
-    // 🛡️ BLINDAGEM: Garante o uso de MM (Mês) em vez de mm (Minutos)
+    // 🛡️ BLINDAGEM V7: Garante o uso de MM (Mês) e validação real
     const parsed = parse(val, 'dd/MM/yyyy', new Date());
-    return isValid(parsed);
+    return isValid(parsed) && val.length === 10;
   }, {
     message: "Data inválida. Use o formato dd/MM/aaaa.",
   }),
@@ -45,13 +45,15 @@ interface CommissionFormProps {
   onSubmit: (data: CommissionFormValues) => void;
 }
 
-const handleDateMask = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, "");
-    if (value.length > 8) value = value.substring(0, 8);
-    value = value.replace(/(\d{2})(\d)/, '$1/$2');
-    value = value.replace(/(\d{2})(\d)/, '$1/$2');
-    e.target.value = value;
-    return value;
+/**
+ * 🛡️ MÁSCARA INTELIGENTE V7
+ * Formata strings de data em tempo real para dd/MM/yyyy
+ */
+const applyDateMask = (value: string) => {
+    let v = value.replace(/\D/g, "").substring(0, 8);
+    if (v.length > 4) v = v.replace(/(\d{2})(\d{2})(\d)/, "$1/$2/$3");
+    else if (v.length > 2) v = v.replace(/(\d{2})(\d)/, "$1/$2");
+    return v;
 };
 
 
@@ -127,15 +129,15 @@ export function CommissionForm({ proposal, onSubmit }: CommissionFormProps) {
                         name="commissionPaymentDate"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Data de Pagamento</FormLabel>
+                            <FormLabel>Data de Pagamento (Manual)</FormLabel>
                             <FormControl>
                                 <Input
                                     placeholder="dd/mm/aaaa"
                                     {...field}
-                                    onChange={(e) => field.onChange(handleDateMask(e))}
+                                    onChange={(e) => field.onChange(applyDateMask(e.target.value))}
                                     value={field.value || ''}
                                     maxLength={10}
-                                    className="w-[240px]"
+                                    className="w-full"
                                 />
                             </FormControl>
                             <FormMessage />

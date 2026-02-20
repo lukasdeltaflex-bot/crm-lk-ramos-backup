@@ -45,7 +45,7 @@ import {
   } from '@/components/ui/dialog';
 import { CommissionForm, type CommissionFormValues } from './commission-form';
 import { toast } from '@/hooks/use-toast';
-import { format, startOfMonth, endOfMonth, parse, getYear, getMonth, isSameMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth, parse, getYear, getMonth, isSameMonth, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CommissionReconciliation } from '@/components/financial/commission-reconciliation';
 import { formatCurrency, cleanBankName } from '@/lib/utils';
@@ -267,14 +267,23 @@ export default function FinancialPage() {
 
   const handleFormSubmit = async (data: CommissionFormValues) => {
     if (!firestore || !selectedProposal || !user) return;
+    
+    // 🛡️ BLINDAGEM DE PARSING V7: Valida a data manual antes de salvar
+    let paymentDateIso = undefined;
+    if (data.commissionPaymentDate) {
+        const parsed = parse(data.commissionPaymentDate, 'dd/MM/yyyy', new Date());
+        if (isValid(parsed)) {
+            paymentDateIso = parsed.toISOString();
+        }
+    }
+
     const proposalToUpdate: Partial<Proposal> = {
       commissionStatus: data.commissionStatus as CommissionStatus,
       amountPaid: data.amountPaid,
-      commissionPaymentDate: data.commissionPaymentDate
-        ? parse(data.commissionPaymentDate, 'dd/MM/yyyy', new Date()).toISOString()
-        : undefined,
+      commissionPaymentDate: paymentDateIso,
       ownerId: user.uid
     };
+    
     setDoc(doc(firestore, 'loanProposals', selectedProposal.id), proposalToUpdate, { merge: true });
     setIsSheetOpen(false);
     toast({ title: 'Salvo!' });

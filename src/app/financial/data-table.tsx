@@ -176,6 +176,17 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   const [endDateInput, setEndDateInput] = React.useState('');
   const [appliedDateRange, setAppliedDateRange] = React.useState<DateRange | undefined>(undefined);
 
+  /**
+   * 🛡️ MÁSCARA DE DATA V7
+   * Aplica máscara dd/MM/yyyy em tempo real
+   */
+  const applyDateMask = (value: string) => {
+    let v = value.replace(/\D/g, "").substring(0, 8);
+    if (v.length > 4) v = v.replace(/(\d{2})(\d{2})(\d)/, "$1/$2/$3");
+    else if (v.length > 2) v = v.replace(/(\d{2})(\d)/, "$1/$2");
+    return v;
+  };
+
   const filteredData = React.useMemo(() => {
     const today = new Date();
     const startOfThisMonth = startOfMonth(today);
@@ -365,8 +376,20 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                         <SelectContent><SelectItem value="today">Hoje</SelectItem><SelectItem value="yesterday">Ontem</SelectItem><SelectItem value="month">Mês Atual</SelectItem></SelectContent>
                     </Select>
                     <Separator orientation="vertical" className="h-4 mx-1 bg-zinc-300" />
-                    <Input placeholder="De" value={startDateInput} onChange={(e) => setStartDateInput(e.target.value)} className="h-7 w-28 border-none bg-muted/40 text-[11px] text-center font-black rounded-full" />
-                    <Input placeholder="Até" value={endDateInput} onChange={(e) => setEndDateInput(e.target.value)} className="h-7 w-28 border-none bg-muted/40 text-[11px] text-center font-black rounded-full" />
+                    <Input 
+                        placeholder="De" 
+                        value={startDateInput} 
+                        onChange={(e) => setStartDateInput(applyDateMask(e.target.value))} 
+                        className="h-7 w-28 border-none bg-muted/40 text-[11px] text-center font-black rounded-full" 
+                        maxLength={10}
+                    />
+                    <Input 
+                        placeholder="Até" 
+                        value={endDateInput} 
+                        onChange={(e) => setEndDateInput(applyDateMask(e.target.value))} 
+                        className="h-7 w-28 border-none bg-muted/40 text-[11px] text-center font-black rounded-full" 
+                        maxLength={10}
+                    />
                 </div>
                 <Button size="sm" onClick={() => { const s = parse(startDateInput, 'dd/MM/yyyy', new Date()); const e = parse(endDateInput, 'dd/MM/yyyy', new Date()); setAppliedDateRange(isValid(s) ? { from: startOfDay(s), to: isValid(e) ? endOfDay(e) : endOfDay(s) } : undefined); }} className="h-9 bg-primary text-white rounded-full px-6 text-xs font-black uppercase shadow-lg gap-2"><Filter className="h-3.5 w-3.5" /> Aplicar</Button>
                 {appliedDateRange && <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { setStartDateInput(''); setEndDateInput(''); setAppliedDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
