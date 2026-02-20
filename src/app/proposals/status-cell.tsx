@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { proposalStatuses } from '@/lib/config-data';
 import type { ProposalStatus, ProposalHistoryEntry } from '@/lib/types';
-import { useFirestore, auth, useDoc, useMemoFirebase } from '@/firebase';
+import { useFirestore, auth } from '@/firebase';
 import { doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -34,6 +34,12 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
   const handleUpdate = async (newStatus: ProposalStatus) => {
     if (newStatus === currentStatus) return;
 
+    // 🛡️ TRAVA DE SEGURANÇA: Confirmação para Reprova/Cancelamento
+    if (newStatus === 'Reprovado') {
+        const confirmed = window.confirm("Você tem certeza que deseja marcar esta proposta como REPROVADA? Esta ação interrompe a esteira.");
+        if (!confirmed) return;
+    }
+
     if (onStatusChange) {
         onStatusChange(proposalId, newStatus, product);
         return;
@@ -44,7 +50,7 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
     const now = new Date().toISOString();
     const dataToUpdate: any = { 
       status: newStatus,
-      statusUpdatedAt: now
+      statusUpdatedAt: now // ⚡ RESET DE OCIOSIDADE
     };
     
     const isPortability = product === 'Portabilidade';
@@ -60,7 +66,7 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
         dataToUpdate.statusAwaitingBalanceAt = now;
     }
 
-    // BLINDAGEM FINANCEIRA: Se for elegível (averbado e não reprovado), define como Pendente se estiver vazio
+    // BLINDAGEM FINANCEIRA: Define comissão pendente se estiver elegível
     try {
         const docRef = doc(firestore, 'loanProposals', proposalId);
         const snap = await getDoc(docRef);
@@ -75,9 +81,7 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
                 }
             }
         }
-    } catch (e) {
-        // Fallback silencioso se falhar a leitura
-    }
+    } catch (e) {}
 
     const user = auth?.currentUser;
     const userName = user?.displayName || user?.email || 'Sistema';
@@ -85,7 +89,7 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
     const historyEntry: ProposalHistoryEntry = {
         id: crypto.randomUUID(),
         date: now,
-        message: `Status alterado de "${currentStatus}" para "${newStatus}" (Automático)`,
+        message: `Status alterado de "${currentStatus}" para "${newStatus}" (Via Seletor Rápido)`,
         userName: userName
     };
     dataToUpdate.history = arrayUnion(historyEntry);
