@@ -26,7 +26,8 @@ import {
     Loader2, 
     MessageSquareText,
     TrendingUp,
-    BadgePercent
+    BadgePercent,
+    ArrowRight
 } from 'lucide-react';
 import { format, parse, differenceInMonths, isValid as isValidDate } from 'date-fns';
 import { Button } from '@/components/ui/button';
@@ -48,6 +49,7 @@ import {
 } from '@/components/ui/dialog';
 import { generateSalesPitch } from '@/ai/flows/generate-sales-pitch-flow';
 import { StatsCard } from '@/components/dashboard/stats-card';
+import { ProposalsStatusTable } from '@/components/dashboard/proposals-status-table';
 
 const CopyButton = ({ text, label }: { text: string | undefined; label: string }) => {
     if (!text) return null;
@@ -111,6 +113,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
   const [isPitchModalOpen, setIsPitchModalOpen] = React.useState(false);
   const [isGeneratingPitch, setIsGeneratingPitch] = React.useState(false);
   const [generatedPitch, setGeneratedPitch] = React.useState('');
+  const [dialogData, setDialogData] = React.useState<{ title: string; proposals: Proposal[] } | null>(null);
 
   const customerDocRef = useMemoFirebase(() => customerId && firestore ? doc(firestore, 'customers', customerId) : null, [firestore, customerId]);
   const proposalsQuery = useMemoFirebase(() => user && firestore && customerId ? query(collection(firestore, 'loanProposals'), where('ownerId', '==', user.uid), where('customerId', '==', customerId)) : null, [firestore, user, customerId]);
@@ -119,11 +122,23 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
   const { data: proposals, isLoading: areProposalsLoading } = useCollection<Proposal>(proposalsQuery);
 
   const businessStats = React.useMemo(() => {
-    if (!proposals) return { count: 0, volume: 0, commission: 0 };
+    if (!proposals) return { count: 0, volume: 0, commission: 0, proposalsByCommission: [] };
+    
+    // Contagem inclui reprovadas/canceladas conforme solicitado
+    const count = proposals.length;
+    
+    // Volume Bruto total do histórico
+    const volume = proposals.reduce((s, p) => s + (p.grossAmount || 0), 0);
+    
+    // Comissão recebida apenas de propostas que não foram canceladas/reprovadas
+    const validCommissionProposals = proposals.filter(p => (p.commissionStatus === 'Paga' || p.commissionStatus === 'Parcial') && p.status !== 'Reprovado');
+    const commission = validCommissionProposals.reduce((s, p) => s + (p.amountPaid || 0), 0);
+
     return {
-        count: proposals.length,
-        volume: proposals.reduce((s, p) => s + (p.grossAmount || 0), 0),
-        commission: proposals.filter(p => p.commissionStatus === 'Paga').reduce((s, p) => s + (p.amountPaid || 0), 0)
+        count,
+        volume,
+        commission,
+        proposalsByCommission: validCommissionProposals
     };
   }, [proposals]);
 
@@ -259,25 +274,37 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
         <CustomerInfoCard customer={customer} onExportDossier={handleExportDossier} onToggleStatus={handleToggleStatus} onGeneratePitch={handleGeneratePitch} />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <StatsCard 
-                title="Contratos Totais" 
-                value={String(businessStats.count)} 
-                icon={FileText} 
-                description="PROPOSTAS NO HISTÓRICO"
-            />
-            <StatsCard 
-                title="Volume Bruto" 
-                value={formatCurrency(businessStats.volume)} 
-                icon={TrendingUp} 
-                description="TOTAL EM OPERAÇÕES"
-            />
-            <StatsCard 
-                title="Comissão Líquida" 
-                value={formatCurrency(businessStats.commission)} 
-                icon={BadgePercent} 
-                description="VALOR TOTAL RECEBIDO"
-                isHot={businessStats.commission > 1000}
-            />
+            <div className="cursor-pointer" onClick={() => setDialogData({ title: "Histórico Total de Contratos", proposals: proposals || [] })}>
+                <StatsCard 
+                    title="CONTRATOS TOTAIS" 
+                    value={String(businessStats.count)} 
+                    icon={FileText} 
+                    description="PROPOSTAS NO HISTÓRICO"
+                    className="bg-blue-50/10 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800"
+                    overrideStatusColors={{ 'CONTRATOS TOTAIS': '217 91% 60%' }}
+                />
+            </div>
+            <div className="cursor-pointer" onClick={() => setDialogData({ title: "Detalhamento de Volume Bruto", proposals: proposals || [] })}>
+                <StatsCard 
+                    title="VOLUME BRUTO" 
+                    value={formatCurrency(businessStats.volume)} 
+                    icon={TrendingUp} 
+                    description="TOTAL EM OPERAÇÕES"
+                    className="bg-emerald-50/10 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800"
+                    overrideStatusColors={{ 'VOLUME BRUTO': '142 76% 36%' }}
+                />
+            </div>
+            <div className="cursor-pointer" onClick={() => setDialogData({ title: "Comissões Recebidas (Líquidas)", proposals: businessStats.proposalsByCommission })}>
+                <StatsCard 
+                    title="COMISSÃO LÍQUIDA" 
+                    value={formatCurrency(businessStats.commission)} 
+                    icon={BadgePercent} 
+                    description="VALOR TOTAL RECEBIDO"
+                    isHot={businessStats.commission > 1000}
+                    className="bg-amber-50/10 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800"
+                    overrideStatusColors={{ 'COMISSÃO LÍQUIDA': '24 95% 53%' }}
+                />
+            </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -288,7 +315,17 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
             <div className="lg:col-span-1"><Card className="h-full border-border/50 shadow-lg rounded-2xl overflow-hidden sticky top-24"><CardHeader className="bg-muted/10"><CardTitle className="text-lg font-black uppercase flex items-center gap-3"><FolderLock className="h-5 w-5 text-primary opacity-60" />Arquivos</CardTitle></CardHeader><CardContent className="pt-6"><CustomerAttachmentUploader userId={user?.uid || ''} customerId={customer.id} initialAttachments={customer.documents || []} onAttachmentsChange={(docs) => updateDoc(doc(firestore!, 'customers', customer.id), { documents: docs })} /></CardContent></Card></div>
         </div>
       </div>
+
       <Dialog open={isPitchModalOpen} onOpenChange={setIsPitchModalOpen}><DialogContent className="max-w-md rounded-[2rem]"><DialogHeader><DialogTitle className="flex items-center gap-2 text-xl font-black uppercase"><MessageSquareText className="h-5 w-5 text-orange-500" />Smart Pitch IA</DialogTitle></DialogHeader><div className="py-4">{isGeneratingPitch ? <div className="flex flex-col items-center justify-center py-10 gap-4"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="text-xs text-muted-foreground animate-pulse font-black uppercase">Criando script magnético...</p></div> : <div className="space-y-4"><textarea className="w-full min-h-[200px] p-4 rounded-2xl border-2 bg-muted/30 text-sm focus:ring-2 focus:ring-primary outline-none" value={generatedPitch} onChange={(e) => setGeneratedPitch(e.target.value)} /><p className="text-[10px] text-muted-foreground text-center font-bold uppercase">Edite o texto antes de enviar.</p></div>}</div><DialogFooter className="flex gap-2"><Button variant="ghost" className="rounded-full font-bold" onClick={() => setIsPitchModalOpen(false)}>Cancelar</Button><Button className="flex-1 rounded-full font-bold bg-[#25D366] text-white gap-2" onClick={() => { window.open(`${getWhatsAppUrl(customer.phone)}&text=${encodeURIComponent(generatedPitch)}`, '_blank'); setIsPitchModalOpen(false); }} disabled={isGeneratingPitch || !generatedPitch}><WhatsAppIcon className="h-4 w-4" />Enviar para WhatsApp</Button></DialogFooter></DialogContent></Dialog>
+
+      <Dialog open={!!dialogData} onOpenChange={(isOpen) => !isOpen && setDialogData(null)}>
+            <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+                <DialogHeader><DialogTitle className="flex items-center gap-2 font-black uppercase"><ArrowRight className="h-5 w-5 text-primary" /> {dialogData?.title}</DialogTitle></DialogHeader>
+                <div className="flex-1 overflow-y-auto">
+                    <ProposalsStatusTable proposals={dialogData?.proposals || []} customers={[customer]} />
+                </div>
+            </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
