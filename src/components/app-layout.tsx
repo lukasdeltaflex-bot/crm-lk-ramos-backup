@@ -18,9 +18,10 @@ import { cn } from '@/lib/utils';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const currentYear = new Date().getFullYear();
-  const { auraStyle } = useTheme();
+  const { auraStyle, backgroundTexture } = useTheme();
 
-  const isAuraActive = auraStyle !== 'limpo';
+  // 🛡️ FIX VISIBILIDADE: Ativa transparência se houver Aura OU Textura
+  const isAtmosphericActive = auraStyle !== 'limpo' || backgroundTexture !== 'none';
 
   return (
       <AuthGuard>
@@ -36,8 +37,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </Sidebar>
             <SidebarInset className={cn(
                 "print:m-0 print:p-0 flex flex-col relative transition-all duration-1000 min-w-0 min-h-screen",
-                isAuraActive && `aura-${auraStyle} aura-active`,
-                isAuraActive && "bg-transparent/0 backdrop-blur-none"
+                isAtmosphericActive && `aura-${auraStyle} aura-active`,
+                isAtmosphericActive && "bg-transparent/0 backdrop-blur-none"
             )}>
             <Header className="print:hidden z-20" />
             <main className="flex-1 p-4 sm:p-6 print:p-0 z-10 w-full relative">
@@ -48,7 +49,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             
             <footer className={cn(
                 "mt-auto py-4 px-6 border-t bg-muted/20 text-[10px] text-muted-foreground flex flex-col sm:flex-row justify-between items-center gap-2 print:hidden z-10",
-                isAuraActive && "bg-transparent/50 backdrop-blur-sm"
+                isAtmosphericActive && "bg-transparent/50 backdrop-blur-sm"
             )}>
                 <p>© {currentYear} LK RAMOS Gestão de Propostas. Todos os direitos reservados.</p>
                 <div className="flex gap-4">

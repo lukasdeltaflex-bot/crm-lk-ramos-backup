@@ -223,7 +223,6 @@ export default function FinancialPage() {
     
     autoTable(doc, {
         startY: 55,
-        head: [['Métrica de Balanço', 'Valor']],
         body: [
             ['Comissões Digitadas no Mês', formatCurrency(totalComissaoDigitada)],
             ['Comissões Efetivamente Recebidas (Entrada)', formatCurrency(recebido)],
@@ -248,15 +247,18 @@ export default function FinancialPage() {
         .sort((a, b) => b[1].volume - a[1].volume)
         .map(([name, stats]) => [name, stats.count, formatCurrency(stats.volume)]);
 
-    doc.text("Ranking de Performance (Mês)", 14, (doc as any).lastAutoTable.finalY + 15);
-    autoTable(doc, {
-        startY: (doc as any).lastAutoTable.finalY + 20,
-        head: [['Operador', 'Qtd. Contratos', 'Volume Bruto']],
-        body: rankingRows,
-        theme: 'grid',
-        headStyles: { fillColor: [70, 70, 70] }, // Zinc
-        styles: { fontSize: 9 }
-    });
+    // 🛡️ GUARD: Só renderiza ranking se houver dados
+    if (rankingRows.length > 0) {
+        doc.text("Ranking de Performance (Mês)", 14, (doc as any).lastAutoTable.finalY + 15);
+        autoTable(doc, {
+            startY: (doc as any).lastAutoTable.finalY + 20,
+            head: [['Operador', 'Qtd. Contratos', 'Volume Bruto']],
+            body: rankingRows,
+            theme: 'grid',
+            headStyles: { fillColor: [70, 70, 70] },
+            styles: { fontSize: 9 }
+        });
+    }
 
     if (reportProposals.length > 0) {
         doc.addPage();
@@ -280,10 +282,12 @@ export default function FinancialPage() {
         });
     }
 
+    // 🛡️ GUARD: Só renderiza despesas se houver dados
     if (reportExpenses.length > 0) {
-        doc.text("Detalhamento de Despesas", 14, (doc as any).lastAutoTable.finalY + 15);
+        const lastY = (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY : 20;
+        doc.text("Detalhamento de Despesas", 14, lastY + 15);
         autoTable(doc, {
-            startY: (doc as any).lastAutoTable.finalY + 20,
+            startY: lastY + 20,
             head: [['Data', 'Descrição', 'Categoria', 'Valor']],
             body: reportExpenses.map(e => [
                 format(new Date(e.date), 'dd/MM/yyyy'),
@@ -292,7 +296,7 @@ export default function FinancialPage() {
                 formatCurrency(e.amount)
             ]),
             styles: { fontSize: 8 },
-            headStyles: { fillColor: [185, 28, 28] }, // Red for expenses
+            headStyles: { fillColor: [185, 28, 28] }, 
         });
     }
 
@@ -335,13 +339,13 @@ export default function FinancialPage() {
         proposalToUpdate.amountPaid = proposal.commissionValue;
         proposalToUpdate.commissionPaymentDate = new Date().toISOString();
     } else if (newStatus === 'Pendente') {
+        // 🛡️ FIX FINANCEIRO: Reseta valores ao voltar para pendente
         proposalToUpdate.amountPaid = 0;
         proposalToUpdate.commissionPaymentDate = deleteField() as any;
     }
   
     const docRef = doc(firestore, 'loanProposals', proposal.id);
     
-    // Non-blocking update
     setDoc(docRef, proposalToUpdate, { merge: true })
         .catch(async (error) => {
             if (error.code === 'permission-denied') {
@@ -367,13 +371,12 @@ export default function FinancialPage() {
       amountPaid: data.amountPaid,
       commissionPaymentDate: data.commissionPaymentDate
         ? parse(data.commissionPaymentDate, 'dd/MM/yyyy', new Date()).toISOString()
-        : undefined,
+        : (data.commissionStatus === 'Pendente' ? (deleteField() as any) : undefined),
       ownerId: user.uid
     };
   
     const docRef = doc(firestore, 'loanProposals', selectedProposal.id);
     
-    // Non-blocking update
     setDoc(docRef, proposalToUpdate, { merge: true })
         .catch(async (error) => {
             if (error.code === 'permission-denied') {
@@ -399,7 +402,6 @@ export default function FinancialPage() {
         ownerId: user.uid,
     };
 
-    // Non-blocking setDoc
     setDoc(expenseRef, expenseData, { merge: true })
         .catch(async (error) => {
             if (error.code === 'permission-denied') {
@@ -419,7 +421,6 @@ export default function FinancialPage() {
     if (!firestore || !user) return;
     const docRef = doc(firestore, 'users', user.uid, 'expenses', id);
     
-    // Non-blocking delete
     deleteDoc(docRef)
         .then(() => {
             toast({ title: "Despesa Removida" });

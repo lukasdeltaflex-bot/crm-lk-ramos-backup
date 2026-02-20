@@ -101,9 +101,10 @@ export function GlobalSearch() {
 
           <CommandGroup heading="Clientes">
             {validCustomers.map((customer) => {
+              // 🛡️ FIX BUSCA: Normaliza CPF para encontrar mesmo sem pontuação
+              const cpfNumeric = customer.cpf?.replace(/\D/g, '') || '';
               const benefitNumbers = customer.benefits?.map(b => b.number).join(' ') || '';
-              // Adicionado NumericId ao índice de busca para permitir busca exata por ID
-              const searchIndex = `${customer.numericId} ${customer.name} ${customer.cpf} ${benefitNumbers}`;
+              const searchIndex = `${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric} ${benefitNumbers}`;
               
               return (
                 <CommandItem
