@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -59,13 +60,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { X, Filter, Search, Calendar as CalendarIcon, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Landmark, Building2 } from 'lucide-react';
+import { X, Filter, Search, Calendar as CalendarIcon, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Landmark, Building2, Check } from 'lucide-react';
 import { cn, cleanBankName, formatCurrency, normalizeString } from '@/lib/utils';
 import type { Proposal, Customer, UserSettings } from '@/lib/types';
 import { FinancialSummary } from '@/components/financial/financial-summary';
 import { DraggableHeader } from './columns';
 import { Separator } from '@/components/ui/separator';
 import { useTheme } from '@/components/theme-provider';
+import { BankIcon } from '@/components/bank-icon';
 
 type ProposalWithCustomer = Proposal & { customer: Customer };
 
@@ -290,24 +292,24 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
 
                 <div className="flex items-center gap-2 ml-auto">
                     <Select value={bankFilter} onValueChange={setBankFilter}>
-                        <SelectTrigger className="h-9 min-w-[180px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-xs font-black uppercase px-4 shadow-sm">
+                        <SelectTrigger className="h-10 min-w-[200px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-[11px] font-black uppercase px-6 shadow-sm">
                             <div className="flex items-center gap-2">
-                                <Landmark className="h-3.5 w-3.5 text-primary" />
+                                <Landmark className="h-4 w-4 text-primary" />
                                 <SelectValue placeholder="TODOS OS BANCOS" />
                             </div>
                         </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">
+                        <SelectContent className="rounded-xl border-2">
+                            <SelectItem value="all" className="font-black text-[10px] uppercase">
                                 <div className="flex items-center gap-2">
-                                    <Landmark className="h-3.5 w-3.5 opacity-50" />
-                                    <span>TODOS OS BANCOS</span>
+                                    {bankFilter === 'all' && <Check className="h-3 w-3" />}
+                                    <span>Todos os Bancos</span>
                                 </div>
                             </SelectItem>
                             {banksList.map(b => (
-                                <SelectItem key={b} value={b}>
-                                    <div className="flex items-center gap-2">
-                                        <Landmark className="h-3.5 w-3.5 opacity-50" />
-                                        <span>{cleanBankName(b).toUpperCase()}</span>
+                                <SelectItem key={b} value={b} className="font-bold text-[11px] uppercase">
+                                    <div className="flex items-center gap-3">
+                                        <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={userSettings?.showBankLogos ?? true} className="h-4 w-4" />
+                                        <span>{cleanBankName(b)}</span>
                                     </div>
                                 </SelectItem>
                             ))}
@@ -315,24 +317,24 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                     </Select>
 
                     <Select value={promoterFilter} onValueChange={setPromoterFilter}>
-                        <SelectTrigger className="h-9 min-w-[180px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-xs font-black uppercase px-4 shadow-sm">
+                        <SelectTrigger className="h-10 min-w-[200px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-[11px] font-black uppercase px-6 shadow-sm">
                             <div className="flex items-center gap-2">
-                                <Building2 className="h-3.5 w-3.5 text-primary" />
+                                <Building2 className="h-4 w-4 text-primary" />
                                 <SelectValue placeholder="TODAS PROMOTORAS" />
                             </div>
                         </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">
+                        <SelectContent className="rounded-xl border-2">
+                            <SelectItem value="all" className="font-black text-[10px] uppercase">
                                 <div className="flex items-center gap-2">
-                                    <Building2 className="h-3.5 w-3.5 opacity-50" />
-                                    <span>TODAS PROMOTORAS</span>
+                                    {promoterFilter === 'all' && <Check className="h-3 w-3" />}
+                                    <span>Todas Promotoras</span>
                                 </div>
                             </SelectItem>
                             {promotersList.map(p => (
-                                <SelectItem key={p} value={p}>
-                                    <div className="flex items-center gap-2">
-                                        <Building2 className="h-3.5 w-3.5 opacity-50" />
-                                        <span>{p.toUpperCase()}</span>
+                                <SelectItem key={p} value={p} className="font-bold text-[11px] uppercase">
+                                    <div className="flex items-center gap-3">
+                                        <Building2 className="h-4 w-4 opacity-40" />
+                                        <span>{p}</span>
                                     </div>
                                 </SelectItem>
                             ))}

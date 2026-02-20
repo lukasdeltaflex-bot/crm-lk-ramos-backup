@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -154,12 +155,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
 
         // 🛡️ BUSCA POR ID EXATO (Prioridade Máxima e Absoluta)
         if (/^\d+$/.test(searchTerm)) {
-            const match = customer.numericId.toString() === searchTerm;
-            if (match) return true;
-            // Se digitou número e não bateu com o ID, mas bateu com CPF, ainda aceitamos
-            const cleanCpf = customer.cpf.replace(/\D/g, '');
-            if (cleanCpf.includes(searchTerm)) return true;
-            return false;
+            return customer.numericId.toString() === searchTerm;
         }
 
         const normalizedSearch = normalizeString(searchTerm);

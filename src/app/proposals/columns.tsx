@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ColumnDef, Header, flexRender } from '@tanstack/react-table';
@@ -21,7 +22,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, GripVertical, ArrowUp, ArrowDown, Copy, AlertTriangle, AlertCircle, Timer } from 'lucide-react';
+import { MoreHorizontal, GripVertical, ArrowUp, ArrowDown, Copy, Timer } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatCurrency, cleanBankName, cn, formatDateSafe, isWhatsApp, getWhatsAppUrl, calculateBusinessDays } from '@/lib/utils';
 import React from 'react';
@@ -348,7 +349,7 @@ export const getColumns = (
                                 </div>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="bg-white text-zinc-950 border-2 border-red-500 shadow-2xl p-4 rounded-2xl min-w-[240px] animate-in zoom-in-95 duration-200">
-                                <div className="space-y-1.5">
+                                <div className="space-y-1.5 text-left">
                                     <p className="font-black text-red-600 text-[11px] uppercase tracking-wider">Prazo Crítico Atingido</p>
                                     <p className="text-xs text-muted-foreground font-medium leading-snug">
                                         Contrato em <span className="font-bold text-zinc-900">{p.status}</span> há <span className="text-red-600 font-black text-sm">{bizDays} dia(s) úteis.</span>
