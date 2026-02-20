@@ -9,6 +9,7 @@ import { collection, query, where, doc, setDoc, deleteField, deleteDoc, writeBat
 import type { Proposal, Customer, CommissionStatus, UserSettings, Expense } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { 
     Eye, 
     EyeOff, 
