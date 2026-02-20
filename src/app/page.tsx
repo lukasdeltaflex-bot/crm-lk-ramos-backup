@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useEffect, useMemo } from 'react';
 import { AppLayout } from '@/components/app-layout';
@@ -163,7 +162,8 @@ export default function DashboardPage() {
     const prevMonthStart = startOfMonth(subMonths(fromDate, 1));
     const prevMonthEnd = endOfMonth(subMonths(fromDate, 1));
 
-    // UNIVERSO MÊS VIGENTE (Performance e Reprovas)
+    const safeVal = (v: any) => (v === null || v === undefined || isNaN(v)) ? 0 : Number(v);
+
     const digitizedInPeriod = proposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
@@ -176,23 +176,21 @@ export default function DashboardPage() {
         return d >= prevMonthStart && d <= prevMonthEnd;
     });
 
-    // UNIVERSO ESTEIRA (Mês Vigente + Anterior)
     const digitizedInExtendedPeriod = proposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
         return d >= prevMonthStart && d <= effectiveToDate;
     });
 
-    const getSum = (list: Proposal[]) => list.reduce((sum, p) => sum + (p.grossAmount || 0), 0);
+    const getSum = (list: Proposal[]) => list.reduce((sum, p) => sum + safeVal(p.grossAmount), 0);
     const getTopOperator = (list: Proposal[]) => {
         const ops: Record<string, number> = {};
         list.forEach(p => {
-            if (p.operator) ops[p.operator] = (ops[p.operator] || 0) + p.grossAmount;
+            if (p.operator) ops[p.operator] = (ops[p.operator] || 0) + safeVal(p.grossAmount);
         });
         return Object.entries(ops).sort((a,b) => b[1] - a[1])[0]?.[0] || '---';
     };
 
-    // CALCULO DE TENDÊNCIA (ÚLTIMOS 7 DIAS) PARA O SPARKLINE
     const last7Days = eachDayOfInterval({ start: subDays(today, 6), end: today });
     const productionTrend = last7Days.map(day => {
         const dayStart = startOfDay(day);
@@ -202,7 +200,7 @@ export default function DashboardPage() {
                 const d = new Date(p.dateDigitized);
                 return d >= dayStart && d <= dayEnd;
             })
-            .reduce((sum, p) => sum + (p.grossAmount || 0), 0);
+            .reduce((sum, p) => sum + safeVal(p.grossAmount), 0);
     });
 
     const statusAnalysis: Record<string, { total: number; count: number; proposals: Proposal[]; top: string; trend: number[] }> = {};
@@ -212,7 +210,6 @@ export default function DashboardPage() {
         const sourceList = (status === 'Reprovado') ? digitizedInPeriod : digitizedInExtendedPeriod;
         const list = sourceList.filter(p => p.status === status);
         
-        // Simula uma tendência simples para o sparkline baseada no status
         const trend = last7Days.map(day => {
             const dayStart = startOfDay(day);
             const dayEnd = endOfDay(day);
@@ -252,12 +249,10 @@ export default function DashboardPage() {
     const totalDigitizedPrev = getSum(digitizedInPrevPeriod);
     const digitizedTrendPercentage = totalDigitizedPrev > 0 ? ((totalDigitizedCurrent - totalDigitizedPrev) / totalDigitizedPrev) * 100 : 0;
 
-    // IDENTIFICA QUAL STATUS ESTÁ "EM ALTA" (Maior volume na esteira ativa)
     const hotStatus = Object.entries(statusAnalysis)
         .filter(([name]) => name !== 'Reprovado')
         .sort((a, b) => b[1].total - a[1].total)[0]?.[0];
 
-    // MONITORAMENTO DE PORTABILIDADES CRÍTICAS
     const criticalPortabilityCount = proposals.filter(p => 
         p.product === 'Portabilidade' && 
         p.status === 'Aguardando Saldo' && 

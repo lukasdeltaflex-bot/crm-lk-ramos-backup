@@ -28,7 +28,7 @@ interface CommandDialogProps extends DialogProps {}
 const CommandDialog = ({ children, ...props }: CommandDialogProps) => {
   return (
     <Dialog {...props}>
-      <DialogContent className="overflow-hidden p-0 shadow-lg">
+      <DialogContent className="overflow-hidden p-0 shadow-2xl z-[100]">
         <DialogHeader className="sr-only">
           <DialogTitle>Pesquisa Global</DialogTitle>
           <DialogDescription>
@@ -130,7 +130,7 @@ const CommandItem = React.forwardRef<
   />
 ))
 
-CommandItem.displayName = CommandPrimitive.Item.displayName
+CommandItem.displayName = CommandItem.displayName
 
 const CommandShortcut = ({
   className,

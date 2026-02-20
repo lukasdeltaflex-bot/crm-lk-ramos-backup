@@ -34,7 +34,8 @@ import {
     History, 
     FileBadge,
     Calendar as CalendarIcon,
-    AlertTriangle
+    AlertTriangle,
+    MessageSquareQuote
 } from 'lucide-react';
 import { format, parse, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -53,6 +54,8 @@ import { Badge } from '@/components/ui/badge';
 import { Logo } from '@/components/logo';
 import { toast } from '@/hooks/use-toast';
 import { BankIcon } from '@/components/bank-icon';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const attachmentSchema = z.object({
   name: z.string(),
@@ -134,33 +137,6 @@ const handleDateMask = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.target.value = value;
     return value;
 };
-
-const MaskedDatePicker = ({ name, label, control, isReadOnly }: { name: any, label: string, control: any, isReadOnly?: boolean }) => (
-    <FormField
-        control={control}
-        name={name}
-        render={({ field }) => (
-            <FormItem className="flex flex-col pt-2">
-                <FormLabel>{label}</FormLabel>
-                <FormControl>
-                    <div className="relative">
-                        <input
-                            type="text"
-                            placeholder="dd/mm/aaaa"
-                            {...field}
-                            onChange={(e) => field.onChange(handleDateMask(e))}
-                            value={field.value || ''}
-                            maxLength={10}
-                            className="flex h-10 w-[240px] rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                            readOnly={isReadOnly}
-                        />
-                    </div>
-                </FormControl>
-                <FormMessage />
-            </FormItem>
-        )}
-    />
-);
 
 export function ProposalForm({ 
     proposal, 
@@ -355,19 +331,28 @@ export function ProposalForm({
         userName: user?.displayName || user?.email || 'Usuário'
     };
 
-    try {
-        await updateDoc(doc(firestore, 'loanProposals', proposal.id), {
-            history: arrayUnion(entry),
-            // 🛡️ RESET DE OCIOSIDADE: Atualiza o monitor de esteira parada
-            statusUpdatedAt: now 
-        });
-        setNewHistoryEntry('');
-        toast({ title: "Histórico Atualizado", description: "O trâmite foi registrado e o cronômetro de ociosidade foi reiniciado." });
-    } catch (e) {
-        toast({ variant: "destructive", title: "Erro ao registrar" });
-    } finally {
-        setIsAddingHistory(false);
-    }
+    const docRef = doc(firestore, 'loanProposals', proposal.id);
+    const updateData = {
+        history: arrayUnion(entry),
+        statusUpdatedAt: now 
+    };
+
+    updateDoc(docRef, updateData)
+        .then(() => {
+            setNewHistoryEntry('');
+            toast({ title: "Histórico Atualizado", description: "O trâmite foi registrado e o cronômetro de ociosidade foi reiniciado." });
+        })
+        .catch(async (error) => {
+            if (error.code === 'permission-denied') {
+                errorEmitter.emit('permission-error', new FirestorePermissionError({
+                    path: docRef.path,
+                    operation: 'update',
+                    requestResourceData: updateData
+                }));
+            }
+            toast({ variant: "destructive", title: "Erro ao registrar" });
+        })
+        .finally(() => setIsAddingHistory(false));
   };
 
   const handleExportCover = async () => {

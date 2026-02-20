@@ -1,4 +1,3 @@
-
 'use client';
 import React from 'react';
 import { useParams } from 'next/navigation';
@@ -9,7 +8,7 @@ import { doc, collection, query, where, updateDoc } from 'firebase/firestore';
 import type { Customer, Proposal, Attachment, ProposalHistoryEntry } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { User, Phone, Mail, Calendar, FileText, CircleDollarSign, BadgePercent, MapPin, Hash, Copy, Printer, FileBadge, FolderLock, Sparkles, UserRound, UserX, UserCheck, History, MessageSquareQuote, Zap, Loader2, MessageSquareText } from 'lucide-react';
-import { format, parse, differenceInMonths, parseISO } from 'date-fns';
+import { format, parse, differenceInMonths, parseISO, isValid as isValidDate } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -92,7 +91,6 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
   const { id: customerId } = useParams() as { id: string };
   const firestore = useFirestore();
   const { user } = useUser();
-  const [dialogData, setDialogData] = React.useState<any>(null);
   const [isPitchModalOpen, setIsPitchModalOpen] = React.useState(false);
   const [isGeneratingPitch, setIsGeneratingPitch] = React.useState(false);
   const [generatedPitch, setGeneratedPitch] = React.useState('');
@@ -115,35 +113,70 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
     const { default: autoTable } = await import('jspdf-autotable');
     const doc = new jsPDF();
     const primaryColor = [40, 74, 127];
+    
     doc.setFontSize(22); doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]); doc.setFont("helvetica", "bold"); doc.text("DOSSIÊ OFICIAL DO CLIENTE", 14, 20);
     doc.setFontSize(10); doc.setTextColor(100); doc.setFont("helvetica", "normal");
     doc.text(`Responsável: ${user.displayName || user.email}`, 14, 28);
     doc.text(`Gerado: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 33);
     doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]); doc.setLineWidth(0.5); doc.line(14, 38, 196, 38);
-    autoTable(doc, { startY: 45, body: [['Nome', customer.name], ['CPF', customer.cpf], ['Nascimento', customer.birthDate], ['Telefone', customer.phone], ['Cidade/UF', `${customer.city || '-'} / ${customer.state || '-'}`]], theme: 'plain', styles: { fontSize: 10 }, columnStyles: { 0: { fontStyle: 'bold', width: 40 } } });
     
-    // 🛡️ ENGENHARIA DE PDF: Cálculo Dinâmico de Posição (Y)
-    const getFinalY = () => (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY : 100;
+    autoTable(doc, { 
+        startY: 45, 
+        body: [['Nome', customer.name], ['CPF', customer.cpf], ['Nascimento', customer.birthDate], ['Telefone', customer.phone], ['Cidade/UF', `${customer.city || '-'} / ${customer.state || '-'}`]], 
+        theme: 'plain', 
+        styles: { fontSize: 10 }, 
+        columnStyles: { 0: { fontStyle: 'bold', width: 40 } } 
+    });
+    
+    // 🛡️ ENGENHARIA DE PDF: Cálculo Seguro de Posição Final
+    const getFinalY = () => {
+        const last = (doc as any).lastAutoTable;
+        return last ? last.finalY : 100;
+    };
     
     if (customer.benefits && customer.benefits.length > 0) {
         doc.setFont("helvetica", "bold"); doc.text("BENEFÍCIOS ATIVOS", 14, getFinalY() + 15);
-        autoTable(doc, { startY: getFinalY() + 18, head: [['Número', 'Espécie']], body: customer.benefits.map(b => [b.number, b.species || '-']), headStyles: { fillColor: primaryColor } });
+        autoTable(doc, { 
+            startY: getFinalY() + 18, 
+            head: [['Número', 'Espécie']], 
+            body: customer.benefits.map(b => [b.number, b.species || '-']), 
+            headStyles: { fillColor: primaryColor } 
+        });
     }
 
     doc.setFont("helvetica", "bold"); doc.text("HISTÓRICO DE OPERAÇÕES", 14, getFinalY() + 15);
-    autoTable(doc, { startY: getFinalY() + 18, head: [['Nº Proposta', 'Produto', 'Status', 'Valor Bruto']], body: proposals.map(p => [p.proposalNumber, p.product, p.status, formatCurrency(p.grossAmount)]), headStyles: { fillColor: [70, 70, 70] }, styles: { fontSize: 9 } });
+    autoTable(doc, { 
+        startY: getFinalY() + 18, 
+        head: [['Nº Proposta', 'Produto', 'Status', 'Valor Bruto']], 
+        body: proposals.map(p => [p.proposalNumber, p.product, p.status, formatCurrency(p.grossAmount)]), 
+        headStyles: { fillColor: [70, 70, 70] }, 
+        styles: { fontSize: 9 } 
+    });
 
-    // 🛡️ REFINAMENTO DE QUEBRA DE PÁGINA: Garante espaço para Assinatura
+    // 🛡️ REFINAMENTO DE QUEBRA DE PÁGINA: Zona de Proteção de 80mm
     const pageHeight = doc.internal.pageSize.height;
-    if (getFinalY() > pageHeight - 80) { doc.addPage(); doc.text("DECLARAÇÃO E FORMALIZAÇÃO", 14, 25); }
-    else { doc.text("DECLARAÇÃO E FORMALIZAÇÃO", 14, getFinalY() + 20); }
+    if (getFinalY() > pageHeight - 80) { 
+        doc.addPage(); 
+        doc.setFont("helvetica", "bold"); doc.text("DECLARAÇÃO E FORMALIZAÇÃO", 14, 25); 
+    } else { 
+        doc.setFont("helvetica", "bold"); doc.text("DECLARAÇÃO E FORMALIZAÇÃO", 14, getFinalY() + 20); 
+    }
 
-    const signatureY = getFinalY() + 45 > pageHeight - 20 ? pageHeight - 60 : getFinalY() + 45;
-    const decText = `Eu, ${customer.name}, CPF ${customer.cpf}, declaro verdadeiras as informações acima e autorizo o processamento para fins bancários conforme LGPD.`;
+    // Posição final recalculada para assinaturas
+    const currentY = getFinalY();
+    const signatureY = currentY + 40 > pageHeight - 20 ? pageHeight - 40 : currentY + 40;
+    
+    const decText = `Eu, ${customer.name}, portador do CPF ${customer.cpf}, declaro verdadeiras as informações acima e autorizo expressamente o processamento dos meus dados para fins de simulação e contratação bancária, conforme as diretrizes da LGPD.`;
+    
     doc.setFontSize(9); doc.setTextColor(80); doc.setFont("helvetica", "normal");
     doc.text(doc.splitTextToSize(decText, 180), 14, signatureY - 20);
+    
+    doc.setDrawColor(150);
     doc.line(14, signatureY, 90, signatureY); doc.line(110, signatureY, 186, signatureY);
-    doc.setFontSize(8); doc.text("ASSINATURA DO CLIENTE", 52, signatureY + 5, { align: 'center' }); doc.text("AGENTE RESPONSÁVEL", 148, signatureY + 5, { align: 'center' });
+    doc.setFontSize(8); 
+    doc.text("ASSINATURA DO CLIENTE", 52, signatureY + 5, { align: 'center' }); 
+    doc.text("AGENTE RESPONSÁVEL", 148, signatureY + 5, { align: 'center' });
+    
     doc.save(`Dossie_${customer.name.replace(/\s+/g, '_')}.pdf`);
     toast({ title: "Dossiê Gerado!" });
   };
@@ -158,7 +191,12 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
   const handleGeneratePitch = async () => {
     setIsGeneratingPitch(true); setGeneratedPitch(''); setIsPitchModalOpen(true);
     try {
-        const { pitch } = await generateSalesPitch({ customerName: customer!.name, lastProduct: proposals?.[0]?.product, totalVolume: proposals?.reduce((s, p) => s + (p.grossAmount || 0), 0), observations: customer!.observations });
+        const { pitch } = await generateSalesPitch({ 
+            customerName: customer!.name, 
+            lastProduct: proposals?.[0]?.product, 
+            totalVolume: proposals?.reduce((s, p) => s + (p.grossAmount || 0), 0), 
+            observations: customer!.observations 
+        });
         setGeneratedPitch(pitch);
     } catch (e) { setIsPitchModalOpen(false); } finally { setIsGeneratingPitch(false); }
   };

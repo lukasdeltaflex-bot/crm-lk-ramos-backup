@@ -96,6 +96,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   onShowDetails,
   userSettings,
 }, ref) => {
+  const tableContainerRef = React.useRef<HTMLDivElement>(null);
   const { statusColors } = useTheme();
   const [sorting, setSorting] = React.useState<SortingState>([{ id: 'Data Pagamento', desc: true }]);
   const [statusFilter, setStatusFilter] = React.useState('Todos');
@@ -142,6 +143,11 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
       if (typeof window !== 'undefined') {
         try { localStorage.setItem('lk-financial-pageSize', String(next.pageSize)); } catch(e) {}
       }
+      
+      if (tableContainerRef.current) {
+          tableContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      
       return next;
     });
   };
@@ -260,7 +266,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onColumnSizingChange: setColumnSizing,
@@ -268,7 +273,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     onPaginationChange: handlePaginationChange,
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
-    state: { sorting, globalFilter, rowSelection, columnVisibility, columnSizing, columnOrder, pagination },
+    state: { sorting, rowSelection, columnVisibility, columnSizing, columnOrder, pagination },
     meta: { isPrivacyMode, userSettings }
   });
 
@@ -347,7 +352,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                     <Select value={bankFilter} onValueChange={setBankFilter}>
                         <SelectTrigger className="h-10 min-w-[200px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-[11px] font-black uppercase px-6 shadow-sm">
                             <div className="flex items-center gap-2">
-                                {/* 🛡️ BRANDING REATIVO: Ícone muda ao selecionar banco */}
                                 {bankFilter === 'all' ? <Landmark className="h-4 w-4 text-primary" /> : <BankIcon bankName={bankFilter} domain={userSettings?.bankDomains?.[bankFilter]} className="h-4 w-4" />}
                                 <SelectValue placeholder="TODOS OS BANCOS" />
                             </div>
@@ -368,7 +372,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                     <Select value={promoterFilter} onValueChange={setPromoterFilter}>
                         <SelectTrigger className="h-10 min-w-[200px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-[11px] font-black uppercase px-6 shadow-sm">
                             <div className="flex items-center gap-2">
-                                {/* 🛡️ BRANDING REATIVO: Ícone muda ao selecionar promotora */}
                                 {promoterFilter === 'all' ? <Building2 className="h-4 w-4 text-primary" /> : <BankIcon bankName={promoterFilter} domain={userSettings?.promoterDomains?.[promoterFilter]} className="h-4 w-4" />}
                                 <SelectValue placeholder="TODAS PROMOTORAS" />
                             </div>
