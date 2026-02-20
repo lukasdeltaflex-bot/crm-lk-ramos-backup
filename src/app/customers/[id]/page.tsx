@@ -35,7 +35,7 @@ import {
 } from '@/components/ui/dialog';
 
 
-const CopyButton = ({ text, label }: { text: string; label: string }) => {
+const CopyButton = ({ text, label }: { text: string | undefined; label: string }) => {
     if (!text) return null;
     const handleCopy = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -48,7 +48,7 @@ const CopyButton = ({ text, label }: { text: string; label: string }) => {
     };
     return (
         <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleCopy}>
-            <Copy className="h-3 w-3" />
+            <Copy className="h-3.5 w-3.5" />
             <span className="sr-only">Copiar {label}</span>
         </Button>
     );
@@ -74,156 +74,199 @@ const CustomerInfoCard = ({
     const isInactive = customer.status === 'inactive';
     
     return (
-        <Card className={isInactive ? "opacity-80 bg-zinc-50 dark:bg-zinc-900/40" : ""}>
+        <Card className={cn(
+            "transition-all duration-500 overflow-hidden",
+            isInactive ? "opacity-80 bg-zinc-50 dark:bg-zinc-900/40" : "bg-card shadow-xl"
+        )}>
             <CardHeader>
                 <div className='flex items-center justify-between flex-wrap gap-4'>
                     <div className='flex items-center gap-4'>
-                         <User className="h-8 w-8 text-muted-foreground" />
+                         <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/20">
+                            <User className="h-7 w-7 text-primary" />
+                         </div>
                         <div className="space-y-1">
                             <div className="flex items-center gap-3">
-                                <CardTitle>{customer.name}</CardTitle>
-                                <Badge variant={isInactive ? "secondary" : "default"} className={isInactive ? "bg-zinc-200 text-zinc-700" : "bg-green-500"}>
+                                <CardTitle className="text-2xl font-black uppercase tracking-tight">{customer.name}</CardTitle>
+                                <Badge variant={isInactive ? "secondary" : "default"} className={isInactive ? "bg-zinc-200 text-zinc-700" : "bg-green-500 text-white"}>
                                     {isInactive ? "Inativo" : "Ativo"}
                                 </Badge>
                             </div>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Registro Oficial do Cliente</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2 print:hidden">
                         <Button 
                             variant="outline" 
-                            className={isInactive ? "text-green-600 border-green-200" : "text-destructive border-destructive/20"}
+                            size="sm"
+                            className={cn(
+                                "h-10 px-4 rounded-full font-bold transition-all",
+                                isInactive ? "text-green-600 border-green-200 hover:bg-green-50" : "text-destructive border-destructive/20 hover:bg-destructive/5"
+                            )}
                             onClick={onToggleStatus}
                         >
                             {isInactive ? (
-                                <><UserCheck className="mr-2 h-4 w-4" /> Reativar Cliente</>
+                                <><UserCheck className="mr-2 h-4 w-4" /> Reativar</>
                             ) : (
-                                <><UserX className="mr-2 h-4 w-4" /> Tornar Inativo</>
+                                <><UserX className="mr-2 h-4 w-4" /> Inativar</>
                             )}
                         </Button>
-                        <Button variant="outline" className="bg-primary/5 border-primary/20 text-primary hover:bg-primary/10" onClick={onExportDossier}>
+                        <Button variant="outline" size="sm" className="h-10 px-4 rounded-full bg-primary/5 border-primary/20 text-primary hover:bg-primary/10 font-bold" onClick={onExportDossier}>
                             <FileBadge className="mr-2 h-4 w-4" />
-                            Dossiê Oficial (PDF)
+                            Dossiê (PDF)
                         </Button>
-                        <Button variant="outline" onClick={() => window.print()}>
+                        <Button variant="outline" size="sm" className="h-10 px-4 rounded-full font-bold" onClick={() => window.print()}>
                             <Printer className="mr-2 h-4 w-4" />
-                            Imprimir Ficha
+                            Imprimir
                         </Button>
                         <Link href="/customers">
-                            <Button variant="outline">Voltar</Button>
+                            <Button variant="ghost" size="sm" className="h-10 px-4 rounded-full font-bold">Voltar</Button>
                         </Link>
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="space-y-6">
-                <div>
-                    <h4 className="font-semibold mb-4 text-lg">Dados Pessoais</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-                        <div className="flex items-center gap-2">
-                            <Hash className="h-4 w-4 text-muted-foreground" />
-                            <strong>ID Cliente:</strong> <span className='truncate'>{customer.numericId}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-muted-foreground" />
-                            <strong>CPF:</strong>
-                            <span>{customer.cpf}</span>
-                            <CopyButton text={customer.cpf} label="CPF" />
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <UserRound className="h-4 w-4 text-muted-foreground" />
-                            <strong>Gênero:</strong> {customer.gender || 'Não informado'}
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <strong>Nascimento:</strong> {format(parse(customer.birthDate, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy', { locale: ptBR })} ({age !== null && age > 0 ? `${age} anos` : '...'})
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4 text-muted-foreground" />
-                            <strong>Telefone:</strong>
-                            <div className="flex items-center gap-1">
-                                <span>{customer.phone}</span>
-                                <CopyButton text={customer.phone} label="Telefone" />
-                                {isWhatsAppNumber1 && (
-                                <a href={getWhatsAppUrl(customer.phone)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:text-green-600">
-                                    <WhatsAppIcon />
-                                </a>
-                                )}
+            <CardContent className="space-y-8">
+                <div className="bg-muted/30 p-6 rounded-2xl border border-border/50">
+                    <h4 className="font-black text-[10px] uppercase tracking-[0.25em] text-primary/60 mb-6 flex items-center gap-2">
+                        <UserRound className="h-3 w-3" /> Informações Cadastrais
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+                        <div className="flex flex-col gap-1">
+                            <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">ID do Cliente</span>
+                            <div className="flex items-center gap-2 font-black text-foreground">
+                                <Hash className="h-3.5 w-3.5 text-primary opacity-40" />
+                                <span>{customer.numericId}</span>
                             </div>
                         </div>
-                         {customer.phone2 && (
-                            <div className="flex items-center gap-2">
-                                <Phone className="h-4 w-4 text-muted-foreground" />
-                                <strong>Telefone 2:</strong>
+                        <div className="flex flex-col gap-1">
+                            <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Documento (CPF)</span>
+                            <div className="flex items-center gap-2 font-black text-foreground">
+                                <FileText className="h-3.5 w-3.5 text-primary opacity-40" />
+                                <span>{customer.cpf}</span>
+                                <CopyButton text={customer.cpf} label="CPF" />
+                            </div>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Gênero</span>
+                            <div className="flex items-center gap-2 font-bold text-foreground">
+                                <UserRound className="h-3.5 w-3.5 text-primary opacity-40" />
+                                <span>{customer.gender || 'Não informado'}</span>
+                            </div>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Data de Nascimento</span>
+                            <div className="flex items-center gap-2 font-bold text-foreground">
+                                <Calendar className="h-3.5 w-3.5 text-primary opacity-40" />
+                                <span>{format(parse(customer.birthDate, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy', { locale: ptBR })}</span>
+                                <Badge variant="secondary" className="text-[9px] bg-primary/10 text-primary border-none">
+                                    {age !== null && age > 0 ? `${age} ANOS` : '...'}
+                                </Badge>
+                            </div>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Contato Principal</span>
+                            <div className="flex items-center gap-2 font-black text-foreground">
+                                <Phone className="h-3.5 w-3.5 text-primary opacity-40" />
+                                <span>{customer.phone}</span>
                                 <div className="flex items-center gap-1">
-                                    <span>{customer.phone2}</span>
-                                    <CopyButton text={customer.phone2} label="Telefone 2" />
-                                    {isWhatsAppNumber2 && (
-                                    <a href={getWhatsAppUrl(customer.phone2)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:text-green-600">
-                                        <WhatsAppIcon />
-                                    </a>
+                                    <CopyButton text={customer.phone} label="Telefone" />
+                                    {isWhatsAppNumber1 && (
+                                        <a href={getWhatsAppUrl(customer.phone)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:scale-110 transition-transform">
+                                            <WhatsAppIcon className="h-4 w-4" />
+                                        </a>
                                     )}
                                 </div>
                             </div>
-                        )}
-                        <div className="flex items-center gap-2 col-span-1 md:col-span-2">
-                            <Mail className="h-4 w-4 text-muted-foreground" />
-                            <strong>Email:</strong> {customer.email || 'N/A'}
-                            {customer.email && <CopyButton text={customer.email} label="E-mail" />}
                         </div>
-                        {customer.benefits && customer.benefits.length > 0 ? (
-                            customer.benefits.map((benefit, index) => (
-                                <div key={index} className="flex items-center gap-2">
-                                    <FileText className="h-4 w-4 text-muted-foreground" />
-                                    <strong>Benefício {customer.benefits!.length > 1 ? index + 1 : ''}:</strong>
-                                    <span>{benefit.number}</span>
-                                    {benefit.species && <span className="text-muted-foreground text-sm">({benefit.species})</span>}
-                                    <CopyButton text={benefit.number} label="Número do Benefício" />
+                         {customer.phone2 && (
+                            <div className="flex flex-col gap-1">
+                                <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Contato Secundário</span>
+                                <div className="flex items-center gap-2 font-bold text-foreground/80">
+                                    <Phone className="h-3.5 w-3.5 text-primary opacity-20" />
+                                    <span>{customer.phone2}</span>
+                                    <div className="flex items-center gap-1">
+                                        <CopyButton text={customer.phone2} label="Telefone 2" />
+                                        {isWhatsAppNumber2 && (
+                                            <a href={getWhatsAppUrl(customer.phone2)} target="_blank" rel="noopener noreferrer" className="text-green-500/70 hover:scale-110 transition-transform">
+                                                <WhatsAppIcon className="h-3.5 w-3.5" />
+                                            </a>
+                                        )}
+                                    </div>
                                 </div>
-                            ))
-                        ) : (
-                            <div className="flex items-center gap-2">
-                                <FileText className="h-4 w-4 text-muted-foreground" />
-                                <strong>Benefício:</strong> Nenhum cadastrado
                             </div>
                         )}
+                        <div className="flex flex-col gap-1 lg:col-span-2">
+                            <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Endereço de E-mail</span>
+                            <div className="flex items-center gap-2 font-medium text-foreground">
+                                <Mail className="h-3.5 w-3.5 text-primary opacity-40" />
+                                <span>{customer.email || 'Nenhum e-mail cadastrado'}</span>
+                                {customer.email && <CopyButton text={customer.email} label="E-mail" />}
+                            </div>
+                        </div>
+                        {customer.benefits && customer.benefits.length > 0 && customer.benefits.map((benefit, index) => (
+                            <div key={index} className="flex flex-col gap-1">
+                                <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Benefício INSS {customer.benefits!.length > 1 ? index + 1 : ''}</span>
+                                <div className="flex items-center gap-2 font-black text-foreground">
+                                    <FileText className="h-3.5 w-3.5 text-primary opacity-40" />
+                                    <span>{benefit.number}</span>
+                                    {benefit.species && <Badge variant="outline" className="text-[8px] font-bold py-0 h-4 uppercase">{benefit.species}</Badge>}
+                                    <CopyButton text={benefit.number} label="Número do Benefício" />
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
 
-                <Separator />
-
-                <div>
-                    <h4 className="font-semibold mb-4 text-lg">Endereço</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-                         <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <strong>CEP:</strong> {customer.cep || 'N/A'}
+                <div className="bg-muted/30 p-6 rounded-2xl border border-border/50">
+                    <h4 className="font-black text-[10px] uppercase tracking-[0.25em] text-primary/60 mb-6 flex items-center gap-2">
+                        <MapPin className="h-3 w-3" /> Localização & Endereço
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+                         <div className="flex flex-col gap-1">
+                            <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Código Postal (CEP)</span>
+                            <div className="flex items-center gap-2 font-black text-foreground">
+                                <MapPin className="h-3.5 w-3.5 text-primary opacity-40" />
+                                <span>{customer.cep || 'N/A'}</span>
+                                <CopyButton text={customer.cep} label="CEP" />
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2 col-span-1 md:col-span-2">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <strong>Logradouro:</strong> {customer.street}{customer.number ? `, ${customer.number}` : ''}
+                        <div className="flex flex-col gap-1 col-span-1 md:col-span-2">
+                            <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Logradouro / Rua</span>
+                            <div className="flex items-center gap-2 font-bold text-foreground">
+                                <MapPin className="h-3.5 w-3.5 text-primary opacity-40" />
+                                <span>{customer.street || '-'}{customer.number ? `, ${customer.number}` : ''}</span>
+                            </div>
                         </div>
-                         <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <strong>Complemento:</strong> {customer.complement || 'N/A'}
+                         <div className="flex flex-col gap-1">
+                            <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Complemento</span>
+                            <div className="flex items-center gap-2 font-medium text-foreground">
+                                <MapPin className="h-3.5 w-3.5 text-primary opacity-40" />
+                                <span>{customer.complement || 'N/A'}</span>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <strong>Bairro:</strong> {customer.neighborhood}
+                        <div className="flex flex-col gap-1">
+                            <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Bairro</span>
+                            <div className="flex items-center gap-2 font-bold text-foreground">
+                                <MapPin className="h-3.5 w-3.5 text-primary opacity-40" />
+                                <span>{customer.neighborhood || '-'}</span>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <strong>Cidade/UF:</strong> {customer.city} / {customer.state}
+                        <div className="flex flex-col gap-1">
+                            <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Cidade / Estado</span>
+                            <div className="flex items-center gap-2 font-black text-foreground uppercase">
+                                <MapPin className="h-3.5 w-3.5 text-primary opacity-40" />
+                                <span>{customer.city || '-'} / {customer.state || '-'}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {customer.observations && (
-                    <>
-                        <Separator />
-                        <div>
-                            <h4 className="font-semibold mb-2 text-lg">Observações</h4>
-                            <p className="text-muted-foreground bg-secondary/30 p-3 rounded-md whitespace-pre-wrap">{customer.observations}</p>
-                        </div>
-                    </>
+                    <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10">
+                        <h4 className="font-black text-[10px] uppercase tracking-[0.25em] text-primary mb-4 flex items-center gap-2">
+                            <FileText className="h-3 w-3" /> Notas Internas & Observações
+                        </h4>
+                        <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap font-medium">{customer.observations}</p>
+                    </div>
                 )}
             </CardContent>
         </Card>
@@ -262,6 +305,7 @@ const CustomerFinancialSummary = ({
                 title="Propostas Realizadas"
                 value={String(summary.proposalCount)}
                 icon={FileText}
+                description="TOTAL NA BASE"
             />
         </div>
         <div className="cursor-pointer" onClick={() => onShowDetails("Total Contratado (Pagos)", summary.paidProposals)}>
@@ -269,6 +313,7 @@ const CustomerFinancialSummary = ({
                 title="Total Contratado"
                 value={formatCurrency(summary.totalContracted)}
                 icon={CircleDollarSign}
+                description="CONTRATOS LIQUIDADOS"
                 valueClassName="text-green-500"
             />
         </div>
@@ -277,6 +322,7 @@ const CustomerFinancialSummary = ({
                 title="Comissão Gerada"
                 value={formatCurrency(summary.totalCommission)}
                 icon={BadgePercent}
+                description="LUCRO REAL DO CLIENTE"
                 valueClassName="text-blue-500"
             />
         </div>
@@ -309,42 +355,44 @@ const CustomerTimeline = ({ proposals }: CustomerTimelineProps) => {
     }, [proposals]);
 
     return (
-        <Card className="h-full">
-            <CardHeader className="pb-4">
+        <Card className="h-full border-border/50 shadow-lg">
+            <CardHeader className="pb-4 border-b border-border/30 bg-muted/5">
                 <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-bold flex items-center gap-2">
-                        <History className="h-5 w-5 text-primary" />
+                    <CardTitle className="text-lg font-black uppercase tracking-widest flex items-center gap-3">
+                        <History className="h-5 w-5 text-primary opacity-60" />
                         Linha do Tempo Global
                     </CardTitle>
-                    <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest">{timelineEvents.length} EVENTOS</Badge>
+                    <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest border-2 border-primary/20 text-primary">{timelineEvents.length} EVENTOS</Badge>
                 </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
                 {timelineEvents.length === 0 ? (
-                    <div className="text-center py-12 border-2 border-dashed rounded-xl bg-muted/5">
-                        <History className="h-8 w-8 mx-auto mb-2 opacity-10" />
-                        <p className="text-xs text-muted-foreground">Nenhum histórico registrado para este cliente.</p>
+                    <div className="text-center py-16 border-2 border-dashed rounded-3xl bg-muted/5 border-border/50">
+                        <History className="h-10 w-10 mx-auto mb-3 opacity-10" />
+                        <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Nenhum histórico registrado para este cliente.</p>
                     </div>
                 ) : (
                     <ScrollArea className="h-[500px] pr-4">
-                        <div className="space-y-6 relative before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-muted/50">
+                        <div className="space-y-8 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-gradient-to-b before:from-primary/40 before:via-primary/10 before:to-transparent">
                             {timelineEvents.map((event) => (
-                                <div key={event.id} className="relative pl-8 group">
-                                    <div className="absolute left-0 top-1 h-4 w-4 rounded-full border-2 border-background bg-primary shadow-sm group-hover:scale-125 transition-transform" />
-                                    <div className="space-y-1">
+                                <div key={event.id} className="relative pl-10 group">
+                                    <div className="absolute left-0 top-1 h-6 w-6 rounded-full border-4 border-background bg-primary shadow-lg group-hover:scale-125 transition-transform duration-300 flex items-center justify-center">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                                    </div>
+                                    <div className="space-y-2">
                                         <div className="flex items-center justify-between">
-                                            <span className="text-[10px] font-black uppercase text-primary/70">{event.userName || 'Sistema'}</span>
-                                            <span className="text-[10px] text-muted-foreground font-bold">{format(parseISO(event.date), "dd/MM/yy HH:mm")}</span>
+                                            <span className="text-[10px] font-black uppercase text-primary/80 tracking-widest bg-primary/5 px-2 py-0.5 rounded border border-primary/10">{event.userName || 'Sistema'}</span>
+                                            <span className="text-[10px] text-muted-foreground font-black uppercase tracking-tighter">{format(parseISO(event.date), "dd/MM/yy HH:mm")}</span>
                                         </div>
-                                        <div className="p-3 bg-muted/30 rounded-lg border border-border/50 group-hover:border-primary/20 transition-all">
-                                            <div className="flex items-center gap-2 mb-1.5">
-                                                <Badge variant="secondary" className="text-[9px] font-black bg-primary/10 text-primary uppercase">
+                                        <div className="p-4 bg-card rounded-2xl border border-border/50 group-hover:border-primary/30 group-hover:shadow-md transition-all duration-300">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <Badge variant="secondary" className="text-[10px] font-black bg-primary/10 text-primary uppercase border-none">
                                                     Prop. {event.proposalNumber}
                                                 </Badge>
-                                                <span className="text-[9px] font-bold text-muted-foreground uppercase">{event.product}</span>
+                                                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-60">{event.product}</span>
                                             </div>
-                                            <p className="text-xs leading-relaxed text-foreground flex items-start gap-2">
-                                                <MessageSquareQuote className="h-3 w-3 mt-0.5 text-muted-foreground shrink-0" />
+                                            <p className="text-sm leading-relaxed text-foreground/90 flex items-start gap-3 font-medium">
+                                                <MessageSquareQuote className="h-4 w-4 mt-0.5 text-primary opacity-30 shrink-0" />
                                                 {event.message}
                                             </p>
                                         </div>
@@ -591,7 +639,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
 
   return (
     <AppLayout>
-      <div className='space-y-8'>
+      <div className='space-y-8 pb-20'>
         <div className="hidden print:block mb-8">
             <h1 className="text-2xl font-bold">Ficha do Cliente: {customer.name}</h1>
             <p className="text-sm text-gray-500">
@@ -601,10 +649,10 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
 
         {/* ALERTA DE RETENÇÃO (Idade de Ouro) */}
         {retentionOpportunity && customer.status !== 'inactive' && (
-            <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800 animate-in slide-in-from-top duration-500">
+            <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800 animate-in slide-in-from-top duration-500 rounded-2xl shadow-sm">
                 <Sparkles className="h-5 w-5 text-amber-600" />
-                <AlertTitle className="text-amber-800 dark:text-amber-400 font-bold">Oportunidade de Retenção Identificada!</AlertTitle>
-                <AlertDescription className="text-amber-700 dark:text-amber-500 text-sm mt-1">
+                <AlertTitle className="text-amber-800 dark:text-amber-400 font-bold uppercase tracking-tight">Oportunidade de Retenção Identificada!</AlertTitle>
+                <AlertDescription className="text-amber-700 dark:text-amber-500 text-sm mt-1 font-medium">
                     Este cliente possui contratos liquidados/pagos há mais de 12 meses (Ex: Proposta {retentionOpportunity.proposalNumber}). 
                     <strong> É o momento ideal para oferecer um Refinanciamento ou Portabilidade.</strong>
                 </AlertDescription>
@@ -629,24 +677,24 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
                 
                 <CustomerTimeline proposals={proposals || []} />
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Histórico de Propostas</CardTitle>
+                <Card className="border-border/50 shadow-lg rounded-2xl overflow-hidden">
+                    <CardHeader className="bg-muted/5 border-b border-border/30">
+                        <CardTitle className="text-lg font-black uppercase tracking-widest text-primary/80">Histórico de Propostas</CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-0">
                         <SimpleProposalsTable proposals={proposals || []} />
                     </CardContent>
                 </Card>
             </div>
             <div className="lg:col-span-1">
-                <Card className="h-full">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <FolderLock className="h-5 w-5 text-primary" />
-                            Documentos Permanentes
+                <Card className="h-full border-border/50 shadow-lg rounded-2xl overflow-hidden sticky top-24">
+                    <CardHeader className="bg-muted/10 border-b border-border/30">
+                        <CardTitle className="text-lg font-black uppercase tracking-widest flex items-center gap-3">
+                            <FolderLock className="h-5 w-5 text-primary opacity-60" />
+                            Arquivos Permanentes
                         </CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-6">
                         <CustomerAttachmentUploader 
                             userId={user?.uid || ''}
                             customerId={customer.id}
@@ -660,11 +708,11 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
       </div>
 
       <Dialog open={!!dialogData} onOpenChange={(isOpen) => !isOpen && setDialogData(null)}>
-        <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
-            <DialogHeader>
-                <DialogTitle>{dialogData?.title}</DialogTitle>
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 overflow-hidden rounded-[2rem]">
+            <DialogHeader className="p-6 bg-muted/10 border-b">
+                <DialogTitle className="text-2xl font-black uppercase tracking-tight">{dialogData?.title}</DialogTitle>
             </DialogHeader>
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto p-6">
                 <ProposalsStatusTable proposals={dialogData?.proposals || []} customers={customer ? [customer] : []} />
             </div>
         </DialogContent>
