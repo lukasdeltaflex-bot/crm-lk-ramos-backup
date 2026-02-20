@@ -130,7 +130,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     name: "benefits"
   });
 
-  // 🛡️ BLINDAGEM DE RESET: Força a carga do Gênero sem perdas
+  // 🛡️ BLINDAGEM DE RESET: Força a carga do Gênero sem perdas usando Key Dinâmica no Select
   useEffect(() => {
     const source = customer || defaultValues;
     if (source) {
@@ -147,7 +147,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       form.reset({
         name: source.name || '',
         cpf: source.cpf || '',
-        gender: source.gender || '', // Proteção direta
+        gender: source.gender || '',
         status: source.status || 'active',
         benefits: source.benefits || [],
         phone: source.phone || '',
@@ -234,7 +234,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       birthDate: format(parsedDate, 'yyyy-MM-dd'),
       benefits: data.benefits || [],
       documents: data.documents || [],
-      gender: data.gender || null 
+      gender: data.gender as any || null 
     };
     onSubmit(newCustomerData);
   }
@@ -356,7 +356,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         <FormItem>
                           <FormLabel>Gênero</FormLabel>
                           <Select 
-                            key={customer?.id || 'new'} 
+                            key={customer?.id || 'new-customer-select'} 
                             onValueChange={field.onChange} 
                             value={field.value || ""}
                           >

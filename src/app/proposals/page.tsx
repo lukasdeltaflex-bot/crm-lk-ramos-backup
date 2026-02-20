@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/page-header';
 import { ProposalsDataTable, type ProposalsDataTableHandle } from './data-table';
 import { getColumns } from './columns';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, FileDown } from 'lucide-react';
+import { PlusCircle, FileDown, Trash2, Printer, CheckCircle2, ChevronDown } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -17,11 +17,17 @@ import { ProposalForm } from './proposal-form';
 import type { Proposal, Customer, ProposalStatus, UserSettings } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from '@/firebase';
-import { collection, doc, query, where, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc, query, where, setDoc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CustomerSearchDialog } from '@/components/proposals/customer-search-dialog';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export type ProposalWithCustomer = Proposal & { customer: Customer | undefined };
 type ProposalFormData = Partial<Omit<Proposal, 'id' | 'ownerId'>>;
@@ -60,7 +66,7 @@ function ProposalsPageContent() {
 
   const [selectedProposal, setSelectedProposal] = React.useState<ProposalWithCustomer | undefined>(undefined);
   const [sheetMode, setSheetMode] = React.useState<'new' | 'edit' | 'view'>('new');
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [rowSelection, setRowSelection] = React.useState<Record<string, boolean>>({});
   const [defaultValues, setDefaultValues] = React.useState<ProposalFormData | undefined>(undefined);
   const [isSaving, setIsSaving] = React.useState(false);
   const tableRef = React.useRef<ProposalsDataTableHandle>(null);
@@ -87,10 +93,7 @@ function ProposalsPageContent() {
 
   const isLoading = proposalsLoading || customersLoading || isUserLoading || settingsLoading;
 
-  const nonAnonymizedCustomers = React.useMemo(() => {
-    if (!customers) return [];
-    return customers.filter(c => c.name !== 'Cliente Removido');
-  }, [customers]);
+  const selectedCount = React.useMemo(() => Object.keys(rowSelection).length, [rowSelection]);
 
   const proposalsWithCustomerData: ProposalWithCustomer[] = React.useMemo(() => {
     if (!proposals || !customers) return [];
@@ -144,6 +147,34 @@ function ProposalsPageContent() {
     setSheetMode('new');
     setIsDialogOpen(true);
   }, []);
+
+  const handleBulkStatusChange = async (newStatus: ProposalStatus) => {
+    if (!firestore || !user || selectedCount === 0) return;
+    setIsSaving(true);
+    try {
+        const batch = writeBatch(firestore);
+        const selectedIds = Object.keys(rowSelection);
+        selectedIds.forEach(id => {
+            const docRef = doc(firestore, 'loanProposals', id);
+            batch.update(docRef, { status: newStatus, statusUpdatedAt: new Date().toISOString() });
+        });
+        await batch.commit();
+        toast({ title: 'Status Atualizado em Massa', description: `${selectedCount} propostas alteradas para "${newStatus}".` });
+        setRowSelection({});
+    } catch (e) {
+        toast({ variant: 'destructive', title: 'Erro na operação em massa' });
+    } finally {
+        setIsSaving(false);
+    }
+  };
+
+  const handlePrintSelection = () => {
+    document.body.classList.add('print-selection');
+    window.print();
+    window.addEventListener('afterprint', () => {
+        document.body.classList.remove('print-selection');
+    }, { once: true });
+  };
 
   React.useEffect(() => {
     const action = searchParams.get('action');
@@ -231,6 +262,28 @@ function ProposalsPageContent() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <PageHeader title="Propostas" />
         <div className="flex items-center gap-3 flex-wrap">
+            {selectedCount > 0 && (
+                <div className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-300">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="h-10 px-6 rounded-full font-bold border-primary/30 bg-primary/5 text-primary text-xs">
+                                <CheckCircle2 className="mr-2 h-4 w-4" /> Alterar Status ({selectedCount}) <ChevronDown className="ml-2 h-3 w-3" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            {['Pendente', 'Em Andamento', 'Aguardando Saldo', 'Pago', 'Saldo Pago'].map(s => (
+                                <DropdownMenuItem key={s} onSelect={() => handleBulkStatusChange(s as ProposalStatus)}>{s}</DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Button variant="destructive" className="h-10 px-6 rounded-full font-bold text-xs" onClick={() => handleBulkStatusChange('Reprovado')}>
+                        <Trash2 className="mr-2 h-4 w-4" /> Cancelar
+                    </Button>
+                    <Button variant="outline" className="h-10 px-6 rounded-full font-bold text-xs" onClick={handlePrintSelection}>
+                        <Printer className="mr-2 h-4 w-4" /> Imprimir
+                    </Button>
+                </div>
+            )}
             <Button variant="outline" className="h-10 px-6 rounded-full font-bold border-border/50 hover:bg-muted/50 transition-all text-xs" onClick={handleExportToExcel}>
                 <FileDown className="mr-2 h-4 w-4" /> Exportar
             </Button>
@@ -246,7 +299,7 @@ function ProposalsPageContent() {
           <ProposalForm 
             proposal={selectedProposal} 
             allProposals={proposals || []}
-            customers={nonAnonymizedCustomers}
+            customers={customers || []}
             userSettings={userSettings || null}
             isReadOnly={sheetMode === 'view'}
             onSubmit={handleFormSubmit}
@@ -265,7 +318,7 @@ function ProposalsPageContent() {
         <CustomerSearchDialog
             open={isCustomerSearchOpen}
             onOpenChange={setIsCustomerSearchOpen}
-            customers={nonAnonymizedCustomers}
+            customers={customers?.filter(c => c.name !== 'Cliente Removido') || []}
             onSelectCustomer={handleCustomerSelect}
         />
       </Dialog>

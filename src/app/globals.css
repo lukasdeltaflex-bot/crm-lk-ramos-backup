@@ -129,6 +129,23 @@ html, body, *, [data-sidebar="inset"] {
   background-attachment: fixed !important;
 }
 
+/* 🛡️ FIX SIDEBAR (CONTRASTE) */
+.sidebar-dark {
+    --sidebar-background: 240 5.9% 5% !important;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+}
+.sidebar-light {
+    --sidebar-background: 0 0% 100% !important;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-border: 220 13% 91%;
+}
+
+/* Garante que o texto do menu ativo seja branco */
+[data-active="true"] span, [data-active="true"] svg {
+    color: white !important;
+}
+
 /* 🏛️ ESTILOS DE CONTAINER */
 .style-moderno { @apply border-2 border-border shadow-sm; }
 .style-glass { @apply bg-background/60 backdrop-blur-xl border-2 border-white/20 shadow-2xl; }
@@ -193,4 +210,8 @@ html, body, *, [data-sidebar="inset"] {
 }
 .animate-alert-pulse {
   animation: alert-pulse 2s infinite ease-in-out;
+}
+
+.print-selection .proposals-table tr:not([data-state="selected"]):not(:first-child) {
+    display: none !important;
 }
