@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { LucideIcon, Zap, AlertTriangle, TrendingUp, TrendingDown } from 'lucide-react';
+import { LucideIcon, Zap, AlertTriangle, TrendingUp, TrendingDown, Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/components/theme-provider';
 
@@ -126,7 +126,7 @@ export function StatsCard({
             </CardTitle>
             {isCritical ? (
                 <div className="flex items-center gap-1 text-[8px] font-bold text-red-600 animate-alert-pulse">
-                    <AlertTriangle className="h-2.5 w-2.5 fill-current" /> CRÍTICO
+                    <Timer className="h-2.5 w-2.5 fill-current" /> CRÍTICO
                 </div>
             ) : isHot && (
                 <div className="flex items-center gap-1 text-[8px] font-black text-orange-600 dark:text-orange-400 bg-background/80 dark:bg-zinc-950/60 px-1.5 py-0.5 rounded-full border border-orange-200 dark:border-orange-900/50">

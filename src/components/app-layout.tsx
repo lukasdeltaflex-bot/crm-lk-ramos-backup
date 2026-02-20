@@ -38,7 +38,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 auraStyle !== 'limpo' && `aura-${auraStyle}`
             )}>
             <Header className="print:hidden z-20" />
-            <main className="flex-1 p-4 sm:p-6 print:p-0 z-10 w-full overflow-y-auto">
+            <main className="flex-1 p-4 sm:p-6 print:p-0 z-10 w-full relative">
                 <div className="max-w-full">
                     {children}
                 </div>

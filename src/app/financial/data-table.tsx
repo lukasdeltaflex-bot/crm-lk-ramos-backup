@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -156,7 +155,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     if (globalFilter) {
         const searchTerm = String(globalFilter).trim();
         
-        // 🛡️ BUSCA POR ID EXATO (Prioridade Máxima - Blindada)
+        // 🛡️ BUSCA POR ID EXATO (Prioridade Máxima e Absoluta)
         if (/^\d+$/.test(searchTerm)) {
             return list.filter(p => p.customer?.numericId.toString() === searchTerm);
         }
@@ -198,7 +197,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         const searchTerm = String(filterValue ?? '').trim();
         if (!searchTerm) return true;
         
-        // 🛡️ BUSCA POR ID EXATO (Prioridade Máxima)
+        // 🛡️ BUSCA POR ID EXATO (Prioridade Máxima e Absoluta)
         if (/^\d+$/.test(searchTerm)) {
             return row.original.customer?.numericId.toString() === searchTerm;
         }
@@ -273,7 +272,8 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                         <TabsTrigger value="Todos" className="font-bold px-4 h-9">Todos</TabsTrigger>
                         {['Paga', 'Pendente', 'Parcial'].map(s => {
                             const label = s === 'Paga' ? 'PAGAS' : s === 'Pendente' ? 'PENDENTES' : 'PARCIAIS';
-                            const colorValue = statusColors[s.toUpperCase()] || statusColors[s];
+                            const statusKey = s.toUpperCase();
+                            const colorValue = statusColors[statusKey] || statusColors[s];
                             return (
                                 <TabsTrigger 
                                     key={s} 
@@ -297,9 +297,19 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                             </div>
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">TODOS OS BANCOS</SelectItem>
+                            <SelectItem value="all">
+                                <div className="flex items-center gap-2">
+                                    <Landmark className="h-3.5 w-3.5 opacity-50" />
+                                    <span>TODOS OS BANCOS</span>
+                                </div>
+                            </SelectItem>
                             {banksList.map(b => (
-                                <SelectItem key={b} value={b}>{cleanBankName(b).toUpperCase()}</SelectItem>
+                                <SelectItem key={b} value={b}>
+                                    <div className="flex items-center gap-2">
+                                        <Landmark className="h-3.5 w-3.5 opacity-50" />
+                                        <span>{cleanBankName(b).toUpperCase()}</span>
+                                    </div>
+                                </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -312,9 +322,19 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                             </div>
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">TODAS PROMOTORAS</SelectItem>
+                            <SelectItem value="all">
+                                <div className="flex items-center gap-2">
+                                    <Building2 className="h-3.5 w-3.5 opacity-50" />
+                                    <span>TODAS PROMOTORAS</span>
+                                </div>
+                            </SelectItem>
                             {promotersList.map(p => (
-                                <SelectItem key={p} value={p}>{p.toUpperCase()}</SelectItem>
+                                <SelectItem key={p} value={p}>
+                                    <div className="flex items-center gap-2">
+                                        <Building2 className="h-3.5 w-3.5 opacity-50" />
+                                        <span>{p.toUpperCase()}</span>
+                                    </div>
+                                </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -400,7 +420,8 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                                 {table.getRowModel().rows.length > 0 ? (
                                     table.getRowModel().rows.map(row => {
                                         const status = row.original.commissionStatus;
-                                        const colorValue = statusColors[status?.toUpperCase()] || statusColors[status || ''];
+                                        const statusKey = status?.toUpperCase() || '';
+                                        const colorValue = statusColors[statusKey] || statusColors[status || ''];
                                         return (
                                             <TableRow 
                                                 key={row.id} 

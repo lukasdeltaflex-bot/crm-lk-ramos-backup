@@ -152,17 +152,17 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         if (!searchTerm) return true;
         const customer = row.original;
 
-        // 🛡️ BUSCA POR ID EXATO (Prioridade Máxima - Blindada)
+        // 🛡️ BUSCA POR ID EXATO (Prioridade Máxima e Absoluta)
         if (/^\d+$/.test(searchTerm)) {
-            return customer.numericId.toString() === searchTerm;
+            const match = customer.numericId.toString() === searchTerm;
+            if (match) return true;
+            // Se digitou número e não bateu com o ID, mas bateu com CPF, ainda aceitamos
+            const cleanCpf = customer.cpf.replace(/\D/g, '');
+            if (cleanCpf.includes(searchTerm)) return true;
+            return false;
         }
 
         const normalizedSearch = normalizeString(searchTerm);
-
-        // BUSCA POR CPF SEM FORMATAÇÃO
-        const cleanCpf = customer.cpf.replace(/\D/g, '');
-        const cleanSearch = searchTerm.replace(/\D/g, '');
-        if (cleanSearch && cleanSearch.length >= 3 && cleanCpf.includes(cleanSearch)) return true;
 
         // BUSCA TEXTUAL NOS CAMPOS
         const fieldsToSearch = [

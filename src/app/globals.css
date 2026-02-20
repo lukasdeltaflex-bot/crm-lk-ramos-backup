@@ -79,18 +79,21 @@
   }
 }
 
-/* 🌑 MOTOR DE BARRA LATERAL */
+/* 🌑 MOTOR DE BARRA LATERAL (MIDNIGHT OVERRIDE) */
 .sidebar-dark {
   --sidebar-background: 240 5.9% 5% !important;
   --sidebar-foreground: 240 4.8% 95.9% !important;
   --sidebar-primary: 224.3 76.3% 48% !important;
   --sidebar-primary-foreground: 0 0% 100% !important;
+  --sidebar-border: 240 3.7% 15.9% !important;
+  --sidebar-accent: 240 3.7% 15.9% !important;
 }
 
 .sidebar-light {
   --sidebar-background: 0 0% 100% !important;
   --sidebar-foreground: 240 5.3% 26.1% !important;
   --sidebar-primary: 240 5.9% 10% !important;
+  --sidebar-border: 220 13% 91% !important;
 }
 
 /* 🎨 MOTOR DE TIPOGRAFIA */
@@ -148,7 +151,7 @@
     clip-path: polygon(0% 0%, 100% 0%, 100% 85%, 92% 100%, 0% 100%);
 }
 
-/* 🌌 MOTOR ATMOSFÉRICO (AURA) */
+/* 🌌 MOTOR ATMOSFÉRICO (AURA VIBRANTE) */
 .aura-nebula { background: radial-gradient(circle at 50% 50%, hsla(280, 85%, 65%, 0.8), hsla(260, 85%, 70%, 0.7), transparent 90%) !important; }
 .aura-aurora { background: linear-gradient(135deg, hsla(160, 85%, 65%, 0.7) 0%, hsla(200, 85%, 65%, 0.7) 50%, hsla(240, 85%, 70%, 0.6) 100%) !important; }
 .aura-sunset { background: radial-gradient(circle at 0% 0%, hsla(20, 90%, 65%, 0.8), transparent 70%), radial-gradient(circle at 100% 100%, hsla(340, 90%, 65%, 0.8), transparent 70%) !important; }
@@ -171,7 +174,7 @@
 }
 
 .status-row-custom {
-    background-color: hsl(var(--status-color) / 0.06) !important;
+    background-color: hsl(var(--status-color) / 0.08) !important;
 }
 
 .status-tab[data-state=active] {
@@ -197,7 +200,7 @@
 
 @keyframes alert-pulse {
   0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
-  50% { transform: scale(1.15); box-shadow: 0 0 20px 8px rgba(239, 68, 68, 0.3); }
+  50% { transform: scale(1.1); box-shadow: 0 0 20px 8px rgba(239, 68, 68, 0.3); }
   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
 }
 .animate-alert-pulse {

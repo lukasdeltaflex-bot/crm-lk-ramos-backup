@@ -149,14 +149,14 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 
     if (globalFilter) {
         const searchTerm = String(globalFilter).trim();
+        
+        // 🛡️ BUSCA POR ID EXATO (Prioridade Máxima e Absoluta)
+        if (/^\d+$/.test(searchTerm)) {
+            return list.filter(p => p.customer?.numericId.toString() === searchTerm);
+        }
+
         const normalizedSearch = normalizeString(searchTerm);
-
         list = list.filter(p => {
-            // 🛡️ BUSCA POR ID EXATO (Prioridade Máxima - Blindada)
-            if (/^\d+$/.test(searchTerm)) {
-                return p.customer?.numericId.toString() === searchTerm;
-            }
-
             const proposalNum = normalizeString(p.proposalNumber);
             const customerName = normalizeString(p.customer?.name || '');
             const customerCpf = p.customer?.cpf?.replace(/\D/g, '') || '';
@@ -192,7 +192,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         const searchTerm = String(filterValue ?? '').trim();
         if (!searchTerm) return true;
         
-        // 🛡️ BUSCA POR ID EXATO (Prioridade Máxima - Blindada)
+        // 🛡️ BUSCA POR ID EXATO (Prioridade Máxima e Absoluta)
         if (/^\d+$/.test(searchTerm)) {
             return row.original.customer?.numericId.toString() === searchTerm;
         }
@@ -361,7 +361,8 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                 {table.getRowModel().rows.length > 0 ? (
                                     table.getRowModel().rows.map(row => {
                                         const status = row.original.status;
-                                        const colorValue = statusColors[status.toUpperCase()] || statusColors[status];
+                                        const statusKey = status.toUpperCase();
+                                        const colorValue = statusColors[statusKey] || statusColors[status];
                                         return (
                                             <TableRow 
                                                 key={row.id} 
