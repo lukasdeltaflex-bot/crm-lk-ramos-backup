@@ -61,11 +61,6 @@ import { DraggableHeader } from './columns';
 import type { Customer } from '@/lib/types';
 import { normalizeString, cn } from '@/lib/utils';
 
-const STORAGE_KEY_VISIBILITY = 'lk-ramos-customer-columns-visibility-v13';
-const STORAGE_KEY_ORDER = 'lk-ramos-customer-columns-order-v13';
-const STORAGE_KEY_SIZING = 'lk-ramos-customer-columns-sizing-v13';
-const STORAGE_KEY_PAGESIZE = 'lk-ramos-customer-page-size-v13';
-
 interface DataTableProps {
   columns: ColumnDef<Customer, unknown>[];
   data: Customer[];
@@ -96,9 +91,9 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
   });
 
   const defaultVisibility: VisibilityState = {
-    'Telefone 2': false,
-    'Cidade': false,
-    'Estado': false,
+    'Telefone 2': true,
+    'Cidade': true,
+    'Estado': true,
     'Observações': false,
   };
   const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
@@ -108,32 +103,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
     
   React.useEffect(() => {
     setIsClient(true);
-    try {
-        const savedVisibility = localStorage.getItem(STORAGE_KEY_VISIBILITY);
-        if (savedVisibility) setColumnVisibility(JSON.parse(savedVisibility));
-        
-        const savedOrder = localStorage.getItem(STORAGE_KEY_ORDER);
-        if (savedOrder) setColumnOrder(JSON.parse(savedOrder));
-        else setColumnOrder(initialColumns);
-        
-        const savedSizing = localStorage.getItem(STORAGE_KEY_SIZING);
-        if (savedSizing) setColumnSizing(JSON.parse(savedSizing));
-        
-        const savedPageSize = localStorage.getItem(STORAGE_KEY_PAGESIZE);
-        if (savedPageSize) setPagination(prev => ({ ...prev, pageSize: Number(savedPageSize) }));
-    } catch (e) {
-        setColumnOrder(initialColumns);
-    }
-  }, [initialColumns]);
-
-  React.useEffect(() => {
-    if (isClient) {
-        localStorage.setItem(STORAGE_KEY_VISIBILITY, JSON.stringify(columnVisibility));
-        localStorage.setItem(STORAGE_KEY_ORDER, JSON.stringify(columnOrder));
-        localStorage.setItem(STORAGE_KEY_SIZING, JSON.stringify(columnSizing));
-        localStorage.setItem(STORAGE_KEY_PAGESIZE, String(pagination.pageSize));
-    }
-  }, [columnVisibility, columnOrder, columnSizing, pagination.pageSize, isClient]);
+  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -179,19 +149,23 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
       pagination,
     },
     globalFilterFn: (row, columnId, filterValue) => {
-        const searchTerm = normalizeString(String(filterValue ?? '')).trim();
+        const searchTerm = String(filterValue ?? '').trim();
         if (!searchTerm) return true;
         const customer = row.original;
 
-        // BUSCA POR ID EXATO (IGUAL ERA ANTES) - Prioridade Total
-        const numericIdStr = customer.numericId.toString();
-        if (searchTerm === numericIdStr) return true;
+        // 1. BUSCA POR ID EXATO (Prioridade Total)
+        if (/^\d+$/.test(searchTerm)) {
+            if (customer.numericId.toString() === searchTerm) return true;
+        }
 
-        // BUSCA POR CPF SEM FORMATAÇÃO
+        const normalizedSearch = normalizeString(searchTerm);
+
+        // 2. BUSCA POR CPF SEM FORMATAÇÃO
         const cleanCpf = customer.cpf.replace(/\D/g, '');
         const cleanSearch = searchTerm.replace(/\D/g, '');
-        if (cleanSearch && cleanCpf.includes(cleanSearch)) return true;
+        if (cleanSearch && cleanSearch.length >= 3 && cleanCpf.includes(cleanSearch)) return true;
 
+        // 3. BUSCA TEXTUAL NOS CAMPOS
         const fieldsToSearch = [
             customer.name,
             customer.cpf,
@@ -203,7 +177,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             customer.observations,
             ...(customer.benefits?.map(b => b.number) || [])
         ];
-        return fieldsToSearch.some(field => field && normalizeString(field).includes(searchTerm));
+        return fieldsToSearch.some(field => field && normalizeString(field).includes(normalizedSearch));
       },
   });
 
@@ -217,15 +191,15 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             <div className='relative w-full max-w-md group'>
                 <Search className='absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80 group-focus-within:opacity-100 transition-opacity' />
                 <Input
-                    placeholder="Busca Inteligente (Nome, CPF, ID...)"
+                    placeholder="Busca por Nome, CPF ou ID Exato..."
                     value={globalFilter ?? ''}
                     onChange={(event) => setGlobalFilter(event.target.value)}
-                    className="pl-11 w-full bg-background border-2 border-zinc-300 dark:border-primary/40 h-11 rounded-full shadow-md focus-visible:ring-primary/20 transition-all font-bold text-sm placeholder:text-muted-foreground/80"
+                    className="pl-11 w-full bg-background border-2 border-zinc-300 dark:border-primary/40 h-11 rounded-full shadow-md focus-visible:ring-primary/20 transition-all font-bold text-sm"
                 />
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="ml-auto rounded-full font-black h-11 border-2 border-zinc-300 dark:border-primary/30 bg-background px-6 shadow-md hover:bg-muted/50 transition-all text-xs uppercase tracking-widest">
+                <Button variant="outline" className="ml-auto rounded-full font-black h-11 border-2 border-zinc-300 dark:border-primary/30 bg-background px-6 shadow-md text-xs uppercase tracking-widest">
                   Colunas <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
                 </Button>
               </DropdownMenuTrigger>
@@ -279,16 +253,13 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
                             <TableRow
                             key={row.id}
                             data-state={row.getIsSelected() && 'selected'}
-                            className="hover:bg-primary/[0.03] dark:hover:bg-primary/5 transition-colors border-b h-12"
+                            className="hover:bg-primary/[0.03] transition-colors border-b h-12"
                             >
                             {row.getVisibleCells().map((cell) => (
                                 <TableCell 
                                     key={cell.id} 
                                     style={{ width: cell.column.getSize() }}
-                                    className={cn(
-                                        "p-2 text-sm border-none",
-                                        cell.column.id === 'Selecionar' && 'px-0 text-center'
-                                    )}
+                                    className="p-2 text-sm border-none"
                                 >
                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                 </TableCell>

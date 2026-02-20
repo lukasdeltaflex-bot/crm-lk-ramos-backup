@@ -175,7 +175,6 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
   const cpfValue = form.watch('cpf');
   const birthDateValue = form.watch('birthDate');
   const phone1Value = form.watch('phone');
-  const phone2Value = form.watch('phone2');
 
   const duplicateCpfCustomer = useMemo(() => {
     if (!cpfValue || cpfValue.length < 14) return null;
@@ -189,8 +188,6 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
         if (isValid(parsedDate)) {
           const formattedForUtil = format(parsedDate, 'yyyy-MM-dd');
           setAge(getAge(formattedForUtil));
-        } else {
-            setAge(null);
         }
       } catch {
         setAge(null);
@@ -202,11 +199,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
 
   function handleFormSubmit(data: CustomerFormValues) {
     if (duplicateCpfCustomer) {
-        toast({
-            variant: 'destructive',
-            title: 'CPF Duplicado',
-            description: `Este CPF já pertence ao cliente "${duplicateCpfCustomer.name}".`,
-        });
+        toast({ variant: 'destructive', title: 'CPF Duplicado' });
         return;
     }
 
@@ -271,9 +264,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     try {
         const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
         const data = await response.json();
-        if (data.erro) {
-            toast({ variant: 'destructive', title: 'CEP não encontrado' });
-        } else {
+        if (!data.erro) {
             form.setValue('street', data.logradouro);
             form.setValue('neighborhood', data.bairro);
             form.setValue('city', data.localidade);
@@ -286,29 +277,6 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
         setIsFetchingCep(false);
     }
   }
-
-  const handleSummarize = async () => {
-    const currentObservations = form.getValues('observations');
-    if (!currentObservations || currentObservations.trim() === '') {
-      toast({ variant: 'destructive', title: 'Campo vazio' });
-      return;
-    }
-    setIsSummarizing(true);
-    try {
-      const summary = await summarizeNotes(currentObservations);
-      form.setValue('observations', summary, { shouldValidate: true });
-      toast({ title: 'Observações Resumidas!' });
-    } catch (error) {
-      toast({ variant: 'destructive', title: 'Erro ao resumir' });
-    } finally {
-      setIsSummarizing(false);
-    }
-  };
-
-  const handleDocumentsChange = (docs: Attachment[]) => {
-    form.setValue('documents', docs, { shouldValidate: true });
-  };
-
 
   return (
     <Form {...form}>
@@ -325,10 +293,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         <FormItem className="w-40">
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
-                              <SelectTrigger className={cn(
-                                "h-8 text-[10px] font-bold uppercase border-2",
-                                field.value === 'active' ? "border-green-500/20 text-green-600 bg-green-50" : "border-zinc-500/20 text-zinc-600 bg-zinc-50"
-                              )}>
+                              <SelectTrigger className="h-8 text-[10px] font-bold uppercase">
                                 <div className="flex items-center gap-2">
                                     {field.value === 'active' ? <UserCheck className="h-3 w-3" /> : <UserX className="h-3 w-3" />}
                                     <SelectValue placeholder="Status" />
@@ -363,19 +328,13 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                     name="cpf"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>CPF (Verificação em tempo real)</FormLabel>
+                        <FormLabel>CPF</FormLabel>
                         <FormControl>
                             <Input placeholder="000.000.000-00" {...field} onChange={handleCpfChange} maxLength={14}/>
                         </FormControl>
                         <FormMessage />
                         {duplicateCpfCustomer && (
-                            <Alert variant="destructive" className="mt-2 py-2 px-3 border-2 animate-in slide-in-from-top-1">
-                                <AlertTriangle className="h-4 w-4" />
-                                <AlertTitle className="text-xs font-bold uppercase">CPF Já Cadastrado!</AlertTitle>
-                                <AlertDescription className="text-[10px] font-medium leading-tight">
-                                    Este CPF já pertence ao cliente <strong>{duplicateCpfCustomer.name}</strong>.
-                                </AlertDescription>
-                            </Alert>
+                            <p className="text-xs text-destructive font-bold">Este CPF já está cadastrado para: {duplicateCpfCustomer.name}</p>
                         )}
                         </FormItem>
                     )}
@@ -407,10 +366,10 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                     control={form.control}
                     name="email"
                     render={({ field }) => (
-                        <FormItem className='md:col-span-1'>
+                        <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                            <Input placeholder="joao.silva@example.com" {...field} value={field.value ?? ''}/>
+                            <Input placeholder="joao@exemplo.com" {...field} value={field.value ?? ''}/>
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -423,18 +382,15 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                             <FormItem>
                                 <FormLabel>Telefone Principal</FormLabel>
                                 <FormControl>
-                                    <div className="relative flex items-center">
+                                    <div className="relative">
                                         <Input
                                             placeholder="(11) 98765-4321"
                                             {...field}
                                             onChange={(e) => handlePhoneChange(e, 'phone')}
                                             maxLength={15}
-                                            className="pr-10"
                                         />
                                         {isWhatsApp(phone1Value) && (
-                                            <a href={getWhatsAppUrl(phone1Value)} target="_blank" rel="noopener noreferrer" className="absolute right-3 text-green-500 hover:text-green-600">
-                                                <WhatsAppIcon />
-                                            </a>
+                                            <WhatsAppIcon className="absolute right-3 top-2.5" />
                                         )}
                                     </div>
                                 </FormControl>
@@ -449,57 +405,32 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                             <FormItem>
                                 <FormLabel>Telefone 2</FormLabel>
                                 <FormControl>
-                                    <div className="relative flex items-center">
-                                        <Input
-                                            placeholder="(11) 98765-4321"
-                                            {...field}
-                                            value={field.value || ''}
-                                            onChange={(e) => handlePhoneChange(e, 'phone2')}
-                                            maxLength={15}
-                                            className="pr-10"
-                                        />
-                                        {field.value && isWhatsApp(field.value) && (
-                                            <a href={getWhatsAppUrl(field.value)} target="_blank" rel="noopener noreferrer" className="absolute right-3 text-green-500 hover:text-green-600">
-                                                <WhatsAppIcon />
-                                            </a>
-                                        )}
-                                    </div>
+                                    <Input
+                                        placeholder="(11) 98765-4321"
+                                        {...field}
+                                        value={field.value || ''}
+                                        onChange={(e) => handlePhoneChange(e, 'phone2')}
+                                        maxLength={15}
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
                 </div>
-                <div className="flex items-start gap-4">
-                    <FormField
-                        control={form.control}
-                        name="birthDate"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Data de Nascimento {age !== null && <span className="text-muted-foreground">({age} anos)</span>}</FormLabel>
-                            <FormControl>
-                                <Input 
-                                    placeholder="dd/mm/aaaa" 
-                                    {...field} 
-                                    onChange={handleBirthDateChange} 
-                                    maxLength={10} 
-                                    className="w-[240px]"
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    {age !== null && age >= 74 && (
-                        <Alert variant="destructive" className="mt-2 max-w-xs">
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertTitle>Atenção!</AlertTitle>
-                            <AlertDescription>
-                                Cliente com {age} anos. Verifique restrições.
-                            </AlertDescription>
-                        </Alert>
+                <FormField
+                    control={form.control}
+                    name="birthDate"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Data de Nascimento {age !== null && <span className="text-muted-foreground">({age} anos)</span>}</FormLabel>
+                        <FormControl>
+                            <Input placeholder="dd/mm/aaaa" {...field} onChange={handleBirthDateChange} maxLength={10} className="w-[240px]"/>
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
                     )}
-                </div>
+                />
             </div>
 
             <Separator />
@@ -507,28 +438,20 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
             <div>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-medium">Benefícios INSS</h3>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => append({ number: "", species: "" })}
-                    >
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Adicionar
+                    <Button type="button" variant="outline" size="sm" onClick={() => append({ number: "", species: "" })}>
+                        <PlusCircle className="mr-2 h-4 w-4" /> Adicionar
                     </Button>
                 </div>
                 <div className="space-y-4">
                 {fields.map((field, index) => (
-                    <div key={field.id} className="flex items-start gap-2 p-3 border rounded-md bg-secondary/30 relative group">
+                    <div key={field.id} className="flex items-start gap-2 p-3 border rounded-md bg-secondary/30">
                         <FormField
                             control={form.control}
                             name={`benefits.${index}.number`}
                             render={({ field }) => (
                                 <FormItem className="flex-1">
                                     <FormLabel className='text-xs'>Número do Benefício</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder='000.000.000-0' {...field} />
-                                    </FormControl>
+                                    <FormControl><Input placeholder='000.000.000-0' {...field} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -539,20 +462,12 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                             render={({ field }) => (
                                 <FormItem className="flex-1">
                                     <FormLabel className='text-xs'>Espécie / Nome</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder='Ex: Aposentadoria...' {...field} value={field.value || ''} />
-                                    </FormControl>
+                                    <FormControl><Input placeholder='Ex: Aposentadoria...' {...field} value={field.value || ''} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="self-end mb-1"
-                            onClick={() => remove(index)}
-                        >
+                        <Button type="button" variant="ghost" size="icon" className="self-end mb-1" onClick={() => remove(index)}>
                             <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                     </div>
@@ -563,7 +478,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
             <Separator />
 
             <div className='space-y-4'>
-                <h3 className="text-lg font-medium">Endereço</h3>
+                <h3 className="text-lg font-medium">Endereço Completo</h3>
                 <FormField
                     control={form.control}
                     name="cep"
@@ -571,9 +486,9 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         <FormItem>
                         <FormLabel>CEP</FormLabel>
                         <FormControl>
-                            <div className='relative'>
-                                <Input placeholder="00000-000" {...field} onChange={handleCepChange} onBlur={handleCepBlur} maxLength={9} className="max-w-[240px]" value={field.value || ''} />
-                                {isFetchingCep && <Loader2 className="absolute left-[210px] top-2.5 h-5 w-5 animate-spin text-muted-foreground" />}
+                            <div className='relative max-w-[240px]'>
+                                <Input placeholder="00000-000" {...field} onChange={handleCepChange} onBlur={handleCepBlur} maxLength={9} value={field.value || ''} />
+                                {isFetchingCep && <Loader2 className="absolute right-3 top-2.5 h-5 w-5 animate-spin text-muted-foreground" />}
                             </div>
                         </FormControl>
                         <FormMessage />
@@ -587,10 +502,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         render={({ field }) => (
                             <FormItem className='col-span-2'>
                             <FormLabel>Logradouro</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Rua das Flores" {...field} value={field.value || ''} />
-                            </FormControl>
-                            <FormMessage />
+                            <FormControl><Input placeholder="Rua das Flores" {...field} value={field.value || ''} /></FormControl>
                             </FormItem>
                         )}
                     />
@@ -600,10 +512,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         render={({ field }) => (
                             <FormItem>
                             <FormLabel>Número</FormLabel>
-                            <FormControl>
-                                <Input placeholder="123" {...field} value={field.value || ''} />
-                            </FormControl>
-                            <FormMessage />
+                            <FormControl><Input placeholder="123" {...field} value={field.value || ''} /></FormControl>
                             </FormItem>
                         )}
                     />
@@ -615,10 +524,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         render={({ field }) => (
                             <FormItem>
                             <FormLabel>Complemento</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Apto 45" {...field} value={field.value || ''} />
-                            </FormControl>
-                            <FormMessage />
+                            <FormControl><Input placeholder="Apto 45" {...field} value={field.value || ''} /></FormControl>
                             </FormItem>
                         )}
                     />
@@ -628,10 +534,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         render={({ field }) => (
                             <FormItem>
                             <FormLabel>Bairro</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Centro" {...field} value={field.value || ''} />
-                            </FormControl>
-                            <FormMessage />
+                            <FormControl><Input placeholder="Centro" {...field} value={field.value || ''} /></FormControl>
                             </FormItem>
                         )}
                     />
@@ -643,10 +546,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         render={({ field }) => (
                             <FormItem className='col-span-2'>
                             <FormLabel>Cidade</FormLabel>
-                            <FormControl>
-                                <Input placeholder="São Paulo" {...field} value={field.value || ''} />
-                            </FormControl>
-                            <FormMessage />
+                            <FormControl><Input placeholder="São Paulo" {...field} value={field.value || ''} /></FormControl>
                             </FormItem>
                         )}
                     />
@@ -656,72 +556,18 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         render={({ field }) => (
                             <FormItem>
                             <FormLabel>Estado (UF)</FormLabel>
-                            <FormControl>
-                                <Input placeholder="SP" {...field} value={field.value || ''} maxLength={2} className="uppercase" />
-                            </FormControl>
-                            <FormMessage />
+                            <FormControl><Input placeholder="SP" {...field} value={field.value || ''} maxLength={2} className="uppercase" /></FormControl>
                             </FormItem>
                         )}
                     />
                 </div>
             </div>
-
-            <Separator />
-
-            <FormField
-              control={form.control}
-              name="observations"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-center justify-between">
-                    <FormLabel>Observações</FormLabel>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleSummarize}
-                      disabled={isSummarizing}
-                    >
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      {isSummarizing ? 'Resumindo...' : 'Resumir com IA'}
-                    </Button>
-                  </div>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Anotações sobre o cliente..."
-                      className="resize-none"
-                      {...field}
-                      value={field.value || ''}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Separator />
-
-            <div>
-                <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                    <FileIcon className="h-5 w-5 text-primary" />
-                    Central de Documentos Fixos
-                </h3>
-                <CustomerAttachmentUploader
-                    userId={user?.uid || ''}
-                    customerId={currentCustomerId === 'new' ? '' : currentCustomerId}
-                    initialAttachments={form.getValues('documents') || []}
-                    onAttachmentsChange={handleDocumentsChange}
-                />
-            </div>
           </div>
         </ScrollArea>
         <div className="flex justify-end pt-8">
             <Button type="submit" disabled={isSaving || !!duplicateCpfCustomer}>
-                {isSaving ? (
-                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Salvando...</span></>
-                ) : (
-                    <span>Salvar Cliente</span>
-                )}
+                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Salvar Cliente
             </Button>
         </div>
       </form>

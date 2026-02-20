@@ -80,7 +80,7 @@
   }
 }
 
-/* 🎨 MOTOR DE TIPOGRAFIA LK RAMOS - CLASSES UNIVERSAIS */
+/* 🎨 MOTOR DE TIPOGRAFIA LK RAMOS */
 .font-moderno { --font-main: 'Inter', sans-serif; }
 .font-classico { --font-main: 'Playfair Display', serif; }
 .font-mono { --font-main: 'JetBrains Mono', monospace; }
@@ -102,25 +102,25 @@
 .font-sharp { --font-main: 'Roboto Condensed', sans-serif; }
 .font-script { --font-main: 'Cormorant Garamond', serif; }
 
-/* 📏 MOTOR DE ARREDONDAMENTO - CLASSES UNIVERSAIS */
-.radius-reto { --radius: 0rem; }
-.radius-extra-discreto { --radius: 0.125rem; }
-.radius-discreto { --radius: 0.25rem; }
-.radius-suave { --radius: 0.5rem; }
-.radius-moderno { --radius: 1rem; }
-.radius-amigavel { --radius: 1.5rem; }
-.radius-organico { --radius: 2rem; }
-.radius-capsula { --radius: 9999px; }
+/* 📏 MOTOR DE ARREDONDAMENTO */
+.radius-reto { --radius: 0rem !important; }
+.radius-extra-discreto { --radius: 0.125rem !important; }
+.radius-discreto { --radius: 0.25rem !important; }
+.radius-suave { --radius: 0.5rem !important; }
+.radius-moderno { --radius: 1rem !important; }
+.radius-amigavel { --radius: 1.5rem !important; }
+.radius-organico { --radius: 2rem !important; }
+.radius-capsula { --radius: 9999px !important; }
 
-/* 🌌 MOTOR ATMOSFÉRICO (AURA) - CORES REAIS E VIBRANTES */
-.aura-nebula { background: radial-gradient(circle at 50% 50%, hsla(280, 100%, 80%, 0.6), hsla(260, 100%, 85%, 0.4), transparent 85%) !important; }
-.aura-aurora { background: linear-gradient(135deg, hsla(160, 100%, 80%, 0.5) 0%, hsla(200, 100%, 80%, 0.5) 50%, hsla(240, 100%, 85%, 0.4) 100%) !important; }
-.aura-sunset { background: radial-gradient(circle at 0% 0%, hsla(20, 100%, 80%, 0.6), transparent 60%), radial-gradient(circle at 100% 100%, hsla(340, 100%, 80%, 0.6), transparent 60%) !important; }
-.aura-ocean { background: linear-gradient(to bottom, hsla(210, 100%, 85%, 0.7), hsla(190, 100%, 80%, 0.5)) !important; }
-.aura-lavender { background: radial-gradient(circle at 50% 0%, hsla(260, 100%, 85%, 0.6), transparent 80%) !important; }
-.aura-mint { background: radial-gradient(circle at 100% 0%, hsla(150, 100%, 85%, 0.6), transparent 70%) !important; }
-.aura-pearl { background: linear-gradient(45deg, hsla(0, 0%, 90%, 0.8) 0%, hsla(240, 20% ,90%, 0.8) 100%) !important; }
-.aura-desert { background: radial-gradient(circle at 50% 100%, hsla(40, 100%, 80%, 0.6), transparent 70%) !important; }
+/* 🌌 MOTOR ATMOSFÉRICO (AURA) - CORES REAIS */
+.aura-nebula { background: radial-gradient(circle at 50% 50%, hsla(280, 80%, 70%, 0.4), hsla(260, 80%, 75%, 0.3), transparent 85%) !important; }
+.aura-aurora { background: linear-gradient(135deg, hsla(160, 80%, 70%, 0.3) 0%, hsla(200, 80%, 70%, 0.3) 50%, hsla(240, 80%, 75%, 0.2) 100%) !important; }
+.aura-sunset { background: radial-gradient(circle at 0% 0%, hsla(20, 80%, 70%, 0.4), transparent 60%), radial-gradient(circle at 100% 100%, hsla(340, 80%, 70%, 0.4), transparent 60%) !important; }
+.aura-ocean { background: linear-gradient(to bottom, hsla(210, 80%, 75%, 0.4), hsla(190, 80%, 70%, 0.3)) !important; }
+.aura-lavender { background: radial-gradient(circle at 50% 0%, hsla(260, 80%, 75%, 0.4), transparent 80%) !important; }
+.aura-mint { background: radial-gradient(circle at 100% 0%, hsla(150, 80%, 75%, 0.4), transparent 70%) !important; }
+.aura-pearl { background: linear-gradient(45deg, hsla(0, 0%, 85%, 0.5) 0%, hsla(240, 20% ,85%, 0.5) 100%) !important; }
+.aura-desert { background: radial-gradient(circle at 50% 100%, hsla(40, 80%, 70%, 0.4), transparent 70%) !important; }
 
 .dark .aura-nebula { background: radial-gradient(circle at 50% 50%, hsla(280, 60%, 15%, 0.8), transparent 70%) !important; }
 .dark .aura-aurora { background: linear-gradient(135deg, hsla(160, 60%, 12%, 0.7) 0%, hsla(200, 60%, 12%, 0.7) 100%) !important; }
@@ -131,30 +131,7 @@
 .dark .aura-pearl { background: linear-gradient(45deg, hsla(0, 0%, 10%, 0.9) 0%, hsla(240, 10% ,12%, 0.9) 100%) !important; }
 .dark .aura-desert { background: radial-gradient(circle at 50% 100%, hsla(40, 60%, 15%, 0.8), transparent 70%) !important; }
 
-/* 🛡️ ESTILOS DA BARRA LATERAL */
-.sidebar-dark {
-  --sidebar-background: 240 5.9% 10% !important;
-  --sidebar-foreground: 240 4.8% 95.9% !important;
-  --sidebar-primary: 224.3 76.3% 48% !important;
-  --sidebar-primary-foreground: 0 0% 100% !important;
-  --sidebar-accent: 240 3.7% 15.9% !important;
-  --sidebar-accent-foreground: 240 4.8% 95.9% !important;
-  --sidebar-border: 240 3.7% 15.9% !important;
-  --sidebar-ring: 217.2 91.2% 59.8% !important;
-}
-
-.sidebar-light {
-  --sidebar-background: 0 0% 98% !important;
-  --sidebar-foreground: 240 5.3% 26.1% !important;
-  --sidebar-primary: 240 5.9% 10% !important;
-  --sidebar-primary-foreground: 0 0% 98% !important;
-  --sidebar-accent: 240 4.8% 95.9% !important;
-  --sidebar-accent-foreground: 240 5.9% 10% !important;
-  --sidebar-border: 220 13% 91% !important;
-  --sidebar-ring: 217.2 91.2% 59.8% !important;
-}
-
-/* Status e Linhas */
+/* STATUS E LINHAS */
 .status-custom {
     color: hsl(var(--status-color)) !important;
     background-color: hsl(var(--status-color) / var(--status-bg-opacity, 0.1)) !important;
@@ -168,56 +145,9 @@
     background-color: hsl(var(--status-color) / 0.1) !important;
 }
 
-.status-tab {
-    transition: all var(--transition-speed);
-}
-.status-tab[data-state=active] {
-    background-color: hsl(var(--status-color) / 0.15) !important;
-    color: hsl(var(--status-color)) !important;
-    border-color: hsl(var(--status-color) / 0.5) !important;
-    box-shadow: 0 0 10px hsl(var(--status-color) / 0.2);
-}
-
 @layer base {
   * { @apply border-border; }
   body { @apply bg-background text-foreground antialiased; }
-}
-
-/* 💎 BLINDAGEM DE TABELAS (STICKY COLUMNS) */
-.proposals-table tr th:first-child,
-.proposals-table tr td:first-child,
-.financial-table tr th:first-child,
-.financial-table tr td:first-child,
-.customers-table tr th:first-child,
-.customers-table tr td:first-child {
-    position: sticky !important;
-    left: 0;
-    z-index: 40 !important;
-    background-color: inherit !important;
-    border-right: 2px solid hsl(var(--border) / 0.8);
-}
-
-.proposals-table tr td:first-child,
-.financial-table tr td:first-child,
-.customers-table tr td:first-child {
-    background-color: hsl(var(--background)) !important;
-}
-
-.proposals-table tr th:first-child,
-.financial-table tr th:first-child,
-.customers-table tr th:first-child {
-    background-color: hsl(var(--muted) / 0.5) !important;
-}
-
-.proposals-table tr.status-row-custom td:first-child,
-.financial-table tr.status-row-custom td:first-child {
-    background-color: hsl(var(--status-color) / 0.06) !important;
-}
-
-.dark .proposals-table tr td:first-child,
-.dark .financial-table tr td:first-child,
-.dark .customers-table tr td:first-child {
-    background-color: #050505 !important;
 }
 
 @keyframes alert-pulse {

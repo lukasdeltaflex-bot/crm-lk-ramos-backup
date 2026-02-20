@@ -142,7 +142,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     if (appliedDateRange && appliedDateRange.from) {
         const fromDate = appliedDateRange.from;
         const toDate = appliedDateRange.to ? endOfDay(appliedDateRange.to) : endOfDay(appliedDateRange.from);
-        
         list = list.filter(p => {
             const d = new Date(p.dateDigitized);
             return d >= fromDate && d <= toDate;
@@ -150,21 +149,24 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     }
 
     if (globalFilter) {
-        const searchTerm = normalizeString(globalFilter).trim();
+        const searchTerm = String(globalFilter).trim();
+        const normalizedSearch = normalizeString(searchTerm);
+
         list = list.filter(p => {
+            // 1. Prioridade ID Exato
+            if (/^\d+$/.test(searchTerm)) {
+                if (p.customer?.numericId.toString() === searchTerm) return true;
+            }
+
             const proposalNum = normalizeString(p.proposalNumber);
             const customerName = normalizeString(p.customer?.name || '');
             const customerCpf = p.customer?.cpf?.replace(/\D/g, '') || '';
-            const cleanSearch = searchTerm.replace(/\D/g, '');
+            const cleanSearchNum = searchTerm.replace(/\D/g, '');
             
-            // Busca por ID Exato
-            if (p.customer?.numericId?.toString() === searchTerm) return true;
-            
-            return proposalNum.includes(searchTerm) || 
-                   customerName.includes(searchTerm) || 
-                   (cleanSearch !== '' && customerCpf.includes(cleanSearch)) ||
-                   normalizeString(p.bank).includes(searchTerm) ||
-                   normalizeString(p.product).includes(searchTerm);
+            return proposalNum.includes(normalizedSearch) || 
+                   customerName.includes(normalizedSearch) || 
+                   (cleanSearchNum && cleanSearchNum.length >= 3 && customerCpf.includes(cleanSearchNum)) ||
+                   normalizeString(p.bank).includes(normalizedSearch);
         });
     }
     
@@ -201,26 +203,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const totalCommission = React.useMemo(() => 
     selectedRows.reduce((acc, row) => acc + (row.original.commissionValue || 0), 0),
   [selectedRows]);
-
-  const handleDateInputChange = (value: string, type: 'start' | 'end') => {
-    let v = value.replace(/\D/g, '').slice(0, 8);
-    if (v.length >= 5) v = `${v.slice(0, 2)}/${v.slice(2, 4)}/${v.slice(4)}`;
-    else if (v.length >= 3) v = `${v.slice(0, 2)}/${v.slice(2)}`;
-    if (type === 'start') setStartDateInput(v);
-    else setEndDateInput(v);
-  };
-
-  const handleApplyFilter = () => {
-    const startDate = parse(startDateInput, 'dd/MM/yyyy', new Date());
-    const endDate = parse(endDateInput, 'dd/MM/yyyy', new Date());
-    if (isValid(startDate) && isValid(endDate)) {
-        setAppliedDateRange({ from: startOfDay(startDate), to: endOfDay(endDate) });
-    } else if (isValid(startDate)) {
-        setAppliedDateRange({ from: startOfDay(startDate), to: endOfDay(startDate) });
-    } else {
-        setAppliedDateRange(undefined);
-    }
-  };
 
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
@@ -270,25 +252,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                             <SelectItem value="month">Mês Atual</SelectItem>
                         </SelectContent>
                     </Select>
-                    <Separator orientation="vertical" className="h-4 bg-zinc-300" />
-                    <div className="flex items-center gap-1">
-                        <Input 
-                            placeholder="De" 
-                            value={startDateInput}
-                            onChange={(e) => handleDateInputChange(e.target.value, 'start')}
-                            className="h-7 w-28 border-none bg-muted/40 text-[11px] text-center font-black rounded-full"
-                        />
-                        <span className="text-muted-foreground font-black">-</span>
-                        <Input 
-                            placeholder="Até" 
-                            value={endDateInput}
-                            onChange={(e) => handleDateInputChange(e.target.value, 'end')}
-                            className="h-7 w-28 border-none bg-muted/40 text-[11px] text-center font-black rounded-full"
-                        />
-                    </div>
-                    <Button size="sm" onClick={handleApplyFilter} className="h-7 bg-primary text-white rounded-full px-4 text-[10px] font-black uppercase transition-all shadow-md">
-                        <Filter className="h-3 w-3 mr-1" /> Aplicar
-                    </Button>
                 </div>
             </div>
 
@@ -296,10 +259,10 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                 <div className='relative w-full max-w-md group'>
                     <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80 group-focus-within:opacity-100 transition-opacity' />
                     <Input
-                        placeholder="Busca Inteligente (Nome, CPF, Proposta ou ID...)"
+                        placeholder="Busca por Nome, CPF, Proposta ou ID Exato..."
                         value={globalFilter ?? ''}
                         onChange={(e) => setGlobalFilter(e.target.value)}
-                        className="pl-10 h-11 bg-background border-2 border-zinc-300 dark:border-primary/40 rounded-full text-base font-bold shadow-md focus-visible:ring-primary/20 transition-all placeholder:text-muted-foreground/80"
+                        className="pl-10 h-11 bg-background border-2 border-zinc-300 dark:border-primary/40 rounded-full text-base font-bold shadow-md"
                     />
                 </div>
                 <DropdownMenu>
@@ -347,7 +310,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                             <TableRow 
                                                 key={row.id} 
                                                 className={cn(
-                                                    "transition-colors border-b h-14 hover:bg-primary/[0.03] dark:hover:bg-primary/5",
+                                                    "transition-colors border-b h-14 hover:bg-primary/[0.03]",
                                                     colorValue && "status-row-custom"
                                                 )}
                                                 style={colorValue ? { '--status-color': colorValue } as any : {}}
