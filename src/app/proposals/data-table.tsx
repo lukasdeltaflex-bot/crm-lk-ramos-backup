@@ -95,7 +95,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const [endDateInput, setEndDateInput] = React.useState('');
   const [appliedDateRange, setAppliedDateRange] = React.useState<DateRange | undefined>(undefined);
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'Data Digitação', desc: true }]);
   
   const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(initialColumns);
