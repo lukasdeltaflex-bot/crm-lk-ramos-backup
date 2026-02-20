@@ -235,7 +235,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       birthDate: format(parsedDate, 'yyyy-MM-dd'),
       benefits: data.benefits || [],
       documents: data.documents || [],
-      gender: data.gender || null // 🛡️ Garantia de persistência do gênero
+      gender: data.gender || null 
     };
     onSubmit(newCustomerData);
   }
@@ -381,6 +381,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         <FormItem>
                           <FormLabel>Gênero</FormLabel>
                           <Select 
+                            key={customer?.id || 'new'}
                             onValueChange={field.onChange} 
                             value={field.value || ""}
                           >
@@ -407,7 +408,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                            <Input placeholder="joao@exemplo.com" {...field} value={field.value ?? ''}/>
+                            <Input placeholder="seu@exemplo.com" {...field} value={field.value ?? ''}/>
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -584,7 +585,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         render={({ field }) => (
                             <FormItem className='col-span-2'>
                             <FormLabel>Cidade</FormLabel>
-                            <FormControl><Input placeholder="São Paulo" {...field} value={field.value || ''} /></FormControl>
+                            <FormControl><Input placeholder="Sua Cidade" {...field} value={field.value || ''} /></FormControl>
                             </FormItem>
                         )}
                     />
@@ -594,7 +595,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         render={({ field }) => (
                             <FormItem>
                             <FormLabel>Estado (UF)</FormLabel>
-                            <FormControl><Input placeholder="SP" {...field} value={field.value || ''} maxLength={2} className="uppercase" /></FormControl>
+                            <FormControl><Input placeholder="UF" {...field} value={field.value || ''} maxLength={2} className="uppercase" /></FormControl>
                             </FormItem>
                         )}
                     />

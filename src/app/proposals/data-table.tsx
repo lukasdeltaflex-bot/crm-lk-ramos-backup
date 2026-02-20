@@ -207,7 +207,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     if (globalFilter) {
         const searchTerm = String(globalFilter).trim();
         
-        // 🛡️ BUSCA POR ID EXATO DO CLIENTE (Prioridade Absoluta)
+        // 🛡️ BUSCA POR ID EXATO (Prioridade Absoluta)
         if (/^\d+$/.test(searchTerm)) {
             return list.filter(p => p.customer?.numericId.toString() === searchTerm);
         }
@@ -250,7 +250,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         const searchTerm = String(filterValue ?? '').trim();
         if (!searchTerm) return true;
         
-        // 🛡️ BUSCA POR ID EXATO DO CLIENTE
+        // 🛡️ BUSCA POR ID EXATO
         if (/^\d+$/.test(searchTerm)) {
             return row.original.customer?.numericId.toString() === searchTerm;
         }
@@ -374,7 +374,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
             </div>
 
             <div className="flex items-center justify-between flex-wrap gap-4">
-                <div className='relative w-full max-w-md group'>
+                <div className='relative w-full max-md group'>
                     <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80 group-focus-within:opacity-100 transition-opacity' />
                     <Input
                         placeholder="Busca Inteligente (Nome, CPF, Proposta ou ID Exato...)"

@@ -377,14 +377,17 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                                     <span>Todas Promotoras</span>
                                 </div>
                             </SelectItem>
-                            {promotersList.map(p => (
-                                <SelectItem key={p} value={p} className="font-bold text-[11px] uppercase">
-                                    <div className="flex items-center gap-3">
-                                        <BankIcon bankName={p} domain={userSettings?.promoterDomains?.[p]} showLogo={userSettings?.showPromoterLogos ?? true} className="h-4 w-4" />
-                                        <span>{p}</span>
-                                    </div>
-                                </SelectItem>
-                            ))}
+                            {promotersList.map(p => {
+                                const promoterDomain = userSettings?.promoterDomains?.[p];
+                                return (
+                                    <SelectItem key={p} value={p} className="font-bold text-[11px] uppercase">
+                                        <div className="flex items-center gap-3">
+                                            <BankIcon bankName={p} domain={promoterDomain} showLogo={userSettings?.showPromoterLogos ?? true} className="h-4 w-4" />
+                                            <span>{p}</span>
+                                        </div>
+                                    </SelectItem>
+                                );
+                            })}
                         </SelectContent>
                     </Select>
                 </div>
@@ -426,7 +429,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
 
             <Card className="rounded-[1.5rem] border-2 border-zinc-200 dark:border-primary/30 bg-card shadow-xl overflow-hidden p-1">
                 <div className="flex items-center justify-between px-4 py-2 gap-4">
-                    <div className='relative w-full max-w-md group'>
+                    <div className='relative w-full max-md group'>
                         <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80 group-focus-within:opacity-100 transition-opacity' />
                         <Input 
                             placeholder="Busca Inteligente (Nome, CPF, Banco ou ID Exato...)" 

@@ -38,8 +38,8 @@
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-accent: 217 33% 25%;
+    --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
@@ -69,8 +69,8 @@
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-accent: 217 33% 35%;
+    --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
@@ -102,24 +102,19 @@ html, body, * {
 .font-sharp { --font-main: 'Roboto Condensed', sans-serif !important; }
 .font-script { --font-main: 'Cormorant Garamond', serif !important; }
 
-/* 🌑 MOTOR DE BARRA LATERAL (MIDNIGHT / TRUE BLACK) */
+/* 🌑 MOTOR DE BARRA LATERAL */
 .sidebar-dark {
   --sidebar-background: 240 5.9% 5% !important;
   --sidebar-foreground: 240 4.8% 95.9% !important;
-  --sidebar-primary: 224.3 76.3% 48% !important;
-  --sidebar-primary-foreground: 0 0% 100% !important;
-  --sidebar-border: 240 3.7% 15.9% !important;
-  --sidebar-accent: 240 3.7% 15.9% !important;
+  --sidebar-accent: 217 33% 30% !important;
   --sidebar-accent-foreground: 0 0% 100% !important;
 }
 
 .sidebar-light {
   --sidebar-background: 0 0% 100% !important;
   --sidebar-foreground: 240 5.3% 26.1% !important;
-  --sidebar-primary: 240 5.9% 10% !important;
-  --sidebar-border: 220 13% 91% !important;
-  --sidebar-accent: 240 4.8% 95.9% !important;
-  --sidebar-accent-foreground: 240 5.9% 10% !important;
+  --sidebar-accent: 217 33% 25% !important;
+  --sidebar-accent-foreground: 0 0% 100% !important;
 }
 
 /* 📏 MOTOR DE ARREDONDAMENTO */
@@ -132,7 +127,7 @@ html, body, * {
 .radius-organico { --radius: 2rem !important; }
 .radius-capsula { --radius: 9999px !important; }
 
-/* 🏛️ ESTILOS DE CONTAINER (AURA) */
+/* 🏛️ ESTILOS DE CONTAINER */
 .style-moderno { @apply border-2 border-border shadow-sm; }
 .style-glass { @apply bg-background/60 backdrop-blur-xl border-2 border-white/20 shadow-2xl; }
 .style-deep { @apply shadow-[0_20px_50px_rgba(0,0,0,0.15)] border-2 border-border/40; }
@@ -147,7 +142,7 @@ html, body, * {
     clip-path: polygon(0% 0%, 100% 0%, 100% 85%, 92% 100%, 0% 100%);
 }
 
-/* 🚀 MOTOR DE RITMO (MOTION DESIGN) */
+/* 🚀 MOTOR DE RITMO */
 .anim-instantaneo, .anim-instantaneo * { transition-duration: 0ms !important; transition-delay: 0ms !important; }
 .anim-sutil, .anim-sutil * { transition-duration: 200ms !important; transition-property: all !important; transition-timing-function: ease-in-out !important; }
 .anim-atmosferico, .anim-atmosferico * { transition-duration: 500ms !important; transition-property: all !important; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important; }
@@ -195,7 +190,7 @@ html, body, * {
     text-shadow: 0 0 8px hsl(var(--status-color) / 0.5);
 }
 
-/* 🏁 MOTOR DE TEXTURAS GLOBAIS - APLICADO AO CONTAINER PRINCIPAL */
+/* 🏁 MOTOR DE TEXTURAS GLOBAIS */
 .texture-dots, .texture-dots [data-sidebar="inset"], .texture-dots main {
   background-image: radial-gradient(hsl(var(--foreground) / 0.05) 1px, transparent 1px) !important;
   background-size: 20px 20px !important;
