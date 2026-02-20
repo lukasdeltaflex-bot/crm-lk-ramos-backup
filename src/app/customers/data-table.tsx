@@ -85,12 +85,11 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
   const [globalFilter, setGlobalFilter] = React.useState('');
   const [isClient, setIsClient] = React.useState(false);
 
+  // 💾 PERSISTÊNCIA: Linhas por Página
   const [pagination, setPagination] = React.useState<PaginationState>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('lk-customers-pageSize');
-      if (saved) {
-        return { pageIndex: 0, pageSize: Number(saved) };
-      }
+      if (saved) return { pageIndex: 0, pageSize: Number(saved) };
     }
     return { pageIndex: 0, pageSize: 10 };
   });
@@ -98,27 +97,46 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
   const handlePaginationChange = (updater: any) => {
     setPagination((old) => {
       const next = typeof updater === 'function' ? updater(old) : updater;
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('lk-customers-pageSize', String(next.pageSize));
-      }
+      if (typeof window !== 'undefined') localStorage.setItem('lk-customers-pageSize', String(next.pageSize));
       return next;
     });
   };
 
-  const defaultVisibility: VisibilityState = {
-    'Telefone 2': true,
-    'Cidade': true,
-    'Estado': true,
-    'Observações': false,
-  };
-  const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
+  // 💾 PERSISTÊNCIA: Visibilidade das Colunas
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('lk-customers-visibility');
+      if (saved) return JSON.parse(saved);
+    }
+    return {
+      'Telefone 2': true,
+      'Cidade': true,
+      'Estado': true,
+      'Observações': false,
+    };
+  });
 
-  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>([...initialColumns]);
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(defaultVisibility);
-    
+  // 💾 PERSISTÊNCIA: Ordem das Colunas
+  const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
+  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('lk-customers-order');
+      if (saved) return JSON.parse(saved);
+    }
+    return [...initialColumns];
+  });
+
   React.useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Salva no localStorage sempre que mudar
+  React.useEffect(() => {
+    if (isClient) {
+      localStorage.setItem('lk-customers-visibility', JSON.stringify(columnVisibility));
+      localStorage.setItem('lk-customers-order', JSON.stringify(columnOrder));
+    }
+  }, [columnVisibility, columnOrder, isClient]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),

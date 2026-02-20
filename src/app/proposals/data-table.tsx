@@ -101,13 +101,13 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const [appliedDateRange, setAppliedDateRange] = React.useState<DateRange | undefined>(undefined);
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
   const [sorting, setSorting] = React.useState<SortingState>([{ id: 'Data Digitação', desc: true }]);
-  
+  const [isClient, setIsClient] = React.useState(false);
+
+  // 💾 PERSISTÊNCIA: Linhas por Página
   const [pagination, setPagination] = React.useState<PaginationState>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('lk-proposals-pageSize');
-      if (saved) {
-        return { pageIndex: 0, pageSize: Number(saved) };
-      }
+      if (saved) return { pageIndex: 0, pageSize: Number(saved) };
     }
     return { pageIndex: 0, pageSize: 10 };
   });
@@ -115,17 +115,18 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const handlePaginationChange = (updater: any) => {
     setPagination((old) => {
       const next = typeof updater === 'function' ? updater(old) : updater;
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('lk-proposals-pageSize', String(next.pageSize));
-      }
+      if (typeof window !== 'undefined') localStorage.setItem('lk-proposals-pageSize', String(next.pageSize));
       return next;
     });
   };
 
-  const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
-  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(initialColumns);
-
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
+  // 💾 PERSISTÊNCIA: Visibilidade das Colunas
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('lk-proposals-visibility');
+      if (saved) return JSON.parse(saved);
+    }
+    return {
       'Promotora': true,
       'N° PROPOSTA': true,
       'Cliente': true,
@@ -141,7 +142,30 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
       'Data Pgto. Cliente': false,
       'Chegada Saldo': false,
       'Actions': true
+    };
   });
+
+  // 💾 PERSISTÊNCIA: Ordem das Colunas
+  const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
+  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('lk-proposals-order');
+      if (saved) return JSON.parse(saved);
+    }
+    return initialColumns;
+  });
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Salva preferências no localStorage
+  React.useEffect(() => {
+    if (isClient) {
+      localStorage.setItem('lk-proposals-visibility', JSON.stringify(columnVisibility));
+      localStorage.setItem('lk-proposals-order', JSON.stringify(columnOrder));
+    }
+  }, [columnVisibility, columnOrder, isClient]);
 
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
 

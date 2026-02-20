@@ -99,24 +99,18 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
 }, ref) => {
   const { statusColors } = useTheme();
   const [sorting, setSorting] = React.useState<SortingState>([{ id: 'Data Pagamento', desc: true }]);
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
-      'Promotora': false,
-      'CPF': false,
-      'Comissão (%)': false,
-      'Status Proposta': false
-  });
   const [statusFilter, setStatusFilter] = React.useState('Todos');
   const [globalFilter, setGlobalFilter] = React.useState('');
   const [bankFilter, setBankFilter] = React.useState('all');
   const [promoterFilter, setPromoterFilter] = React.useState('all');
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
-  
+  const [isClient, setIsClient] = React.useState(false);
+
+  // 💾 PERSISTÊNCIA: Linhas por Página
   const [pagination, setPagination] = React.useState<PaginationState>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('lk-financial-pageSize');
-      if (saved) {
-        return { pageIndex: 0, pageSize: Number(saved) };
-      }
+      if (saved) return { pageIndex: 0, pageSize: Number(saved) };
     }
     return { pageIndex: 0, pageSize: 10 };
   });
@@ -124,19 +118,50 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   const handlePaginationChange = (updater: any) => {
     setPagination((old) => {
       const next = typeof updater === 'function' ? updater(old) : updater;
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('lk-financial-pageSize', String(next.pageSize));
-      }
+      if (typeof window !== 'undefined') localStorage.setItem('lk-financial-pageSize', String(next.pageSize));
       return next;
     });
   };
 
+  // 💾 PERSISTÊNCIA: Visibilidade das Colunas
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('lk-financial-visibility');
+      if (saved) return JSON.parse(saved);
+    }
+    return {
+      'Promotora': false,
+      'CPF': false,
+      'Comissão (%)': false,
+      'Status Proposta': false
+    };
+  });
+
+  // 💾 PERSISTÊNCIA: Ordem das Colunas
   const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
-  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(initialColumns);
+  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('lk-financial-order');
+      if (saved) return JSON.parse(saved);
+    }
+    return initialColumns;
+  });
 
   const [startDateInput, setStartDateInput] = React.useState('');
   const [endDateInput, setEndDateInput] = React.useState('');
   const [appliedDateRange, setAppliedDateRange] = React.useState<DateRange | undefined>(undefined);
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Salva preferências no localStorage
+  React.useEffect(() => {
+    if (isClient) {
+      localStorage.setItem('lk-financial-visibility', JSON.stringify(columnVisibility));
+      localStorage.setItem('lk-financial-order', JSON.stringify(columnOrder));
+    }
+  }, [columnVisibility, columnOrder, isClient]);
 
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
 
