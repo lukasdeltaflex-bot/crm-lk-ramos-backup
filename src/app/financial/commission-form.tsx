@@ -30,6 +30,7 @@ const commissionSchema = z.object({
   amountPaid: z.coerce.number().min(0, 'O valor pago é obrigatório.'),
   commissionPaymentDate: z.string().optional().refine(val => {
     if (!val) return true;
+    // 🛡️ BLINDAGEM: Garante o uso de MM (Mês) em vez de mm (Minutos)
     const parsed = parse(val, 'dd/MM/yyyy', new Date());
     return isValid(parsed);
   }, {

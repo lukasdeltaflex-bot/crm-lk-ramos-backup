@@ -24,31 +24,41 @@ export function RadarWidget({ proposals, customers, isLoading }: RadarWidgetProp
     const now = new Date();
     
     const opportunities = customers
-      .filter(c => c.status !== 'inactive' && getAge(c.birthDate) < 75)
+      // 🛡️ REGRAS DE NEGÓCIO: Apenas clientes ATIVOS e com idade permitida
+      .filter(c => c.status === 'active' && getAge(c.birthDate) < 75)
       .map(customer => {
         const maturedProposals = proposals.filter(p => {
           if (p.customerId !== customer.id) return false;
           if (p.status !== 'Pago' && p.status !== 'Saldo Pago') return false;
           if (!p.datePaidToClient) return false;
           
-          // 🛡️ BLINDAGEM: Valida a data antes de processar para evitar crash no dashboard
-          const paidDate = parseISO(p.datePaidToClient);
-          if (!isValid(paidDate)) return false;
-          
-          return differenceInMonths(now, paidDate) >= 12;
+          // 🛡️ BLINDAGEM DE CRASH: Valida a data antes de processar
+          try {
+              const paidDate = parseISO(p.datePaidToClient);
+              if (!isValid(paidDate)) return false;
+              return differenceInMonths(now, paidDate) >= 12;
+          } catch (e) {
+              return false;
+          }
         });
 
         if (maturedProposals.length === 0) return null;
 
+        // Identifica a proposta mais antiga paga para retenção
         const oldest = [...maturedProposals].sort((a,b) => (a.datePaidToClient || '').localeCompare(b.datePaidToClient || ''))[0];
-        const paidDate = parseISO(oldest.datePaidToClient!);
-        const months = differenceInMonths(now, paidDate);
+        
+        try {
+            const paidDate = parseISO(oldest.datePaidToClient!);
+            const months = differenceInMonths(now, paidDate);
 
-        return {
-          customer,
-          months,
-          lastProposal: oldest
-        };
+            return {
+              customer,
+              months,
+              lastProposal: oldest
+            };
+        } catch (e) {
+            return null;
+        }
       })
       .filter((opt): opt is NonNullable<typeof opt> => opt !== null)
       .sort((a, b) => b.months - a.months)

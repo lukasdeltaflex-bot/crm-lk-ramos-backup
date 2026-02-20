@@ -100,7 +100,14 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
   const retentionOpportunity = React.useMemo(() => {
     if (!proposals) return null;
     const now = new Date();
-    return proposals.find(p => (p.status === 'Pago' || p.status === 'Saldo Pago') && p.datePaidToClient && differenceInMonths(now, new Date(p.datePaidToClient)) >= 12);
+    return proposals.find(p => {
+        if ((p.status === 'Pago' || p.status === 'Saldo Pago') && p.datePaidToClient) {
+            try {
+                return differenceInMonths(now, new Date(p.datePaidToClient)) >= 12;
+            } catch (e) { return false; }
+        }
+        return false;
+    });
   }, [proposals]);
 
   const handleExportDossier = async () => {
@@ -110,12 +117,14 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
     const doc = new jsPDF();
     const primaryColor = [40, 74, 127];
     
+    // Header
     doc.setFontSize(22); doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]); doc.setFont("helvetica", "bold"); doc.text("DOSSIÊ OFICIAL DO CLIENTE", 14, 20);
     doc.setFontSize(10); doc.setTextColor(100); doc.setFont("helvetica", "normal");
     doc.text(`Responsável: ${user.displayName || user.email}`, 14, 28);
-    doc.text(`Gerado: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 33);
+    doc.text(`Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 33);
     doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]); doc.setLineWidth(0.5); doc.line(14, 38, 196, 38);
     
+    // Cadastro Table
     autoTable(doc, { 
         startY: 45, 
         body: [['Nome', customer.name], ['CPF', customer.cpf], ['Nascimento', customer.birthDate], ['Telefone', customer.phone], ['Cidade/UF', `${customer.city || '-'} / ${customer.state || '-'}`]], 
@@ -124,10 +133,14 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
         columnStyles: { 0: { fontStyle: 'bold', width: 40 } } 
     });
     
-    const getFinalY = () => (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY : 100;
+    const getFinalY = () => {
+        const last = (doc as any).lastAutoTable;
+        return last ? last.finalY : 50;
+    };
     
+    // Benefícios
     if (customer.benefits && customer.benefits.length > 0) {
-        doc.setFont("helvetica", "bold"); doc.text("BENEFÍCIOS ATIVOS", 14, getFinalY() + 15);
+        doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.setTextColor(0); doc.text("BENEFÍCIOS ATIVOS", 14, getFinalY() + 15);
         autoTable(doc, { 
             startY: getFinalY() + 18, 
             head: [['Número', 'Espécie']], 
@@ -136,7 +149,8 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
         });
     }
 
-    doc.setFont("helvetica", "bold"); doc.text("HISTÓRICO DE OPERAÇÕES", 14, getFinalY() + 15);
+    // Histórico
+    doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.setTextColor(0); doc.text("HISTÓRICO DE OPERAÇÕES", 14, getFinalY() + 15);
     autoTable(doc, { 
         startY: getFinalY() + 18, 
         head: [['Nº Proposta', 'Produto', 'Status', 'Valor Bruto']], 
@@ -145,30 +159,27 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
         styles: { fontSize: 9 } 
     });
 
+    // Formalização (LGPD) com calculo de quebra de página robusto
     const pageHeight = doc.internal.pageSize.height;
     const decText = `Eu, ${customer.name}, portador do CPF ${customer.cpf}, declaro verdadeiras as informações acima e autorizo expressamente o processamento dos meus dados para fins de simulação e contratação bancária, conforme as diretrizes da LGPD (Lei Geral de Proteção de Dados).`;
     const wrappedDecText = doc.splitTextToSize(decText, 180);
-    const textHeight = (wrappedDecText.length * 5);
-
-    // 🛡️ ENGENHARIA DE PDF: Cálculo dinâmico para evitar quebras feias ou sobreposições
-    const currentY = getFinalY();
-    if (currentY + textHeight + 50 > pageHeight) { 
+    const textHeight = (wrappedDecText.length * 6);
+    
+    let currentY = getFinalY() + 20;
+    
+    // 🛡️ ENGENHARIA DE PDF: Garante que o bloco de assinatura não quebre no meio
+    if (currentY + textHeight + 40 > pageHeight) { 
         doc.addPage(); 
-        doc.setFont("helvetica", "bold"); 
-        doc.text("DECLARAÇÃO E FORMALIZAÇÃO", 14, 25); 
-        doc.setFontSize(9); doc.setTextColor(80); doc.setFont("helvetica", "normal");
-        doc.text(wrappedDecText, 14, 35);
-        const signatureY = 35 + textHeight + 25;
-        doc.setDrawColor(150); doc.line(14, signatureY, 90, signatureY); doc.line(110, signatureY, 186, signatureY);
-        doc.setFontSize(8); doc.text("ASSINATURA DO CLIENTE", 52, signatureY + 5, { align: 'center' }); doc.text("AGENTE RESPONSÁVEL", 148, signatureY + 5, { align: 'center' });
-    } else { 
-        doc.setFont("helvetica", "bold"); doc.text("DECLARAÇÃO E FORMALIZAÇÃO", 14, currentY + 20); 
-        doc.setFontSize(9); doc.setTextColor(80); doc.setFont("helvetica", "normal");
-        doc.text(wrappedDecText, 14, currentY + 30);
-        const signatureY = currentY + 30 + textHeight + 25;
-        doc.setDrawColor(150); doc.line(14, signatureY, 90, signatureY); doc.line(110, signatureY, 186, signatureY);
-        doc.setFontSize(8); doc.text("ASSINATURA DO CLIENTE", 52, signatureY + 5, { align: 'center' }); doc.text("AGENTE RESPONSÁVEL", 148, signatureY + 5, { align: 'center' });
+        currentY = 25;
     }
+
+    doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.text("DECLARAÇÃO E FORMALIZAÇÃO", 14, currentY); 
+    doc.setFontSize(9); doc.setTextColor(80); doc.setFont("helvetica", "normal");
+    doc.text(wrappedDecText, 14, currentY + 10);
+    
+    const signatureY = currentY + 10 + textHeight + 20;
+    doc.setDrawColor(150); doc.line(14, signatureY, 90, signatureY); doc.line(110, signatureY, 186, signatureY);
+    doc.setFontSize(8); doc.text("ASSINATURA DO CLIENTE", 52, signatureY + 5, { align: 'center' }); doc.text("AGENTE RESPONSÁVEL", 148, signatureY + 5, { align: 'center' });
     
     doc.save(`Dossie_${customer.name.replace(/\s+/g, '_')}.pdf`);
     toast({ title: "Dossiê Gerado!" });
