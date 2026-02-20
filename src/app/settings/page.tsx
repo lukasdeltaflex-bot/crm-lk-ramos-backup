@@ -365,8 +365,8 @@ export default function SettingsPage() {
             </TabsList>
 
             <TabsContent value="appearance">
-                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                    <div className="lg:col-span-2 space-y-8">
+                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start relative">
+                    <div className="lg:col-span-2 space-y-8 pb-20">
                         <Card className="border-border/50 shadow-sm">
                             <CardHeader className="flex flex-row items-center justify-between">
                                 <div>
@@ -396,7 +396,7 @@ export default function SettingsPage() {
                                         {Object.keys(auraLabels).map((a) => (
                                             <Label key={a} htmlFor={`aura-${a}`} className={cn("flex flex-col items-center justify-center rounded-xl border-2 p-4 cursor-pointer text-center gap-2 transition-all", preview.auraStyle === a ? "border-primary bg-primary/10 ring-2 ring-primary/20" : "border-muted hover:border-primary/30")}>
                                                 <RadioGroupItem value={a} id={`aura-${a}`} className="sr-only" />
-                                                <div className={cn("h-10 w-10 rounded-full border shadow-inner", a === 'limpo' ? 'bg-background' : `aura-${a}`)} />
+                                                <div className={cn("h-10 w-10 rounded-full border shadow-inner transition-all duration-500", a === 'limpo' ? 'bg-background' : `aura-${a}`)} />
                                                 <span className="text-[10px] font-black uppercase tracking-tighter leading-tight">{auraLabels[a]}</span>
                                             </Label>
                                         ))}
@@ -579,8 +579,8 @@ export default function SettingsPage() {
                         </Card>
                     </div>
 
-                    <div className="lg:col-span-1 h-full flex flex-col">
-                        <div className="sticky top-24 z-30 transition-all duration-500 w-full">
+                    <div className="lg:col-span-1">
+                        <div className="sticky top-20 z-30 transition-all duration-500 w-full">
                             <Card className="border-primary/20 bg-primary/[0.02] shadow-xl overflow-hidden">
                                 <CardHeader className="bg-primary/5 border-b border-primary/10">
                                     <CardTitle className="text-lg font-bold flex items-center gap-2">
@@ -592,7 +592,7 @@ export default function SettingsPage() {
                                 <CardContent className="p-0">
                                     <div 
                                         className={cn(
-                                            "p-8 min-h-[500px] flex flex-col gap-8 items-center justify-center transition-all duration-500",
+                                            "p-8 min-h-[500px] flex flex-col gap-8 items-center justify-center transition-all duration-1000",
                                             `texture-${preview.backgroundTexture}`,
                                             `radius-${preview.radius}`,
                                             `font-${preview.fontStyle}`,

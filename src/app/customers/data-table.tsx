@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -153,9 +152,8 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         if (!searchTerm) return true;
         const customer = row.original;
 
-        // 🛡️ BUSCA POR ID EXATO (Prioridade Máxima)
+        // 🛡️ BUSCA POR ID EXATO (Prioridade Máxima - Blindada)
         if (/^\d+$/.test(searchTerm)) {
-            // Se digitar apenas números, filtramos EXATAMENTE pelo ID
             return customer.numericId.toString() === searchTerm;
         }
 
@@ -192,7 +190,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             <div className='relative w-full max-w-md group'>
                 <Search className='absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80 group-focus-within:opacity-100 transition-opacity' />
                 <Input
-                    placeholder="Busca por Nome, CPF ou ID Exato..."
+                    placeholder="Busca Inteligente (Nome, CPF ou ID Exato...)"
                     value={globalFilter ?? ''}
                     onChange={(event) => setGlobalFilter(event.target.value)}
                     className="pl-11 w-full bg-background border-2 border-zinc-300 dark:border-primary/40 h-11 rounded-full shadow-md focus-visible:ring-primary/20 transition-all font-bold text-sm"
@@ -277,12 +275,17 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             </div>
           </div>
 
-          <div className="flex items-center justify-between px-6 py-4 border-t-2 bg-muted/10 font-black text-[11px] uppercase tracking-[0.1em] text-foreground/60">
+          <div className="flex items-center justify-between px-6 py-4 border-t-2 bg-muted/10 font-black text-[11px] uppercase tracking-[0.1em] text-foreground/60 min-h-[64px]">
             <div className="flex-1">
               {table.getFilteredSelectedRowModel().rows.length} DE{' '}
               {table.getFilteredRowModel().rows.length} SELECIONADOS.
             </div>
             <div className="flex items-center gap-6 lg:gap-8">
+                {table.getFilteredSelectedRowModel().rows.length > 0 && (
+                    <div className="flex items-center gap-2 text-primary animate-in fade-in slide-in-from-left-2">
+                        <span className="font-black">MODO SELEÇÃO ATIVO</span>
+                    </div>
+                )}
                 <div className="flex items-center gap-2">
                     <p>LINHAS</p>
                     <Select

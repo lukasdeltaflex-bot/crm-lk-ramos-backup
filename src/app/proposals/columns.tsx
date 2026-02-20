@@ -21,7 +21,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, GripVertical, ArrowUp, ArrowDown, Copy, AlertTriangle, AlertCircle } from 'lucide-react';
+import { MoreHorizontal, GripVertical, ArrowUp, ArrowDown, Copy, AlertTriangle, AlertCircle, Timer } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatCurrency, cleanBankName, cn, formatDateSafe, isWhatsApp, getWhatsAppUrl, calculateBusinessDays } from '@/lib/utils';
 import React from 'react';
@@ -312,8 +312,6 @@ export const getColumns = (
     header: 'Status',
     cell: ({ row }) => {
         const p = row.original;
-        
-        // Lógica de Alerta Crítico Visual
         const referenceDate = p.statusAwaitingBalanceAt || p.statusUpdatedAt || p.dateDigitized;
         const bizDays = referenceDate ? calculateBusinessDays(referenceDate) : 0;
         
@@ -345,18 +343,18 @@ export const getColumns = (
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <div className="shrink-0 h-6 w-6 rounded-full bg-red-500/15 border border-red-500/40 flex items-center justify-center text-red-600 shadow-[0_0_12px_rgba(239,68,68,0.4)] animate-alert-pulse cursor-help">
-                                    <AlertTriangle className="h-3.5 w-3.5 fill-current" />
+                                <div className="shrink-0 h-7 w-7 rounded-full bg-red-500/15 border-2 border-red-500/40 flex items-center justify-center text-red-600 shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-alert-pulse cursor-help">
+                                    <Timer className="h-4 w-4 fill-current" />
                                 </div>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="bg-white text-zinc-950 border-2 border-red-500 shadow-2xl p-4 rounded-2xl min-w-[240px] animate-in zoom-in-95 duration-200">
-                                <div className="space-y-1">
-                                    <p className="font-black text-red-600 text-sm uppercase tracking-tight">Prazo Crítico Atingido</p>
+                                <div className="space-y-1.5">
+                                    <p className="font-black text-red-600 text-[11px] uppercase tracking-wider">Prazo Crítico Atingido</p>
                                     <p className="text-xs text-muted-foreground font-medium leading-snug">
-                                        Contrato em <span className="font-bold text-zinc-900">{p.status}</span> há <span className="text-red-600 font-black">{bizDays} dia(s) úteis.</span>
+                                        Contrato em <span className="font-bold text-zinc-900">{p.status}</span> há <span className="text-red-600 font-black text-sm">{bizDays} dia(s) úteis.</span>
                                     </p>
                                     <p className="text-[10px] italic text-muted-foreground mt-2 border-t pt-1.5 opacity-70">
-                                        Limite operacional: {limit} dias
+                                        Limite operacional sugerido: {limit} dias
                                     </p>
                                 </div>
                             </TooltipContent>

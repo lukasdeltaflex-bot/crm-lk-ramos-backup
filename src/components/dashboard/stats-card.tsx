@@ -51,13 +51,13 @@ export function StatsCard({
     overrideRadius,
     overrideAnimationStyle
 }: StatsCardProps) {
-  const { statusColors: globalStatusColors, containerStyle: globalContainerStyle, colorIntensity: globalIntensity, radius: globalRadius, animationStyle: globalAnimationStyle } = useTheme();
+  const globalTheme = useTheme();
   
-  const statusColors = overrideStatusColors || globalStatusColors;
-  const containerStyle = overrideContainerStyle || globalContainerStyle;
-  const intensity = overrideIntensity || globalIntensity;
-  const radius = overrideRadius || globalRadius;
-  const animationStyle = overrideAnimationStyle || globalAnimationStyle;
+  const statusColors = overrideStatusColors || globalTheme.statusColors;
+  const containerStyle = overrideContainerStyle || globalTheme.containerStyle;
+  const intensity = overrideIntensity || globalTheme.colorIntensity;
+  const radius = overrideRadius || globalTheme.radius;
+  const animationStyle = overrideAnimationStyle || globalTheme.animationStyle;
 
   const getThemeStyles = () => {
     const statusKey = title.toUpperCase();
