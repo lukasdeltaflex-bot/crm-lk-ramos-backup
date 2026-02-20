@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -187,7 +186,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const selectedRows = table.getFilteredSelectedRowModel().rows;
   const allFilteredRows = table.getFilteredRowModel().rows;
   
-  // Totais Inteligentes
   const displayRows = selectedRows.length > 0 ? selectedRows : allFilteredRows;
 
   const totalGross = React.useMemo(() => 
@@ -256,7 +254,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                         setAppliedDateRange({ from, to: now });
                     }}>
                         <SelectTrigger className="h-7 w-[120px] border-none bg-transparent focus:ring-0 text-xs font-black uppercase p-0">
-                            <CalendarIcon className="mr-2 h-3 w-3 text-primary" />
+                            <CalendarIcon className="mr-2 h-3.5 w-3.5 text-primary" />
                             <SelectValue placeholder="PERÍODO" />
                         </SelectTrigger>
                         <SelectContent>
