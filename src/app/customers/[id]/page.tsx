@@ -1,3 +1,4 @@
+
 'use client';
 import React from 'react';
 import { useParams } from 'next/navigation';
@@ -7,7 +8,26 @@ import { useDoc, useCollection, useFirestore, useMemoFirebase, useUser } from '@
 import { doc, collection, query, where, updateDoc } from 'firebase/firestore';
 import type { Customer, Proposal } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Phone, Calendar, FileText, Hash, Copy, Printer, FileBadge, FolderLock, Sparkles, UserRound, UserX, UserCheck, Zap, Loader2, MessageSquareText } from 'lucide-react';
+import { 
+    User, 
+    Phone, 
+    Calendar, 
+    FileText, 
+    Hash, 
+    Copy, 
+    Printer, 
+    FileBadge, 
+    FolderLock, 
+    Sparkles, 
+    UserRound, 
+    UserX, 
+    UserCheck, 
+    Zap, 
+    Loader2, 
+    MessageSquareText,
+    TrendingUp,
+    BadgePercent
+} from 'lucide-react';
 import { format, parse, differenceInMonths, isValid as isValidDate } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -27,6 +47,7 @@ import {
     DialogFooter,
 } from '@/components/ui/dialog';
 import { generateSalesPitch } from '@/ai/flows/generate-sales-pitch-flow';
+import { StatsCard } from '@/components/dashboard/stats-card';
 
 const CopyButton = ({ text, label }: { text: string | undefined; label: string }) => {
     if (!text) return null;
@@ -96,6 +117,15 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
 
   const { data: customer, isLoading: isCustomerLoading } = useDoc<Customer>(customerDocRef);
   const { data: proposals, isLoading: areProposalsLoading } = useCollection<Proposal>(proposalsQuery);
+
+  const businessStats = React.useMemo(() => {
+    if (!proposals) return { count: 0, volume: 0, commission: 0 };
+    return {
+        count: proposals.length,
+        volume: proposals.reduce((s, p) => s + (p.grossAmount || 0), 0),
+        commission: proposals.filter(p => p.commissionStatus === 'Paga').reduce((s, p) => s + (p.amountPaid || 0), 0)
+    };
+  }, [proposals]);
 
   const retentionOpportunity = React.useMemo(() => {
     if (!proposals) return null;
@@ -225,7 +255,31 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
         {retentionOpportunity && customer.status !== 'inactive' && (
             <Alert className="bg-amber-50 border-amber-200 animate-in slide-in-from-top duration-500 rounded-2xl"><Sparkles className="h-5 w-5 text-amber-600" /><AlertTitle className="text-amber-800 font-bold uppercase">Oportunidade Identificada!</AlertTitle><AlertDescription className="text-amber-700 text-sm">Contratos pagos há mais de 12 meses. Momento ideal para Refinanciamento.</AlertDescription></Alert>
         )}
+        
         <CustomerInfoCard customer={customer} onExportDossier={handleExportDossier} onToggleStatus={handleToggleStatus} onGeneratePitch={handleGeneratePitch} />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <StatsCard 
+                title="Contratos Totais" 
+                value={String(businessStats.count)} 
+                icon={FileText} 
+                description="PROPOSTAS NO HISTÓRICO"
+            />
+            <StatsCard 
+                title="Volume Bruto" 
+                value={formatCurrency(businessStats.volume)} 
+                icon={TrendingUp} 
+                description="TOTAL EM OPERAÇÕES"
+            />
+            <StatsCard 
+                title="Comissão Líquida" 
+                value={formatCurrency(businessStats.commission)} 
+                icon={BadgePercent} 
+                description="VALOR TOTAL RECEBIDO"
+                isHot={businessStats.commission > 1000}
+            />
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
                 <CustomerAiSummary customer={customer} proposals={proposals || []} />
