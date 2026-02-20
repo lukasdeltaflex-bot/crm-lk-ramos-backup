@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -74,7 +75,7 @@ export function GlobalSearch() {
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput 
-            placeholder="Nome, CPF, Proposta ou Benefício INSS..." 
+            placeholder="Nome, CPF, Proposta ou ID..." 
         />
         <CommandList>
           <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
@@ -101,9 +102,9 @@ export function GlobalSearch() {
 
           <CommandGroup heading="Clientes">
             {validCustomers.map((customer) => {
-              // Concatena nomes, CPFs e TODOS os números de benefícios para o índice de busca
               const benefitNumbers = customer.benefits?.map(b => b.number).join(' ') || '';
-              const searchIndex = `${customer.name} ${customer.cpf} ${benefitNumbers}`;
+              // Adicionado NumericId ao índice de busca para permitir busca exata por ID
+              const searchIndex = `${customer.numericId} ${customer.name} ${customer.cpf} ${benefitNumbers}`;
               
               return (
                 <CommandItem
@@ -117,7 +118,7 @@ export function GlobalSearch() {
                       <div className='flex items-center'>
                           <User className="mr-2 h-4 w-4 text-muted-foreground" />
                           <div className="flex flex-col">
-                              <span className="font-medium">{customer.name}</span>
+                              <span className="font-medium text-sm">ID {customer.numericId} - {customer.name}</span>
                               <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                                   <span>CPF: {customer.cpf}</span>
                                   {customer.benefits && customer.benefits.length > 0 && (
@@ -151,7 +152,7 @@ export function GlobalSearch() {
                     <div className='flex items-center'>
                         <FileText className="mr-2 h-4 w-4 text-muted-foreground" />
                         <div className="flex flex-col">
-                            <span className="font-medium">Prop. {proposal.proposalNumber}</span>
+                            <span className="font-medium">N° {proposal.proposalNumber}</span>
                             <span className="text-[10px] text-muted-foreground">{proposal.product} • {proposal.bank}</span>
                         </div>
                     </div>

@@ -179,19 +179,22 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
       pagination,
     },
     globalFilterFn: (row, columnId, filterValue) => {
-        const searchTerm = normalizeString(String(filterValue ?? ''));
+        const searchTerm = normalizeString(String(filterValue ?? '')).trim();
         if (!searchTerm) return true;
         const customer = row.original;
 
-        // BUSCA POR ID EXATO (IGUAL ERA ANTES)
-        if (!isNaN(Number(searchTerm)) && Number(searchTerm) === customer.numericId) {
-            return true;
-        }
+        // BUSCA POR ID EXATO (IGUAL ERA ANTES) - Prioridade Total
+        const numericIdStr = customer.numericId.toString();
+        if (searchTerm === numericIdStr) return true;
+
+        // BUSCA POR CPF SEM FORMATAÇÃO
+        const cleanCpf = customer.cpf.replace(/\D/g, '');
+        const cleanSearch = searchTerm.replace(/\D/g, '');
+        if (cleanSearch && cleanCpf.includes(cleanSearch)) return true;
 
         const fieldsToSearch = [
             customer.name,
             customer.cpf,
-            String(customer.numericId),
             customer.phone,
             customer.phone2,
             customer.city,

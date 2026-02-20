@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -34,12 +35,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </SidebarContent>
             </Sidebar>
             <SidebarInset className={cn(
-                "print:m-0 print:p-0 flex flex-col relative transition-all duration-1000 overflow-x-hidden min-w-0",
+                "print:m-0 print:p-0 flex flex-col relative transition-all duration-1000 min-w-0",
                 auraStyle !== 'limpo' && `aura-${auraStyle}`
             )}>
             <Header className="print:hidden z-20" />
-            <main className="flex-1 p-4 sm:p-6 print:p-0 z-10 w-full overflow-hidden">
-                <div className="max-w-full overflow-hidden">
+            {/* Removido overflow-hidden para permitir que o sticky funcione corretamente */}
+            <main className="flex-1 p-4 sm:p-6 print:p-0 z-10 w-full">
+                <div className="max-w-full">
                     {children}
                 </div>
             </main>
