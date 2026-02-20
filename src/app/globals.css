@@ -76,7 +76,7 @@
   }
 }
 
-/* 🎨 MOTOR DE TIPOGRAFIA GLOBAL */
+/* 🎨 MOTOR DE TIPOGRAFIA GLOBAL - BLINDADO */
 html, body, * {
   font-family: var(--font-main) !important;
 }
@@ -110,7 +110,7 @@ html, body, * {
   --sidebar-primary-foreground: 0 0% 100% !important;
   --sidebar-border: 240 3.7% 15.9% !important;
   --sidebar-accent: 240 3.7% 15.9% !important;
-  --sidebar-accent-foreground: 0 0% 100% !important; /* FIX: Texto branco quando ativo */
+  --sidebar-accent-foreground: 0 0% 100% !important;
 }
 
 .sidebar-light {

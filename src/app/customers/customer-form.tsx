@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Sparkles, AlertCircle, Loader2, PlusCircle, Trash2, FileText as FileIcon, UserCheck, UserX, AlertTriangle, Phone } from 'lucide-react';
+import { Sparkles, AlertCircle, Loader2, PlusCircle, Trash2, FileText as FileIcon, UserCheck, UserX, AlertTriangle, Phone, UploadCloud, FolderLock, Info } from 'lucide-react';
 import { format, parse, isValid } from 'date-fns';
 import { cn, getAge, validateCPF } from '@/lib/utils';
 import type { Customer, Benefit, Attachment } from '@/lib/types';
@@ -198,6 +198,24 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     }
   }, [birthDateValue]);
 
+  const handleAiSummarize = async () => {
+    const notes = form.getValues('observations');
+    if (!notes || notes.length < 10) {
+        toast({ variant: 'destructive', title: 'Notas insuficientes', description: 'Escreva um pouco mais para a IA resumir.' });
+        return;
+    }
+    setIsSummarizing(true);
+    try {
+        const summary = await summarizeNotes(notes);
+        form.setValue('observations', summary, { shouldValidate: true });
+        toast({ title: 'Resumo Gerado!', description: 'As anotações foram otimizadas pela IA.' });
+    } catch (e) {
+        toast({ variant: 'destructive', title: 'Erro na IA' });
+    } finally {
+        setIsSummarizing(false);
+    }
+  };
+
   function handleFormSubmit(data: CustomerFormValues) {
     if (duplicateCpfCustomer) {
         toast({ variant: 'destructive', title: 'CPF Duplicado' });
@@ -278,6 +296,10 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
         setIsFetchingCep(false);
     }
   }
+
+  const handleAttachmentsChange = (docs: Attachment[]) => {
+    form.setValue('documents', docs, { shouldValidate: true });
+  };
 
   const statusColor = currentStatusValue === 'active' 
     ? (statusColors['ATIVO'] || '142 76% 36%') 
@@ -572,10 +594,65 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                     />
                 </div>
             </div>
+
+            <Separator />
+
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">Observações</h3>
+                    <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-primary hover:bg-primary/5 font-bold gap-2"
+                        onClick={handleAiSummarize}
+                        disabled={isSummarizing}
+                    >
+                        {isSummarizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                        Resumir com IA
+                    </Button>
+                </div>
+                <FormField
+                    control={form.control}
+                    name="observations"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormControl>
+                                <Textarea 
+                                    placeholder="Anotações sobre o cliente..." 
+                                    className="min-h-[120px] resize-none" 
+                                    {...field} 
+                                    value={field.value || ''} 
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
+
+            <Separator />
+
+            <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                    <FileIcon className="h-5 w-5 text-primary" />
+                    <h3 className="text-lg font-medium">Central de Documentos Fixos</h3>
+                </div>
+                <CustomerAttachmentUploader 
+                    userId={user?.uid || ''}
+                    customerId={customer?.id || tempCustomerId || ''}
+                    initialAttachments={form.getValues('documents') || []}
+                    onAttachmentsChange={handleAttachmentsChange}
+                    isReadOnly={isSaving}
+                />
+                <p className="text-[10px] text-muted-foreground font-medium leading-relaxed">
+                    Arquivos como RG, CPF e Comprovante de Residência salvos aqui estarão disponíveis em todas as futuras propostas deste cliente.
+                </p>
+            </div>
           </div>
         </ScrollArea>
         <div className="flex justify-end pt-8">
-            <Button type="submit" disabled={isSaving || !!duplicateCpfCustomer}>
+            <Button type="submit" disabled={isSaving || !!duplicateCpfCustomer} className="rounded-full px-10 font-bold bg-[#00AEEF] hover:bg-[#0096D1] h-12 shadow-lg shadow-[#00AEEF]/20">
                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Salvar Cliente
             </Button>

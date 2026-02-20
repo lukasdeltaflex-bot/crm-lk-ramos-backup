@@ -15,7 +15,7 @@ import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { StatsCard } from '@/components/dashboard/stats-card';
-import { formatCurrency, getAge } from '@/lib/utils';
+import { formatCurrency, getAge, cn } from '@/lib/utils';
 import { SimpleProposalsTable } from '@/components/customers/simple-proposals-table';
 import { Separator } from '@/components/ui/separator';
 import { CustomerAiSummary } from '@/components/customers/customer-ai-summary';
