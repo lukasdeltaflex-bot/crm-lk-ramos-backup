@@ -129,7 +129,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     name: "benefits"
   });
 
-  // 🛡️ BLINDAGEM NUCLEAR V2: Sincronização forçada e isolamento de estado para o Gênero
+  // 🛡️ BLINDAGEM NUCLEAR V4: Sanitização e Sincronização Forçada de Gênero
   useEffect(() => {
     const source = customer || defaultValues;
     if (source) {
@@ -143,10 +143,13 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
           } catch (e) {}
       }
       
+      // Sanitização: Impede que 'null' quebre o componente Select
+      const sanitizedGender = (source.gender === null || source.gender === undefined) ? "" : source.gender;
+
       form.reset({
         name: source.name || '',
         cpf: source.cpf || '',
-        gender: source.gender || '',
+        gender: sanitizedGender,
         status: source.status || 'active',
         benefits: source.benefits || [],
         phone: source.phone || '',
@@ -164,11 +167,11 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
         documents: source.documents || [],
       });
 
-      // Trava de segurança atômica: força o valor do gênero após o reset do formulário
-      if (source.gender) {
+      // Trava de segurança atômica com delay para garantir que o DOM do Select esteja pronto
+      if (sanitizedGender !== "") {
           const timeoutId = setTimeout(() => {
-            form.setValue('gender', source.gender, { shouldValidate: true, shouldDirty: true });
-          }, 50);
+            form.setValue('gender', sanitizedGender, { shouldValidate: true, shouldDirty: true });
+          }, 100);
           return () => clearTimeout(timeoutId);
       }
     }

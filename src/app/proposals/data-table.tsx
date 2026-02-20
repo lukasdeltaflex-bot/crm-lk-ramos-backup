@@ -102,15 +102,33 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const [sorting, setSorting] = React.useState<SortingState>([{ id: 'Data Digitação', desc: true }]);
   const [isClient, setIsClient] = React.useState(false);
 
-  const [pagination, setPagination] = React.useState<PaginationState>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('lk-proposals-pageSize');
-        if (saved) return { pageIndex: 0, pageSize: Number(saved) };
-      } catch (e) {}
-    }
-    return { pageIndex: 0, pageSize: 10 };
+  // 💾 PERSISTÊNCIA BLINDADA
+  const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
+    'Operador': false,
+    'Data Averbação': false,
+    'Data Pgto. Cliente': false,
+    'Chegada Saldo': false,
   });
+  const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
+  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>([...initialColumns]);
+
+  // 🛡️ HIDRATAÇÃO SEGURA: Carrega preferências
+  React.useEffect(() => {
+    setIsClient(true);
+    try {
+        const savedPageSize = localStorage.getItem('lk-proposals-pageSize');
+        if (savedPageSize) setPagination(p => ({ ...p, pageSize: Number(savedPageSize) }));
+
+        const savedVisibility = localStorage.getItem('lk-proposals-visibility');
+        if (savedVisibility) setColumnVisibility(JSON.parse(savedVisibility));
+
+        const savedOrder = localStorage.getItem('lk-proposals-order');
+        if (savedOrder) setColumnOrder(JSON.parse(savedOrder));
+    } catch (e) {
+        console.warn("LK Ramos: Erro ao carregar visão personalizada.");
+    }
+  }, []);
 
   const handlePaginationChange = (updater: any) => {
     setPagination((old) => {
@@ -121,36 +139,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
       return next;
     });
   };
-
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('lk-proposals-visibility');
-        if (saved) return JSON.parse(saved);
-      } catch (e) {}
-    }
-    return {
-      'Operador': false,
-      'Data Averbação': false,
-      'Data Pgto. Cliente': false,
-      'Chegada Saldo': false,
-    };
-  });
-
-  const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
-  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('lk-proposals-order');
-        if (saved) return JSON.parse(saved);
-      } catch (e) {}
-    }
-    return initialColumns;
-  });
-
-  React.useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   React.useEffect(() => {
     if (isClient) {
@@ -201,11 +189,11 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     if (globalFilter) {
         const searchTerm = String(globalFilter).trim();
         
-        // 🛡️ BUSCA NUCLEAR V2: Prioridade para ID Numérico do Cliente OU Número da Proposta
+        // 🛡️ BUSCA NUCLEAR: Prioridade Absoluta para ID de Cliente ou Número da Proposta
         if (/^\d+$/.test(searchTerm)) {
             return list.filter(p => 
                 p.customer?.numericId.toString() === searchTerm || 
-                p.proposalNumber.includes(searchTerm)
+                p.proposalNumber === searchTerm
             );
         }
 

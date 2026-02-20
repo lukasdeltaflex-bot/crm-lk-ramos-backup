@@ -85,15 +85,36 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
   const [isClient, setIsClient] = React.useState(false);
 
   // 💾 PERSISTÊNCIA BLINDADA: Linhas por Página
-  const [pagination, setPagination] = React.useState<PaginationState>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('lk-customers-pageSize');
-        if (saved) return { pageIndex: 0, pageSize: Number(saved) };
-      } catch (e) { console.warn("Memory Fail: PageSize"); }
-    }
-    return { pageIndex: 0, pageSize: 10 };
+  const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
+
+  // 💾 PERSISTÊNCIA BLINDADA: Visibilidade das Colunas
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
+    'Telefone 2': true,
+    'Cidade': true,
+    'Estado': true,
+    'Observações': false,
   });
+
+  // 💾 PERSISTÊNCIA BLINDADA: Ordem das Colunas
+  const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
+  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>([...initialColumns]);
+
+  // 🛡️ HIDRATAÇÃO SEGURA: Carrega preferências apenas no cliente
+  React.useEffect(() => {
+    setIsClient(true);
+    try {
+        const savedPageSize = localStorage.getItem('lk-customers-pageSize');
+        if (savedPageSize) setPagination(p => ({ ...p, pageSize: Number(savedPageSize) }));
+
+        const savedVisibility = localStorage.getItem('lk-customers-visibility');
+        if (savedVisibility) setColumnVisibility(JSON.parse(savedVisibility));
+
+        const savedOrder = localStorage.getItem('lk-customers-order');
+        if (savedOrder) setColumnOrder(JSON.parse(savedOrder));
+    } catch (e) {
+        console.warn("LK Ramos: Erro ao carregar visão personalizada.");
+    }
+  }, []);
 
   const handlePaginationChange = (updater: any) => {
     setPagination((old) => {
@@ -104,38 +125,6 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
       return next;
     });
   };
-
-  // 💾 PERSISTÊNCIA BLINDADA: Visibilidade das Colunas
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('lk-customers-visibility');
-        if (saved) return JSON.parse(saved);
-      } catch (e) { console.warn("Memory Fail: Visibility"); }
-    }
-    return {
-      'Telefone 2': true,
-      'Cidade': true,
-      'Estado': true,
-      'Observações': false,
-    };
-  });
-
-  // 💾 PERSISTÊNCIA BLINDADA: Ordem das Colunas
-  const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
-  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('lk-customers-order');
-        if (saved) return JSON.parse(saved);
-      } catch (e) { console.warn("Memory Fail: Order"); }
-    }
-    return [...initialColumns];
-  });
-
-  React.useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   React.useEffect(() => {
     if (isClient) {
@@ -189,13 +178,13 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
       columnSizing,
       pagination,
     },
-    // 🛡️ BUSCA NUCLEAR: Prioridade Absoluta para ID Numérico
+    // 🛡️ BUSCA NUCLEAR: Prioridade Absoluta para ID Numérico Exato
     globalFilterFn: (row, columnId, filterValue) => {
         const searchTerm = String(filterValue ?? '').trim();
         if (!searchTerm) return true;
         const customer = row.original;
 
-        // PRIORIDADE ZERO: Se for apenas número, busca exclusivamente pelo ID
+        // PRIORIDADE ZERO: Se for apenas número, busca exclusivamente pelo Match Exato do ID
         if (/^\d+$/.test(searchTerm)) {
             return customer.numericId.toString() === searchTerm;
         }
