@@ -591,7 +591,7 @@ export default function SettingsPage() {
                             <CardContent className="p-0">
                                 <div 
                                     className={cn(
-                                        "p-8 min-h-[500px] flex flex-col gap-8 items-center justify-center transition-all duration-1000",
+                                        "p-8 min-h-[500px] flex flex-col gap-8 items-center justify-center transition-all",
                                         `texture-${preview.backgroundTexture}`,
                                         `radius-${preview.radius}`,
                                         `font-${preview.fontStyle}`,
@@ -603,7 +603,7 @@ export default function SettingsPage() {
                                     <div className="w-full max-w-sm space-y-2">
                                         <p className="text-[9px] font-black uppercase text-center text-muted-foreground tracking-[0.2em]">Preview de Interface</p>
                                         <div className={cn(
-                                            "flex gap-3 p-3 border-2 rounded-xl shadow-sm transition-colors duration-500",
+                                            "flex gap-3 p-3 border-2 rounded-xl shadow-sm transition-colors",
                                             preview.sidebarStyle === 'dark' ? "bg-zinc-900 border-zinc-800 text-white" : 
                                             preview.sidebarStyle === 'light' ? "bg-white border-zinc-200 text-zinc-900" :
                                             "bg-muted/50 border-border text-foreground"

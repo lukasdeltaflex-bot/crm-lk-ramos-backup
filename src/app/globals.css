@@ -80,26 +80,26 @@ html, body {
   font-family: var(--font-main) !important;
 }
 
-.font-moderno { --font-main: 'Inter', sans-serif !important; font-family: var(--font-main) !important; }
-.font-classico { --font-main: 'Playfair Display', serif !important; font-family: var(--font-main) !important; }
-.font-mono { --font-main: 'JetBrains Mono', monospace !important; font-family: var(--font-main) !important; }
-.font-arredondado { --font-main: 'Lexend', sans-serif !important; font-family: var(--font-main) !important; }
-.font-industrial { --font-main: 'Bebas Neue', cursive !important; font-family: var(--font-main) !important; }
-.font-futurista { --font-main: 'Orbitron', sans-serif !important; font-family: var(--font-main) !important; }
-.font-elegante { --font-main: 'EB Garamond', serif !important; font-family: var(--font-main) !important; }
-.font-real { --font-main: 'Cinzel', serif !important; font-family: var(--font-main) !important; }
-.font-espacial { --font-main: 'Space Grotesk', sans-serif !important; font-family: var(--font-main) !important; }
-.font-minimalista { --font-main: 'Outfit', sans-serif !important; font-family: var(--font-main) !important; }
-.font-editorial { --font-main: 'Lora', serif !important; font-family: var(--font-main) !important; }
-.font-geom-vivida { --font-main: 'Urbanist', sans-serif !important; font-family: var(--font-main) !important; }
-.font-tecnica { --font-main: 'Fira Sans', sans-serif !important; font-family: var(--font-main) !important; }
-.font-impacto { --font-main: 'Kanit', sans-serif !important; font-family: var(--font-main) !important; }
-.font-clean { --font-main: 'Work Sans', sans-serif !important; font-family: var(--font-main) !important; }
-.font-soft { --font-main: 'Quicksand', sans-serif !important; font-family: var(--font-main) !important; }
-.font-neo-classico { --font-main: 'Spectral', serif !important; font-family: var(--font-main) !important; }
-.font-corp { --font-main: 'Manrope', sans-serif !important; font-family: var(--font-main) !important; }
-.font-sharp { --font-main: 'Roboto Condensed', sans-serif !important; font-family: var(--font-main) !important; }
-.font-script { --font-main: 'Cormorant Garamond', serif !important; font-family: var(--font-main) !important; }
+.font-moderno { --font-main: 'Inter', sans-serif !important; }
+.font-classico { --font-main: 'Playfair Display', serif !important; }
+.font-mono { --font-main: 'JetBrains Mono', monospace !important; }
+.font-arredondado { --font-main: 'Lexend', sans-serif !important; }
+.font-industrial { --font-main: 'Bebas Neue', cursive !important; }
+.font-futurista { --font-main: 'Orbitron', sans-serif !important; }
+.font-elegante { --font-main: 'EB Garamond', serif !important; }
+.font-real { --font-main: 'Cinzel', serif !important; }
+.font-espacial { --font-main: 'Space Grotesk', sans-serif !important; }
+.font-minimalista { --font-main: 'Outfit', sans-serif !important; }
+.font-editorial { --font-main: 'Lora', serif !important; }
+.font-geom-vivida { --font-main: 'Urbanist', sans-serif !important; }
+.font-tecnica { --font-main: 'Fira Sans', sans-serif !important; }
+.font-impacto { --font-main: 'Kanit', sans-serif !important; }
+.font-clean { --font-main: 'Work Sans', sans-serif !important; }
+.font-soft { --font-main: 'Quicksand', sans-serif !important; }
+.font-neo-classico { --font-main: 'Spectral', serif !important; }
+.font-corp { --font-main: 'Manrope', sans-serif !important; }
+.font-sharp { --font-main: 'Roboto Condensed', sans-serif !important; }
+.font-script { --font-main: 'Cormorant Garamond', serif !important; }
 
 /* 🌑 MOTOR DE BARRA LATERAL */
 .sidebar-dark {
@@ -143,7 +143,13 @@ html, body {
     clip-path: polygon(0% 0%, 100% 0%, 100% 85%, 92% 100%, 0% 100%);
 }
 
-/* 🌌 MOTOR ATMOSFÉRICO */
+/* 🚀 MOTOR DE RITMO (MOTION) */
+.anim-instantaneo * { transition-duration: 0ms !important; transition-delay: 0ms !important; }
+.anim-sutil * { transition-duration: 200ms !important; }
+.anim-atmosferico * { transition-duration: 500ms !important; }
+.anim-cinematografico * { transition-duration: 1000ms !important; }
+
+/* 🌌 MOTOR ATMOSFÉRICO VIBRANTE */
 .aura-nebula { background: radial-gradient(circle at 50% 50%, hsla(280, 85%, 65%, 0.8), hsla(260, 85%, 70%, 0.7), transparent 90%) !important; }
 .aura-aurora { background: linear-gradient(135deg, hsla(160, 85%, 65%, 0.7) 0%, hsla(200, 85%, 65%, 0.7) 50%, hsla(240, 85%, 70%, 0.6) 100%) !important; }
 .aura-sunset { background: radial-gradient(circle at 0% 0%, hsla(20, 90%, 65%, 0.8), transparent 70%), radial-gradient(circle at 100% 100%, hsla(340, 90%, 65%, 0.8), transparent 70%) !important; }
@@ -187,7 +193,7 @@ html, body {
 
 @layer base {
   * { @apply border-border; }
-  body { @apply bg-background text-foreground antialiased; }
+  body { @apply bg-background text-foreground antialiased transition-colors duration-500; }
 }
 
 @keyframes alert-pulse {

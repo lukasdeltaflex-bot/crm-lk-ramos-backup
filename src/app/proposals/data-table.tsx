@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -162,7 +161,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     if (globalFilter) {
         const searchTerm = String(globalFilter).trim();
         
-        // 🛡️ BUSCA POR ID EXATO (Prioridade Máxima e Absoluta)
+        // 🛡️ BUSCA POR ID EXATO DO CLIENTE (Prioridade Máxima e Absoluta)
         if (/^\d+$/.test(searchTerm)) {
             return list.filter(p => p.customer?.numericId.toString() === searchTerm);
         }
@@ -204,7 +203,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         const searchTerm = String(filterValue ?? '').trim();
         if (!searchTerm) return true;
         
-        // 🛡️ BUSCA POR ID EXATO (Prioridade Máxima e Absoluta)
+        // 🛡️ BUSCA POR ID EXATO DO CLIENTE
         if (/^\d+$/.test(searchTerm)) {
             return row.original.customer?.numericId.toString() === searchTerm;
         }

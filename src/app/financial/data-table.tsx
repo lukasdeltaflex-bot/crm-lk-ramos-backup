@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -157,7 +156,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     if (globalFilter) {
         const searchTerm = String(globalFilter).trim();
         
-        // 🛡️ BUSCA POR ID EXATO (Prioridade Máxima e Absoluta)
+        // 🛡️ BUSCA POR ID EXATO DO CLIENTE (Prioridade Máxima e Absoluta)
         if (/^\d+$/.test(searchTerm)) {
             return list.filter(p => p.customer?.numericId.toString() === searchTerm);
         }
@@ -199,7 +198,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         const searchTerm = String(filterValue ?? '').trim();
         if (!searchTerm) return true;
         
-        // 🛡️ BUSCA POR ID EXATO (Prioridade Máxima e Absoluta)
+        // 🛡️ BUSCA POR ID EXATO DO CLIENTE
         if (/^\d+$/.test(searchTerm)) {
             return row.original.customer?.numericId.toString() === searchTerm;
         }
@@ -253,8 +252,8 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     return value;
   };
 
-  const banksList = Array.from(new Set(data.map(p => p.bank))).sort();
-  const promotersList = Array.from(new Set(data.map(p => p.promoter))).sort();
+  const banksList = React.useMemo(() => Array.from(new Set(data.map(p => p.bank))).sort(), [data]);
+  const promotersList = React.useMemo(() => Array.from(new Set(data.map(p => p.promoter))).sort(), [data]);
 
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
@@ -301,7 +300,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                         <SelectContent className="rounded-xl border-2">
                             <SelectItem value="all" className="font-black text-[10px] uppercase">
                                 <div className="flex items-center gap-2">
-                                    {bankFilter === 'all' && <Check className="h-3 w-3" />}
+                                    <Check className="h-3 w-3 opacity-0" />
                                     <span>Todos os Bancos</span>
                                 </div>
                             </SelectItem>
@@ -326,7 +325,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                         <SelectContent className="rounded-xl border-2">
                             <SelectItem value="all" className="font-black text-[10px] uppercase">
                                 <div className="flex items-center gap-2">
-                                    {promoterFilter === 'all' && <Check className="h-3 w-3" />}
+                                    <Check className="h-3 w-3 opacity-0" />
                                     <span>Todas Promotoras</span>
                                 </div>
                             </SelectItem>
@@ -382,7 +381,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                     <div className='relative w-full max-w-md group'>
                         <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80 group-focus-within:opacity-100 transition-opacity' />
                         <Input 
-                            placeholder="Busca Inteligente (Nome, CPF, Banco ou ID...)" 
+                            placeholder="Busca Inteligente (Nome, CPF, Banco ou ID Exato...)" 
                             value={globalFilter} 
                             onChange={(e) => setGlobalFilter(e.target.value)} 
                             className="pl-10 h-11 bg-background border-2 border-zinc-300 dark:border-primary/40 rounded-full text-base font-bold shadow-md focus-visible:ring-primary/20 transition-all placeholder:text-muted-foreground/80" 
