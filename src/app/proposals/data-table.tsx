@@ -425,10 +425,15 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                             <TableRow 
                                                 key={row.id} 
                                                 className={cn(
-                                                    "transition-colors border-b h-14 hover:bg-primary/[0.03]",
+                                                    "transition-colors border-b h-14 hover:bg-primary/[0.03] cursor-pointer",
                                                     colorValue && "status-row-custom"
                                                 )}
                                                 style={colorValue ? { '--status-color': colorValue } as any : {}}
+                                                onClick={(e) => {
+                                                    const target = e.target as HTMLElement;
+                                                    if (target.closest('a') || target.closest('button')) return;
+                                                    row.toggleSelected();
+                                                }}
                                             >
                                                 {row.getVisibleCells().map(cell => (
                                                     <TableCell 

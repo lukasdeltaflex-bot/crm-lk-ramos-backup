@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -427,10 +428,15 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                                             <TableRow 
                                                 key={row.id} 
                                                 className={cn(
-                                                    "transition-colors border-b h-14 hover:bg-primary/[0.03] dark:hover:bg-primary/5", 
+                                                    "transition-colors border-b h-14 hover:bg-primary/[0.03] dark:hover:bg-primary/5 cursor-pointer", 
                                                     colorValue && "status-row-custom"
                                                 )} 
                                                 style={colorValue ? { '--status-color': colorValue } as any : {}}
+                                                onClick={(e) => {
+                                                    const target = e.target as HTMLElement;
+                                                    if (target.closest('a') || target.closest('button')) return;
+                                                    row.toggleSelected();
+                                                }}
                                             >
                                                 {row.getVisibleCells().map(cell => (
                                                     <TableCell 

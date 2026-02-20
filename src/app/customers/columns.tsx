@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ColumnDef, Header, flexRender } from '@tanstack/react-table';
@@ -80,10 +81,10 @@ export const DraggableHeader = ({ header }: { header: Header<Customer, unknown> 
                 <div
                     className={cn(
                         'flex items-center gap-1 h-full px-2',
-                        isDraggable && 'cursor-pointer select-none',
+                        isDraggable && !isSelect && 'cursor-pointer select-none',
                         isActions && 'justify-end'
                     )}
-                    onClick={header.column.getToggleSortingHandler()}
+                    onClick={isSelect ? undefined : header.column.getToggleSortingHandler()}
                 >
                     {isDraggable && !isActions && !isSelect && (
                         <div
@@ -190,6 +191,7 @@ export const getColumns = (
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Selecionar tudo"
         className="rounded-full h-5 w-5 border-2 border-zinc-300"
+        onClick={(e) => e.stopPropagation()}
       />
     ),
     cell: ({ row }) => (
@@ -198,6 +200,7 @@ export const getColumns = (
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Selecionar linha"
         className="rounded-full h-5 w-5 border-2 border-zinc-300"
+        onClick={(e) => e.stopPropagation()}
       />
     ),
     enableSorting: false,
@@ -218,7 +221,7 @@ export const getColumns = (
     cell: ({ row }) => {
         const customer = row.original;
         return (
-            <Link href={`/customers/${customer.id}`} className="font-bold text-primary hover:underline uppercase text-sm tracking-tight truncate block w-full">
+            <Link href={`/customers/${customer.id}`} className="font-bold text-primary hover:underline uppercase text-sm tracking-tight truncate block w-full" onClick={(e) => e.stopPropagation()}>
                 {customer.name}
             </Link>
         )
@@ -251,7 +254,7 @@ export const getColumns = (
           <div className="flex items-center gap-2 font-bold text-sm">
             <span>{phone}</span>
             {isWhatsAppNumber && (
-              <a href={getWhatsAppUrl(phone)} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:text-green-700">
+              <a href={getWhatsAppUrl(phone)} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:text-green-700" onClick={(e) => e.stopPropagation()}>
                 <WhatsAppIcon className="h-4 w-4" />
               </a>
             )}
@@ -272,7 +275,7 @@ export const getColumns = (
           <div className="flex items-center gap-2 font-bold text-sm text-foreground/80">
             <span>{phone}</span>
             {isWhatsAppNumber && (
-              <a href={getWhatsAppUrl(phone)} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:text-green-700">
+              <a href={getWhatsAppUrl(phone)} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:text-green-700" onClick={(e) => e.stopPropagation()}>
                 <WhatsAppIcon className="h-4 w-4" />
               </a>
             )}

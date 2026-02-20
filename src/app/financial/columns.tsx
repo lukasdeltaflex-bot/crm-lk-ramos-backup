@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ColumnDef, flexRender, Header } from '@tanstack/react-table';
@@ -71,10 +72,10 @@ export const DraggableHeader = ({ header }: { header: Header<any, unknown>}) => 
                 <div
                     className={cn(
                         'flex items-center gap-1 h-full px-2',
-                        isDraggable && 'cursor-pointer select-none',
+                        isDraggable && !isSelect && 'cursor-pointer select-none',
                         isActions && 'justify-end'
                     )}
-                    onClick={header.column.getToggleSortingHandler()}
+                    onClick={isSelect ? undefined : header.column.getToggleSortingHandler()}
                 >
                     {isDraggable && !isActions && !isSelect && (
                         <div
@@ -133,6 +134,7 @@ export const getColumns = (
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Selecionar tudo"
         className="rounded-full h-5 w-5 border-2 border-zinc-300"
+        onClick={(e) => e.stopPropagation()}
       />
     ),
     cell: ({ row }) => (
@@ -141,6 +143,7 @@ export const getColumns = (
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Selecionar linha"
         className="rounded-full h-5 w-5 border-2 border-zinc-300"
+        onClick={(e) => e.stopPropagation()}
       />
     ),
     enableSorting: false,
@@ -182,7 +185,7 @@ export const getColumns = (
     header: 'Nº Proposta',
     cell: ({ row }) => (
         <div className="flex items-center gap-1 text-sm font-black text-foreground/80">
-            <Link href={`/proposals?open=${row.original.id}`} className="text-primary hover:underline font-black">
+            <Link href={`/proposals?open=${row.original.id}`} className="text-primary hover:underline font-black" onClick={(e) => e.stopPropagation()}>
                 {row.original.proposalNumber}
             </Link>
             <CopyButton text={row.original.proposalNumber} label="Proposta" />
@@ -266,7 +269,7 @@ export const getColumns = (
     id: 'Ações',
     header: '',
     cell: ({ row }) => (
-        <div className="text-right print:hidden">
+        <div className="text-right print:hidden" onClick={(e) => e.stopPropagation()}>
             <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 border border-transparent hover:border-border" onClick={() => onEdit(row.original)}>
                 <MoreHorizontal className="h-4 w-4" />
             </Button>
