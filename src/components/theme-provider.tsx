@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -27,7 +28,11 @@ const DEFAULT_STATUS_COLORS: Record<string, string> = {
     "REPROVADO": "0 72% 50%",
     "PENDENTE": "280 78% 51%",
     "PAGA": "142 76% 36%",
-    "PARCIAL": "199 89% 48%"
+    "PARCIAL": "199 89% 48%",
+    "ATIVO": "142 76% 36%",
+    "ACTIVE": "142 76% 36%",
+    "INATIVO": "240 5% 65%",
+    "INACTIVE": "240 5% 65%"
 };
 
 type ColorThemeContextType = {
@@ -91,7 +96,9 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
         try { 
             const parsed = JSON.parse(savedStatusColors);
             setStatusColors({ ...DEFAULT_STATUS_COLORS, ...parsed }); 
-        } catch(e) {}
+        } catch(e) {
+            setStatusColors(DEFAULT_STATUS_COLORS);
+        }
     }
   }, []);
 

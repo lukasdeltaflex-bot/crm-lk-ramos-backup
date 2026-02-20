@@ -37,6 +37,7 @@ import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
 import { CustomerAttachmentUploader } from '@/components/customers/customer-attachment-uploader';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, collection } from 'firebase/firestore';
+import { useTheme } from '@/components/theme-provider';
 
 const benefitSchema = z.object({
     number: z.string().min(1, "O número do benefício é obrigatório."),
@@ -96,12 +97,11 @@ interface CustomerFormProps {
 export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, isSaving = false }: CustomerFormProps) {
   const { user } = useUser();
   const firestore = useFirestore();
+  const { statusColors } = useTheme();
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [age, setAge] = useState<number | null>(null);
   const [tempCustomerId, setTempCustomerId] = useState<string | undefined>(undefined);
-
-  const currentCustomerId = customer?.id || tempCustomerId || 'new';
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
@@ -175,6 +175,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
   const cpfValue = form.watch('cpf');
   const birthDateValue = form.watch('birthDate');
   const phone1Value = form.watch('phone');
+  const currentStatusValue = form.watch('status');
 
   const duplicateCpfCustomer = useMemo(() => {
     if (!cpfValue || cpfValue.length < 14) return null;
@@ -278,6 +279,10 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     }
   }
 
+  const statusColor = currentStatusValue === 'active' 
+    ? (statusColors['ATIVO'] || '142 76% 36%') 
+    : (statusColors['INATIVO'] || '240 5% 65%');
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="py-4">
@@ -293,16 +298,21 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         <FormItem className="w-40">
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
-                              <SelectTrigger className="h-8 text-[10px] font-bold uppercase">
+                              <SelectTrigger 
+                                className={cn(
+                                    "h-9 text-[10px] font-black uppercase tracking-widest border-2 status-custom rounded-full transition-all shadow-sm",
+                                )}
+                                style={{ '--status-color': statusColor } as any}
+                              >
                                 <div className="flex items-center gap-2">
-                                    {field.value === 'active' ? <UserCheck className="h-3 w-3" /> : <UserX className="h-3 w-3" />}
+                                    {field.value === 'active' ? <UserCheck className="h-3.5 w-3.5" /> : <UserX className="h-3.5 w-3.5" />}
                                     <SelectValue placeholder="Status" />
                                 </div>
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="active">Ativo</SelectItem>
-                              <SelectItem value="inactive">Inativo</SelectItem>
+                              <SelectItem value="active" className="text-[10px] font-black uppercase">Ativo</SelectItem>
+                              <SelectItem value="inactive" className="text-[10px] font-black uppercase">Inativo</SelectItem>
                             </SelectContent>
                           </Select>
                         </FormItem>
