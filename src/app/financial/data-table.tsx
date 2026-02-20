@@ -130,6 +130,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         const savedSizing = localStorage.getItem('lk-financial-sizing');
         if (savedSizing) setColumnSizing(JSON.parse(savedSizing));
 
+        // 🛡️ BLINDAGEM DE MEMÓRIA: Sincroniza colunas novas com o estado salvo
         const savedOrder = localStorage.getItem('lk-financial-order');
         if (savedOrder) {
             const parsedOrder = JSON.parse(savedOrder) as string[];
@@ -157,17 +158,23 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   const handlePaginationChange = (updater: any) => {
     setPagination((old) => {
       const next = typeof updater === 'function' ? updater(old) : updater;
-      if (typeof window !== 'undefined') localStorage.setItem('lk-financial-pageSize', String(next.pageSize));
-      if (tableContainerRef.current) tableContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (typeof window !== 'undefined') {
+        try { localStorage.setItem('lk-financial-pageSize', String(next.pageSize)); } catch(e) {}
+      }
+      if (tableContainerRef.current) {
+          tableContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
       return next;
     });
   };
 
   React.useEffect(() => {
     if (isClient && columnOrder.length > 0) {
-      localStorage.setItem('lk-financial-visibility', JSON.stringify(columnVisibility));
-      localStorage.setItem('lk-financial-order', JSON.stringify(columnOrder));
-      localStorage.setItem('lk-financial-sizing', JSON.stringify(columnSizing));
+      try {
+        localStorage.setItem('lk-financial-visibility', JSON.stringify(columnVisibility));
+        localStorage.setItem('lk-financial-order', JSON.stringify(columnOrder));
+        localStorage.setItem('lk-financial-sizing', JSON.stringify(columnSizing));
+      } catch(e) {}
     }
   }, [columnVisibility, columnOrder, columnSizing, isClient]);
 
@@ -379,11 +386,25 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                         </TableHeader>
                         <TableBody>
                             {table.getRowModel().rows.length > 0 ? (
-                                table.getRowModel().rows.map(row => (
-                                    <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'} className="transition-colors border-b h-14 hover:bg-primary/[0.03] cursor-pointer" style={row.original.commissionStatus ? { '--status-color': statusColors[row.original.commissionStatus.toUpperCase()] || statusColors[row.original.commissionStatus] } as any : {}} onClick={() => row.toggleSelected()}>
-                                        {row.getVisibleCells().map(cell => (<TableCell key={cell.id} style={{ width: cell.column.getSize() }} className="p-3 text-sm border-none">{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>))}
-                                    </TableRow>
-                                ))
+                                table.getRowModel().rows.map(row => {
+                                    const commStatus = row.original.commissionStatus;
+                                    const colorValue = commStatus ? (statusColors[commStatus.toUpperCase()] || statusColors[commStatus]) : undefined;
+                                    
+                                    return (
+                                        <TableRow 
+                                            key={row.id} 
+                                            data-state={row.getIsSelected() && 'selected'} 
+                                            className={cn(
+                                                "transition-colors border-b h-14 hover:bg-primary/[0.03] cursor-pointer",
+                                                colorValue && "status-row-custom"
+                                            )}
+                                            style={colorValue ? { '--status-color': colorValue } as any : {}} 
+                                            onClick={() => row.toggleSelected()}
+                                        >
+                                            {row.getVisibleCells().map(cell => (<TableCell key={cell.id} style={{ width: cell.column.getSize() }} className="p-3 text-sm border-none">{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>))}
+                                        </TableRow>
+                                    )
+                                })
                             ) : (
                                 <TableRow><TableCell colSpan={columns.length} className="h-32 text-center text-muted-foreground font-black uppercase text-[10px] tracking-widest opacity-40">Sem registros.</TableCell></TableRow>
                             )}
