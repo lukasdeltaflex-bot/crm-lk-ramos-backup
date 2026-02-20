@@ -21,7 +21,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, GripVertical, ArrowUp, ArrowDown, Copy, AlertTriangle } from 'lucide-react';
+import { MoreHorizontal, GripVertical, ArrowUp, ArrowDown, Copy, AlertTriangle, Timer } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatCurrency, cleanBankName, cn, formatDateSafe, isWhatsApp, getWhatsAppUrl, calculateBusinessDays } from '@/lib/utils';
 import React from 'react';
@@ -312,10 +312,24 @@ export const getColumns = (
     header: 'Status',
     cell: ({ row }) => {
         const p = row.original;
-        const isPortAwaitingBalance = p.product === 'Portabilidade' && p.status === 'Aguardando Saldo';
-        const referenceDate = p.statusAwaitingBalanceAt || p.dateDigitized;
-        const businessDays = referenceDate ? calculateBusinessDays(referenceDate) : 0;
-        const isCritical = isPortAwaitingBalance && businessDays >= 5;
+        
+        // Lógica de Alerta Crítico Visual (Identidade da Foto)
+        const referenceDate = p.statusUpdatedAt || p.dateDigitized;
+        const bizDays = referenceDate ? calculateBusinessDays(referenceDate) : 0;
+        
+        let isCritical = false;
+        let limit = 0;
+
+        if (p.status === 'Pendente') {
+            limit = 2;
+            isCritical = bizDays >= limit;
+        } else if (p.status === 'Aguardando Saldo' && p.product === 'Portabilidade') {
+            limit = 5;
+            isCritical = bizDays >= limit;
+        } else if (p.status === 'Em Andamento') {
+            limit = 5;
+            isCritical = bizDays >= limit;
+        }
 
         return (
             <div className="flex items-center gap-2 w-full">
@@ -331,13 +345,20 @@ export const getColumns = (
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <div className="shrink-0 text-red-600 animate-pulse bg-red-50 p-1 rounded-full border border-red-200">
-                                    <AlertTriangle className="h-4 w-4 fill-current" />
+                                <div className="shrink-0 h-6 w-6 rounded-full bg-red-100/80 border border-red-200 flex items-center justify-center text-red-600 shadow-[0_0_10px_rgba(239,68,68,0.3)] animate-pulse cursor-help">
+                                    <Timer className="h-3.5 w-3.5 fill-current" />
                                 </div>
                             </TooltipTrigger>
-                            <TooltipContent side="top" className="bg-white text-zinc-950 border-2 border-red-500 shadow-2xl p-3 rounded-xl">
-                                <p className="font-bold text-red-600 uppercase text-xs">Atenção: Prazo Crítico!</p>
-                                <p className="text-[10px] font-medium text-muted-foreground mt-1">Aguardando saldo há {businessDays} dias úteis.</p>
+                            <TooltipContent side="top" className="bg-white text-zinc-950 border-2 border-red-500 shadow-2xl p-4 rounded-2xl min-w-[240px] animate-in zoom-in-95 duration-200">
+                                <div className="space-y-1">
+                                    <p className="font-bold text-red-600 text-sm uppercase tracking-tight">Alerta de Prazo Crítico</p>
+                                    <p className="text-xs text-muted-foreground font-medium leading-snug">
+                                        Este contrato está em <span className="font-bold text-zinc-900">{p.status}</span> há <span className="text-red-600 font-bold">{bizDays} dia(s)</span>.
+                                    </p>
+                                    <p className="text-[10px] italic text-muted-foreground mt-2 border-t pt-1.5 opacity-70">
+                                        Limite sugerido: {limit} dias
+                                    </p>
+                                </div>
                             </TooltipContent>
                         </Tooltip>
                     </TooltipProvider>

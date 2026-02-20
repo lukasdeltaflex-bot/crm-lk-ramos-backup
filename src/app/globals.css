@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&family=Lexend:wght@300;400;700&family=Bebas+Neue&family=Orbitron:wght@400;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;700&family=Cinzel:wght@400;700&family=Space+Grotesk:wght@300;400;700&family=Outfit:wght@300;400;700&family=Lora:ital,wght@0,400;0,700;1,400&family=Urbanist:wght@300;400;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;700&family=Kanit:wght@300;400;700&family=Work+Sans:wght@300;400;700&family=Quicksand:wght@300;500;700&family=Spectral:ital,wght@0,400;0,700;1,400&family=Manrope:wght@300;400;700&family=Roboto+Condensed:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&display=swap');
@@ -112,24 +111,24 @@
 .radius-organico { --radius: 2rem !important; }
 .radius-capsula { --radius: 9999px !important; }
 
-/* 🌌 MOTOR ATMOSFÉRICO (AURA) - CORES REAIS */
-.aura-nebula { background: radial-gradient(circle at 50% 50%, hsla(280, 80%, 70%, 0.4), hsla(260, 80%, 75%, 0.3), transparent 85%) !important; }
-.aura-aurora { background: linear-gradient(135deg, hsla(160, 80%, 70%, 0.3) 0%, hsla(200, 80%, 70%, 0.3) 50%, hsla(240, 80%, 75%, 0.2) 100%) !important; }
-.aura-sunset { background: radial-gradient(circle at 0% 0%, hsla(20, 80%, 70%, 0.4), transparent 60%), radial-gradient(circle at 100% 100%, hsla(340, 80%, 70%, 0.4), transparent 60%) !important; }
-.aura-ocean { background: linear-gradient(to bottom, hsla(210, 80%, 75%, 0.4), hsla(190, 80%, 70%, 0.3)) !important; }
-.aura-lavender { background: radial-gradient(circle at 50% 0%, hsla(260, 80%, 75%, 0.4), transparent 80%) !important; }
-.aura-mint { background: radial-gradient(circle at 100% 0%, hsla(150, 80%, 75%, 0.4), transparent 70%) !important; }
-.aura-pearl { background: linear-gradient(45deg, hsla(0, 0%, 85%, 0.5) 0%, hsla(240, 20% ,85%, 0.5) 100%) !important; }
-.aura-desert { background: radial-gradient(circle at 50% 100%, hsla(40, 80%, 70%, 0.4), transparent 70%) !important; }
+/* 🌌 MOTOR ATMOSFÉRICO (AURA) - CALIBRAGEM VIBRANTE */
+.aura-nebula { background: radial-gradient(circle at 50% 50%, hsla(280, 85%, 65%, 0.55), hsla(260, 85%, 70%, 0.45), transparent 90%) !important; }
+.aura-aurora { background: linear-gradient(135deg, hsla(160, 85%, 65%, 0.45) 0%, hsla(200, 85%, 65%, 0.45) 50%, hsla(240, 85%, 70%, 0.35) 100%) !important; }
+.aura-sunset { background: radial-gradient(circle at 0% 0%, hsla(20, 90%, 65%, 0.55), transparent 70%), radial-gradient(circle at 100% 100%, hsla(340, 90%, 65%, 0.55), transparent 70%) !important; }
+.aura-ocean { background: linear-gradient(to bottom, hsla(210, 90%, 70%, 0.55), hsla(190, 90%, 65%, 0.45)) !important; }
+.aura-lavender { background: radial-gradient(circle at 50% 0%, hsla(260, 85%, 70%, 0.55), transparent 85%) !important; }
+.aura-mint { background: radial-gradient(circle at 100% 0%, hsla(150, 85%, 70%, 0.55), transparent 75%) !important; }
+.aura-pearl { background: linear-gradient(45deg, hsla(0, 0%, 80%, 0.6) 0%, hsla(240, 25% ,80%, 0.6) 100%) !important; }
+.aura-desert { background: radial-gradient(circle at 50% 100%, hsla(40, 90%, 65%, 0.55), transparent 75%) !important; }
 
-.dark .aura-nebula { background: radial-gradient(circle at 50% 50%, hsla(280, 60%, 15%, 0.8), transparent 70%) !important; }
-.dark .aura-aurora { background: linear-gradient(135deg, hsla(160, 60%, 12%, 0.7) 0%, hsla(200, 60%, 12%, 0.7) 100%) !important; }
-.dark .aura-sunset { background: radial-gradient(circle at 0% 0%, hsla(20, 70%, 15%, 0.8), transparent 60%), radial-gradient(circle at 100% 100%, hsla(340, 70%, 15%, 0.8), transparent 60%) !important; }
-.dark .aura-ocean { background: linear-gradient(to bottom, hsla(210, 70%, 10%, 0.8), hsla(190, 60%, 12%, 0.6)) !important; }
-.dark .aura-lavender { background: radial-gradient(circle at 50% 0%, hsla(260, 60%, 15%, 0.8), transparent 80%) !important; }
-.dark .aura-mint { background: radial-gradient(circle at 100% 0%, hsla(150, 60%, 15%, 0.8), transparent 70%) !important; }
-.dark .aura-pearl { background: linear-gradient(45deg, hsla(0, 0%, 10%, 0.9) 0%, hsla(240, 10% ,12%, 0.9) 100%) !important; }
-.dark .aura-desert { background: radial-gradient(circle at 50% 100%, hsla(40, 60%, 15%, 0.8), transparent 70%) !important; }
+.dark .aura-nebula { background: radial-gradient(circle at 50% 50%, hsla(280, 70%, 20%, 0.9), transparent 80%) !important; }
+.dark .aura-aurora { background: linear-gradient(135deg, hsla(160, 70%, 15%, 0.8) 0%, hsla(200, 70%, 15%, 0.8) 100%) !important; }
+.dark .aura-sunset { background: radial-gradient(circle at 0% 0%, hsla(20, 80%, 20%, 0.9), transparent 70%), radial-gradient(circle at 100% 100%, hsla(340, 80%, 20%, 0.9), transparent 70%) !important; }
+.dark .aura-ocean { background: linear-gradient(to bottom, hsla(210, 80%, 15%, 0.9), hsla(190, 70%, 15%, 0.7)) !important; }
+.dark .aura-lavender { background: radial-gradient(circle at 50% 0%, hsla(260, 70%, 20%, 0.9), transparent 85%) !important; }
+.dark .aura-mint { background: radial-gradient(circle at 100% 0%, hsla(150, 70%, 20%, 0.9), transparent 75%) !important; }
+.dark .aura-pearl { background: linear-gradient(45deg, hsla(0, 0%, 15%, 0.95) 0%, hsla(240, 15% ,18%, 0.95) 100%) !important; }
+.dark .aura-desert { background: radial-gradient(circle at 50% 100%, hsla(40, 70%, 20%, 0.9), transparent 75%) !important; }
 
 /* STATUS E LINHAS */
 .status-custom {
@@ -151,10 +150,10 @@
 }
 
 @keyframes alert-pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.7; }
-  100% { transform: scale(1); opacity: 1; }
+  0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { transform: scale(1.1); opacity: 0.8; box-shadow: 0 0 15px 5px rgba(239, 68, 68, 0.2); }
+  100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
 }
 .animate-alert-pulse {
-  animation: alert-pulse 1.5s infinite ease-in-out;
+  animation: alert-pulse 2s infinite ease-in-out;
 }

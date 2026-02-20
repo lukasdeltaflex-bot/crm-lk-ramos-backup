@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -153,19 +152,19 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         if (!searchTerm) return true;
         const customer = row.original;
 
-        // 1. BUSCA POR ID EXATO (Prioridade Total)
+        // 🛡️ BUSCA POR ID EXATO (Prioridade Máxima)
         if (/^\d+$/.test(searchTerm)) {
             if (customer.numericId.toString() === searchTerm) return true;
         }
 
         const normalizedSearch = normalizeString(searchTerm);
 
-        // 2. BUSCA POR CPF SEM FORMATAÇÃO
+        // BUSCA POR CPF SEM FORMATAÇÃO
         const cleanCpf = customer.cpf.replace(/\D/g, '');
         const cleanSearch = searchTerm.replace(/\D/g, '');
         if (cleanSearch && cleanSearch.length >= 3 && cleanCpf.includes(cleanSearch)) return true;
 
-        // 3. BUSCA TEXTUAL NOS CAMPOS
+        // BUSCA TEXTUAL NOS CAMPOS
         const fieldsToSearch = [
             customer.name,
             customer.cpf,
