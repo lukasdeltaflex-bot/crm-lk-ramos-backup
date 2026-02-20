@@ -333,7 +333,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                             {promotersList.map(p => (
                                 <SelectItem key={p} value={p} className="font-bold text-[11px] uppercase">
                                     <div className="flex items-center gap-3">
-                                        <Building2 className="h-4 w-4 opacity-40" />
+                                        <BankIcon bankName={p} domain={userSettings?.promoterDomains?.[p]} showLogo={userSettings?.showPromoterLogos ?? true} className="h-4 w-4" />
                                         <span>{p}</span>
                                     </div>
                                 </SelectItem>

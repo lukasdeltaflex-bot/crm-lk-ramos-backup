@@ -60,13 +60,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Card } from '@/components/ui/card';
-import { Filter, X, Search, Calendar as CalendarIcon, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Filter, X, Search, Calendar as CalendarIcon, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Landmark, Building2, Check } from 'lucide-react';
 import type { ProposalStatus, UserSettings } from '@/lib/types';
 import { DraggableHeader } from './columns';
 import type { ProposalWithCustomer } from './page';
 import { Separator } from '@/components/ui/separator';
-import { normalizeString, cn, formatCurrency } from '@/lib/utils';
+import { normalizeString, cn, formatCurrency, cleanBankName } from '@/lib/utils';
 import { useTheme } from '@/components/theme-provider';
+import { BankIcon } from '@/components/bank-icon';
 
 interface DataTableProps {
   columns: ColumnDef<ProposalWithCustomer, unknown>[];
@@ -92,6 +93,8 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const { statusColors } = useTheme();
   const [statusFilter, setStatusFilter] = React.useState('Todos');
   const [globalFilter, setGlobalFilter] = React.useState('');
+  const [bankFilter, setBankFilter] = React.useState('all');
+  const [promoterFilter, setPromoterFilter] = React.useState('all');
   const [startDateInput, setStartDateInput] = React.useState('');
   const [endDateInput, setEndDateInput] = React.useState('');
   const [appliedDateRange, setAppliedDateRange] = React.useState<DateRange | undefined>(undefined);
@@ -139,6 +142,14 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         list = list.filter(p => p.status === statusFilter);
     }
 
+    if (bankFilter !== 'all') {
+        list = list.filter(p => p.bank === bankFilter);
+    }
+
+    if (promoterFilter !== 'all') {
+        list = list.filter(p => p.promoter === promoterFilter);
+    }
+
     if (appliedDateRange && appliedDateRange.from) {
         const fromDate = appliedDateRange.from;
         const toDate = appliedDateRange.to ? endOfDay(appliedDateRange.to) : endOfDay(appliedDateRange.from);
@@ -171,7 +182,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     }
     
     return list;
-  }, [data, statusFilter, globalFilter, appliedDateRange]);
+  }, [data, statusFilter, bankFilter, promoterFilter, globalFilter, appliedDateRange]);
 
   const table = useReactTable({
     data: filteredData,
@@ -247,6 +258,9 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     return value;
   };
 
+  const banksList = React.useMemo(() => Array.from(new Set(data.map(p => p.bank))).sort(), [data]);
+  const promotersList = React.useMemo(() => Array.from(new Set(data.map(p => p.promoter))).sort(), [data]);
+
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
         <div className="space-y-4">
@@ -270,7 +284,61 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     </TabsList>
                 </Tabs>
 
-                <div className="flex items-center gap-3 bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full px-3 py-1 shadow-sm ml-auto">
+                <div className="flex items-center gap-2 ml-auto">
+                    <Select value={bankFilter} onValueChange={setBankFilter}>
+                        <SelectTrigger className="h-10 min-w-[180px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-[11px] font-black uppercase px-6 shadow-sm">
+                            <div className="flex items-center gap-2">
+                                <Landmark className="h-4 w-4 text-primary" />
+                                <SelectValue placeholder="BANCO" />
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-2">
+                            <SelectItem value="all" className="font-black text-[10px] uppercase">Todas Instituições</SelectItem>
+                            {banksList.map(b => (
+                                <SelectItem key={b} value={b} className="font-bold text-[11px] uppercase">
+                                    <div className="flex items-center gap-3">
+                                        <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={userSettings?.showBankLogos ?? true} className="h-4 w-4" />
+                                        <span>{cleanBankName(b)}</span>
+                                    </div>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
+                    <Select value={promoterFilter} onValueChange={setPromoterFilter}>
+                        <SelectTrigger className="h-10 min-w-[180px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-[11px] font-black uppercase px-6 shadow-sm">
+                            <div className="flex items-center gap-2">
+                                <Building2 className="h-4 w-4 text-primary" />
+                                <SelectValue placeholder="PROMOTORA" />
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-2">
+                            <SelectItem value="all" className="font-black text-[10px] uppercase">Todas Promotoras</SelectItem>
+                            {promotersList.map(p => (
+                                <SelectItem key={p} value={p} className="font-bold text-[11px] uppercase">
+                                    <div className="flex items-center gap-3">
+                                        <BankIcon bankName={p} domain={userSettings?.promoterDomains?.[p]} showLogo={userSettings?.showPromoterLogos ?? true} className="h-4 w-4" />
+                                        <span>{p}</span>
+                                    </div>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+
+            <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className='relative w-full max-w-md group'>
+                    <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80 group-focus-within:opacity-100 transition-opacity' />
+                    <Input
+                        placeholder="Busca Inteligente (Nome, CPF, Proposta ou ID Exato...)"
+                        value={globalFilter ?? ''}
+                        onChange={(e) => setGlobalFilter(e.target.value)}
+                        className="pl-10 h-11 bg-background border-2 border-zinc-300 dark:border-primary/40 rounded-full text-base font-bold shadow-md"
+                    />
+                </div>
+
+                <div className="flex items-center gap-3 bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full px-3 py-1 shadow-sm">
                     <Select onValueChange={(val) => {
                         const now = new Date();
                         let from: Date;
@@ -310,18 +378,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                         </Button>
                     )}
                 </div>
-            </div>
 
-            <div className="flex items-center justify-between gap-4">
-                <div className='relative w-full max-w-md group'>
-                    <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80 group-focus-within:opacity-100 transition-opacity' />
-                    <Input
-                        placeholder="Busca Inteligente (Nome, CPF, Proposta ou ID Exato...)"
-                        value={globalFilter ?? ''}
-                        onChange={(e) => setGlobalFilter(e.target.value)}
-                        className="pl-10 h-11 bg-background border-2 border-zinc-300 dark:border-primary/40 rounded-full text-base font-bold shadow-md"
-                    />
-                </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="h-11 rounded-full px-6 font-black border-2 border-zinc-300 dark:border-primary/20 bg-background shadow-md gap-2 text-xs uppercase tracking-widest">
