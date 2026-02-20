@@ -16,6 +16,7 @@ import {
   SortingState,
   ColumnSizingState,
   ColumnOrderState,
+  PaginationState,
 } from '@tanstack/react-table';
 import {
     DndContext,
@@ -101,6 +102,26 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
   const [sorting, setSorting] = React.useState<SortingState>([{ id: 'Data Digitação', desc: true }]);
   
+  const [pagination, setPagination] = React.useState<PaginationState>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('lk-proposals-pageSize');
+      if (saved) {
+        return { pageIndex: 0, pageSize: Number(saved) };
+      }
+    }
+    return { pageIndex: 0, pageSize: 10 };
+  });
+
+  const handlePaginationChange = (updater: any) => {
+    setPagination((old) => {
+      const next = typeof updater === 'function' ? updater(old) : updater;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('lk-proposals-pageSize', String(next.pageSize));
+      }
+      return next;
+    });
+  };
+
   const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(initialColumns);
 
@@ -162,7 +183,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     if (globalFilter) {
         const searchTerm = String(globalFilter).trim();
         
-        // 🛡️ BUSCA POR ID EXATO DO CLIENTE (Prioridade Máxima e Absoluta)
+        // 🛡️ BUSCA POR ID EXATO DO CLIENTE (Prioridade Absoluta)
         if (/^\d+$/.test(searchTerm)) {
             return list.filter(p => p.customer?.numericId.toString() === searchTerm);
         }
@@ -196,9 +217,10 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     onRowSelectionChange: setRowSelection,
     onColumnSizingChange: setColumnSizing,
     onColumnOrderChange: setColumnOrder,
+    onPaginationChange: handlePaginationChange,
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
-    state: { sorting, globalFilter, rowSelection, columnVisibility, columnSizing, columnOrder },
+    state: { sorting, globalFilter, rowSelection, columnVisibility, columnSizing, columnOrder, pagination },
     meta: { userSettings },
     globalFilterFn: (row, columnId, filterValue) => {
         const searchTerm = String(filterValue ?? '').trim();

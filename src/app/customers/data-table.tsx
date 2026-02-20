@@ -85,10 +85,25 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
   const [globalFilter, setGlobalFilter] = React.useState('');
   const [isClient, setIsClient] = React.useState(false);
 
-  const [pagination, setPagination] = React.useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 10,
+  const [pagination, setPagination] = React.useState<PaginationState>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('lk-customers-pageSize');
+      if (saved) {
+        return { pageIndex: 0, pageSize: Number(saved) };
+      }
+    }
+    return { pageIndex: 0, pageSize: 10 };
   });
+
+  const handlePaginationChange = (updater: any) => {
+    setPagination((old) => {
+      const next = typeof updater === 'function' ? updater(old) : updater;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('lk-customers-pageSize', String(next.pageSize));
+      }
+      return next;
+    });
+  };
 
   const defaultVisibility: VisibilityState = {
     'Telefone 2': true,
@@ -135,7 +150,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
     onRowSelectionChange: setRowSelection,
     onColumnOrderChange: setColumnOrder,
     onColumnSizingChange: setColumnSizing,
-    onPaginationChange: setPagination,
+    onPaginationChange: handlePaginationChange,
     autoResetPageIndex: false,
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
@@ -153,14 +168,13 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         if (!searchTerm) return true;
         const customer = row.original;
 
-        // 🛡️ BUSCA POR ID EXATO (Rigor Máximo)
+        // 🛡️ BUSCA POR ID EXATO (Prioridade Absoluta)
         if (/^\d+$/.test(searchTerm)) {
             return customer.numericId.toString() === searchTerm;
         }
 
         const normalizedSearch = normalizeString(searchTerm);
 
-        // BUSCA TEXTUAL NOS CAMPOS
         const fieldsToSearch = [
             customer.name,
             customer.cpf,
@@ -251,7 +265,6 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
                             className="hover:bg-primary/[0.03] transition-colors border-b h-12 cursor-pointer"
                             onClick={(e) => {
                                 const target = e.target as HTMLElement;
-                                // Impede seleção ao clicar em links, botões ou checkboxes da própria célula
                                 if (target.closest('a') || target.closest('button') || target.closest('[role="checkbox"]')) return;
                                 row.toggleSelected();
                             }}
