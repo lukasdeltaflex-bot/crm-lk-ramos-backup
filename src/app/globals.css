@@ -190,3 +190,31 @@
 .dark .customers-table tr td:first-child {
     background-color: #050505 !important;
 }
+
+/* 🌌 MOTOR ATMOSFÉRICO (AURA) */
+.aura-nebula { background: radial-gradient(circle at 50% 50%, hsla(280, 80%, 95%, 0.4), transparent 70%); }
+.aura-aurora { background: linear-gradient(135deg, hsla(160, 80%, 95%, 0.3) 0%, hsla(200, 80%, 95%, 0.3) 100%); }
+.aura-sunset { background: radial-gradient(circle at 0% 0%, hsla(20, 100%, 95%, 0.4), transparent 60%), radial-gradient(circle at 100% 100%, hsla(340, 100%, 95%, 0.4), transparent 60%); }
+.aura-ocean { background: linear-gradient(to bottom, hsla(210, 100%, 98%, 0.5), hsla(190, 80%, 95%, 0.3)); }
+.aura-lavender { background: radial-gradient(circle at 50% 0%, hsla(260, 70%, 96%, 0.5), transparent 80%); }
+.aura-mint { background: radial-gradient(circle at 100% 0%, hsla(150, 60%, 96%, 0.4), transparent 70%); }
+.aura-pearl { background: linear-gradient(45deg, hsla(0, 0%, 98%, 0.6) 0%, hsla(240, 20%, 98%, 0.6) 100%); }
+.aura-desert { background: radial-gradient(circle at 50% 100%, hsla(40, 80%, 95%, 0.4), transparent 70%); }
+
+.dark .aura-nebula { background: radial-gradient(circle at 50% 50%, hsla(280, 50%, 10%, 0.4), transparent 70%); }
+.dark .aura-aurora { background: linear-gradient(135deg, hsla(160, 50%, 8%, 0.3) 0%, hsla(200, 50%, 8%, 0.3) 100%); }
+.dark .aura-sunset { background: radial-gradient(circle at 0% 0%, hsla(20, 60%, 10%, 0.4), transparent 60%), radial-gradient(circle at 100% 100%, hsla(340, 60%, 10%, 0.4), transparent 60%); }
+.dark .aura-ocean { background: linear-gradient(to bottom, hsla(210, 60%, 5%, 0.5), hsla(190, 50%, 8%, 0.3)); }
+.dark .aura-lavender { background: radial-gradient(circle at 50% 0%, hsla(260, 50%, 10%, 0.5), transparent 80%); }
+.dark .aura-mint { background: radial-gradient(circle at 100% 0%, hsla(150, 50%, 10%, 0.4), transparent 70%); }
+.dark .aura-pearl { background: linear-gradient(45deg, hsla(0, 0%, 5%, 0.6) 0%, hsla(240, 10%, 8%, 0.6) 100%); }
+.dark .aura-desert { background: radial-gradient(circle at 50% 100%, hsla(40, 50%, 10%, 0.4), transparent 70%); }
+
+@keyframes alert-pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-alert-pulse {
+  animation: alert-pulse 1.5s infinite ease-in-out;
+}
