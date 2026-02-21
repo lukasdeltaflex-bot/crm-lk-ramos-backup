@@ -74,8 +74,8 @@ const CustomerInfoCard = ({ customer, onExportDossier, onToggleStatus, onGenerat
     const age = getAge(customer.birthDate);
     const isInactive = customer.status === 'inactive';
     return (
-        <Card className={cn("transition-all overflow-hidden", isInactive ? "opacity-80 bg-zinc-50 dark:bg-zinc-900/40" : "bg-card shadow-xl")}>
-            <CardHeader>
+        <Card className={cn("transition-all overflow-hidden border-none shadow-none", isInactive ? "opacity-80 grayscale-[0.5]" : "bg-card")}>
+            <CardHeader className="px-0 pb-8">
                 <div className='flex items-center justify-between flex-wrap gap-4'>
                     <div className='flex items-center gap-4'>
                          <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/20"><User className="h-7 w-7 text-primary" /></div>
@@ -96,72 +96,76 @@ const CustomerInfoCard = ({ customer, onExportDossier, onToggleStatus, onGenerat
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="space-y-8">
-                <div className="bg-muted/30 p-6 rounded-2xl border border-border/50">
-                    {/* SEÇÃO 1: CADASTRO */}
-                    <h4 className="font-black text-[10px] uppercase tracking-[0.25em] text-primary/60 mb-6 flex items-center gap-2">
-                        <UserRound className="h-3.5 w-3.5" /> Informações Cadastrais
+            <CardContent className="space-y-12 px-0">
+                {/* SEÇÃO 1: CADASTRO */}
+                <div className="space-y-6">
+                    <h4 className="font-black text-[11px] uppercase tracking-[0.25em] text-primary/60 flex items-center gap-2">
+                        <UserRound className="h-4 w-4" /> Informações Cadastrais
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 text-sm mb-10">
-                        <div className="flex flex-col gap-1"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">ID do Cliente</span><div className="flex items-center gap-2 font-black text-foreground"><Hash className="h-3.5 w-3.5 text-primary opacity-40" /><span>{customer.numericId}</span></div></div>
-                        <div className="flex flex-col gap-1"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Documento (CPF)</span><div className="flex items-center gap-2 font-black text-foreground"><FileText className="h-3.5 w-3.5 text-primary opacity-40" /><span>{customer.cpf}</span><CopyButton text={customer.cpf} label="CPF" /></div></div>
-                        <div className="flex flex-col gap-1"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Gênero</span><div className="flex items-center gap-2 font-bold text-foreground"><User className="h-3.5 w-3.5 text-primary opacity-40" /><span>{customer.gender || '-'}</span></div></div>
-                        <div className="flex flex-col gap-1"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Data de Nascimento</span><div className="flex items-center gap-2 font-bold text-foreground"><Calendar className="h-3.5 w-3.5 text-primary opacity-40" /><span>{customer.birthDate ? format(parse(customer.birthDate, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy') : '-'}</span><Badge variant="secondary" className="text-[9px] bg-primary/10 text-primary border-none">{age} ANOS</Badge></div></div>
-                        <div className="flex flex-col gap-1 lg:col-span-2"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">E-mail</span><div className="flex items-center gap-2 font-bold text-foreground"><Mail className="h-3.5 w-3.5 text-primary opacity-40" /><span>{customer.email || '-'}</span></div></div>
-                        <div className="flex flex-col gap-1"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Contato Principal</span><div className="flex items-center gap-2 font-black text-foreground"><Phone className="h-3.5 w-3.5 text-primary opacity-40" /><span>{customer.phone}</span><div className="flex items-center gap-1"><CopyButton text={customer.phone} label="Telefone" />{isWhatsApp(customer.phone) && <a href={getWhatsAppUrl(customer.phone)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:scale-110 transition-transform"><WhatsAppIcon className="h-4 w-4" /></a>}</div></div></div>
-                        <div className="flex flex-col gap-1"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Telefone 2</span><div className="flex items-center gap-2 font-bold text-foreground"><Phone className="h-3.5 w-3.5 text-primary opacity-40" /><span>{customer.phone2 || '-'}</span></div></div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-10">
+                        <div className="flex flex-col gap-1.5"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">ID do Cliente</span><div className="flex items-center gap-2 font-black text-foreground"><Hash className="h-3.5 w-3.5 text-primary/40" /><span>{customer.numericId}</span></div></div>
+                        <div className="flex flex-col gap-1.5"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Documento (CPF)</span><div className="flex items-center gap-2 font-black text-foreground"><FileText className="h-3.5 w-3.5 text-primary/40" /><span>{customer.cpf}</span><CopyButton text={customer.cpf} label="CPF" /></div></div>
+                        <div className="flex flex-col gap-1.5"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Gênero</span><div className="flex items-center gap-2 font-bold text-foreground"><User className="h-3.5 w-3.5 text-primary/40" /><span>{customer.gender || '-'}</span></div></div>
+                        <div className="flex flex-col gap-1.5"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Data de Nascimento</span><div className="flex items-center gap-2 font-bold text-foreground"><Calendar className="h-3.5 w-3.5 text-primary/40" /><span>{customer.birthDate ? format(parse(customer.birthDate, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy') : '-'}</span><Badge variant="secondary" className="text-[9px] bg-primary/10 text-primary border-none font-black">{age} ANOS</Badge></div></div>
+                        <div className="flex flex-col gap-1.5 lg:col-span-2"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">E-mail</span><div className="flex items-center gap-2 font-bold text-foreground"><Mail className="h-3.5 w-3.5 text-primary/40" /><span>{customer.email || '-'}</span></div></div>
+                        <div className="flex flex-col gap-1.5"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Contato Principal</span><div className="flex items-center gap-2 font-black text-foreground"><Phone className="h-3.5 w-3.5 text-primary/40" /><span>{customer.phone}</span><div className="flex items-center gap-1"><CopyButton text={customer.phone} label="Telefone" />{isWhatsApp(customer.phone) && <a href={getWhatsAppUrl(customer.phone)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:scale-110 transition-transform"><WhatsAppIcon className="h-4 w-4" /></a>}</div></div></div>
+                        <div className="flex flex-col gap-1.5"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Telefone 2</span><div className="flex items-center gap-2 font-bold text-foreground"><Phone className="h-3.5 w-3.5 text-primary/40" /><span>{customer.phone2 || '-'}</span></div></div>
                     </div>
+                </div>
 
-                    {/* SEÇÃO 1.1: BENEFÍCIOS */}
-                    <h4 className="font-black text-[10px] uppercase tracking-[0.25em] text-primary/60 mb-6 flex items-center gap-2 border-t border-border/50 pt-8">
-                        <CreditCard className="h-3.5 w-3.5" /> Benefícios Previdenciários
+                {/* SEÇÃO 1.1: BENEFÍCIOS */}
+                <div className="space-y-6 pt-8 border-t border-border/40">
+                    <h4 className="font-black text-[11px] uppercase tracking-[0.25em] text-primary/60 flex items-center gap-2">
+                        <CreditCard className="h-4 w-4" /> Benefícios Previdenciários
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         {customer.benefits && customer.benefits.length > 0 ? (
                             customer.benefits.map((benefit: any, idx: number) => (
-                                <div key={idx} className="p-3 rounded-xl bg-primary/5 border border-primary/10 flex flex-col gap-1">
-                                    <span className="text-[8px] font-black text-primary/60 uppercase">Nº do Benefício</span>
-                                    <span className="font-black text-sm">{benefit.number}</span>
-                                    {benefit.species && <span className="text-[10px] text-muted-foreground font-medium">{benefit.species}</span>}
+                                <div key={idx} className="p-4 rounded-2xl bg-muted/20 border border-border/50 flex flex-col gap-1.5 transition-all hover:bg-muted/30">
+                                    <span className="text-[8px] font-black text-primary/60 uppercase tracking-widest">Nº do Benefício</span>
+                                    <span className="font-black text-sm text-foreground">{benefit.number}</span>
+                                    {benefit.species && <span className="text-[10px] text-muted-foreground font-bold uppercase">{benefit.species}</span>}
                                 </div>
                             ))
                         ) : (
-                            <div className="col-span-full p-4 text-center border-2 border-dashed rounded-xl opacity-40 text-xs font-bold uppercase tracking-widest">Nenhum benefício cadastrado</div>
+                            <div className="col-span-full p-8 text-center border-2 border-dashed rounded-2xl opacity-30 text-[10px] font-black uppercase tracking-[0.3em]">Nenhum benefício vinculado</div>
                         )}
                     </div>
+                </div>
 
-                    {/* SEÇÃO 2: ENDEREÇO */}
-                    <h4 className="font-black text-[10px] uppercase tracking-[0.25em] text-primary/60 mb-6 flex items-center gap-2 border-t border-border/50 pt-8">
-                        <MapPin className="h-3.5 w-3.5" /> Endereço Residencial
+                {/* SEÇÃO 2: ENDEREÇO */}
+                <div className="space-y-6 pt-8 border-t border-border/40">
+                    <h4 className="font-black text-[11px] uppercase tracking-[0.25em] text-primary/60 flex items-center gap-2">
+                        <MapPin className="h-4 w-4" /> Endereço Residencial
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 text-sm mb-10">
-                        <div className="flex flex-col gap-1 lg:col-span-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-10">
+                        <div className="flex flex-col gap-1.5 lg:col-span-2">
                             <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Logradouro</span>
-                            <div className="flex items-center gap-2 font-bold text-foreground truncate">
-                                <Home className="h-3.5 w-3.5 text-primary opacity-40" />
-                                <span>{customer.street || '-'} {customer.number && `, ${customer.number}`}</span>
+                            <div className="flex items-center gap-2 font-bold text-foreground">
+                                <Home className="h-3.5 w-3.5 text-primary/40" />
+                                <span className="truncate">{customer.street || '-'} {customer.number && `, ${customer.number}`}</span>
                             </div>
                         </div>
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1.5">
                             <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Complemento</span>
-                            <div className="flex items-center gap-2 font-bold text-foreground">
+                            <div className="flex items-center gap-2 font-bold text-foreground truncate">
                                 <span>{customer.complement || '-'}</span>
                             </div>
                         </div>
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1.5">
                             <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Bairro</span>
-                            <div className="flex items-center gap-2 font-bold text-foreground">
+                            <div className="flex items-center gap-2 font-bold text-foreground truncate">
                                 <span>{customer.neighborhood || '-'}</span>
                             </div>
                         </div>
-                        <div className="flex flex-col gap-1 lg:col-span-2">
+                        <div className="flex flex-col gap-1.5 lg:col-span-2">
                             <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Localização (Cidade/UF)</span>
                             <div className="flex items-center gap-2 font-black text-foreground">
-                                <Map className="h-3.5 w-3.5 text-primary opacity-40" />
-                                <span>{customer.city || '-'} / {customer.state || '-'}</span>
+                                <Map className="h-3.5 w-3.5 text-primary/40" />
+                                <span className="truncate">{customer.city || '-'} / {customer.state || '-'}</span>
                             </div>
                         </div>
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1.5">
                             <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">CEP</span>
                             <div className="flex items-center gap-2 font-bold text-foreground">
                                 <span>{customer.cep || '-'}</span>
@@ -169,19 +173,17 @@ const CustomerInfoCard = ({ customer, onExportDossier, onToggleStatus, onGenerat
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    {/* SEÇÃO 3: OBSERVAÇÕES */}
-                    {customer.observations && (
-                        <div className="mt-10 pt-8 border-t border-border/50">
-                            <h4 className="font-black text-[10px] uppercase tracking-[0.25em] text-primary/60 mb-6 flex items-center gap-2">
-                                <MessageSquareText className="h-3.5 w-3.5" /> Observações Internas
-                            </h4>
-                            <div className="p-5 bg-background/50 rounded-2xl border border-border/50 text-xs text-muted-foreground leading-relaxed italic relative overflow-hidden shadow-inner">
-                                <div className="absolute top-0 left-0 w-1 h-full bg-primary/20" />
-                                "{customer.observations}"
-                            </div>
-                        </div>
-                    )}
+                {/* SEÇÃO 3: OBSERVAÇÕES */}
+                <div className="space-y-6 pt-8 border-t border-border/40">
+                    <h4 className="font-black text-[11px] uppercase tracking-[0.25em] text-primary/60 flex items-center gap-2">
+                        <MessageSquareText className="h-4 w-4" /> Observações Internas
+                    </h4>
+                    <div className="p-6 bg-muted/10 rounded-2xl border border-border/40 text-xs text-muted-foreground leading-relaxed italic relative overflow-hidden shadow-inner min-h-[80px] flex items-center">
+                        <div className="absolute top-0 left-0 w-1.5 h-full bg-primary/20" />
+                        {customer.observations ? `"${customer.observations}"` : "Nenhuma anotação estratégica registrada para este cliente."}
+                    </div>
                 </div>
             </CardContent>
         </Card>
@@ -341,7 +343,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
   };
 
   if (isCustomerLoading || areProposalsLoading) return <AppLayout><div className="space-y-4"><div className="h-48 w-full bg-muted animate-pulse rounded-lg" /><div className="h-96 w-full bg-muted animate-pulse rounded-lg" /></div></AppLayout>;
-  if (!customer) return <AppLayout><PageHeader title="Não encontrado" /></AppHeader></AppLayout>;
+  if (!customer) return <AppLayout><PageHeader title="Não encontrado" /></AppLayout>;
 
   return (
     <AppLayout>
