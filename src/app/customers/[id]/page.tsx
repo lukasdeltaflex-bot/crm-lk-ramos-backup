@@ -30,7 +30,9 @@ import {
     ArrowRight,
     MapPin,
     Home,
-    Map
+    Map,
+    Mail,
+    CreditCard
 } from 'lucide-react';
 import { format, parse, differenceInMonths, isValid as isValidDate } from 'date-fns';
 import { Button } from '@/components/ui/button';
@@ -100,23 +102,50 @@ const CustomerInfoCard = ({ customer, onExportDossier, onToggleStatus, onGenerat
                     <h4 className="font-black text-[10px] uppercase tracking-[0.25em] text-primary/60 mb-6 flex items-center gap-2">
                         <UserRound className="h-3.5 w-3.5" /> Informações Cadastrais
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 text-sm mb-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 text-sm mb-10">
                         <div className="flex flex-col gap-1"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">ID do Cliente</span><div className="flex items-center gap-2 font-black text-foreground"><Hash className="h-3.5 w-3.5 text-primary opacity-40" /><span>{customer.numericId}</span></div></div>
                         <div className="flex flex-col gap-1"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Documento (CPF)</span><div className="flex items-center gap-2 font-black text-foreground"><FileText className="h-3.5 w-3.5 text-primary opacity-40" /><span>{customer.cpf}</span><CopyButton text={customer.cpf} label="CPF" /></div></div>
+                        <div className="flex flex-col gap-1"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Gênero</span><div className="flex items-center gap-2 font-bold text-foreground"><User className="h-3.5 w-3.5 text-primary opacity-40" /><span>{customer.gender || '-'}</span></div></div>
                         <div className="flex flex-col gap-1"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Data de Nascimento</span><div className="flex items-center gap-2 font-bold text-foreground"><Calendar className="h-3.5 w-3.5 text-primary opacity-40" /><span>{customer.birthDate ? format(parse(customer.birthDate, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy') : '-'}</span><Badge variant="secondary" className="text-[9px] bg-primary/10 text-primary border-none">{age} ANOS</Badge></div></div>
+                        <div className="flex flex-col gap-1 lg:col-span-2"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">E-mail</span><div className="flex items-center gap-2 font-bold text-foreground"><Mail className="h-3.5 w-3.5 text-primary opacity-40" /><span>{customer.email || '-'}</span></div></div>
                         <div className="flex flex-col gap-1"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Contato Principal</span><div className="flex items-center gap-2 font-black text-foreground"><Phone className="h-3.5 w-3.5 text-primary opacity-40" /><span>{customer.phone}</span><div className="flex items-center gap-1"><CopyButton text={customer.phone} label="Telefone" />{isWhatsApp(customer.phone) && <a href={getWhatsAppUrl(customer.phone)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:scale-110 transition-transform"><WhatsAppIcon className="h-4 w-4" /></a>}</div></div></div>
+                        <div className="flex flex-col gap-1"><span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Telefone 2</span><div className="flex items-center gap-2 font-bold text-foreground"><Phone className="h-3.5 w-3.5 text-primary opacity-40" /><span>{customer.phone2 || '-'}</span></div></div>
+                    </div>
+
+                    {/* SEÇÃO 1.1: BENEFÍCIOS */}
+                    <h4 className="font-black text-[10px] uppercase tracking-[0.25em] text-primary/60 mb-6 flex items-center gap-2 border-t border-border/50 pt-8">
+                        <CreditCard className="h-3.5 w-3.5" /> Benefícios Previdenciários
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+                        {customer.benefits && customer.benefits.length > 0 ? (
+                            customer.benefits.map((benefit: any, idx: number) => (
+                                <div key={idx} className="p-3 rounded-xl bg-primary/5 border border-primary/10 flex flex-col gap-1">
+                                    <span className="text-[8px] font-black text-primary/60 uppercase">Nº do Benefício</span>
+                                    <span className="font-black text-sm">{benefit.number}</span>
+                                    {benefit.species && <span className="text-[10px] text-muted-foreground font-medium">{benefit.species}</span>}
+                                </div>
+                            ))
+                        ) : (
+                            <div className="col-span-full p-4 text-center border-2 border-dashed rounded-xl opacity-40 text-xs font-bold uppercase tracking-widest">Nenhum benefício cadastrado</div>
+                        )}
                     </div>
 
                     {/* SEÇÃO 2: ENDEREÇO */}
                     <h4 className="font-black text-[10px] uppercase tracking-[0.25em] text-primary/60 mb-6 flex items-center gap-2 border-t border-border/50 pt-8">
                         <MapPin className="h-3.5 w-3.5" /> Endereço Residencial
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 text-sm mb-10">
-                        <div className="flex flex-col gap-1 md:col-span-2 lg:col-span-1">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 text-sm mb-10">
+                        <div className="flex flex-col gap-1 lg:col-span-2">
                             <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Logradouro</span>
                             <div className="flex items-center gap-2 font-bold text-foreground truncate">
                                 <Home className="h-3.5 w-3.5 text-primary opacity-40" />
-                                <span>{customer.street || '-'} {customer.number && `, ${customer.number}`} {customer.complement && ` (${customer.complement})`}</span>
+                                <span>{customer.street || '-'} {customer.number && `, ${customer.number}`}</span>
+                            </div>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Complemento</span>
+                            <div className="flex items-center gap-2 font-bold text-foreground">
+                                <span>{customer.complement || '-'}</span>
                             </div>
                         </div>
                         <div className="flex flex-col gap-1">
@@ -125,7 +154,7 @@ const CustomerInfoCard = ({ customer, onExportDossier, onToggleStatus, onGenerat
                                 <span>{customer.neighborhood || '-'}</span>
                             </div>
                         </div>
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1 lg:col-span-2">
                             <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Localização (Cidade/UF)</span>
                             <div className="flex items-center gap-2 font-black text-foreground">
                                 <Map className="h-3.5 w-3.5 text-primary opacity-40" />
@@ -312,7 +341,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
   };
 
   if (isCustomerLoading || areProposalsLoading) return <AppLayout><div className="space-y-4"><div className="h-48 w-full bg-muted animate-pulse rounded-lg" /><div className="h-96 w-full bg-muted animate-pulse rounded-lg" /></div></AppLayout>;
-  if (!customer) return <AppLayout><PageHeader title="Não encontrado" /></AppLayout>;
+  if (!customer) return <AppLayout><PageHeader title="Não encontrado" /></AppHeader></AppLayout>;
 
   return (
     <AppLayout>
