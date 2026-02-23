@@ -192,6 +192,17 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     return results;
   }, [allCustomers, watchPhone, watchCpf, customer?.id, defaultValues?.id]);
 
+  // Alerta de CPF Duplicado
+  useEffect(() => {
+    if (duplicity.cpf && watchCpf.length === 14) {
+        toast({
+            variant: 'destructive',
+            title: '⚠️ CPF JÁ CADASTRADO',
+            description: 'Este documento já existe no sistema. Localize o cliente pela busca para evitar duplicidade.'
+        });
+    }
+  }, [duplicity.cpf, watchCpf]);
+
   const handleCepLookup = useCallback(async (cleanCep: string) => {
     if (cleanCep.length !== 8) return;
     
@@ -273,7 +284,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                     <AlertDescription className="text-xs font-bold text-red-600 space-y-1 mt-2">
                         {errors.name && <p>• O Nome Completo é obrigatório.</p>}
                         {errors.cpf && <p>• {errors.cpf.message}</p>}
-                        {duplicity.cpf && <p>• Este CPF já está cadastrado em outro cliente.</p>}
+                        {duplicity.cpf && <p className="animate-bounce">• ESTE CPF JÁ EXISTE NA BASE DE DADOS.</p>}
                         {errors.phone && <p>• O Telefone Principal é obrigatório.</p>}
                         {duplicity.phone && <p>• Este Telefone já está em uso por outro cliente.</p>}
                         {errors.birthDate && <p>• A Data de Nascimento é obrigatória e deve ser válida.</p>}
@@ -344,7 +355,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                                         {...field} 
                                         onChange={(e) => field.onChange(e.target.value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"))} 
                                         maxLength={14}
-                                        className={cn("rounded-full h-11 px-5 border-zinc-200 font-bold", (duplicity.cpf || errors.cpf) && "border-red-500 bg-red-50")}
+                                        className={cn("rounded-full h-11 px-5 border-zinc-200 font-bold transition-all", (duplicity.cpf || errors.cpf) && "border-red-500 bg-red-50 ring-2 ring-red-500/20")}
                                     />
                                     {(duplicity.cpf || errors.cpf) && <AlertTriangle className="absolute right-4 top-3 h-5 w-5 text-red-500 animate-pulse" />}
                                     {!errors.cpf && !duplicity.cpf && watchCpf.length === 14 && <CheckCircle2 className="absolute right-4 top-3 h-5 w-5 text-green-500" />}

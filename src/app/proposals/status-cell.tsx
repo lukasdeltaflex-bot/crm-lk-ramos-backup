@@ -47,9 +47,12 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
     if (!firestore) return;
 
     const now = new Date().toISOString();
+    const user = auth?.currentUser;
+    const userName = user?.displayName || user?.email || 'Sistema';
+
     const dataToUpdate: any = { 
       status: newStatus,
-      statusUpdatedAt: now // ⚡ RESET DE OCIOSIDADE
+      statusUpdatedAt: now
     };
     
     const isPortability = product === 'Portabilidade';
@@ -65,6 +68,15 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
         dataToUpdate.statusAwaitingBalanceAt = now;
     }
 
+    // 📝 REGISTRO DE HISTÓRICO AUTOMÁTICO
+    const historyEntry: ProposalHistoryEntry = {
+        id: crypto.randomUUID(),
+        date: now,
+        message: `⚙️ Status alterado rapidamente de "${currentStatus}" para "${newStatus}"`,
+        userName: userName
+    };
+    dataToUpdate.history = arrayUnion(historyEntry);
+
     // BLINDAGEM FINANCEIRA: Define comissão pendente se estiver elegível
     try {
         const docRef = doc(firestore, 'loanProposals', proposalId);
@@ -74,7 +86,7 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
             const willHaveApprovalDate = dataToUpdate.dateApproved || proposal.dateApproved;
             const isNotReprovado = newStatus !== 'Reprovado';
             
-            if (isNotReprovado && willHaveApprovalDate) {
+            if (isNotReprovado && (willHaveApprovalDate || newStatus === 'Pago')) {
                 if (!proposal.commissionStatus || proposal.commissionStatus === '') {
                     dataToUpdate.commissionStatus = 'Pendente';
                 }
@@ -82,20 +94,8 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
         }
     } catch (e) {}
 
-    const user = auth?.currentUser;
-    const userName = user?.displayName || user?.email || 'Sistema';
-
-    const historyEntry: ProposalHistoryEntry = {
-        id: crypto.randomUUID(),
-        date: now,
-        message: `Status alterado de "${currentStatus}" para "${newStatus}" (Via Seletor Rápido)`,
-        userName: userName
-    };
-    dataToUpdate.history = arrayUnion(historyEntry);
-
     const docRef = doc(firestore, 'loanProposals', proposalId);
     
-    // 🛡️ BLINDAGEM DE DADOS V8
     updateDoc(docRef, cleanFirestoreData(dataToUpdate))
         .then(() => {
             toast({

@@ -294,15 +294,42 @@ export function ProposalForm({
         debtBalanceArrivalDate: convertToIso(data.debtBalanceArrivalDate),
     };
 
-    const oldStatus = proposal?.status || 'Em Andamento';
-    if (oldStatus !== data.status) {
-        const historyEntry: ProposalHistoryEntry = {
+    // 🤖 AUDITORIA AUTOMÁTICA DE ALTERAÇÕES
+    const auditEntries: ProposalHistoryEntry[] = [];
+    const userName = user?.displayName || user?.email || 'Sistema';
+
+    const checkChange = (field: string, label: string, formatter?: (v: any) => string) => {
+        const oldVal = proposal ? (proposal as any)[field] : undefined;
+        const newVal = (data as any)[field];
+        if (oldVal !== undefined && oldVal !== newVal) {
+            auditEntries.push({
+                id: crypto.randomUUID(),
+                date: now,
+                message: `AUTOAUDIT: ${label} alterado de "${formatter ? formatter(oldVal) : oldVal}" para "${formatter ? formatter(newVal) : newVal}"`,
+                userName
+            });
+        }
+    };
+
+    if (proposal) {
+        checkChange('status', 'Status');
+        checkChange('bank', 'Banco');
+        checkChange('grossAmount', 'Valor Bruto', formatCurrency);
+        checkChange('netAmount', 'Valor Líquido', formatCurrency);
+        checkChange('promoter', 'Promotora');
+    } else {
+        // Registro de criação para novas propostas
+        auditEntries.push({
             id: crypto.randomUUID(),
             date: now,
-            message: `Status alterado de "${oldStatus}" para "${data.status}"`,
-            userName: user?.displayName || user?.email || 'Sistema'
-        };
-        finalData.history = proposal?.history ? [...proposal.history, historyEntry] : [historyEntry];
+            message: `Proposta criada no sistema com status inicial: ${data.status}`,
+            userName
+        });
+    }
+
+    finalData.history = proposal?.history ? [...proposal.history, ...auditEntries] : auditEntries;
+    
+    if (proposal?.status !== data.status) {
         finalData.statusUpdatedAt = now;
     }
 
@@ -715,12 +742,20 @@ export function ProposalForm({
                         <div className="space-y-3 max-h-[250px] overflow-y-auto">
                             {proposal.history && proposal.history.length > 0 ? (
                                 [...proposal.history].sort((a,b) => b.date.localeCompare(a.date)).map(entry => (
-                                    <div key={entry.id} className="p-3 bg-muted/30 rounded-lg border text-xs transition-colors hover:bg-muted/50">
+                                    <div key={entry.id} className={cn(
+                                        "p-3 rounded-lg border text-xs transition-colors hover:bg-muted/50",
+                                        entry.message.startsWith("AUTOAUDIT") ? "bg-blue-50/30 border-blue-100" : "bg-muted/30 border-border"
+                                    )}>
                                         <div className="flex justify-between font-black uppercase text-primary/70 mb-1">
                                             <span className="flex items-center gap-1.5"><MessageSquareQuote className="h-3 w-3" />{entry.userName || 'Agente'}</span>
                                             <span className="opacity-60">{format(parseISO(entry.date), "dd/MM/yy HH:mm")}</span>
                                         </div>
-                                        <p className="text-foreground leading-relaxed font-medium">{entry.message}</p>
+                                        <p className={cn(
+                                            "leading-relaxed font-medium",
+                                            entry.message.startsWith("AUTOAUDIT") ? "text-blue-700 italic" : "text-foreground"
+                                        )}>
+                                            {entry.message.replace("AUTOAUDIT: ", "⚙️ ")}
+                                        </p>
                                     </div>
                                 ))
                             ) : <p className="text-center text-[10px] text-muted-foreground uppercase py-6 border-2 border-dashed rounded-lg opacity-40">Sem trâmites registrados nesta proposta.</p>}
