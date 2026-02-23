@@ -131,7 +131,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     name: "benefits"
   });
 
-  // 🛡️ BLINDAGEM DE CARREGAMENTO V20: Sincronização definitiva para Gênero e Datas
+  // 🛡️ BLINDAGEM DE CARREGAMENTO V21: Sincronização atômica definitiva
   useEffect(() => {
     const source = customer || defaultValues;
     if (source) {
@@ -177,7 +177,6 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
   const birthDateValue = form.watch('birthDate');
   const currentStatusValue = form.watch('status');
   const phoneValue = form.watch('phone');
-  const phone2Value = form.watch('phone2');
   const cpfValue = form.watch('cpf');
   const emailValue = form.watch('email');
 
@@ -254,7 +253,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
   };
 
   /**
-   * 🛡️ BUSCA DE CEP BLINDADA (PROXY INTERNO)
+   * 🛡️ BUSCA DE CEP BLINDADA (PROXY INTERNO V2)
    * Utiliza a API de servidor para contornar bloqueios de rede do navegador.
    */
   const handleCepBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
@@ -485,9 +484,9 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                                             onChange={(e) => field.onChange(handlePhoneMask(e.target.value))}
                                             maxLength={15}
                                         />
-                                        {isWhatsApp(phone2Value || '') && (
+                                        {isWhatsApp(form.watch('phone2') || '') && (
                                             <a 
-                                                href={getWhatsAppUrl(phone2Value!)} 
+                                                href={getWhatsAppUrl(form.watch('phone2')!)} 
                                                 target="_blank" 
                                                 rel="noopener noreferrer"
                                                 className="absolute right-3 top-2.5 hover:scale-110 transition-transform"

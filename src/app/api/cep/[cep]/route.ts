@@ -2,14 +2,15 @@
 import { NextResponse } from 'next/server';
 
 /**
- * 🛡️ PROXY SEGURO VIACEP
+ * 🛡️ PROXY SEGURO VIACEP (Next.js 15 Compatible)
  * Bypassa bloqueios de CORS e restrições de rede do navegador fazendo a chamada pelo servidor.
  */
 export async function GET(
   request: Request,
-  { params }: { params: { cep: string } }
+  { params }: { params: Promise<{ cep: string }> }
 ) {
-  const cep = params.cep.replace(/\D/g, '');
+  const { cep: rawCep } = await params;
+  const cep = rawCep.replace(/\D/g, '');
 
   if (cep.length !== 8) {
     return NextResponse.json({ error: 'CEP Inválido' }, { status: 400 });
