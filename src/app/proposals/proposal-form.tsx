@@ -38,7 +38,8 @@ import {
     MessageSquareQuote,
     Building2,
     Clock,
-    UserCog
+    UserCog,
+    Landmark
 } from 'lucide-react';
 import { format, parse, parseISO, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -47,14 +48,12 @@ import * as configData from '@/lib/config-data';
 import type { Proposal, Customer, Attachment, UserSettings, ProposalHistoryEntry } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useEffect, useState, useMemo } from 'react';
 import { ProposalAttachmentUploader } from '@/components/proposals/proposal-attachment-uploader';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, collection, updateDoc, arrayUnion } from 'firebase/firestore';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Logo } from '@/components/logo';
 import { toast } from '@/hooks/use-toast';
 import { BankIcon } from '@/components/bank-icon';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -209,6 +208,18 @@ export function ProposalForm({
     return allProposals.find(p => p.proposalNumber === proposalNumberValue && p.id !== proposal?.id);
   }, [proposalNumberValue, allProposals, proposal]);
 
+  // 🛡️ LÓGICA DE BENEFÍCIO AUTOMÁTICO V2
+  useEffect(() => {
+    if (selectedCustomer) {
+        const benefits = selectedCustomer.benefits || [];
+        if (benefits.length === 1) {
+            setValue('selectedBenefitNumber', benefits[0].number, { shouldValidate: true });
+        } else if (benefits.length === 0) {
+            setValue('selectedBenefitNumber', '');
+        }
+    }
+  }, [selectedCustomer, setValue]);
+
   useEffect(() => {
     if (selectedCustomerFromSearch) {
         setValue('customerId', selectedCustomerFromSearch.id, { shouldValidate: true });
@@ -217,24 +228,6 @@ export function ProposalForm({
         onCustomerSearchSelectionHandled();
     }
   }, [selectedCustomerFromSearch, setValue, trigger, onCustomerSearchSelectionHandled]);
-
-  useEffect(() => {
-    const currentBenefit = form.getValues('selectedBenefitNumber');
-    if (!selectedCustomerId) {
-        form.setValue('selectedBenefitNumber', '');
-        return;
-    }
-    const isBenefitValidForCustomer = selectedCustomer?.benefits?.some(b => b.number === currentBenefit);
-    if (selectedCustomerId && !isBenefitValidForCustomer) {
-      form.setValue('selectedBenefitNumber', '');
-    }
-  }, [selectedCustomerId, form, selectedCustomer]);
-
-  useEffect(() => {
-    if (selectedCustomer && selectedCustomer.benefits && selectedCustomer.benefits.length === 1) {
-        form.setValue('selectedBenefitNumber', selectedCustomer.benefits[0].number);
-    }
-  }, [selectedCustomer, form]);
 
   useEffect(() => {
     if (isReadOnly) return;
@@ -257,7 +250,10 @@ export function ProposalForm({
         if (!form.getValues('debtBalanceArrivalDate')) setValue('debtBalanceArrivalDate', today, { shouldValidate: true });
     } else if (status === 'Pago') {
         if (!form.getValues('dateApproved')) setValue('dateApproved', today, { shouldValidate: true });
-        if (!form.getValues('datePaidToClient')) setValue('datePaidToClient', today, { shouldValidate: true });
+        // Somente seta data de pagamento se NÃO for portabilidade
+        if (product !== 'Portabilidade' && !form.getValues('datePaidToClient')) {
+            setValue('datePaidToClient', today, { shouldValidate: true });
+        }
     }
   }, [status, product, setValue, isReadOnly, form]);
 
@@ -322,7 +318,6 @@ export function ProposalForm({
         return;
     }
 
-    // Converter datas de dd/MM/yyyy para ISO antes de salvar
     const convertToIso = (dateStr?: string) => {
         if (!dateStr) return undefined;
         try {
@@ -367,7 +362,7 @@ export function ProposalForm({
     updateDoc(docRef, updateData)
         .then(() => {
             setNewHistoryEntry('');
-            toast({ title: "Histórico Atualizado", description: "O trâmite foi registrado e o cronômetro de ociosidade foi reiniciado." });
+            toast({ title: "Histórico Atualizado" });
         })
         .catch(async (error) => {
             if (error.code === 'permission-denied') {
@@ -377,7 +372,6 @@ export function ProposalForm({
                     requestResourceData: updateData
                 }));
             }
-            toast({ variant: "destructive", title: "Erro ao registrar" });
         })
         .finally(() => setIsAddingHistory(false));
   };
@@ -500,7 +494,7 @@ export function ProposalForm({
 
             <Separator />
 
-            {/* SEÇÃO 2: DETALHES E PRAZOS (CONTEÚDO RESTAURADO) */}
+            {/* SEÇÃO 2: DETALHES E PRAZOS */}
             <div className="space-y-4">
               <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
                 <Clock className="h-4 w-4" /> Prazos e Informações da Esteira
@@ -543,13 +537,12 @@ export function ProposalForm({
                             ))}</SelectContent>
                         </Select>
                       ) : (
-                        <FormControl><Input placeholder="Digitação manual" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} disabled={isReadOnly || !selectedCustomerId || isSaving}/></FormControl>
+                        <FormControl><Input placeholder="Sem benefícios cadastrados" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} disabled={isReadOnly || !selectedCustomerId || isSaving}/></FormControl>
                       )}<FormMessage /></FormItem>
                   )}
                 />
               </div>
 
-              {/* GRID DE DATAS RESTAURADO */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <FormField
                   control={form.control}
@@ -573,17 +566,20 @@ export function ProposalForm({
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="datePaidToClient"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Pgto. ao Cliente</FormLabel>
-                      <FormControl><Input placeholder="dd/mm/aaaa" {...field} onChange={(e) => field.onChange(handleDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} value={field.value || ''} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* 🛡️ LÓGICA CONDICIONAL: Oculta data de pagamento se for Portabilidade */}
+                {product !== 'Portabilidade' && (
+                    <FormField
+                        control={form.control}
+                        name="datePaidToClient"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Pgto. ao Cliente</FormLabel>
+                            <FormControl><Input placeholder="dd/mm/aaaa" {...field} onChange={(e) => field.onChange(handleDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} value={field.value || ''} /></FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                )}
                 {product === 'Portabilidade' && (
                     <FormField
                         control={form.control}
@@ -612,14 +608,46 @@ export function ProposalForm({
                   control={form.control}
                   name="bank"
                   render={({ field }) => (
-                    <FormItem><FormLabel>Banco Digitado</FormLabel><FormControl><Input placeholder="Banco" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} /></FormControl></FormItem>
+                    <FormItem>
+                        <FormLabel>Banco Digitado</FormLabel>
+                        {/* 🛡️ SELETOR DE BANCO PREMIUM */}
+                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly || isSaving}>
+                            <FormControl>
+                                <SelectTrigger>
+                                    <div className="flex items-center gap-2">
+                                        {field.value && <BankIcon bankName={field.value} domain={userSettings?.bankDomains?.[field.value]} showLogo={showLogos} className="h-4 w-4" />}
+                                        <SelectValue placeholder="Selecione o Banco" />
+                                    </div>
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {banks.map(b => (
+                                    <SelectItem key={b} value={b}>
+                                        <div className="flex items-center gap-2">
+                                            <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={showLogos} className="h-4 w-4" />
+                                            <span>{cleanBankName(b)}</span>
+                                        </div>
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                    </FormItem>
                   )}
                 />
                 <FormField
                   control={form.control}
                   name="approvingBody"
                   render={({ field }) => (
-                    <FormItem><FormLabel>Órgão</FormLabel><FormControl><Input placeholder="Ex: INSS" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} /></FormControl></FormItem>
+                    <FormItem>
+                        <FormLabel>Órgão</FormLabel>
+                        {/* 🛡️ SELETOR DE ÓRGÃO APROVADOR */}
+                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly || isSaving}>
+                            <FormControl><SelectTrigger><SelectValue placeholder="Órgão" /></SelectTrigger></FormControl>
+                            <SelectContent>{approvingBodies.map(body => <SelectItem key={body} value={body}>{body}</SelectItem>)}</SelectContent>
+                        </Select>
+                        <FormMessage />
+                    </FormItem>
                   )}
                 />
                 <FormField
@@ -630,6 +658,26 @@ export function ProposalForm({
                   )}
                 />
               </div>
+
+              {/* 🛡️ CAMPO EXCLUSIVO: BANCO PORTADO */}
+              {product === 'Portabilidade' && (
+                  <div className="grid grid-cols-1 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="bankOrigin"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Banco Portado (Origem)</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="De qual banco está vindo?" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} />
+                                </FormControl>
+                                <FormDescription>Informe a instituição onde o saldo devedor se encontra atualmente.</FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                      />
+                  </div>
+              )}
             </div>
 
             <Separator />
