@@ -186,7 +186,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const filteredData = React.useMemo(() => {
     let list = data;
     
-    // Filtros CUMULATIVOS
     if (statusFilter !== 'Todos') {
         list = list.filter(p => p.status === statusFilter);
     }
@@ -235,7 +234,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         const customer = row.original.customer;
         const p = row.original;
 
-        // Busca Nuclear (ID ou Proposta Exatos)
         if (/^\d+$/.test(searchTerm)) {
             if (p.proposalNumber === searchTerm) return true;
             if (customer?.numericId?.toString() === searchTerm) return true;
@@ -329,13 +327,15 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                 <div className="flex items-center gap-2 ml-auto">
                     <Select value={bankFilter} onValueChange={setBankFilter}>
                         <SelectTrigger className="h-10 min-w-[180px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-[11px] font-black uppercase px-6 shadow-sm">
-                            <div className="flex items-center gap-2">
-                                <Landmark className="h-4 w-4 text-primary" />
-                                <SelectValue placeholder="BANCO" />
-                            </div>
+                            <SelectValue placeholder="BANCO" />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-2">
-                            <SelectItem value="all" className="font-black text-[10px] uppercase">Todas Instituições</SelectItem>
+                            <SelectItem value="all" className="font-black text-[10px] uppercase">
+                                <div className="flex items-center gap-3">
+                                    <Landmark className="h-4 w-4 text-primary" />
+                                    <span>Todas Instituições</span>
+                                </div>
+                            </SelectItem>
                             {banksList.map(b => (
                                 <SelectItem key={b} value={b} className="font-bold text-[11px] uppercase">
                                     <div className="flex items-center gap-3">
@@ -349,13 +349,15 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 
                     <Select value={promoterFilter} onValueChange={setPromoterFilter}>
                         <SelectTrigger className="h-10 min-w-[180px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-[11px] font-black uppercase px-6 shadow-sm">
-                            <div className="flex items-center gap-2">
-                                <Building2 className="h-4 w-4 text-primary" />
-                                <SelectValue placeholder="PROMOTORA" />
-                            </div>
+                            <SelectValue placeholder="PROMOTORA" />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-2">
-                            <SelectItem value="all" className="font-black text-[10px] uppercase">Todas Promotoras</SelectItem>
+                            <SelectItem value="all" className="font-black text-[10px] uppercase">
+                                <div className="flex items-center gap-3">
+                                    <Building2 className="h-4 w-4 text-primary" />
+                                    <span>Todas Promotoras</span>
+                                </div>
+                            </SelectItem>
                             {promotersList.map(p => (
                                 <SelectItem key={p} value={p} className="font-bold text-[11px] uppercase">
                                     <div className="flex items-center gap-3">

@@ -495,7 +495,7 @@ export function ProposalForm({
 
             <Separator />
 
-            {/* SEÇÃO: PRAZOS E INFORMAÇÕES DA ESTEIRA (REORGANIZADA) */}
+            {/* SEÇÃO: PRAZOS E INFORMAÇÕES DA ESTEIRA (REORGANIZADA V8) */}
             <div className="space-y-4">
               <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
                 <Clock className="h-4 w-4" /> Prazos e Informações da Esteira
@@ -543,10 +543,7 @@ export function ProposalForm({
                         <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly || isSaving}>
                             <FormControl>
                                 <SelectTrigger>
-                                    <div className="flex items-center gap-2">
-                                        {field.value && <BankIcon bankName={field.value} domain={userSettings?.bankDomains?.[field.value]} showLogo={showLogos} className="h-4 w-4" />}
-                                        <SelectValue placeholder="Selecione o Banco" />
-                                    </div>
+                                    <SelectValue placeholder="Selecione o Banco" />
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -578,10 +575,7 @@ export function ProposalForm({
                                 <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isReadOnly || isSaving}>
                                     <FormControl>
                                         <SelectTrigger>
-                                            <div className="flex items-center gap-2">
-                                                {field.value && <BankIcon bankName={field.value} domain={userSettings?.bankDomains?.[field.value]} showLogo={showLogos} className="h-4 w-4" />}
-                                                <SelectValue placeholder="Origem" />
-                                            </div>
+                                            <SelectValue placeholder="Origem" />
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
@@ -626,7 +620,7 @@ export function ProposalForm({
                 />
               </div>
 
-              {/* Linha 3: Datas (Sequência Dinâmica) */}
+              {/* Linha 3: Datas (Sequência Dinâmica V8) */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <FormField
                   control={form.control}

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -93,9 +92,12 @@ export function ExpenseForm({ expense, categories, onSubmit, isSaving = false }:
                 name="amount"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Valor (R$)</FormLabel>
+                    <FormLabel>Valor</FormLabel>
                     <FormControl>
-                        <Input type="number" step="0.01" placeholder="0.00" {...field} disabled={isSaving} />
+                        <div className="relative">
+                            <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
+                            <Input type="number" step="0.01" className="pl-9" placeholder="0.00" {...field} disabled={isSaving} />
+                        </div>
                     </FormControl>
                     <FormMessage />
                     </FormItem>

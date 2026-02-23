@@ -176,10 +176,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   const [endDateInput, setEndDateInput] = React.useState('');
   const [appliedDateRange, setAppliedDateRange] = React.useState<DateRange | undefined>(undefined);
 
-  /**
-   * 🛡️ MÁSCARA DE DATA V7
-   * Aplica máscara dd/MM/yyyy em tempo real
-   */
   const applyDateMask = (value: string) => {
     let v = value.replace(/\D/g, "").substring(0, 8);
     if (v.length > 4) v = v.replace(/(\d{2})(\d{2})(\d)/, "$1/$2/$3");
@@ -195,7 +191,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
 
     let list = data;
 
-    // Filtros CUMULATIVOS
     if (statusFilter === 'Todos') {
         list = list.filter(p => p.status !== 'Reprovado');
         if (!isSpecificSearch) {
@@ -254,7 +249,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         const customer = row.original.customer;
         const p = row.original;
 
-        // 1. Busca Nuclear (ID ou Proposta Exatos)
         if (/^\d+$/.test(searchTerm)) {
             if (p.proposalNumber === searchTerm) return true;
             if (customer?.numericId?.toString() === searchTerm) return true;
@@ -327,13 +321,15 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                 <div className="flex items-center gap-2 ml-auto">
                     <Select value={bankFilter} onValueChange={setBankFilter}>
                         <SelectTrigger className="h-10 min-w-[200px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-[11px] font-black uppercase px-6 shadow-sm">
-                            <div className="flex items-center gap-2">
-                                {bankFilter === 'all' ? <Landmark className="h-4 w-4 text-primary" /> : <BankIcon bankName={bankFilter} domain={userSettings?.bankDomains?.[bankFilter]} className="h-4 w-4" />}
-                                <SelectValue placeholder="BANCO" />
-                            </div>
+                            <SelectValue placeholder="BANCO" />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-2">
-                            <SelectItem value="all" className="font-black text-[10px] uppercase">Todos os Bancos</SelectItem>
+                            <SelectItem value="all" className="font-black text-[10px] uppercase">
+                                <div className="flex items-center gap-3">
+                                    <Landmark className="h-4 w-4 text-primary" />
+                                    <span>Todos os Bancos</span>
+                                </div>
+                            </SelectItem>
                             {Array.from(new Set(data.map(p => p.bank))).sort().map(b => (
                                 <SelectItem key={b} value={b} className="font-bold text-[11px] uppercase">
                                     <div className="flex items-center gap-3">
@@ -347,13 +343,15 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
 
                     <Select value={promoterFilter} onValueChange={setPromoterFilter}>
                         <SelectTrigger className="h-10 min-w-[200px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-[11px] font-black uppercase px-6 shadow-sm">
-                            <div className="flex items-center gap-2">
-                                {promoterFilter === 'all' ? <Building2 className="h-4 w-4 text-primary" /> : <BankIcon bankName={promoterFilter} domain={userSettings?.promoterDomains?.[promoterFilter]} className="h-4 w-4" />}
-                                <SelectValue placeholder="PROMOTORA" />
-                            </div>
+                            <SelectValue placeholder="PROMOTORA" />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-2">
-                            <SelectItem value="all" className="font-black text-[10px] uppercase">Todas Promotoras</SelectItem>
+                            <SelectItem value="all" className="font-black text-[10px] uppercase">
+                                <div className="flex items-center gap-3">
+                                    <Building2 className="h-4 w-4 text-primary" />
+                                    <span>Todas Promotoras</span>
+                                </div>
+                            </SelectItem>
                             {Array.from(new Set(data.map(p => p.promoter))).sort().map(p => (
                                 <SelectItem key={p} value={p} className="font-bold text-[11px] uppercase">{p}</SelectItem>
                             ))}
