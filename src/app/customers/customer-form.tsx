@@ -114,6 +114,9 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
 
+  // 🛡️ ESTRATÉGIA SENIOR: Chave única para forçar re-render do formulário ao trocar de cliente
+  const formKey = customer?.id || defaultValues?.id || 'new';
+
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
     mode: 'all',
@@ -191,10 +194,10 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
           } catch (e) {}
       }
       
+      // 🛡️ BLINDAGEM V9: Garantindo normalização de Gênero no Reset
       form.reset({
         name: source.name || '',
         cpf: source.cpf || '',
-        // 🛡️ BLINDAGEM DE GÊNERO V8: Garante que o valor nunca seja nulo no reset
         gender: source.gender || '', 
         status: source.status || 'active',
         benefits: source.benefits || [],
@@ -240,10 +243,12 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
 
   useEffect(() => {
     const cleanCep = (watchCep || '').replace(/\D/g, '');
-    if (cleanCep.length === 8) {
+    // 🛡️ FIX SENIOR: Só busca automaticamente se o campo estiver "dirty" (editado pelo usuário)
+    // Isso evita o toast irritante ao abrir um cadastro para edição
+    if (cleanCep.length === 8 && form.formState.dirtyFields.cep) {
         handleCepLookup(cleanCep);
     }
-  }, [watchCep, handleCepLookup]);
+  }, [watchCep, handleCepLookup, form.formState.dirtyFields.cep]);
 
   const handleSummarize = async () => {
     if (!watchObservations || watchObservations.trim().length < 10) {
@@ -273,7 +278,8 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       birthDate: format(parsedDate, 'yyyy-MM-dd'),
       benefits: data.benefits || [],
       documents: data.documents || [],
-      gender: (data.gender as 'Masculino' | 'Feminino') || undefined 
+      // 🛡️ BLINDAGEM V9: Mantém o valor literal para o Firestore
+      gender: data.gender === "Masculino" || data.gender === "Feminino" ? data.gender : undefined
     };
     onSubmit(cleanFirestoreData(newCustomerData));
   }
@@ -284,7 +290,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="py-2">
+      <form key={formKey} onSubmit={form.handleSubmit(handleFormSubmit)} className="py-2">
         <ScrollArea className="h-[75vh] pr-4">
           <div className="space-y-10">
             {(hasErrors || duplicity.cpf || duplicity.phone) && (
