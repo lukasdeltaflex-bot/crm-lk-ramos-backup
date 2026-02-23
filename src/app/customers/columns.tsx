@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ColumnDef, Header, flexRender } from '@tanstack/react-table';
@@ -230,7 +231,7 @@ export const getColumns = (
         const age = getAge(customer.birthDate);
         return (
             <div className="flex flex-col gap-0.5">
-                <Link href={`/customers/${customer.id}`} className="font-bold text-primary hover:underline uppercase text-sm tracking-tight truncate block w-full" onClick={(e) => e.stopPropagation()}>
+                <Link href={`/customers/${customer.id}`} className="font-bold text-primary hover:underline uppercase text-sm tracking-tight truncate inline-block" onClick={(e) => e.stopPropagation()}>
                     {customer.name}
                 </Link>
                 {age >= 74 && (

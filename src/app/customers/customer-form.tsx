@@ -131,7 +131,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     name: "benefits"
   });
 
-  // 🛡️ BLINDAGEM DE CARREGAMENTO V16: Sincronização forçada total
+  // 🛡️ BLINDAGEM DE CARREGAMENTO V17: Sincronização forçada total para Gênero e outros campos
   useEffect(() => {
     const source = customer || defaultValues;
     if (source) {
@@ -258,8 +258,8 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     if (cep.length !== 8) return;
     setIsFetchingCep(true);
     try {
-        // Chamada direta para o ViaCEP
         const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        if (!response.ok) throw new Error('Falha na rede');
         const data = await response.json();
         
         if (data && !data.erro) {
@@ -276,7 +276,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
         toast({ 
             variant: 'destructive', 
             title: 'Busca Indisponível', 
-            description: 'Não foi possível buscar o CEP automaticamente no momento.' 
+            description: 'Não foi possível buscar o CEP automaticamente. Por favor, preencha manualmente.' 
         });
     } finally {
         setIsFetchingCep(false);
