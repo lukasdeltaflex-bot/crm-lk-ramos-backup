@@ -38,13 +38,14 @@ import { validateCPF, handlePhoneMask, cleanFirestoreData, cn, isWhatsApp, getWh
 import type { Customer } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
 import { CustomerAttachmentUploader } from '@/components/customers/customer-attachment-uploader';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { summarizeNotes } from '@/ai/flows/summarize-notes-flow';
+import { useUser } from '@/firebase';
 
 const benefitSchema = z.object({
     number: z.string().min(1, "O número do benefício é obrigatório."),
@@ -63,7 +64,7 @@ const customerSchema = z.object({
   cpf: z.string().min(11, 'CPF obrigatório.').refine((val) => validateCPF(val), {
     message: "CPF Inválido - Verifique os dígitos.",
   }),
-  gender: z.string().nullable().optional(),
+  gender: z.string().default(""),
   status: z.enum(['active', 'inactive']).default('active'),
   benefits: z.array(benefitSchema).optional(),
   phone: z.string().min(10, 'O telefone principal é obrigatório.'),
@@ -99,6 +100,7 @@ interface CustomerFormProps {
 }
 
 export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, isSaving = false }: CustomerFormProps) {
+  const { user } = useUser();
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
 
@@ -182,7 +184,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       form.reset({
         name: source.name || '',
         cpf: source.cpf || '',
-        gender: source.gender || '', // 🛡️ BLINDAGEM: Se vier null do banco, Select assume ""
+        gender: source.gender || '', 
         status: source.status || 'active',
         benefits: source.benefits || [],
         phone: source.phone || '',
@@ -202,21 +204,20 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     }
   }, [customer, defaultValues, form]);
 
-  const handleCepLookup = async (rawCep: string) => {
-    const cep = rawCep.replace(/\D/g, '');
-    if (cep.length !== 8) return;
+  const handleCepLookup = useCallback(async (cleanCep: string) => {
+    if (cleanCep.length !== 8) return;
     
     setIsFetchingCep(true);
     try {
-        const response = await fetch(`/api/cep/${cep}`);
+        const response = await fetch(`/api/cep/${cleanCep}`);
         if (!response.ok) throw new Error('Falha no proxy');
         const data = await response.json();
         
         if (data && !data.erro) {
-            form.setValue('street', data.logradouro || '', { shouldValidate: true });
-            form.setValue('neighborhood', data.bairro || '', { shouldValidate: true });
-            form.setValue('city', data.localidade || '', { shouldValidate: true });
-            form.setValue('state', data.uf || '', { shouldValidate: true });
+            form.setValue('street', data.logradouro || '', { shouldValidate: true, shouldDirty: true });
+            form.setValue('neighborhood', data.bairro || '', { shouldValidate: true, shouldDirty: true });
+            form.setValue('city', data.localidade || '', { shouldValidate: true, shouldDirty: true });
+            form.setValue('state', data.uf || '', { shouldValidate: true, shouldDirty: true });
             toast({ title: "Endereço localizado!" });
         }
     } catch (error) {
@@ -224,15 +225,14 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     } finally {
         setIsFetchingCep(false);
     }
-  };
+  }, [form]);
 
-  // MONITORAMENTO NUCLEAR: Dispara busca assim que o CEP atinge 8 dígitos reais
   useEffect(() => {
     const cleanCep = (watchCep || '').replace(/\D/g, '');
     if (cleanCep.length === 8) {
         handleCepLookup(cleanCep);
     }
-  }, [watchCep]);
+  }, [watchCep, handleCepLookup]);
 
   const handleSummarize = async () => {
     if (!watchObservations || watchObservations.trim().length < 10) {
@@ -262,7 +262,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       birthDate: format(parsedDate, 'yyyy-MM-dd'),
       benefits: data.benefits || [],
       documents: data.documents || [],
-      gender: (data.gender as any) || null 
+      gender: (data.gender as any) || "" 
     };
     onSubmit(cleanFirestoreData(newCustomerData));
   }
@@ -276,7 +276,6 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="py-2">
         <ScrollArea className="h-[75vh] pr-4">
           <div className="space-y-10">
-            {/* PAINEL DE ALERTAS NO TOPO */}
             {(hasErrors || duplicity.cpf || duplicity.phone) && (
                 <Alert variant="destructive" className="rounded-2xl border-2 animate-in slide-in-from-top-4 duration-300 bg-red-50 border-red-500">
                     <AlertCircle className="h-5 w-5 text-red-600" />
@@ -293,7 +292,6 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                 </Alert>
             )}
 
-            {/* SEÇÃO: DADOS PESSOAIS */}
             <div className="space-y-6 relative">
                 <div className="flex items-center justify-between">
                     <h3 className="text-xl font-bold uppercase tracking-tight text-[#00AEEF]">
@@ -492,12 +490,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                                         {...field} 
                                         className={cn("rounded-full h-11 px-5 border-zinc-200 font-bold", errors.birthDate && "border-red-500 bg-red-50")} 
                                         maxLength={10} 
-                                        onChange={(e) => {
-                                            let v = e.target.value.replace(/\D/g, "").substring(0, 8);
-                                            if (v.length > 4) v = v.replace(/(\d{2})(\d{2})(\d)/, "$1/$2/$3");
-                                            else if (v.length > 2) v = v.replace(/(\d{2})(\d)/, "$1/$2");
-                                            field.onChange(v);
-                                        }}
+                                        onChange={(e) => field.onChange(e.target.value.replace(/\D/g, "").replace(/(\d{2})(\d)/, "$1/$2").replace(/(\d{2})(\d)/, "$1/$2").substring(0, 10))}
                                     />
                                     {errors.birthDate && <AlertCircle className="absolute right-4 top-3 h-5 w-5 text-red-500" />}
                                 </div>
@@ -510,7 +503,6 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
 
             <div className="h-px bg-zinc-100" />
 
-            {/* SEÇÃO: BENEFÍCIOS */}
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <h3 className="text-xl font-bold uppercase tracking-tight text-[#00AEEF]">
@@ -555,7 +547,6 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
 
             <div className="h-px bg-zinc-100" />
 
-            {/* SEÇÃO: ENDEREÇO */}
             <div className="space-y-6">
                 <h3 className="text-xl font-bold uppercase tracking-tight text-[#00AEEF]">Localização (Opcional)</h3>
                 <div className='grid grid-cols-1 md:grid-cols-4 gap-6'>
@@ -609,13 +600,12 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
 
             <div className="h-px bg-zinc-100" />
 
-            {/* SEÇÃO: ANEXOS */}
             <div className="space-y-6">
                 <h3 className="text-xl font-bold uppercase tracking-tight text-[#00AEEF] flex items-center gap-2">
                     <FolderLock className="h-5 w-5" /> Documentação Fixa
                 </h3>
                 <CustomerAttachmentUploader 
-                    userId={customer?.ownerId || 'system'} 
+                    userId={user?.uid || 'system'} 
                     customerId={currentCustomerId || 'new'} 
                     initialAttachments={form.getValues('documents') || []} 
                     onAttachmentsChange={(docs) => form.setValue('documents', docs, { shouldValidate: true })}
@@ -625,7 +615,6 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
 
             <div className="h-px bg-zinc-100" />
 
-            {/* SEÇÃO: OBSERVAÇÕES COM IA */}
             <div className="space-y-4 pb-10">
                 <div className="flex items-center justify-between">
                     <h3 className="text-xl font-bold uppercase tracking-tight text-[#00AEEF] flex items-center gap-2">

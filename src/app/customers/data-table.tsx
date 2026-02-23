@@ -203,9 +203,10 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         if (!searchTerm) return true;
         const customer = row.original;
 
-        // 🛡️ GUARDA DE PRIORIDADE ZERO: Busca por ID numérico exato
+        // 🛡️ GUARDA DE PRIORIDADE ZERO: Busca por ID numérico exato ou parcial
+        const numIdStr = (customer.numericId || '').toString();
         if (/^\d+$/.test(searchTerm)) {
-            if (customer.numericId.toString() === searchTerm) return true;
+            if (numIdStr === searchTerm) return true;
         }
 
         const normalizedSearch = normalizeString(searchTerm);
@@ -217,6 +218,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             customer.phone,
             customer.city,
             customer.email,
+            numIdStr,
             ...(customer.benefits?.map(b => b.number) || [])
         ];
 
