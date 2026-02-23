@@ -124,6 +124,7 @@ export default function FinancialPage() {
     const startOfCurrent = startOfMonth(today);
     const endOfCurrent = endOfMonth(today);
 
+    // 🛡️ FILTRAGEM DE ORIGEM: Remove Reprovados de todo o módulo Financeiro
     const filteredProposals = proposals.filter(p => p.status !== 'Reprovado');
 
     const tableData = filteredProposals
@@ -154,7 +155,6 @@ export default function FinancialPage() {
     };
   }, [proposals, customers, isClient]);
 
-  // 🛡️ CORREÇÃO DE SELEÇÃO: Filtra IDs que estão efetivamente marcados como true
   const selectedIds = React.useMemo(() => 
     Object.keys(rowSelection).filter(id => rowSelection[id]),
   [rowSelection]);
@@ -186,7 +186,6 @@ export default function FinancialPage() {
                 dataToUpdate.commissionPaymentDate = deleteField();
             }
 
-            // Usamos set com merge para garantir a escrita caso o docRef tenha sido recuperado por ID
             batch.set(docRef, cleanFirestoreData(dataToUpdate), { merge: true });
         });
 

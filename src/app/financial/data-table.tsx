@@ -191,10 +191,11 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     const isSearching = globalFilter.trim().length > 0;
     const isSpecificSearch = !!appliedDateRange || isSearching;
 
-    let list = data;
+    // 🛡️ REGRA ABSOLUTA: Reprovados nunca entram no radar Financeiro
+    let list = data.filter(p => p.status !== 'Reprovado');
 
     if (statusFilter === 'Todos') {
-        list = list.filter(p => p.status !== 'Reprovado');
+        // Se estiver pesquisando ou com período manual, NÃO aplica o filtro do mês atual
         if (!isSpecificSearch) {
             list = list.filter(p => {
                 const d = p.dateDigitized ? new Date(p.dateDigitized) : null;
@@ -211,6 +212,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         }
     } else if (statusFilter === 'Pendente' || statusFilter === 'Parcial') {
         list = list.filter(p => p.commissionStatus === statusFilter);
+        // Pendentes e Parciais ignoram data por padrão (radar de cobrança total)
     }
 
     if (bankFilter !== 'all') list = list.filter(p => p.bank === bankFilter);
@@ -231,7 +233,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   const table = useReactTable({
     data: filteredData,
     columns,
-    getRowId: (row) => row.id, // 🛡️ CRÍTICO: Mapeia IDs reais do Firestore
+    getRowId: (row) => row.id,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
