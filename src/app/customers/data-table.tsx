@@ -304,12 +304,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
                             <TableRow
                             key={row.id}
                             data-state={row.getIsSelected() && 'selected'}
-                            className="hover:bg-primary/[0.03] transition-colors border-b h-12 cursor-pointer"
-                            onClick={(e) => {
-                                const target = e.target as HTMLElement;
-                                if (target.closest('a') || target.closest('button') || target.closest('[role="checkbox"]')) return;
-                                row.toggleSelected();
-                            }}
+                            className="hover:bg-primary/[0.03] transition-colors border-b h-12"
                             >
                             {row.getVisibleCells().map((cell) => (
                                 <TableCell 
