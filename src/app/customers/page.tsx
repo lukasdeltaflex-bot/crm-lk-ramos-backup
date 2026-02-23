@@ -1,3 +1,4 @@
+
 'use client';
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -176,7 +177,6 @@ function CustomersPageContent() {
     if (!firestore || !user) return;
     setIsSaving(true);
     try {
-        // 🛡️ BLINDAGEM DE DADOS V8
         const cleanedData = cleanFirestoreData({ ...formData, ownerId: user.uid });
         const docRef = sheetMode === 'edit' && selectedCustomer ? doc(firestore, 'customers', selectedCustomer.id) : doc(collection(firestore, 'customers'));
         
@@ -280,7 +280,7 @@ function CustomersPageContent() {
             )}
           >
             <UserCheck className="h-3.5 w-3.5" />
-            Ativos (Abaixo 75)
+            Ativos
             <Badge variant="secondary" className="bg-green-100 text-green-700 ml-1.5 h-5 min-w-[20px] p-0 flex items-center justify-center rounded-full border-none text-[10px] font-black">{activeCustomers.length}</Badge>
           </TabsTrigger>
           <TabsTrigger 
@@ -291,7 +291,7 @@ function CustomersPageContent() {
             )}
           >
             <UserX className="h-3.5 w-3.5" />
-            Inativos ou 75+ 
+            Inativos
             <Badge variant="secondary" className="bg-zinc-200 text-zinc-700 ml-1.5 h-5 min-w-[20px] p-0 flex items-center justify-center rounded-full border-none text-[10px] font-black">{inactiveCustomers.length}</Badge>
           </TabsTrigger>
         </TabsList>
