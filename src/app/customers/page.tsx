@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/page-header';
 import { CustomerDataTable, type CustomerDataTableHandle } from './data-table';
 import { getColumns } from './columns';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, FileDown, UserCheck, UserX, Trash2 } from 'lucide-react';
+import { PlusCircle, FileDown, UserCheck, UserX, Trash2, Sparkles } from 'lucide-react';
 import { CustomerForm } from './customer-form';
 import type { Customer } from '@/lib/types';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';

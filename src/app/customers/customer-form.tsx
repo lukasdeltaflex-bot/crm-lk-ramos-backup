@@ -114,7 +114,6 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
 
-  // Inicialização de valores padrão com props (Essencial para Key Remounting)
   const initialValues = useMemo(() => {
     let formattedBirthDate = '';
     if (customer?.birthDate) {
