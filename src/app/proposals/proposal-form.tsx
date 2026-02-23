@@ -208,20 +208,15 @@ export function ProposalForm({
     return allProposals.find(p => p.proposalNumber === proposalNumberValue && p.id !== proposal?.id);
   }, [proposalNumberValue, allProposals, proposal]);
 
-  // 🛡️ LÓGICA DE BENEFÍCIO AUTOMÁTICO V3
   useEffect(() => {
     if (selectedCustomer) {
         const benefits = selectedCustomer.benefits || [];
         const currentVal = form.getValues('selectedBenefitNumber');
-        
-        // Verifica se o benefício atual pertence ao novo cliente selecionado
         const isValidForNewCustomer = benefits.some(b => b.number === currentVal);
         
         if (benefits.length === 1) {
-            // Seleciona automaticamente se houver apenas um
             setValue('selectedBenefitNumber', benefits[0].number, { shouldValidate: true });
         } else if (!isValidForNewCustomer) {
-            // Limpa se o benefício anterior não pertencer ao novo cliente e houver múltiplos (ou nenhum)
             setValue('selectedBenefitNumber', '', { shouldValidate: true });
         }
     } else {
@@ -232,7 +227,6 @@ export function ProposalForm({
   useEffect(() => {
     if (selectedCustomerFromSearch) {
         setValue('customerId', selectedCustomerFromSearch.id, { shouldValidate: true });
-        // O benefício será tratado pelo useEffect acima
         trigger('customerId');
         onCustomerSearchSelectionHandled();
     }
@@ -259,7 +253,6 @@ export function ProposalForm({
         if (!form.getValues('debtBalanceArrivalDate')) setValue('debtBalanceArrivalDate', today, { shouldValidate: true });
     } else if (status === 'Pago') {
         if (!form.getValues('dateApproved')) setValue('dateApproved', today, { shouldValidate: true });
-        // Somente seta data de pagamento se NÃO for portabilidade
         if (product !== 'Portabilidade' && !form.getValues('datePaidToClient')) {
             setValue('datePaidToClient', today, { shouldValidate: true });
         }
@@ -436,7 +429,6 @@ export function ProposalForm({
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="py-4">
         <ScrollArea className="h-[70vh] pr-4 print:h-auto print:overflow-visible">
           <div className="space-y-8">
-            {/* SEÇÃO 1: VINCULAÇÃO */}
             <div className="space-y-4">
               <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
                 <FolderLock className="h-4 w-4" /> Vinculação do Registro
@@ -503,7 +495,6 @@ export function ProposalForm({
 
             <Separator />
 
-            {/* SEÇÃO 2: DETALHES E PRAZOS */}
             <div className="space-y-4">
               <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
                 <Clock className="h-4 w-4" /> Prazos e Informações da Esteira
@@ -575,7 +566,6 @@ export function ProposalForm({
                     </FormItem>
                   )}
                 />
-                {/* 🛡️ LÓGICA CONDICIONAL: Oculta data de pagamento se for Portabilidade */}
                 {product !== 'Portabilidade' && (
                     <FormField
                         control={form.control}
@@ -604,7 +594,6 @@ export function ProposalForm({
                 )}
               </div>
 
-              {/* OPERACIONAL */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <FormField
                   control={form.control}
@@ -666,7 +655,6 @@ export function ProposalForm({
                 />
               </div>
 
-              {/* 🛡️ CAMPO EXCLUSIVO: BANCO PORTADO - AGORA COM SELETOR VISUAL */}
               {product === 'Portabilidade' && (
                   <div className="grid grid-cols-1 gap-4">
                       <FormField
@@ -706,20 +694,43 @@ export function ProposalForm({
 
             <Separator />
 
-            {/* SEÇÃO 3: VALORES E COMISSÃO */}
             <div className="space-y-4">
                 <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
                     <Check className="h-4 w-4" /> Valores e Performance Financeira
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField control={form.control} name="installmentAmount" render={({ field }) => (
-                        <FormItem><FormLabel>Valor Parcela</FormLabel><FormControl><Input type="number" step="0.01" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} /></FormControl></FormItem>
+                        <FormItem>
+                            <FormLabel>Valor Parcela</FormLabel>
+                            <FormControl>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
+                                    <Input type="number" step="0.01" className="pl-9" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} />
+                                </div>
+                            </FormControl>
+                        </FormItem>
                     )} />
                     <FormField control={form.control} name="netAmount" render={({ field }) => (
-                        <FormItem><FormLabel>Líquido (Cliente)</FormLabel><FormControl><Input type="number" step="0.01" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} /></FormControl></FormItem>
+                        <FormItem>
+                            <FormLabel>Líquido (Cliente)</FormLabel>
+                            <FormControl>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
+                                    <Input type="number" step="0.01" className="pl-9" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} />
+                                </div>
+                            </FormControl>
+                        </FormItem>
                     )} />
                      <FormField control={form.control} name="grossAmount" render={({ field }) => (
-                        <FormItem><FormLabel>Bruto (Base)</FormLabel><FormControl><Input type="number" step="0.01" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} /></FormControl></FormItem>
+                        <FormItem>
+                            <FormLabel>Bruto (Base)</FormLabel>
+                            <FormControl>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
+                                    <Input type="number" step="0.01" className="pl-9" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} />
+                                </div>
+                            </FormControl>
+                        </FormItem>
                     )} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -736,17 +747,32 @@ export function ProposalForm({
                         </FormItem>
                     )} />
                     <FormField control={form.control} name="commissionPercentage" render={({ field }) => (
-                        <FormItem><FormLabel>Comissão (%)</FormLabel><FormControl><Input type="number" step="0.01" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} /></FormControl></FormItem>
+                        <FormItem>
+                            <FormLabel>Comissão (%)</FormLabel>
+                            <FormControl>
+                                <div className="relative">
+                                    <Input type="number" step="0.01" className="pr-8" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} />
+                                    <span className="absolute right-3 top-2.5 text-[10px] font-black text-muted-foreground">%</span>
+                                </div>
+                            </FormControl>
+                        </FormItem>
                     )} />
                     <FormField control={form.control} name="commissionValue" render={({ field }) => (
-                        <FormItem><FormLabel>Comissão (R$)</FormLabel><FormControl><Input type="number" step="0.01" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} /></FormControl></FormItem>
+                        <FormItem>
+                            <FormLabel>Comissão (R$)</FormLabel>
+                            <FormControl>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
+                                    <Input type="number" step="0.01" className="pl-9 font-bold text-primary" {...field} readOnly={isReadOnly || isSaving} value={field.value || ''} />
+                                </div>
+                            </FormControl>
+                        </FormItem>
                     )} />
                 </div>
             </div>
 
             <Separator />
 
-            {/* SEÇÃO 4: HISTÓRICO */}
             <div className="space-y-4">
                 <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
                     <History className="h-4 w-4" /> Linha do Tempo da Proposta
@@ -778,7 +804,6 @@ export function ProposalForm({
 
             <Separator />
 
-            {/* SEÇÃO 5: ANEXOS */}
             <div className="space-y-4">
                 <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
                     <FolderLock className="h-4 w-4" /> Anexos e Digitalização

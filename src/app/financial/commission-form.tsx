@@ -30,7 +30,6 @@ const commissionSchema = z.object({
   amountPaid: z.coerce.number().min(0, 'O valor pago é obrigatório.'),
   commissionPaymentDate: z.string().optional().refine(val => {
     if (!val) return true;
-    // 🛡️ BLINDAGEM V7: Garante o uso de MM (Mês) e validação real
     const parsed = parse(val, 'dd/MM/yyyy', new Date());
     return isValid(parsed) && val.length === 10;
   }, {
@@ -45,10 +44,6 @@ interface CommissionFormProps {
   onSubmit: (data: CommissionFormValues) => void;
 }
 
-/**
- * 🛡️ MÁSCARA INTELIGENTE V7
- * Formata strings de data em tempo real para dd/MM/yyyy
- */
 const applyDateMask = (value: string) => {
     let v = value.replace(/\D/g, "").substring(0, 8);
     if (v.length > 4) v = v.replace(/(\d{2})(\d{2})(\d)/, "$1/$2/$3");
@@ -118,7 +113,10 @@ export function CommissionForm({ proposal, onSubmit }: CommissionFormProps) {
                         <FormItem>
                             <FormLabel>Valor Pago</FormLabel>
                             <FormControl>
-                            <Input type="number" step="0.01" placeholder="1500.00" {...field} />
+                                <div className="relative">
+                                    <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
+                                    <Input type="number" step="0.01" className="pl-9 font-bold text-primary" placeholder="0.00" {...field} />
+                                </div>
                             </FormControl>
                             <FormMessage />
                         </FormItem>
