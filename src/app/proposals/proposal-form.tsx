@@ -44,7 +44,10 @@ import {
     Clock,
     UserCog,
     Landmark,
-    FileText
+    FileText,
+    Zap,
+    Percent,
+    Wallet
 } from 'lucide-react';
 import { format, parse, parseISO, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -135,7 +138,7 @@ interface ProposalFormProps {
   isSaving?: boolean;
 }
 
-const handleDateMask = (e: React.ChangeEvent<HTMLInputElement>) => {
+const applyDateMask = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "");
     if (value.length > 8) value = value.substring(0, 8);
     value = value.replace(/(\d{2})(\d)/, '$1/$2');
@@ -604,7 +607,7 @@ export function ProposalForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Data Digitação</FormLabel>
-                      <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(handleDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
+                      <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(applyDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -617,7 +620,7 @@ export function ProposalForm({
                             render={({ field }) => (
                                 <FormItem>
                                 <FormLabel>Data Retorno Saldo</FormLabel>
-                                <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(handleDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
+                                <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(applyDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
                                 <FormMessage />
                                 </FormItem>
                             )}
@@ -628,7 +631,7 @@ export function ProposalForm({
                             render={({ field }) => (
                                 <FormItem>
                                 <FormLabel>Data Averbação</FormLabel>
-                                <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(handleDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
+                                <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(applyDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
                                 <FormMessage />
                                 </FormItem>
                             )}
@@ -642,7 +645,7 @@ export function ProposalForm({
                             render={({ field }) => (
                                 <FormItem>
                                 <FormLabel>Data Averbação</FormLabel>
-                                <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(handleDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
+                                <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(applyDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
                                 <FormMessage />
                                 </FormItem>
                             )}
@@ -653,7 +656,7 @@ export function ProposalForm({
                             render={({ field }) => (
                                 <FormItem>
                                 <FormLabel>Pgto. ao Cliente</FormLabel>
-                                <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(handleDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
+                                <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(applyDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
                                 <FormMessage />
                                 </FormItem>
                             )}
@@ -687,6 +690,33 @@ export function ProposalForm({
                 <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
                     <Check className="h-4 w-4" /> Valores e Performance Financeira
                 </h3>
+                
+                {/* LINHA DE PRAZO E TAXA */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField control={form.control} name="term" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Prazo</FormLabel>
+                            <FormControl>
+                                <div className="relative">
+                                    <Input type="number" {...field} value={field.value ?? ''} readOnly={isReadOnly || isSaving} />
+                                    <span className="absolute right-3 top-2.5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Meses</span>
+                                </div>
+                            </FormControl>
+                        </FormItem>
+                    )} />
+                    <FormField control={form.control} name="interestRate" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Taxa de Juros (%)</FormLabel>
+                            <FormControl>
+                                <div className="relative">
+                                    <Input type="number" step="0.01" {...field} value={field.value ?? ''} readOnly={isReadOnly || isSaving} />
+                                    <span className="absolute right-3 top-2.5 text-[10px] font-black text-muted-foreground">%</span>
+                                </div>
+                            </FormControl>
+                        </FormItem>
+                    )} />
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField control={form.control} name="installmentAmount" render={({ field }) => (
                         <FormItem>
