@@ -30,7 +30,6 @@ import {
     Sparkles,
     MessageSquareText,
     FolderLock,
-    Info,
     AlertTriangle
 } from 'lucide-react';
 import { format, parse, isValid, differenceInYears } from 'date-fns';
@@ -227,6 +226,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     }
   }, [form]);
 
+  // 🛡️ GATILHO AUTOMÁTICO DE CEP: Dispara ao digitar o 8º número
   useEffect(() => {
     const cleanCep = (watchCep || '').replace(/\D/g, '');
     if (cleanCep.length === 8) {

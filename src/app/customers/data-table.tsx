@@ -127,9 +127,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         } else {
             setColumnOrder([...initialColumns]);
         }
-    } catch (e) {
-        console.warn("LK Ramos: Erro ao carregar visão personalizada.");
-    }
+    } catch (e) {}
   }, [initialColumns]);
 
   const handlePaginationChange = (updater: any) => {
@@ -137,9 +135,6 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
       const next = typeof updater === 'function' ? updater(old) : updater;
       if (typeof window !== 'undefined') {
         try { localStorage.setItem('lk-customers-pageSize', String(next.pageSize)); } catch(e) {}
-      }
-      if (tableContainerRef.current) {
-          tableContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
       return next;
     });
@@ -203,33 +198,34 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         if (!searchTerm) return true;
         const customer = row.original;
 
-        // 🛡️ GUARDA DE PRIORIDADE ZERO: Busca por ID numérico exato ou parcial
-        const numIdStr = (customer.numericId || '').toString();
+        // 🛡️ MOTOR DE BUSCA NUCLEAR V8: Prioridade de Exatidão Numérica
         if (/^\d+$/.test(searchTerm)) {
-            if (numIdStr === searchTerm) return true;
+            // Comparação estrita para IDs: Digitar "10" traz apenas o ID 10
+            if (customer.numericId?.toString() === searchTerm) return true;
+            
+            // Permite busca parcial apenas se o termo tiver mais de 3 dígitos (para CPF/Telefone)
+            if (searchTerm.length >= 3) {
+                const cpfDigits = customer.cpf?.replace(/\D/g, '') || '';
+                const phoneDigits = customer.phone?.replace(/\D/g, '') || '';
+                if (cpfDigits.includes(searchTerm) || phoneDigits.includes(searchTerm)) return true;
+            }
+            
+            // Se for número e não deu match exato no ID nem parcial nos outros, bloqueia
+            return false;
         }
 
+        // Busca por texto (Nomes, Cidades, Emails)
         const normalizedSearch = normalizeString(searchTerm);
-        const searchDigits = searchTerm.replace(/\D/g, '');
-
-        const fieldsToSearch = [
+        const searchableFields = [
             customer.name,
-            customer.cpf,
-            customer.phone,
             customer.city,
             customer.email,
-            numIdStr,
-            ...(customer.benefits?.map(b => b.number) || [])
+            customer.observations
         ];
 
-        return fieldsToSearch.some(field => {
+        return searchableFields.some(field => {
             if (!field) return false;
-            const fieldStr = String(field);
-            const normField = normalizeString(fieldStr);
-            const fieldDigits = fieldStr.replace(/\D/g, '');
-            
-            return normField.includes(normalizedSearch) || 
-                   (searchDigits && searchDigits.length >= 3 && fieldDigits.includes(searchDigits));
+            return normalizeString(String(field)).includes(normalizedSearch);
         });
       },
   });
@@ -244,7 +240,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             <div className='relative w-full max-w-md group'>
                 <Search className='absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80 group-focus-within:opacity-100 transition-opacity' />
                 <Input
-                    placeholder="Busca Inteligente (Nome, CPF ou ID Exato...)"
+                    placeholder="Busca Inteligente (ID Exato ou Nome...)"
                     value={globalFilter ?? ''}
                     onChange={(event) => setGlobalFilter(event.target.value)}
                     className="pl-11 w-full bg-background border-2 border-zinc-300 dark:border-primary/40 h-11 rounded-full shadow-md focus-visible:ring-primary/20 transition-all font-bold text-sm"
@@ -335,11 +331,6 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
               {table.getFilteredRowModel().rows.length} SELECIONADOS.
             </div>
             <div className="flex items-center gap-6 lg:gap-8">
-                {table.getFilteredSelectedRowModel().rows.length > 0 && (
-                    <div className="flex items-center gap-2 text-primary animate-in fade-in slide-in-from-left-2">
-                        <span className="font-black">MODO SELEÇÃO ATIVO</span>
-                    </div>
-                )}
                 <div className="flex items-center gap-2">
                     <p>LINHAS</p>
                     <Select
