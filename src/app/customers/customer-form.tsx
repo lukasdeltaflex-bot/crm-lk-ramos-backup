@@ -32,7 +32,9 @@ import {
     Calendar as CalendarIcon,
     Search,
     AlertCircle,
-    CheckCircle2
+    CheckCircle2,
+    Sparkles,
+    MessageSquareText
 } from 'lucide-react';
 import { format, parse, isValid, differenceInYears } from 'date-fns';
 import { validateCPF, handlePhoneMask, cleanFirestoreData, cn, isWhatsApp, getWhatsAppUrl } from '@/lib/utils';
@@ -45,6 +47,7 @@ import { Badge } from '@/components/ui/badge';
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
 import { CustomerAttachmentUploader } from '@/components/customers/customer-attachment-uploader';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { summarizeNotes } from '@/ai/flows/summarize-notes-flow';
 
 const benefitSchema = z.object({
     number: z.string().min(1, "O número do benefício é obrigatório."),
@@ -100,10 +103,11 @@ interface CustomerFormProps {
 
 export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, isSaving = false }: CustomerFormProps) {
   const [isFetchingCep, setIsFetchingCep] = useState(false);
+  const [isSummarizing, setIsSummarizing] = useState(false);
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
-    mode: 'onBlur', // 🛡️ VALIDAÇÃO IMEDIATA AO SAIR DO CAMPO
+    mode: 'onBlur',
     defaultValues: {
       name: '',
       cpf: '',
@@ -136,6 +140,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
   const watchEmail = form.watch('email');
   const watchCpf = form.watch('cpf');
   const watchBirthDate = form.watch('birthDate');
+  const watchObservations = form.watch('observations');
 
   const customerAge = useMemo(() => {
     if (!watchBirthDate || watchBirthDate.length < 10) return null;
@@ -223,6 +228,23 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     }
   }
 
+  const handleSummarize = async () => {
+    if (!watchObservations || watchObservations.trim().length < 10) {
+        toast({ variant: 'destructive', title: 'Texto muito curto', description: 'Escreva mais um pouco para a IA resumir.' });
+        return;
+    }
+    setIsSummarizing(true);
+    try {
+        const summary = await summarizeNotes(watchObservations);
+        form.setValue('observations', summary, { shouldValidate: true });
+        toast({ title: 'Resumo concluído com IA!' });
+    } catch (e) {
+        toast({ variant: 'destructive', title: 'Erro na IA' });
+    } finally {
+        setIsSummarizing(false);
+    }
+  };
+
   const handleFormSubmit = (data: CustomerFormValues) => {
     if (duplicity.phone || duplicity.email || duplicity.cpf) {
         toast({ variant: 'destructive', title: 'Dados duplicados detectados', description: 'Corrija campos em vermelho.' });
@@ -248,16 +270,16 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="py-2">
         <ScrollArea className="h-[75vh] pr-4">
           <div className="space-y-10">
-            {/* 🛡️ PAINEL DE ALERTAS CRÍTICOS NO TOPO */}
+            {/* PAINEL DE ALERTAS NO TOPO */}
             {hasErrors && (
                 <Alert variant="destructive" className="rounded-2xl border-2 animate-in slide-in-from-top-4 duration-300 bg-red-50 border-red-500">
                     <AlertCircle className="h-5 w-5 text-red-600" />
-                    <AlertTitle className="font-black uppercase text-sm tracking-widest text-red-700">Correção Obrigatória Necessária</AlertTitle>
+                    <AlertTitle className="font-black uppercase text-sm tracking-widest text-red-700">Correção Obrigatória</AlertTitle>
                     <AlertDescription className="text-xs font-bold text-red-600 space-y-1 mt-2">
                         {errors.cpf && <p>• {errors.cpf.message}</p>}
                         {errors.email && <p>• {errors.email.message}</p>}
-                        {errors.name && <p>• O nome informado é inválido ou muito curto.</p>}
-                        {errors.birthDate && <p>• A data de nascimento está incorreta.</p>}
+                        {errors.name && <p>• Nome inválido ou curto.</p>}
+                        {errors.birthDate && <p>• Data de nascimento incorreta.</p>}
                     </AlertDescription>
                 </Alert>
             )}
@@ -307,7 +329,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                                     placeholder="Nome oficial do cliente" 
                                     {...field} 
                                     className={cn(
-                                        "rounded-full h-11 px-5 border-zinc-200 focus-visible:ring-[#00AEEF] font-bold",
+                                        "rounded-full h-11 px-5 border-zinc-200 font-bold",
                                         errors.name && "border-red-500 bg-red-50"
                                     )} 
                                 />
@@ -342,7 +364,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                                     {!errors.cpf && watchCpf.length === 14 && <CheckCircle2 className="absolute right-4 top-3 h-5 w-5 text-green-500" />}
                                 </div>
                             </FormControl>
-                            <FormMessage className="text-[10px] font-black uppercase text-red-600 bg-red-50 px-2 py-0.5 rounded w-fit mt-1" />
+                            <FormMessage />
                             </FormItem>
                         )}
                     />
@@ -386,7 +408,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                                     {(duplicity.email || errors.email) && <AlertCircle className="absolute right-4 top-3 h-5 w-5 text-red-500" />}
                                 </div>
                             </FormControl>
-                            <FormMessage className="text-[10px] font-black uppercase text-red-600 bg-red-50 px-2 py-0.5 rounded w-fit mt-1" />
+                            <FormMessage />
                             </FormItem>
                         )}
                     />
@@ -531,7 +553,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                             <FormLabel className="text-xs font-medium text-muted-foreground">CEP</FormLabel>
                             <FormControl>
                                 <div className='relative'>
-                                    <Input placeholder="00000-000" {...field} value={field.value ?? ''} onBlur={handleCepBlur} maxLength={9} className="rounded-full h-11 px-5 border-zinc-200 focus-visible:ring-[#00AEEF] font-bold" />
+                                    <Input placeholder="00000-000" {...field} value={field.value ?? ''} onBlur={handleCepBlur} maxLength={9} className="rounded-full h-11 px-5 border-zinc-200 font-bold" />
                                     {isFetchingCep && <Loader2 className="absolute right-4 top-3.5 h-4 w-4 animate-spin text-[#00AEEF]" />}
                                 </div>
                             </FormControl>
@@ -563,7 +585,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
 
             <div className="h-px bg-zinc-100" />
 
-            {/* SEÇÃO: ANEXOS (DOCUMENTOS FIXOS) */}
+            {/* SEÇÃO: ANEXOS */}
             <div className="space-y-6">
                 <h3 className="text-xl font-bold uppercase tracking-tight text-[#00AEEF] flex items-center gap-2">
                     <FolderLock className="h-5 w-5" /> Central de Documentos Fixos
@@ -577,9 +599,26 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                 />
             </div>
 
-            {/* SEÇÃO: OBSERVAÇÕES */}
+            <div className="h-px bg-zinc-100" />
+
+            {/* SEÇÃO: OBSERVAÇÕES COM IA */}
             <div className="space-y-4 pb-10">
-                <h3 className="text-xl font-bold uppercase tracking-tight text-[#00AEEF]">Observações Estratégicas</h3>
+                <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-bold uppercase tracking-tight text-[#00AEEF] flex items-center gap-2">
+                        <MessageSquareText className="h-5 w-5" /> Observações Estratégicas
+                    </h3>
+                    <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm" 
+                        className="rounded-full h-9 px-5 border-primary/20 bg-primary/5 text-primary font-bold hover:bg-primary/10"
+                        onClick={handleSummarize}
+                        disabled={isSummarizing || !watchObservations}
+                    >
+                        {isSummarizing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                        Resumir com IA
+                    </Button>
+                </div>
                 <FormField
                     control={form.control}
                     name="observations"
@@ -590,7 +629,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                                 placeholder="Anotações internas sobre o perfil do cliente..." 
                                 {...field} 
                                 value={field.value ?? ''} 
-                                className="min-h-[100px] rounded-2xl border-zinc-200 bg-muted/5 p-5 focus-visible:ring-[#00AEEF] font-medium"
+                                className="min-h-[120px] rounded-2xl border-zinc-200 bg-muted/5 p-5 focus-visible:ring-[#00AEEF] font-medium"
                             />
                         </FormControl>
                         </FormItem>
