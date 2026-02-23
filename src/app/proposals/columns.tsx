@@ -419,7 +419,7 @@ export const getColumns = (
   {
     id: 'Actions',
     header: '',
-    cell: (props) => <ActionsCell {...props} onEdit={onEdit} onDelete={onDelete} />,
+    cell: (props) => <ActionsCell {...props} onEdit={onEdit} onView={onView} onDelete={onDelete} onDuplicate={onDuplicate} />,
     enableHiding: false,
     size: 80,
   },

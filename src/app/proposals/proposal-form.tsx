@@ -183,6 +183,7 @@ export function ProposalForm({
   
   const currentProposalId = proposal?.id || tempProposalId;
 
+  // 🛡️ BLINDAGEM NUCLEAR V8: Garantindo defaultValues em todos os campos para evitar uncontrolled inputs
   const form = useForm<ProposalFormValues>({
     resolver: zodResolver(proposalSchema),
     defaultValues: {
