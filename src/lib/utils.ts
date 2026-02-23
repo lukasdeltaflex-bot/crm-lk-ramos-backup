@@ -38,6 +38,7 @@ export function normalizeString(str: string): string {
 export function isWhatsApp(phone: string): boolean {
     if (!phone) return false;
     const digitsOnly = phone.replace(/\D/g, '');
+    // WhatsApp brasileiro exige 11 dígitos (DDD + 9 + 8 dígitos)
     return digitsOnly.length === 11;
 }
 

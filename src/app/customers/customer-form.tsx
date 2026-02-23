@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Sparkles, Loader2, PlusCircle, Trash2, FileText as FileIcon, UserCheck, UserX, AlertTriangle } from 'lucide-react';
+import { Sparkles, Loader2, PlusCircle, Trash2, FileText as FileIcon, UserCheck, UserX, AlertTriangle, MapPin } from 'lucide-react';
 import { format, parse, isValid } from 'date-fns';
 import { getAge, validateCPF, handlePhoneMask, isWhatsApp, cleanFirestoreData } from '@/lib/utils';
 import type { Customer, Attachment } from '@/lib/types';
@@ -178,13 +178,11 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
   const phone2Value = form.watch('phone2');
   const cpfValue = form.watch('cpf');
 
-  // 🛡️ DETECTOR DE DUPLICIDADE: CPF
   const duplicateCpfCustomer = useMemo(() => {
     if (!cpfValue || cpfValue.length < 14) return null;
     return allCustomers.find(c => c.cpf === cpfValue && c.id !== customer?.id);
   }, [cpfValue, allCustomers, customer]);
 
-  // 🛡️ DETECTOR DE DUPLICIDADE: TELEFONE
   const duplicatePhoneCustomer = useMemo(() => {
     if (!phoneValue || phoneValue.replace(/\D/g, '').length < 10) return null;
     const cleanPhone = phoneValue.replace(/\D/g, '');
@@ -415,7 +413,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                                             maxLength={15}
                                         />
                                         {isWhatsApp(phoneValue || '') && (
-                                            <WhatsAppIcon className="absolute right-3 top-2.5" />
+                                            <WhatsAppIcon className="absolute right-3 top-2.5 cursor-pointer hover:scale-110 transition-transform" />
                                         )}
                                     </div>
                                 </FormControl>
@@ -446,7 +444,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                                             maxLength={15}
                                         />
                                         {isWhatsApp(phone2Value || '') && (
-                                            <WhatsAppIcon className="absolute right-3 top-2.5" />
+                                            <WhatsAppIcon className="absolute right-3 top-2.5 cursor-pointer hover:scale-110 transition-transform" />
                                         )}
                                     </div>
                                 </FormControl>
@@ -529,7 +527,11 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                                     if (v.length > 5) v = v.replace(/(\d{5})(\d)/, "$1-$2");
                                     field.onChange(v);
                                 }} />
-                                {isFetchingCep && <Loader2 className="absolute right-3 top-2.5 h-5 w-5 animate-spin text-muted-foreground" />}
+                                {isFetchingCep ? (
+                                    <Loader2 className="absolute right-3 top-2.5 h-5 w-5 animate-spin text-primary" />
+                                ) : (
+                                    <MapPin className="absolute right-3 top-2.5 h-5 w-5 text-muted-foreground opacity-30" />
+                                )}
                             </div>
                         </FormControl>
                         <FormMessage />

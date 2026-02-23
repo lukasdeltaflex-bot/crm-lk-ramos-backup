@@ -255,7 +255,7 @@ export const getColumns = (
                         href={getWhatsAppUrl(customer.phone)} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-green-600 hover:text-green-700 transition-colors shrink-0"
+                        className="text-green-600 hover:text-green-700 transition-colors hover:scale-110 shrink-0"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <WhatsAppIcon className="h-3.5 w-3.5" />

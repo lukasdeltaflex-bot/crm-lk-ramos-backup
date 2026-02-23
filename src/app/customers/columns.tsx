@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ColumnDef, Header, flexRender } from '@tanstack/react-table';
@@ -268,7 +267,7 @@ export const getColumns = (
           <div className="flex items-center gap-2 font-bold text-sm">
             <span>{phone}</span>
             {isWhatsAppNumber && (
-              <a href={getWhatsAppUrl(phone)} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:text-green-700" onClick={(e) => e.stopPropagation()}>
+              <a href={getWhatsAppUrl(phone)} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:text-green-700 transition-transform hover:scale-110" onClick={(e) => e.stopPropagation()}>
                 <WhatsAppIcon className="h-4 w-4" />
               </a>
             )}
@@ -289,7 +288,7 @@ export const getColumns = (
           <div className="flex items-center gap-2 font-bold text-sm text-foreground/80">
             <span>{phone}</span>
             {isWhatsAppNumber && (
-              <a href={getWhatsAppUrl(phone)} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:text-green-700" onClick={(e) => e.stopPropagation()}>
+              <a href={getWhatsAppUrl(phone)} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:text-green-700 transition-transform hover:scale-110" onClick={(e) => e.stopPropagation()}>
                 <WhatsAppIcon className="h-4 w-4" />
               </a>
             )}

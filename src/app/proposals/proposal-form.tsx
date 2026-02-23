@@ -484,6 +484,7 @@ export function ProposalForm({
                 <Clock className="h-4 w-4" /> Prazos e Informações da Esteira
               </h3>
               
+              {/* LINHA 1: BENEFÍCIO, ÓRGÃO, BANCO DIGITADO */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
@@ -539,6 +540,7 @@ export function ProposalForm({
                 />
               </div>
 
+              {/* LINHA 2: BANCO PORTADO (ORIGEM), Nº PROPOSTA, TABELA */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {productValue === 'Portabilidade' ? (
                     <FormField
@@ -569,7 +571,7 @@ export function ProposalForm({
                   name="proposalNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nº Proposta</FormLabel>
+                      <FormLabel>Nº de Proposta</FormLabel>
                       <FormControl><Input placeholder="Número oficial" {...field} value={field.value ?? ''} readOnly={isReadOnly || isSaving}/></FormControl>
                       <FormMessage />
                       {duplicateProposal && (
@@ -590,6 +592,7 @@ export function ProposalForm({
                 />
               </div>
 
+              {/* LINHA 3: DATAS DINÂMICAS */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
@@ -655,6 +658,7 @@ export function ProposalForm({
                 )}
               </div>
 
+              {/* LINHA 4: OPERADOR E PROMOTORA */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
