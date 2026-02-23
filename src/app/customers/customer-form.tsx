@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Sparkles, Loader2, PlusCircle, Trash2, FileText as FileIcon, UserCheck, UserX } from 'lucide-react';
+import { Sparkles, Loader2, PlusCircle, Trash2, FileText as FileIcon, UserCheck, UserX, AlertTriangle } from 'lucide-react';
 import { format, parse, isValid } from 'date-fns';
 import { getAge, validateCPF, handlePhoneMask, isWhatsApp, cleanFirestoreData } from '@/lib/utils';
 import type { Customer, Attachment } from '@/lib/types';
@@ -35,6 +35,7 @@ import { CustomerAttachmentUploader } from '@/components/customers/customer-atta
 import { useUser, useFirestore } from '@/firebase';
 import { doc, collection } from 'firebase/firestore';
 import { useTheme } from '@/components/theme-provider';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const benefitSchema = z.object({
     number: z.string().min(1, "O número do benefício é obrigatório."),
@@ -177,10 +178,21 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
   const phone2Value = form.watch('phone2');
   const cpfValue = form.watch('cpf');
 
+  // 🛡️ DETECTOR DE DUPLICIDADE: CPF
   const duplicateCpfCustomer = useMemo(() => {
     if (!cpfValue || cpfValue.length < 14) return null;
     return allCustomers.find(c => c.cpf === cpfValue && c.id !== customer?.id);
   }, [cpfValue, allCustomers, customer]);
+
+  // 🛡️ DETECTOR DE DUPLICIDADE: TELEFONE
+  const duplicatePhoneCustomer = useMemo(() => {
+    if (!phoneValue || phoneValue.replace(/\D/g, '').length < 10) return null;
+    const cleanPhone = phoneValue.replace(/\D/g, '');
+    return allCustomers.find(c => {
+        const otherPhone = c.phone?.replace(/\D/g, '');
+        return otherPhone === cleanPhone && c.id !== customer?.id;
+    });
+  }, [phoneValue, allCustomers, customer]);
 
   useEffect(() => {
     if (birthDateValue && birthDateValue.length === 10) {
@@ -257,8 +269,8 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
   }
 
   function handleFormSubmit(data: CustomerFormValues) {
-    if (duplicateCpfCustomer) {
-        toast({ variant: 'destructive', title: 'CPF Duplicado' });
+    if (duplicateCpfCustomer || duplicatePhoneCustomer) {
+        toast({ variant: 'destructive', title: 'Registro Duplicado', description: 'Corrija os campos em vermelho.' });
         return;
     }
 
@@ -342,7 +354,11 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         </FormControl>
                         <FormMessage />
                         {duplicateCpfCustomer && (
-                            <p className="text-xs text-destructive font-bold">CPF já cadastrado para: {duplicateCpfCustomer.name}</p>
+                            <Alert variant="destructive" className="mt-2 py-2 px-3 border-2 border-red-500 bg-red-50 animate-bounce">
+                                <AlertTriangle className="h-4 w-4" />
+                                <AlertTitle className="text-xs font-black uppercase">CPF Duplicado!</AlertTitle>
+                                <AlertDescription className="text-[10px] font-bold">Já pertence a <strong>{duplicateCpfCustomer.name}</strong>.</AlertDescription>
+                            </Alert>
                         )}
                         </FormItem>
                     )}
@@ -404,6 +420,13 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                                     </div>
                                 </FormControl>
                                 <FormMessage />
+                                {duplicatePhoneCustomer && (
+                                    <Alert variant="destructive" className="mt-2 py-2 px-3 border-2 border-red-500 bg-red-50 animate-bounce">
+                                        <AlertTriangle className="h-4 w-4" />
+                                        <AlertTitle className="text-xs font-black uppercase">Telefone em uso!</AlertTitle>
+                                        <AlertDescription className="text-[10px] font-bold">Cadastrado para: <strong>{duplicatePhoneCustomer.name}</strong>.</AlertDescription>
+                                    </Alert>
+                                )}
                             </FormItem>
                         )}
                     />
@@ -638,7 +661,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
           </div>
         </ScrollArea>
         <div className="flex justify-end pt-8">
-            <Button type="submit" disabled={isSaving || !!duplicateCpfCustomer} className="rounded-full px-10 font-bold bg-[#00AEEF] hover:bg-[#0096D1] h-12 shadow-lg shadow-[#00AEEF]/20">
+            <Button type="submit" disabled={isSaving || !!duplicateCpfCustomer || !!duplicatePhoneCustomer} className="rounded-full px-10 font-bold bg-[#00AEEF] hover:bg-[#0096D1] h-12 shadow-lg shadow-[#00AEEF]/20">
                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Salvar Cliente
             </Button>
