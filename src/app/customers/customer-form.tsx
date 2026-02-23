@@ -114,7 +114,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
 
-  // 🛡️ ESTRATÉGIA SENIOR V9: Chave única forçada pelo ID para resolver reset de Gênero
+  // 🛡️ ESTRATÉGIA SENIOR V10: Chave única forçada garante remonte total no Editar
   const formKey = customer?.id || defaultValues?.id || 'new';
 
   const form = useForm<CustomerFormValues>({
@@ -197,7 +197,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       form.reset({
         name: source.name || '',
         cpf: source.cpf || '',
-        gender: source.gender || '', 
+        gender: source.gender ?? '', // 🛡️ FIX GÊNERO: Coalescência nula garante string "" para o Select
         status: source.status || 'active',
         benefits: source.benefits || [],
         phone: source.phone || '',
@@ -242,7 +242,8 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
 
   useEffect(() => {
     const cleanCep = (watchCep || '').replace(/\D/g, '');
-    // 🛡️ FIX SENIOR: Só busca se o campo estiver marcado como "editado pelo usuário" (isDirty)
+    // 🛡️ FIX CEP: Só dispara se o campo estiver "sujo" (editado pelo usuário nesta sessão)
+    // Isso evita o disparo do Toast ao apenas abrir a edição de um cliente existente.
     if (cleanCep.length === 8 && form.formState.dirtyFields.cep) {
         handleCepLookup(cleanCep);
     }
@@ -276,7 +277,8 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       birthDate: format(parsedDate, 'yyyy-MM-dd'),
       benefits: data.benefits || [],
       documents: data.documents || [],
-      gender: data.gender === "Masculino" || data.gender === "Feminino" ? data.gender : undefined
+      // 🛡️ FIX GÊNERO: Salva o valor exato ou string vazia para manter persistência no Firestore
+      gender: data.gender === "Masculino" || data.gender === "Feminino" ? data.gender : ""
     };
     onSubmit(cleanFirestoreData(newCustomerData));
   }
