@@ -400,6 +400,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                           <Select onValueChange={field.onChange} value={field.value || ""}>
                             <FormControl><SelectTrigger className="rounded-full h-11 px-5 border-zinc-200 font-bold"><SelectValue placeholder="Opcional" /></SelectTrigger></FormControl>
                             <SelectContent>
+                              <SelectItem value="">Opcional</SelectItem>
                               <SelectItem value="Masculino">Masculino</SelectItem>
                               <SelectItem value="Feminino">Feminino</SelectItem>
                             </SelectContent>
