@@ -366,52 +366,6 @@ export function ProposalForm({
         .finally(() => setIsAddingHistory(false));
   };
 
-  const handleExportCover = async () => {
-    if (!proposal || !selectedCustomer || !user) return;
-    const { default: jsPDF } = await import('jspdf');
-    const doc = new jsPDF();
-    const primaryColor = [0, 174, 239];
-    
-    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.rect(0, 0, 210, 40, 'F');
-    doc.setTextColor(255);
-    doc.setFontSize(22);
-    doc.setFont("helvetica", "bold");
-    doc.text("CAPA DE PROPOSTA", 14, 25);
-    
-    doc.setTextColor(0);
-    doc.setFontSize(10);
-    doc.text(`Gerado por: ${user.displayName || user.email}`, 14, 50);
-    doc.text(`Data: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 55);
-    
-    doc.setDrawColor(200);
-    doc.line(14, 60, 196, 60);
-    
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("DADOS DO CLIENTE", 14, 75);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Nome: ${selectedCustomer.name}`, 14, 85);
-    doc.text(`CPF: ${selectedCustomer.cpf}`, 14, 92);
-    doc.text(`Telefone: ${selectedCustomer.phone}`, 14, 99);
-    
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("DADOS DA OPERAÇÃO", 14, 115);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Nº Proposta: ${proposal.proposalNumber}`, 14, 125);
-    doc.text(`Produto: ${proposal.product}`, 14, 132);
-    doc.text(`Banco: ${cleanBankName(proposal.bank)}`, 14, 139);
-    doc.text(`Valor Bruto: ${formatCurrency(proposal.grossAmount)}`, 14, 146);
-    doc.text(`Valor Líquido: ${formatCurrency(proposal.netAmount)}`, 14, 153);
-    doc.text(`Prazo: ${proposal.term} meses`, 14, 160);
-    
-    doc.save(`Capa_Proposta_${proposal.proposalNumber}.pdf`);
-    toast({ title: "Capa Gerada!" });
-  };
-
   const statusColor = currentStatusValue ? (statusColors[currentStatusValue.toUpperCase()] || statusColors[currentStatusValue]) : undefined;
 
   return (
@@ -419,22 +373,23 @@ export function ProposalForm({
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="py-4">
         <ScrollArea className="h-[70vh] pr-4 print:h-auto print:overflow-visible">
           <div className="space-y-8">
+            {/* LINHA 1: VINCULAÇÃO E STATUS */}
             <div className="space-y-4">
               <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
-                <FolderLock className="h-4 w-4" /> Vinculação do Registro
+                <FolderLock className="h-4 w-4" /> Registro LK RAMOS
               </h3>
               <FormField
                 control={form.control}
                 name="customerId"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Cliente</FormLabel>
+                        <FormLabel>Cliente Selecionado</FormLabel>
                         <div className="flex items-center gap-2">
                             <FormControl>
-                                <Input readOnly value={selectedCustomerName} className="flex-1 bg-muted/30" />
+                                <Input readOnly value={selectedCustomerName} className="flex-1 bg-muted/30 font-bold" />
                             </FormControl>
-                            <Button type="button" variant="outline" onClick={onOpenCustomerSearch} disabled={isReadOnly || isSaving}>
-                                {field.value ? 'Trocar' : 'Selecionar'} Cliente
+                            <Button type="button" variant="outline" onClick={onOpenCustomerSearch} disabled={isReadOnly || isSaving} className="font-bold">
+                                {field.value ? 'Trocar' : 'Buscar'} Cliente
                             </Button>
                         </div>
                         <FormMessage />
@@ -450,7 +405,7 @@ export function ProposalForm({
                     <FormItem>
                         <FormLabel>Produto</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isReadOnly || isSaving}>
-                        <FormControl><SelectTrigger><SelectValue placeholder="Selecione o Produto" /></SelectTrigger></FormControl>
+                        <FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Produto" /></SelectTrigger></FormControl>
                         <SelectContent>{productTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}</SelectContent>
                         </Select><FormMessage /></FormItem>
                     )}
@@ -460,7 +415,7 @@ export function ProposalForm({
                     name="status"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Status Atual</FormLabel>
+                        <FormLabel>Status da Esteira</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isReadOnly || isSaving}>
                         <FormControl>
                             <SelectTrigger 
@@ -479,27 +434,28 @@ export function ProposalForm({
 
             <Separator />
 
+            {/* ESTEIRA V11: ORDEM SOLICITADA */}
             <div className="space-y-4">
               <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
-                <Clock className="h-4 w-4" /> Prazos e Informações da Esteira
+                <Clock className="h-4 w-4" /> Esteira Operacional V11
               </h3>
               
-              {/* LINHA 1: BENEFÍCIO, ÓRGÃO, BANCO DIGITADO */}
+              {/* LINHA 1: NB, ÓRGÃO, BANCO DIGITADO */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
                   name="selectedBenefitNumber"
                   render={({ field }) => (
-                    <FormItem><FormLabel>Nº do Benefício</FormLabel>
+                    <FormItem><FormLabel>Nº do Benefício (NB)</FormLabel>
                       {selectedCustomer && selectedCustomer.benefits && selectedCustomer.benefits.length > 0 ? (
                         <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isReadOnly || isSaving}>
-                          <FormControl><SelectTrigger><SelectValue placeholder="NB" /></SelectTrigger></FormControl>
+                          <FormControl><SelectTrigger className="font-mono font-bold"><SelectValue placeholder="Selecionar NB" /></SelectTrigger></FormControl>
                           <SelectContent>{selectedCustomer.benefits.map(benefit => (
                               <SelectItem key={benefit.number} value={benefit.number}>{benefit.number}</SelectItem>
                             ))}</SelectContent>
                         </Select>
                       ) : (
-                        <FormControl><Input placeholder="Sem benefícios" {...field} value={field.value ?? ''} readOnly={isReadOnly || isSaving} disabled={isReadOnly || !selectedCustomerId || isSaving}/></FormControl>
+                        <FormControl><Input placeholder="Sem NB vinculado" {...field} value={field.value ?? ''} className="font-mono" readOnly={isReadOnly || isSaving} disabled={isReadOnly || !selectedCustomerId || isSaving}/></FormControl>
                       )}<FormMessage /></FormItem>
                   )}
                 />
@@ -510,7 +466,7 @@ export function ProposalForm({
                     <FormItem>
                         <FormLabel>Órgão</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isReadOnly || isSaving}>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Órgão" /></SelectTrigger></FormControl>
+                            <FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Órgão" /></SelectTrigger></FormControl>
                             <SelectContent>{approvingBodies.map(body => <SelectItem key={body} value={body}>{body}</SelectItem>)}</SelectContent>
                         </Select>
                         <FormMessage />
@@ -524,7 +480,7 @@ export function ProposalForm({
                     <FormItem>
                         <FormLabel>Banco Digitado</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isReadOnly || isSaving}>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Banco" /></SelectTrigger></FormControl>
+                            <FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Banco" /></SelectTrigger></FormControl>
                             <SelectContent>{banks.map(b => (
                                 <SelectItem key={b} value={b}>
                                     <div className="flex items-center gap-2">
@@ -540,7 +496,7 @@ export function ProposalForm({
                 />
               </div>
 
-              {/* LINHA 2: BANCO PORTADO (ORIGEM), Nº PROPOSTA, TABELA */}
+              {/* LINHA 2: BANCO PORTADO, Nº PROPOSTA, TABELA */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {productValue === 'Portabilidade' ? (
                     <FormField
@@ -550,7 +506,7 @@ export function ProposalForm({
                             <FormItem>
                                 <FormLabel>Banco Portado (Origem)</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isReadOnly || isSaving}>
-                                    <FormControl><SelectTrigger><SelectValue placeholder="Origem" /></SelectTrigger></FormControl>
+                                    <FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Origem" /></SelectTrigger></FormControl>
                                     <SelectContent>{banks.map(b => (
                                         <SelectItem key={b} value={b}>
                                             <div className="flex items-center gap-2">
@@ -572,14 +528,8 @@ export function ProposalForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Nº de Proposta</FormLabel>
-                      <FormControl><Input placeholder="Número oficial" {...field} value={field.value ?? ''} readOnly={isReadOnly || isSaving}/></FormControl>
+                      <FormControl><Input placeholder="Contrato" {...field} value={field.value ?? ''} readOnly={isReadOnly || isSaving} className="font-bold"/></FormControl>
                       <FormMessage />
-                      {duplicateProposal && (
-                        <Alert variant="destructive" className="mt-2 py-2 px-3 border-2 border-red-500 bg-red-50 animate-bounce"><AlertTriangle className="h-4 w-4" />
-                            <AlertTitle className="text-xs font-black uppercase">Proposta Duplicada!</AlertTitle>
-                            <AlertDescription className="text-[10px] font-bold">Já pertence a <strong>{customers.find(c => c.id === duplicateProposal.customerId)?.name}</strong>.</AlertDescription>
-                        </Alert>
-                      )}
                     </FormItem>
                   )}
                 />
@@ -587,12 +537,12 @@ export function ProposalForm({
                   control={form.control}
                   name="table"
                   render={({ field }) => (
-                    <FormItem><FormLabel>Tabela</FormLabel><FormControl><Input placeholder="Nome da Tabela" {...field} value={field.value ?? ''} readOnly={isReadOnly || isSaving} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Tabela</FormLabel><FormControl><Input placeholder="Tabela" {...field} value={field.value ?? ''} readOnly={isReadOnly || isSaving} className="font-bold"/></FormControl><FormMessage /></FormItem>
                   )}
                 />
               </div>
 
-              {/* LINHA 3: DATAS DINÂMICAS */}
+              {/* LINHA 3: DATAS DINÂMICAS CONDICIONAIS */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
@@ -612,7 +562,7 @@ export function ProposalForm({
                             name="debtBalanceArrivalDate"
                             render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>Data Retorno Saldo</FormLabel>
+                                <FormLabel>Retorno Saldo</FormLabel>
                                 <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(applyDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -623,7 +573,7 @@ export function ProposalForm({
                             name="dateApproved"
                             render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>Data Averbação</FormLabel>
+                                <FormLabel>Averbação</FormLabel>
                                 <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(applyDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -648,7 +598,7 @@ export function ProposalForm({
                             name="datePaidToClient"
                             render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>Pgto. ao Cliente</FormLabel>
+                                <FormLabel>Pagamento Cliente</FormLabel>
                                 <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(applyDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -679,36 +629,12 @@ export function ProposalForm({
 
             <Separator />
 
+            {/* FINANCEIRO */}
             <div className="space-y-4">
                 <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
-                    <Check className="h-4 w-4" /> Valores e Performance Financeira
+                    <Check className="h-4 w-4" /> Valores Financeiros
                 </h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="term" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Prazo</FormLabel>
-                            <FormControl>
-                                <div className="relative">
-                                    <Input type="number" {...field} value={field.value ?? 84} readOnly={isReadOnly || isSaving} />
-                                    <span className="absolute right-3 top-2.5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Meses</span>
-                                </div>
-                            </FormControl>
-                        </FormItem>
-                    )} />
-                    <FormField control={form.control} name="interestRate" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Taxa de Juros (%)</FormLabel>
-                            <FormControl>
-                                <div className="relative">
-                                    <Input type="number" step="0.01" {...field} value={field.value ?? 0} readOnly={isReadOnly || isSaving} />
-                                    <span className="absolute right-3 top-2.5 text-[10px] font-black text-muted-foreground">%</span>
-                                </div>
-                            </FormControl>
-                        </FormItem>
-                    )} />
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField control={form.control} name="installmentAmount" render={({ field }) => (
                         <FormItem>
@@ -716,7 +642,7 @@ export function ProposalForm({
                             <FormControl>
                                 <div className="relative">
                                     <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
-                                    <Input type="number" step="0.01" className="pl-9" {...field} value={field.value ?? 0} readOnly={isReadOnly || isSaving} />
+                                    <Input type="number" step="0.01" className="pl-9 font-bold" {...field} value={field.value ?? 0} readOnly={isReadOnly || isSaving} />
                                 </div>
                             </FormControl>
                         </FormItem>
@@ -727,7 +653,7 @@ export function ProposalForm({
                             <FormControl>
                                 <div className="relative">
                                     <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
-                                    <Input type="number" step="0.01" className="pl-9" {...field} value={field.value ?? 0} readOnly={isReadOnly || isSaving} />
+                                    <Input type="number" step="0.01" className="pl-9 font-bold" {...field} value={field.value ?? 0} readOnly={isReadOnly || isSaving} />
                                 </div>
                             </FormControl>
                         </FormItem>
@@ -738,7 +664,7 @@ export function ProposalForm({
                             <FormControl>
                                 <div className="relative">
                                     <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
-                                    <Input type="number" step="0.01" className="pl-9" {...field} value={field.value ?? 0} readOnly={isReadOnly || isSaving} />
+                                    <Input type="number" step="0.01" className="pl-9 font-bold" {...field} value={field.value ?? 0} readOnly={isReadOnly || isSaving} />
                                 </div>
                             </FormControl>
                         </FormItem>
@@ -749,7 +675,7 @@ export function ProposalForm({
                         <FormItem>
                             <FormLabel>Base do Cálculo</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value ?? 'gross'} disabled={isReadOnly || isSaving}>
-                                <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                <FormControl><SelectTrigger className="font-bold"><SelectValue /></SelectTrigger></FormControl>
                                 <SelectContent>
                                     <SelectItem value="gross">Sobre o Bruto</SelectItem>
                                     <SelectItem value="net">Sobre o Líquido</SelectItem>
@@ -762,7 +688,7 @@ export function ProposalForm({
                             <FormLabel>Comissão (%)</FormLabel>
                             <FormControl>
                                 <div className="relative">
-                                    <Input type="number" step="0.01" className="pr-8" {...field} value={field.value ?? 0} readOnly={isReadOnly || isSaving} />
+                                    <Input type="number" step="0.01" className="pr-8 font-bold" {...field} value={field.value ?? 0} readOnly={isReadOnly || isSaving} />
                                     <span className="absolute right-3 top-2.5 text-[10px] font-black text-muted-foreground">%</span>
                                 </div>
                             </FormControl>
@@ -774,7 +700,7 @@ export function ProposalForm({
                             <FormControl>
                                 <div className="relative">
                                     <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
-                                    <Input type="number" step="0.01" className="pl-9 font-bold text-primary" {...field} value={field.value ?? 0} readOnly={isReadOnly || isSaving} />
+                                    <Input type="number" step="0.01" className="pl-9 font-black text-primary" {...field} value={field.value ?? 0} readOnly={isReadOnly || isSaving} />
                                 </div>
                             </FormControl>
                         </FormItem>
@@ -784,30 +710,31 @@ export function ProposalForm({
 
             <Separator />
 
+            {/* HISTÓRICO */}
             <div className="space-y-4">
                 <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
-                    <History className="h-4 w-4" /> Linha do Tempo da Proposta
+                    <History className="h-4 w-4" /> Linha do Tempo
                 </h3>
                 {proposal?.id && (
                     <div className="space-y-4">
                         <div className="flex gap-2">
-                            <Input placeholder="Nova atualização de trâmite..." value={newHistoryEntry} onChange={e => setNewHistoryEntry(e.target.value)} disabled={isAddingHistory} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddHistory())} />
+                            <Input placeholder="Nova atualização de trâmite..." value={newHistoryEntry} onChange={e => setNewHistoryEntry(e.target.value)} disabled={isAddingHistory} />
                             <Button type="button" size="sm" onClick={handleAddHistory} disabled={isAddingHistory || !newHistoryEntry.trim()}>
                                 {isAddingHistory ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                             </Button>
                         </div>
-                        <div className="space-y-3 max-h-[250px] overflow-y-auto pr-2">
+                        <div className="space-y-3 max-h-[200px] overflow-y-auto">
                             {proposal.history && proposal.history.length > 0 ? (
                                 [...proposal.history].sort((a,b) => b.date.localeCompare(a.date)).map(entry => (
-                                    <div key={entry.id} className="p-3 bg-muted/30 rounded-lg border border-border/50">
-                                        <div className="flex items-center justify-between mb-1">
-                                            <span className="text-[10px] font-black uppercase text-primary/70">{entry.userName}</span>
-                                            <span className="text-[9px] text-muted-foreground">{format(parseISO(entry.date), "dd/MM/yy HH:mm")}</span>
+                                    <div key={entry.id} className="p-3 bg-muted/30 rounded-lg border text-xs">
+                                        <div className="flex justify-between font-black uppercase text-primary/70 mb-1">
+                                            <span>{entry.userName}</span>
+                                            <span>{format(parseISO(entry.date), "dd/MM/yy HH:mm")}</span>
                                         </div>
-                                        <p className="text-xs text-foreground flex items-start gap-2"><MessageSquareQuote className="h-3 w-3 mt-0.5 text-muted-foreground shrink-0" />{entry.message}</p>
+                                        <p className="text-foreground">{entry.message}</p>
                                     </div>
                                 ))
-                            ) : <div className="text-center py-8 opacity-20"><History className="mx-auto mb-2" /><p className="text-xs font-bold uppercase tracking-tighter">Nenhum trâmite registrado.</p></div>}
+                            ) : <p className="text-center text-[10px] text-muted-foreground uppercase py-4">Sem trâmites registrados.</p>}
                         </div>
                     </div>
                 )}
@@ -815,15 +742,16 @@ export function ProposalForm({
 
             <Separator />
 
+            {/* ANEXOS */}
             <div className="space-y-4">
                 <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
-                    <FolderLock className="h-4 w-4" /> Anexos e Digitalização
+                    <FolderLock className="h-4 w-4" /> Documentação
                 </h3>
                 {isAttachmentSectionDisabled ? (
-                    <Alert className="bg-secondary">
+                    <Alert className="bg-secondary/50 border-none">
                         <Info className="h-4 w-4" />
-                        <AlertTitle>Upload Bloqueado</AlertTitle>
-                        <AlertDescription className='text-xs'>Salve a proposta pela primeira vez para liberar o upload de arquivos.</AlertDescription>
+                        <AlertTitle className="text-xs font-bold uppercase">Upload Bloqueado</AlertTitle>
+                        <AlertDescription className='text-[10px]'>Salve a proposta antes de anexar arquivos.</AlertDescription>
                     </Alert>
                 ) : (
                     <ProposalAttachmentUploader 
@@ -837,18 +765,9 @@ export function ProposalForm({
             </div>
           </div>
         </ScrollArea>
-        <div className="flex justify-between items-center pt-8 print:hidden">
-            <div className="flex items-center gap-2">
-                {sheetMode !== 'new' && proposal && (
-                    <>
-                        <Button type="button" variant="outline" onClick={() => onDuplicate(proposal)} disabled={isSaving}><Copy /> Duplicar</Button>
-                        <Button type="button" variant="outline" onClick={() => window.print()} disabled={isSaving}><Printer /> Imprimir</Button>
-                        <Button type="button" variant="outline" onClick={handleExportCover} disabled={isSaving} className="bg-primary/5 border-primary/20 text-primary"><FileBadge className="mr-2 h-4 w-4" /> Capa PDF</Button>
-                    </>
-                )}
-            </div>
+        <div className="flex justify-end items-center pt-8 border-t bg-background">
             {!isReadOnly && (
-                <Button type="submit" disabled={isSaving || !!duplicateProposal}>
+                <Button type="submit" disabled={isSaving || !!duplicateProposal} className="rounded-full px-10 font-black uppercase tracking-widest bg-[#00AEEF]">
                     {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...</> : 'Salvar Proposta'}
                 </Button>
             )}
