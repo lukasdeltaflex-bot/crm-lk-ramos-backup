@@ -243,7 +243,6 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
   useEffect(() => {
     const cleanCep = (watchCep || '').replace(/\D/g, '');
     // 🛡️ FIX CEP: Só dispara se o campo estiver "sujo" (editado pelo usuário nesta sessão)
-    // Isso evita o disparo do Toast ao apenas abrir a edição de um cliente existente.
     if (cleanCep.length === 8 && form.formState.dirtyFields.cep) {
         handleCepLookup(cleanCep);
     }
@@ -277,8 +276,8 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       birthDate: format(parsedDate, 'yyyy-MM-dd'),
       benefits: data.benefits || [],
       documents: data.documents || [],
-      // 🛡️ FIX GÊNERO: Salva o valor exato ou string vazia para manter persistência no Firestore
-      gender: data.gender === "Masculino" || data.gender === "Feminino" ? data.gender : ""
+      // 🛡️ FIX GÊNERO: Padroniza para string vazia para manter persistência e evitar reset no Select
+      gender: data.gender || ""
     };
     onSubmit(cleanFirestoreData(newCustomerData));
   }
