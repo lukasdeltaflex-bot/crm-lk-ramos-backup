@@ -74,7 +74,7 @@ const customerSchema = z.object({
   cpf: z.string().min(11, 'CPF obrigatório.').refine((val) => validateCPF(val), {
     message: "CPF Inválido - Verifique os dígitos.",
   }),
-  gender: z.string().optional().default(""),
+  gender: z.string().optional(),
   status: z.enum(['active', 'inactive']).default('active'),
   benefits: z.array(benefitSchema).optional(),
   phone: z.string().min(10, 'O telefone principal é obrigatório.'),
@@ -120,7 +120,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     defaultValues: {
       name: '',
       cpf: '',
-      gender: '',
+      gender: undefined,
       status: 'active',
       benefits: [],
       phone: '',
@@ -194,7 +194,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       form.reset({
         name: source.name || '',
         cpf: source.cpf || '',
-        gender: source.gender ?? '', 
+        gender: source.gender ?? undefined, 
         status: source.status || 'active',
         benefits: source.benefits || [],
         phone: source.phone || '',
@@ -274,7 +274,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       birthDate: format(parsedDate, 'yyyy-MM-dd'),
       benefits: data.benefits || [],
       documents: data.documents || [],
-      gender: data.gender || ""
+      gender: data.gender
     };
     onSubmit(cleanFirestoreData(newCustomerData));
   }
@@ -397,10 +397,9 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                           <FormLabel className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                             <UserRound className="h-3.5 w-3.5 text-[#00AEEF]" /> Gênero
                           </FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value || ""}>
+                          <Select onValueChange={field.onChange} value={field.value ?? undefined}>
                             <FormControl><SelectTrigger className="rounded-full h-11 px-5 border-zinc-200 font-bold"><SelectValue placeholder="Opcional" /></SelectTrigger></FormControl>
                             <SelectContent>
-                              <SelectItem value="">Opcional</SelectItem>
                               <SelectItem value="Masculino">Masculino</SelectItem>
                               <SelectItem value="Feminino">Feminino</SelectItem>
                             </SelectContent>

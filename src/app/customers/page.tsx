@@ -307,7 +307,7 @@ function CustomersPageContent() {
         >
           <DialogHeader><DialogTitle>{sheetMode === 'edit' ? 'Editar' : 'Novo'} Cliente</DialogTitle></DialogHeader>
           <CustomerForm
-            key={selectedCustomer?.id || defaultValues?.id || 'new'}
+            key="customer-form"
             onSubmit={handleFormSubmit}
             customer={selectedCustomer}
             allCustomers={customers || []}
