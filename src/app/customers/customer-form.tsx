@@ -74,7 +74,7 @@ const customerSchema = z.object({
   cpf: z.string().min(11, 'CPF obrigatório.').refine((val) => validateCPF(val), {
     message: "CPF Inválido - Verifique os dígitos.",
   }),
-  gender: z.string().optional(),
+  gender: z.string().nullable().optional(),
   status: z.enum(['active', 'inactive']).default('active'),
   benefits: z.array(benefitSchema).optional(),
   phone: z.string().min(10, 'O telefone principal é obrigatório.'),
@@ -120,7 +120,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     defaultValues: {
       name: '',
       cpf: '',
-      gender: undefined,
+      gender: null,
       status: 'active',
       benefits: [],
       phone: '',
@@ -193,7 +193,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       form.reset({
         name: customer.name || '',
         cpf: customer.cpf || '',
-        gender: customer.gender ?? undefined, 
+        gender: customer.gender ?? null, 
         status: customer.status || 'active',
         benefits: customer.benefits || [],
         phone: customer.phone || '',
@@ -215,7 +215,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
             ...form.getValues(),
             ...defaultValues,
             birthDate: defaultValues.birthDate ? formatDateForForm(defaultValues.birthDate) : form.getValues('birthDate'),
-            gender: defaultValues.gender ?? undefined
+            gender: defaultValues.gender ?? null
         });
     }
   }, [customer]);
@@ -291,7 +291,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       birthDate: format(parsedDate, 'yyyy-MM-dd'),
       benefits: data.benefits || [],
       documents: data.documents || [],
-      gender: data.gender ?? undefined
+      gender: data.gender || null
     };
     onSubmit(cleanFirestoreData(newCustomerData));
   }

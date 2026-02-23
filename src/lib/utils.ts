@@ -152,7 +152,8 @@ export function cleanBankName(name?: string): string {
 }
 
 export function cleanFirestoreData(data: any): any {
-    if (data === null || data === undefined) return null;
+    if (data === null) return null;
+    if (data === undefined) return undefined;
     if (data instanceof Date) return data.toISOString();
     if (Array.isArray(data)) {
         return data.map(item => cleanFirestoreData(item)).filter(i => i !== undefined);
