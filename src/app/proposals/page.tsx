@@ -283,7 +283,6 @@ function ProposalsPageContent() {
     setIsSaving(true);
     const docRef = sheetMode === 'edit' && selectedProposal ? doc(firestore, 'loanProposals', selectedProposal.id) : doc(collection(firestore, 'loanProposals'));
     
-    // 🛡️ BLINDAGEM DE DADOS V8: Limpa undefineds antes de setDoc
     const finalData = cleanFirestoreData({ ...data, id: docRef.id, ownerId: user.uid });
     
     setDoc(docRef, finalData, { merge: true })
@@ -349,9 +348,14 @@ function ProposalsPageContent() {
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent 
+            className="max-w-3xl"
+            onPointerDownOutside={(e) => e.preventDefault()}
+            onInteractOutside={(e) => e.preventDefault()}
+        >
           <DialogHeader><DialogTitle>{sheetMode === 'edit' ? 'Editar' : 'Nova'} Proposta</DialogTitle></DialogHeader>
           <ProposalForm 
+            key={selectedProposal?.id || defaultValues?.id || 'new'}
             proposal={selectedProposal} 
             allProposals={proposals || []}
             customers={customers || []}

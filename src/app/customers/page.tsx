@@ -79,7 +79,6 @@ function CustomersPageContent() {
   }, [filter, activeCustomers, inactiveCustomers]);
 
   const handleNewCustomer = React.useCallback(() => {
-    // 🛡️ PRE-GERAÇÃO DE ID: Permite upload de anexos antes de salvar
     const newId = doc(collection(firestore!, 'customers')).id;
     setSelectedCustomer(undefined);
     setDefaultValues({ id: newId });
@@ -301,9 +300,14 @@ function CustomersPageContent() {
       </Tabs>
 
       <Dialog open={isDialog} onOpenChange={setIsDialog}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent 
+            className="max-w-4xl"
+            onPointerDownOutside={(e) => e.preventDefault()}
+            onInteractOutside={(e) => e.preventDefault()}
+        >
           <DialogHeader><DialogTitle>{sheetMode === 'edit' ? 'Editar' : 'Novo'} Cliente</DialogTitle></DialogHeader>
           <CustomerForm
+            key={selectedCustomer?.id || defaultValues?.id || 'new'}
             onSubmit={handleFormSubmit}
             customer={selectedCustomer}
             allCustomers={customers || []}

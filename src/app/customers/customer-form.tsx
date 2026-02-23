@@ -114,9 +114,6 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
 
-  // 🛡️ ESTRATÉGIA SENIOR V10: Chave única forçada garante remonte total no Editar
-  const formKey = customer?.id || defaultValues?.id || 'new';
-
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
     mode: 'all',
@@ -197,7 +194,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       form.reset({
         name: source.name || '',
         cpf: source.cpf || '',
-        gender: source.gender ?? '', // 🛡️ FIX GÊNERO: Coalescência nula garante string "" para o Select
+        gender: source.gender ?? '', 
         status: source.status || 'active',
         benefits: source.benefits || [],
         phone: source.phone || '',
@@ -242,8 +239,9 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
 
   useEffect(() => {
     const cleanCep = (watchCep || '').replace(/\D/g, '');
-    // 🛡️ FIX CEP: Só dispara se o campo estiver "sujo" (editado pelo usuário nesta sessão)
-    if (cleanCep.length === 8 && form.formState.dirtyFields.cep) {
+    const isActuallyChanging = form.formState.dirtyFields.cep;
+    
+    if (cleanCep.length === 8 && isActuallyChanging) {
         handleCepLookup(cleanCep);
     }
   }, [watchCep, handleCepLookup, form.formState.dirtyFields.cep]);
@@ -276,7 +274,6 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       birthDate: format(parsedDate, 'yyyy-MM-dd'),
       benefits: data.benefits || [],
       documents: data.documents || [],
-      // 🛡️ FIX GÊNERO: Padroniza para string vazia para manter persistência e evitar reset no Select
       gender: data.gender || ""
     };
     onSubmit(cleanFirestoreData(newCustomerData));
@@ -288,7 +285,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
 
   return (
     <Form {...form}>
-      <form key={formKey} onSubmit={form.handleSubmit(handleFormSubmit)} className="py-2">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="py-2">
         <ScrollArea className="h-[75vh] pr-4">
           <div className="space-y-10">
             {(hasErrors || duplicity.cpf || duplicity.phone) && (
