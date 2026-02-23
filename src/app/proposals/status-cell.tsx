@@ -33,7 +33,6 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
   const handleUpdate = async (newStatus: ProposalStatus) => {
     if (newStatus === currentStatus) return;
 
-    // 🛡️ TRAVA DE SEGURANÇA: Confirmação para Reprova/Cancelamento
     if (newStatus === 'Reprovado') {
         const confirmed = window.confirm("Você tem certeza que deseja marcar esta proposta como REPROVADA? Esta ação interrompe a esteira.");
         if (!confirmed) return;
@@ -68,7 +67,6 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
         dataToUpdate.statusAwaitingBalanceAt = now;
     }
 
-    // 📝 REGISTRO DE HISTÓRICO AUTOMÁTICO
     const historyEntry: ProposalHistoryEntry = {
         id: crypto.randomUUID(),
         date: now,
@@ -77,16 +75,16 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
     };
     dataToUpdate.history = arrayUnion(historyEntry);
 
-    // BLINDAGEM FINANCEIRA: Define comissão pendente se estiver elegível
+    // 🛡️ BLINDAGEM FINANCEIRA: Define comissão pendente APENAS se for "Saldo a Receber" (Averbado ou Pago)
     try {
         const docRef = doc(firestore, 'loanProposals', proposalId);
         const snap = await getDoc(docRef);
         if (snap.exists()) {
             const proposal = snap.data();
-            const willHaveApprovalDate = dataToUpdate.dateApproved || proposal.dateApproved;
+            const hasAverbacao = !!(dataToUpdate.dateApproved || proposal.dateApproved);
             const isNotReprovado = newStatus !== 'Reprovado';
             
-            if (isNotReprovado && (willHaveApprovalDate || newStatus === 'Pago')) {
+            if (isNotReprovado && (hasAverbacao || newStatus === 'Pago')) {
                 if (!proposal.commissionStatus || proposal.commissionStatus === '') {
                     dataToUpdate.commissionStatus = 'Pendente';
                 }

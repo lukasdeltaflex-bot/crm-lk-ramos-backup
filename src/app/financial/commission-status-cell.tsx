@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { ChevronsUpDown } from 'lucide-react';
+import { ChevronsUpDown, Lock } from 'lucide-react';
 import type { CommissionStatus, Proposal, Customer } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/components/theme-provider';
@@ -23,25 +23,46 @@ interface CommissionStatusCellProps {
 
 export function CommissionStatusCell({ proposal, onStatusUpdate, onEdit }: CommissionStatusCellProps) {
     const { statusColors } = useTheme();
-    const { commissionStatus } = proposal;
+    const { commissionStatus, dateApproved, status } = proposal;
+
+    // 🛡️ REGRA DE QUALIFICAÇÃO: Apenas propostas Averbadas ou Pagas são consideradas "Saldo a Receber"
+    // Caso contrário, o botão de recebimento fica desativado para evitar baixas em contratos não formalizados.
+    const isQualified = !!dateApproved || status === 'Pago' || status === 'Saldo Pago';
+    const isReprovado = status === 'Reprovado';
+    
+    // O botão fica "ativado por padrão" apenas para as qualificadas. 
+    // Para as outras, deixamos o dropdown bloqueado se não houver status manual prévio.
+    const canInteract = isQualified && !isReprovado;
 
     const colorValue = commissionStatus ? (statusColors[commissionStatus.toUpperCase()] || statusColors[commissionStatus]) : undefined;
     
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="group w-full justify-start p-0 h-auto font-normal hover:bg-transparent">
+            <DropdownMenuTrigger asChild disabled={!canInteract && !commissionStatus}>
+                <Button 
+                    variant="ghost" 
+                    className={cn(
+                        "group w-full justify-start p-0 h-auto font-normal hover:bg-transparent",
+                        (!canInteract && !commissionStatus) && "opacity-40 cursor-not-allowed"
+                    )}
+                >
                     <Badge 
                         variant="outline" 
                         className={cn(
                             "min-w-[80px] h-6 justify-center transition-all text-[10px] font-black uppercase tracking-tighter border-2 rounded-full", 
-                            !commissionStatus ? 'border-dashed border-muted-foreground/20 text-transparent group-hover:text-muted-foreground/40 bg-transparent' : 'status-custom'
+                            !commissionStatus ? 'border-dashed border-muted-foreground/20 text-transparent group-hover:text-muted-foreground/40 bg-transparent' : 'status-custom',
+                            (!canInteract && commissionStatus === 'Pendente') && "opacity-50 grayscale"
                         )}
                         style={colorValue ? { '--status-color': colorValue } as any : {}}
                     >
-                        {commissionStatus || 'Definir'}
+                        {commissionStatus || (canInteract ? 'Definir' : 'Esteira')}
                     </Badge>
-                    <ChevronsUpDown className="h-3 w-3 ml-1 opacity-0 group-hover:opacity-40 transition-opacity print:hidden" />
+                    {(canInteract || commissionStatus) && (
+                        <ChevronsUpDown className="h-3 w-3 ml-1 opacity-0 group-hover:opacity-40 transition-opacity print:hidden" />
+                    )}
+                    {!canInteract && !commissionStatus && (
+                        <Lock className="h-2.5 w-2.5 ml-1 text-muted-foreground/30" />
+                    )}
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="rounded-xl border-2 shadow-xl">

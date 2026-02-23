@@ -294,13 +294,25 @@ export function ProposalForm({
         debtBalanceArrivalDate: convertToIso(data.debtBalanceArrivalDate),
     };
 
+    // 🛡️ BLINDAGEM FINANCEIRA (SALDO A RECEBER): 
+    // Ativa Pendente apenas se houver Averbação ou for Pago, e não for Reprovado
+    const isAverbado = !!finalData.dateApproved;
+    const isNotReprovado = finalData.status !== 'Reprovado';
+    const isPaid = finalData.status === 'Pago';
+
+    if (isNotReprovado && (isAverbado || isPaid)) {
+        if (!finalData.commissionStatus || finalData.commissionStatus === '') {
+            finalData.commissionStatus = 'Pendente';
+        }
+    }
+
     // 🤖 AUDITORIA AUTOMÁTICA DE ALTERAÇÕES
     const auditEntries: ProposalHistoryEntry[] = [];
     const userName = user?.displayName || user?.email || 'Sistema';
 
     const checkChange = (field: string, label: string, formatter?: (v: any) => string) => {
         const oldVal = proposal ? (proposal as any)[field] : undefined;
-        const newVal = (data as any)[field];
+        const newVal = (finalData as any)[field];
         if (oldVal !== undefined && oldVal !== newVal) {
             auditEntries.push({
                 id: crypto.randomUUID(),
@@ -318,18 +330,17 @@ export function ProposalForm({
         checkChange('netAmount', 'Valor Líquido', formatCurrency);
         checkChange('promoter', 'Promotora');
     } else {
-        // Registro de criação para novas propostas
         auditEntries.push({
             id: crypto.randomUUID(),
             date: now,
-            message: `Proposta criada no sistema com status inicial: ${data.status}`,
+            message: `Proposta criada no sistema com status inicial: ${finalData.status}`,
             userName
         });
     }
 
     finalData.history = proposal?.history ? [...proposal.history, ...auditEntries] : auditEntries;
     
-    if (proposal?.status !== data.status) {
+    if (proposal?.status !== finalData.status) {
         finalData.statusUpdatedAt = now;
     }
 
