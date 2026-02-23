@@ -74,7 +74,7 @@ const customerSchema = z.object({
   cpf: z.string().min(11, 'CPF obrigatório.').refine((val) => validateCPF(val), {
     message: "CPF Inválido - Verifique os dígitos.",
   }),
-  gender: z.string().nullable().optional(),
+  gender: z.string().optional(),
   status: z.enum(['active', 'inactive']).default('active'),
   benefits: z.array(benefitSchema).optional(),
   phone: z.string().min(10, 'O telefone principal é obrigatório.'),
@@ -120,7 +120,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     defaultValues: {
       name: '',
       cpf: '',
-      gender: undefined,
+      gender: '',
       status: 'active',
       benefits: [],
       phone: '',
@@ -189,7 +189,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       form.reset({
         name: customer.name || '',
         cpf: customer.cpf || '',
-        gender: customer.gender ?? undefined, 
+        gender: customer.gender ?? '',
         status: customer.status || 'active',
         benefits: customer.benefits || [],
         phone: customer.phone || '',
@@ -207,7 +207,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
         documents: customer.documents || [],
       });
     }
-  }, [customer]);
+  }, [customer, form]);
 
   const handleCepLookup = useCallback(async (cleanCep: string) => {
     if (cleanCep.length !== 8) return;
@@ -269,7 +269,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       birthDate: format(parsedDate, 'yyyy-MM-dd'),
       benefits: data.benefits || [],
       documents: data.documents || [],
-      gender: data.gender || null
+      gender: data.gender || ''
     };
     onSubmit(cleanFirestoreData(newCustomerData));
   }
@@ -378,8 +378,12 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                           <FormLabel className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                             <UserRound className="h-3.5 w-3.5 text-[#00AEEF]" /> Gênero
                           </FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value ?? undefined}>
-                            <FormControl><SelectTrigger className="rounded-full h-11 px-5 border-zinc-200 font-bold"><SelectValue placeholder="Opcional" /></SelectTrigger></FormControl>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                                <SelectTrigger className="rounded-full h-11 px-5 border-zinc-200 font-bold">
+                                    <SelectValue placeholder="Opcional" />
+                                </SelectTrigger>
+                            </FormControl>
                             <SelectContent>
                               <SelectItem value="Masculino">Masculino</SelectItem>
                               <SelectItem value="Feminino">Feminino</SelectItem>
