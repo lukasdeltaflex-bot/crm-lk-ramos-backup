@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -131,7 +130,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     name: "benefits"
   });
 
-  // 🛡️ BLINDAGEM DE CARREGAMENTO V17: Sincronização forçada total para Gênero e outros campos
+  // 🛡️ BLINDAGEM DE CARREGAMENTO V18: Sincronização forçada para Gênero e outros campos
   useEffect(() => {
     const source = customer || defaultValues;
     if (source) {
@@ -256,10 +255,22 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
   const handleCepBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
     const cep = e.target.value.replace(/\D/g, '');
     if (cep.length !== 8) return;
+    
     setIsFetchingCep(true);
     try {
-        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-        if (!response.ok) throw new Error('Falha na rede');
+        // 🛡️ PROTEÇÃO DE FETCH V18: Captura falha de rede silenciosamente
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`).catch(() => null);
+        
+        if (!response || !response.ok) {
+            toast({ 
+                variant: 'destructive', 
+                title: 'Busca Indisponível', 
+                description: 'Erro de conexão ao buscar o CEP. Por favor, preencha manualmente.' 
+            });
+            setIsFetchingCep(false);
+            return;
+        }
+
         const data = await response.json();
         
         if (data && !data.erro) {
@@ -272,12 +283,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
             toast({ variant: 'destructive', title: "CEP não encontrado", description: "Verifique o número digitado." });
         }
     } catch (error) {
-        console.error("ViaCEP Error:", error);
-        toast({ 
-            variant: 'destructive', 
-            title: 'Busca Indisponível', 
-            description: 'Não foi possível buscar o CEP automaticamente. Por favor, preencha manualmente.' 
-        });
+        console.warn("ViaCEP Silent Handled Error");
     } finally {
         setIsFetchingCep(false);
     }
@@ -300,7 +306,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       birthDate: format(parsedDate, 'yyyy-MM-dd'),
       benefits: data.benefits || [],
       documents: data.documents || [],
-      gender: data.gender as any || null 
+      gender: (data.gender as any) || null 
     };
     onSubmit(cleanFirestoreData(newCustomerData));
   }
