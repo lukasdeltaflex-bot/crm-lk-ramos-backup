@@ -47,7 +47,7 @@ import {
 } from 'lucide-react';
 import { format, parse, parseISO, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn, formatCurrency, cleanBankName } from '@/lib/utils';
+import { cn, formatCurrency, cleanBankName, cleanFirestoreData } from '@/lib/utils';
 import * as configData from '@/lib/config-data';
 import type { Proposal, Customer, Attachment, UserSettings, ProposalHistoryEntry } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -62,6 +62,7 @@ import { toast } from '@/hooks/use-toast';
 import { BankIcon } from '@/components/bank-icon';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { useTheme } from '@/components/theme-provider';
 
 const attachmentSchema = z.object({
   name: z.string(),
@@ -92,7 +93,7 @@ const proposalSchema = z.object({
   
   commissionBase: z.enum(['gross', 'net'], { required_error: 'Selecione a base da comissão.' }),
   commissionPercentage: z.coerce.number().min(0, 'A porcentagem da comissão é obrigatória.'),
-  commissionValue: z.coerce.number().min(0, 'O valor da comissão é obrigatório.'),
+  commissionValue: z.coerce.number().min(0, 'O valor da comissão é obrigatória.'),
 
   promoter: z.string().min(1, 'A promotora é obrigatória.'),
   bank: z.string().min(1, 'O banco é obrigatório.'),
@@ -160,6 +161,7 @@ export function ProposalForm({
 }: ProposalFormProps) {
   const { user } = useUser();
   const firestore = useFirestore();
+  const { statusColors } = useTheme();
   const [tempProposalId, setTempProposalId] = useState<string | undefined>(undefined);
   const [isClient, setIsClient] = useState(false);
   const [newHistoryEntry, setNewHistoryEntry] = useState('');
@@ -183,7 +185,6 @@ export function ProposalForm({
   
   const currentProposalId = proposal?.id || tempProposalId;
 
-  // 🛡️ BLINDAGEM NUCLEAR V8: Garantindo defaultValues em todos os campos para evitar uncontrolled inputs
   const form = useForm<ProposalFormValues>({
     resolver: zodResolver(proposalSchema),
     defaultValues: {
@@ -221,9 +222,9 @@ export function ProposalForm({
   const commissionPercentage = watch('commissionPercentage');
   const grossAmount = watch('grossAmount');
   const netAmount = watch('netAmount');
-  const product = watch('product');
+  const productValue = watch('product');
   const selectedCustomerId = watch('customerId');
-  const status = watch('status');
+  const currentStatusValue = watch('status');
   const proposalNumberValue = watch('proposalNumber');
 
   const selectedCustomer = useMemo(() => {
@@ -244,11 +245,9 @@ export function ProposalForm({
     if (selectedCustomer) {
         const benefits = selectedCustomer.benefits || [];
         const currentVal = form.getValues('selectedBenefitNumber');
-        const isValidForNewCustomer = benefits.some(b => b.number === currentVal);
-        
         if (benefits.length === 1) {
             setValue('selectedBenefitNumber', benefits[0].number, { shouldValidate: true });
-        } else if (!isValidForNewCustomer) {
+        } else if (!benefits.some(b => b.number === currentVal)) {
             setValue('selectedBenefitNumber', '', { shouldValidate: true });
         }
     } else {
@@ -271,25 +270,12 @@ export function ProposalForm({
     else if (commissionBase === 'net') baseValue = netAmount || 0;
 
     if (baseValue > 0 && commissionPercentage >= 0) {
-        const calculatedCommission = baseValue * (commissionPercentage / 100);
-        if (form.getValues('commissionValue') !== parseFloat(calculatedCommission.toFixed(2))) {
-            setValue('commissionValue', parseFloat(calculatedCommission.toFixed(2)), { shouldValidate: true });
+        const calculatedCommission = parseFloat((baseValue * (commissionPercentage / 100)).toFixed(2));
+        if (form.getValues('commissionValue') !== calculatedCommission) {
+            setValue('commissionValue', calculatedCommission, { shouldValidate: true });
         }
     }
   }, [commissionBase, commissionPercentage, grossAmount, netAmount, setValue, isReadOnly, form]);
-
-  useEffect(() => {
-    if (isReadOnly) return;
-    const today = format(new Date(), 'dd/MM/yyyy');
-    if (status === 'Saldo Pago' && product === 'Portabilidade') {
-        if (!form.getValues('debtBalanceArrivalDate')) setValue('debtBalanceArrivalDate', today, { shouldValidate: true });
-    } else if (status === 'Pago') {
-        if (!form.getValues('dateApproved')) setValue('dateApproved', today, { shouldValidate: true });
-        if (product !== 'Portabilidade' && !form.getValues('datePaidToClient')) {
-            setValue('datePaidToClient', today, { shouldValidate: true });
-        }
-    }
-  }, [status, product, setValue, isReadOnly, form]);
 
   const formatDateForForm = (dateString?: string) => {
     if (!dateString) return '';
@@ -299,9 +285,7 @@ export function ProposalForm({
             return isValid(date) ? format(date, 'dd/MM/yyyy') : '';
         }
         const parts = dateString.split('-');
-        if (parts.length === 3) {
-            return `${parts[2]}/${parts[1]}/${parts[0]}`;
-        }
+        if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
         return '';
     } catch { return ''; }
   }
@@ -346,10 +330,6 @@ export function ProposalForm({
         return;
     }
 
-    /**
-     * 🛡️ BLINDAGEM DE DADOS V8
-     * Converte para ISO String ou null. O Firestore não aceita 'undefined'.
-     */
     const convertToIso = (dateStr?: string) => {
         if (!dateStr || dateStr.trim() === '') return null;
         try {
@@ -358,13 +338,13 @@ export function ProposalForm({
         } catch { return null; }
     }
 
-    const finalData = {
+    const finalData = cleanFirestoreData({
         ...data,
         dateDigitized: convertToIso(data.dateDigitized) || new Date().toISOString(),
         dateApproved: convertToIso(data.dateApproved),
         datePaidToClient: convertToIso(data.datePaidToClient),
         debtBalanceArrivalDate: convertToIso(data.debtBalanceArrivalDate),
-    };
+    });
 
     onSubmit(finalData);
   }
@@ -375,7 +355,6 @@ export function ProposalForm({
 
   const handleAddHistory = async () => {
     if (!newHistoryEntry.trim() || !proposal?.id || !firestore) return;
-    
     setIsAddingHistory(true);
     const now = new Date().toISOString();
     const entry: ProposalHistoryEntry = {
@@ -384,75 +363,15 @@ export function ProposalForm({
         message: newHistoryEntry.trim(),
         userName: user?.displayName || user?.email || 'Usuário'
     };
-
     const docRef = doc(firestore, 'loanProposals', proposal.id);
-    const updateData = {
-        history: arrayUnion(entry),
-        statusUpdatedAt: now 
-    };
-
+    const updateData = { history: arrayUnion(entry), statusUpdatedAt: now };
     updateDoc(docRef, updateData)
-        .then(() => {
-            setNewHistoryEntry('');
-            toast({ title: "Histórico Atualizado" });
-        })
-        .catch(async (error) => {
-            if (error.code === 'permission-denied') {
-                errorEmitter.emit('permission-error', new FirestorePermissionError({
-                    path: docRef.path,
-                    operation: 'update',
-                    requestResourceData: updateData
-                }));
-            }
-        })
+        .then(() => { setNewHistoryEntry(''); toast({ title: "Histórico Atualizado" }); })
+        .catch((err) => console.error(err))
         .finally(() => setIsAddingHistory(false));
   };
 
-  const handleExportCover = async () => {
-    if (!proposal || !selectedCustomer) {
-        toast({ variant: "destructive", title: "Dados insuficientes" });
-        return;
-    }
-    const { default: jsPDF } = await import('jspdf');
-    const { default: autoTable } = await import('jspdf-autotable');
-    const doc = new jsPDF();
-    const primaryColor = [30, 58, 138];
-    doc.setFontSize(22);
-    doc.setFont("helvetica", "bold");
-    doc.text("CAPA DE PROPOSTA", 105, 25, { align: 'center' });
-    doc.setDrawColor(200);
-    doc.line(14, 32, 196, 32);
-    doc.setFontSize(14);
-    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.text("DADOS DO CLIENTE", 14, 45);
-    autoTable(doc, {
-        startY: 48,
-        body: [
-            ['Nome Completo', selectedCustomer.name],
-            ['CPF', selectedCustomer.cpf],
-            ['Nº do Benefício', form.getValues('selectedBenefitNumber') || '-'],
-        ],
-        theme: 'plain',
-        styles: { fontSize: 11, cellPadding: 2 },
-        columnStyles: { 0: { fontStyle: 'bold', width: 50 } }
-    });
-    doc.text("DADOS DA OPERAÇÃO", 14, (doc as any).lastAutoTable.finalY + 15);
-    autoTable(doc, {
-        startY: (doc as any).lastAutoTable.finalY + 18,
-        body: [
-            ['Número da Proposta', form.getValues('proposalNumber')],
-            ['Produto', form.getValues('product')],
-            ['Banco Digitado', form.getValues('bank')],
-            ['Status', form.getValues('status')],
-        ],
-        theme: 'plain',
-        styles: { fontSize: 11, cellPadding: 2 },
-        columnStyles: { 0: { fontStyle: 'bold', width: 50 } }
-    });
-    doc.save(`Capa_${form.getValues('proposalNumber')}.pdf`);
-  };
-
-  const isAttachmentSectionDisabled = !user || !selectedCustomerId || !currentProposalId;
+  const statusColor = currentStatusValue ? (statusColors[currentStatusValue.toUpperCase()] || statusColors[currentStatusValue]) : undefined;
 
   return (
     <Form {...form}>
@@ -502,8 +421,15 @@ export function ProposalForm({
                     <FormItem>
                         <FormLabel>Status Atual</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isReadOnly || isSaving}>
-                        <FormControl><SelectTrigger><SelectValue placeholder="Selecione o Status" /></SelectTrigger></FormControl>
-                        <SelectContent>{proposalStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                        <FormControl>
+                            <SelectTrigger 
+                                className="status-custom font-black text-[10px] uppercase tracking-widest border-2 rounded-full h-10 px-6 transition-all"
+                                style={statusColor ? { '--status-color': statusColor } as any : {}}
+                            >
+                                <SelectValue placeholder="Status" />
+                            </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>{proposalStatuses.map(s => <SelectItem key={s} value={s} className="text-[10px] font-bold uppercase">{s}</SelectItem>)}</SelectContent>
                         </Select><FormMessage /></FormItem>
                     )}
                 />
@@ -517,7 +443,6 @@ export function ProposalForm({
                 <Clock className="h-4 w-4" /> Prazos e Informações da Esteira
               </h3>
               
-              {/* LINHA 1: BENEFÍCIO, ÓRGÃO E BANCO */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
@@ -557,21 +482,15 @@ export function ProposalForm({
                     <FormItem>
                         <FormLabel>Banco Digitado</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isReadOnly || isSaving}>
-                            <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Banco Digitado" />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                {banks.map(b => (
-                                    <SelectItem key={b} value={b}>
-                                        <div className="flex items-center gap-2">
-                                            <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={showLogos} className="h-4 w-4" />
-                                            <span>{cleanBankName(b)}</span>
-                                        </div>
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
+                            <FormControl><SelectTrigger><SelectValue placeholder="Banco" /></SelectTrigger></FormControl>
+                            <SelectContent>{banks.map(b => (
+                                <SelectItem key={b} value={b}>
+                                    <div className="flex items-center gap-2">
+                                        <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={showLogos} className="h-4 w-4" />
+                                        <span>{cleanBankName(b)}</span>
+                                    </div>
+                                </SelectItem>
+                            ))}</SelectContent>
                         </Select>
                         <FormMessage />
                     </FormItem>
@@ -579,9 +498,8 @@ export function ProposalForm({
                 />
               </div>
 
-              {/* LINHA 2: BANCO PORTADO (IF), Nº PROPOSTA, TABELA */}
-              <div className={cn("grid gap-4", product === 'Portabilidade' ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 md:grid-cols-2")}>
-                {product === 'Portabilidade' && (
+              <div className={cn("grid gap-4", productValue === 'Portabilidade' ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 md:grid-cols-2")}>
+                {productValue === 'Portabilidade' && (
                     <FormField
                         control={form.control}
                         name="bankOrigin"
@@ -589,21 +507,15 @@ export function ProposalForm({
                             <FormItem>
                                 <FormLabel>Banco Portado (Origem)</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isReadOnly || isSaving}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Origem" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {banks.map(b => (
-                                            <SelectItem key={b} value={b}>
-                                                <div className="flex items-center gap-2">
-                                                    <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={showLogos} className="h-4 w-4" />
-                                                    <span>{cleanBankName(b)}</span>
-                                                </div>
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
+                                    <FormControl><SelectTrigger><SelectValue placeholder="Origem" /></SelectTrigger></FormControl>
+                                    <SelectContent>{banks.map(b => (
+                                        <SelectItem key={b} value={b}>
+                                            <div className="flex items-center gap-2">
+                                                <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={showLogos} className="h-4 w-4" />
+                                                <span>{cleanBankName(b)}</span>
+                                            </div>
+                                        </SelectItem>
+                                    ))}</SelectContent>
                                 </Select>
                                 <FormMessage />
                             </FormItem>
@@ -636,7 +548,6 @@ export function ProposalForm({
                 />
               </div>
 
-              {/* LINHA 3: DATAS DINÂMICAS */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
@@ -649,7 +560,7 @@ export function ProposalForm({
                     </FormItem>
                   )}
                 />
-                {product === 'Portabilidade' ? (
+                {productValue === 'Portabilidade' ? (
                     <>
                         <FormField
                             control={form.control}
@@ -702,7 +613,6 @@ export function ProposalForm({
                 )}
               </div>
 
-              {/* LINHA 4: OPERADOR E PROMOTORA */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}

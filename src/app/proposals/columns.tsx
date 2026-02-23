@@ -68,9 +68,9 @@ const ActionsCell = ({ row, onEdit, onView, onDelete, onDuplicate }: any) => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48 shadow-xl border-2">
             <DropdownMenuLabel>Opções da Proposta</DropdownMenuLabel>
-            <DropdownMenuItem onSelect={() => onView(proposal)} className="font-bold">Ver detalhes</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => onEdit(proposal)} className="font-bold">Editar Registro</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => onDuplicate(proposal)} className="font-bold">Duplicar Proposta</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onView && onView(proposal)} className="font-bold">Ver detalhes</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onEdit && onEdit(proposal)} className="font-bold">Editar Registro</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onDuplicate && onDuplicate(proposal)} className="font-bold">Duplicar Proposta</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem 
                 onSelect={() => setIsAlertOpen(true)}
@@ -419,7 +419,15 @@ export const getColumns = (
   {
     id: 'Actions',
     header: '',
-    cell: (props) => <ActionsCell {...props} onEdit={onEdit} onView={onView} onDelete={onDelete} onDuplicate={onDuplicate} />,
+    cell: (cellProps) => (
+        <ActionsCell 
+            row={cellProps.row} 
+            onEdit={onEdit} 
+            onView={onView} 
+            onDelete={onDelete} 
+            onDuplicate={onDuplicate} 
+        />
+    ),
     enableHiding: false,
     size: 80,
   },

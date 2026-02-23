@@ -24,6 +24,7 @@ import { format, parse, isValid } from 'date-fns';
 import { commissionStatuses } from '@/lib/config-data';
 import type { Proposal } from '@/lib/types';
 import { useEffect } from 'react';
+import { useTheme } from '@/components/theme-provider';
 
 const commissionSchema = z.object({
   commissionStatus: z.string({ required_error: 'Selecione um status.' }),
@@ -53,7 +54,7 @@ const applyDateMask = (value: string) => {
 
 
 export function CommissionForm({ proposal, onSubmit }: CommissionFormProps) {
-  // 🛡️ BLINDAGEM NUCLEAR V8: Garantindo defaultValues em todos os campos para evitar uncontrolled inputs
+  const { statusColors } = useTheme();
   const form = useForm<CommissionFormValues>({
     resolver: zodResolver(commissionSchema),
     defaultValues: {
@@ -79,7 +80,8 @@ export function CommissionForm({ proposal, onSubmit }: CommissionFormProps) {
     return <div className="p-4 text-center">Selecione uma proposta para editar.</div>;
   }
 
-  const status = form.watch('commissionStatus');
+  const currentStatus = form.watch('commissionStatus');
+  const statusColor = currentStatus ? (statusColors[currentStatus.toUpperCase()] || statusColors[currentStatus]) : undefined;
 
   return (
     <Form {...form}>
@@ -93,13 +95,16 @@ export function CommissionForm({ proposal, onSubmit }: CommissionFormProps) {
                     <FormLabel>Status da Comissão</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value ?? ''}>
                     <FormControl>
-                        <SelectTrigger>
-                        <SelectValue placeholder="Selecione o status" />
+                        <SelectTrigger 
+                            className="status-custom font-black text-[10px] uppercase tracking-widest border-2 rounded-full h-10 px-6 transition-all"
+                            style={statusColor ? { '--status-color': statusColor } as any : {}}
+                        >
+                            <SelectValue placeholder="Selecione o status" />
                         </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                         {commissionStatuses.map((status) => (
-                        <SelectItem key={status} value={status}>
+                        <SelectItem key={status} value={status} className="text-[10px] font-bold uppercase">
                             {status}
                         </SelectItem>
                         ))}
@@ -110,7 +115,7 @@ export function CommissionForm({ proposal, onSubmit }: CommissionFormProps) {
                 )}
             />
             
-            {(status === 'Paga' || status === 'Parcial') && (
+            {(currentStatus === 'Paga' || currentStatus === 'Parcial') && (
                 <>
                     <FormField
                         control={form.control}
