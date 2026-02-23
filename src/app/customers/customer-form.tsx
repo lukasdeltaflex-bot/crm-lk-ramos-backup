@@ -83,7 +83,9 @@ const customerSchema = z.object({
   birthDate: z.string().refine((date) => {
     try {
       if (!date) return false;
-      const parsedDate = parse(date, 'dd/MM/yyyy', new Date());
+      const parsedDate = date.includes('-') 
+        ? parse(date, 'yyyy-MM-dd', new Date())
+        : parse(date, 'dd/MM/yyyy', new Date());
       return isValid(parsedDate);
     } catch { return false; }
   }, { message: 'Data de nascimento obrigatória/inválida.' }),
@@ -115,37 +117,39 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
   const [isSummarizing, setIsSummarizing] = useState(false);
 
   const initialValues = useMemo(() => {
+    const source = customer || defaultValues;
     let formattedBirthDate = '';
-    if (customer?.birthDate) {
+    
+    if (source?.birthDate) {
         try {
-            const date = customer.birthDate.includes('-') 
-              ? parse(customer.birthDate, 'yyyy-MM-dd', new Date())
-              : parse(customer.birthDate, 'dd/MM/yyyy', new Date());
+            const date = source.birthDate.includes('-') 
+              ? parse(source.birthDate, 'yyyy-MM-dd', new Date())
+              : parse(source.birthDate, 'dd/MM/yyyy', new Date());
             if (isValid(date)) formattedBirthDate = format(date, 'dd/MM/yyyy');
         } catch (e) {}
     }
 
     return {
-      name: customer?.name || '',
-      cpf: customer?.cpf || '',
-      gender: customer?.gender || '',
-      status: customer?.status || 'active',
-      benefits: customer?.benefits || [],
-      phone: customer?.phone || '',
-      phone2: customer?.phone2 || '',
-      email: customer?.email || '',
+      name: source?.name || '',
+      cpf: source?.cpf || '',
+      gender: source?.gender || '',
+      status: source?.status || 'active',
+      benefits: source?.benefits || [],
+      phone: source?.phone || '',
+      phone2: source?.phone2 || '',
+      email: source?.email || '',
       birthDate: formattedBirthDate,
-      observations: customer?.observations || '',
-      cep: customer?.cep || '',
-      street: customer?.street || '',
-      number: customer?.number || '',
-      complement: customer?.complement || '',
-      neighborhood: customer?.neighborhood || '',
-      city: customer?.city || '',
-      state: customer?.state || '',
-      documents: customer?.documents || [],
+      observations: source?.observations || '',
+      cep: source?.cep || '',
+      street: source?.street || '',
+      number: source?.number || '',
+      complement: source?.complement || '',
+      neighborhood: source?.neighborhood || '',
+      city: source?.city || '',
+      state: source?.state || '',
+      documents: source?.documents || [],
     };
-  }, [customer]);
+  }, [customer, defaultValues]);
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
@@ -245,7 +249,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     const parsedDate = parse(data.birthDate, 'dd/MM/yyyy', new Date());
     const newCustomerData: FormCustomer = {
       ...data,
-      gender: data.gender,
+      gender: data.gender as any,
       birthDate: format(parsedDate, 'yyyy-MM-dd'),
       benefits: data.benefits || [],
       documents: data.documents || [],

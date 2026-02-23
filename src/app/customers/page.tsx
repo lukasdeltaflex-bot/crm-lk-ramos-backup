@@ -27,7 +27,6 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { CustomerAiForm } from '@/components/customers/customer-ai-form';
 import {
@@ -79,12 +78,11 @@ function CustomersPageContent() {
   }, [filter, activeCustomers, inactiveCustomers]);
 
   const handleNewCustomer = React.useCallback(() => {
-    const newId = doc(collection(firestore!, 'customers')).id;
     setSelectedCustomer(undefined);
-    setDefaultValues({ id: newId });
+    setDefaultValues(undefined);
     setSheetMode('new');
     setIsDialog(true);
-  }, [firestore]);
+  }, []);
 
   const selectedCount = React.useMemo(() => Object.keys(rowSelection).length, [rowSelection]);
 
@@ -307,7 +305,7 @@ function CustomersPageContent() {
         >
           <DialogHeader><DialogTitle>{sheetMode === 'edit' ? 'Editar' : 'Novo'} Cliente</DialogTitle></DialogHeader>
           <CustomerForm
-            key={selectedCustomer?.id || "new"}
+            key={selectedCustomer?.id || (defaultValues?.id ? `ai-${defaultValues.id}` : 'new')}
             onSubmit={handleFormSubmit}
             customer={selectedCustomer}
             allCustomers={customers || []}

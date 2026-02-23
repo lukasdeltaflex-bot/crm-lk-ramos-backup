@@ -355,7 +355,7 @@ function ProposalsPageContent() {
         >
           <DialogHeader><DialogTitle>{sheetMode === 'edit' ? 'Editar' : 'Nova'} Proposta</DialogTitle></DialogHeader>
           <ProposalForm 
-            key={selectedProposal?.id || defaultValues?.id || 'new'}
+            key={selectedProposal?.id || (defaultValues ? `dup-${Date.now()}` : 'new')}
             proposal={selectedProposal} 
             allProposals={proposals || []}
             customers={customers || []}

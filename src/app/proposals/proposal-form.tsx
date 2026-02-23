@@ -99,11 +99,12 @@ const proposalSchema = z.object({
 
   dateDigitized: z.string().refine((date) => {
     try {
-      const parsedDate = parse(date, 'dd/MM/yyyy', new Date());
-      return !isNaN(parsedDate.getTime());
-    } catch {
-      return false;
-    }
+      if (!date) return false;
+      const parsedDate = date.includes('-') 
+        ? parse(date, 'yyyy-MM-dd', new Date())
+        : parse(date, 'dd/MM/yyyy', new Date());
+      return isValid(parsedDate);
+    } catch { return false; }
   }, { message: 'Data inválida. Use o formato dd/mm/aaaa.' }),
   dateApproved: optionalDateString,
   datePaidToClient: optionalDateString,
@@ -180,38 +181,55 @@ export function ProposalForm({
   }, [firestore, proposal, tempProposalId]);
   
   const currentProposalId = proposal?.id || tempProposalId;
-  const isAttachmentSectionDisabled = !currentProposalId;
+
+  const formatDateForForm = (dateString?: string) => {
+    if (!dateString) return '';
+    try {
+        if (dateString.includes('T')) {
+            const date = parseISO(dateString);
+            return isValid(date) ? format(date, 'dd/MM/yyyy') : '';
+        }
+        const parts = dateString.split('-');
+        if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        return '';
+    } catch { return ''; }
+  }
+
+  const initialValues = useMemo(() => {
+    const source = proposal || defaultValues;
+    return {
+      proposalNumber: source?.proposalNumber || '',
+      customerId: source?.customerId || '',
+      product: source?.product || '',
+      status: source?.status || 'Em Andamento',
+      commissionStatus: source?.commissionStatus || 'Pendente',
+      selectedBenefitNumber: source?.selectedBenefitNumber || '',
+      table: source?.table || '',
+      term: source?.term ?? 84,
+      interestRate: source?.interestRate ?? 0,
+      grossAmount: source?.grossAmount ?? 0,
+      netAmount: source?.netAmount ?? 0,
+      installmentAmount: source?.installmentAmount ?? 0,
+      commissionBase: (source?.commissionBase || 'gross') as 'gross' | 'net',
+      commissionPercentage: source?.commissionPercentage ?? 0,
+      commissionValue: source?.commissionValue ?? 0,
+      promoter: source?.promoter || '',
+      bank: source?.bank || '',
+      bankOrigin: source?.bankOrigin || '',
+      approvingBody: source?.approvingBody || 'INSS',
+      operator: source?.operator || '',
+      dateDigitized: source?.dateDigitized ? formatDateForForm(source.dateDigitized) : (isClient ? format(new Date(), 'dd/MM/yyyy') : ''),
+      dateApproved: formatDateForForm(source?.dateApproved),
+      datePaidToClient: formatDateForForm(source?.datePaidToClient),
+      debtBalanceArrivalDate: formatDateForForm(source?.debtBalanceArrivalDate),
+      attachments: source?.attachments || [],
+      observations: source?.observations || '',
+    };
+  }, [proposal, defaultValues, isClient]);
 
   const form = useForm<ProposalFormValues>({
     resolver: zodResolver(proposalSchema),
-    defaultValues: {
-      proposalNumber: '',
-      customerId: '',
-      product: '',
-      status: 'Em Andamento',
-      commissionStatus: 'Pendente',
-      selectedBenefitNumber: '',
-      table: '',
-      term: 84,
-      interestRate: 0,
-      grossAmount: 0,
-      netAmount: 0,
-      installmentAmount: 0,
-      commissionBase: 'gross',
-      commissionPercentage: 0,
-      commissionValue: 0,
-      promoter: '',
-      bank: '',
-      bankOrigin: '',
-      approvingBody: 'INSS',
-      operator: '',
-      dateDigitized: format(new Date(), 'dd/MM/yyyy'),
-      dateApproved: '',
-      datePaidToClient: '',
-      debtBalanceArrivalDate: '',
-      attachments: [],
-      observations: '',
-    },
+    defaultValues: initialValues,
   });
 
   const { watch, setValue, trigger } = form;
@@ -232,11 +250,7 @@ export function ProposalForm({
         const benefits = selectedCustomer.benefits || [];
         if (benefits.length === 1) {
             setValue('selectedBenefitNumber', benefits[0].number, { shouldValidate: true });
-        } else if (!benefits.some(b => b.number === form.getValues('selectedBenefitNumber'))) {
-            setValue('selectedBenefitNumber', '', { shouldValidate: true });
         }
-    } else {
-        setValue('selectedBenefitNumber', '', { shouldValidate: true });
     }
   }, [selectedCustomer, setValue]);
 
@@ -262,53 +276,6 @@ export function ProposalForm({
     }
   }, [commissionBase, commissionPercentage, grossAmount, netAmount, setValue, isReadOnly]);
 
-  const formatDateForForm = (dateString?: string) => {
-    if (!dateString) return '';
-    try {
-        if (dateString.includes('T')) {
-            const date = parseISO(dateString);
-            return isValid(date) ? format(date, 'dd/MM/yyyy') : '';
-        }
-        const parts = dateString.split('-');
-        if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
-        return '';
-    } catch { return ''; }
-  }
-
-  useEffect(() => {
-    const source = proposal || defaultValues;
-    if (source) {
-        form.reset({
-            proposalNumber: source.proposalNumber || '',
-            customerId: source.customerId || '',
-            product: source.product || '',
-            status: source.status || 'Em Andamento',
-            commissionStatus: source.commissionStatus || 'Pendente',
-            selectedBenefitNumber: source.selectedBenefitNumber || '',
-            table: source.table || '',
-            term: source.term ?? 84,
-            interestRate: source.interestRate ?? 0,
-            grossAmount: source.grossAmount ?? 0,
-            netAmount: source.netAmount ?? 0,
-            installmentAmount: source.installmentAmount ?? 0,
-            commissionBase: source.commissionBase || 'gross',
-            commissionPercentage: source.commissionPercentage ?? 0,
-            commissionValue: source.commissionValue ?? 0,
-            promoter: source.promoter || '',
-            bank: source.bank || '',
-            bankOrigin: source.bankOrigin || '',
-            approvingBody: source.approvingBody || 'INSS',
-            operator: source.operator || '',
-            dateDigitized: source.dateDigitized ? formatDateForForm(source.dateDigitized) : (isClient ? format(new Date(), 'dd/MM/yyyy') : ''),
-            dateApproved: formatDateForForm(source.dateApproved),
-            datePaidToClient: formatDateForForm(source.datePaidToClient),
-            debtBalanceArrivalDate: formatDateForForm(source.debtBalanceArrivalDate),
-            attachments: source.attachments || [],
-            observations: source.observations || '',
-        });
-    }
-  }, [proposal, defaultValues, form, isClient]);
-
   function handleFormSubmit(data: ProposalFormValues) {
     const convertToIso = (dateStr?: string) => {
         if (!dateStr || dateStr.trim() === '') return null;
@@ -327,7 +294,6 @@ export function ProposalForm({
         debtBalanceArrivalDate: convertToIso(data.debtBalanceArrivalDate),
     };
 
-    // DETECÇÃO DE MUDANÇA DE STATUS (Auditória Automática)
     const oldStatus = proposal?.status || 'Em Andamento';
     if (oldStatus !== data.status) {
         const historyEntry: ProposalHistoryEntry = {
@@ -769,7 +735,7 @@ export function ProposalForm({
                 <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
                     <FolderLock className="h-4 w-4" /> Documentação
                 </h3>
-                {isAttachmentSectionDisabled ? (
+                {!currentProposalId ? (
                     <Alert className="bg-secondary/50 border-none">
                         <Info className="h-4 w-4" />
                         <AlertTitle className="text-xs font-bold uppercase">Upload Bloqueado</AlertTitle>
