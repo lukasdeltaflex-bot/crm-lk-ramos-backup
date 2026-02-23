@@ -204,7 +204,6 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         if (!searchTerm) return true;
         const customer = row.original;
 
-        // 1. Busca Nuclear (ID Exato)
         if (/^\d+$/.test(searchTerm)) {
             if (customer.numericId.toString() === searchTerm) return true;
         }

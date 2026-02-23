@@ -131,7 +131,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     name: "benefits"
   });
 
-  // 🛡️ BLINDAGEM DE CARREGAMENTO V15: Sincronização forçada do Gênero e datas
+  // 🛡️ BLINDAGEM DE CARREGAMENTO V16: Sincronização forçada total
   useEffect(() => {
     const source = customer || defaultValues;
     if (source) {
@@ -258,29 +258,25 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
     if (cep.length !== 8) return;
     setIsFetchingCep(true);
     try {
-        // 🛡️ REFORÇO DE FETCH: Tratamento robusto para evitar travamento em falhas de rede
-        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`).catch(() => null);
-        
-        if (!response || !response.ok) {
-            throw new Error('Falha na comunicação com serviço de CEP');
-        }
-
+        // Chamada direta para o ViaCEP
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
         const data = await response.json();
-        if (!data.erro) {
+        
+        if (data && !data.erro) {
             form.setValue('street', data.logradouro || '', { shouldValidate: true });
             form.setValue('neighborhood', data.bairro || '', { shouldValidate: true });
             form.setValue('city', data.localidade || '', { shouldValidate: true });
             form.setValue('state', data.uf || '', { shouldValidate: true });
             toast({ title: "Endereço Localizado", description: "Campos preenchidos via CEP." });
         } else {
-            toast({ variant: 'destructive', title: "CEP não encontrado" });
+            toast({ variant: 'destructive', title: "CEP não encontrado", description: "Verifique o número digitado." });
         }
     } catch (error) {
-        console.warn("ViaCEP Silent Error:", error);
+        console.error("ViaCEP Error:", error);
         toast({ 
             variant: 'destructive', 
             title: 'Busca Indisponível', 
-            description: 'Não foi possível buscar o CEP automaticamente. Por favor, preencha manualmente.' 
+            description: 'Não foi possível buscar o CEP automaticamente no momento.' 
         });
     } finally {
         setIsFetchingCep(false);
