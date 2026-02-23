@@ -58,7 +58,7 @@ import { summarizeNotes } from '@/ai/flows/summarize-notes-flow';
 import { useUser } from '@/firebase';
 
 const benefitSchema = z.object({
-    number: z.string().min(1, "O número do benefício é obrigatório."),
+    number: z.string().min(1, "O Nº do benefício é obrigatório."),
     species: z.string().nullable().optional(),
 });
 
@@ -114,7 +114,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
 
-  // 🛡️ ESTRATÉGIA SENIOR: Chave única para forçar re-render do formulário ao trocar de cliente
+  // 🛡️ ESTRATÉGIA SENIOR V9: Chave única forçada pelo ID para resolver reset de Gênero
   const formKey = customer?.id || defaultValues?.id || 'new';
 
   const form = useForm<CustomerFormValues>({
@@ -194,7 +194,6 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
           } catch (e) {}
       }
       
-      // 🛡️ BLINDAGEM V9: Garantindo normalização de Gênero no Reset
       form.reset({
         name: source.name || '',
         cpf: source.cpf || '',
@@ -243,8 +242,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
 
   useEffect(() => {
     const cleanCep = (watchCep || '').replace(/\D/g, '');
-    // 🛡️ FIX SENIOR: Só busca automaticamente se o campo estiver "dirty" (editado pelo usuário)
-    // Isso evita o toast irritante ao abrir um cadastro para edição
+    // 🛡️ FIX SENIOR: Só busca se o campo estiver marcado como "editado pelo usuário" (isDirty)
     if (cleanCep.length === 8 && form.formState.dirtyFields.cep) {
         handleCepLookup(cleanCep);
     }
@@ -278,7 +276,6 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
       birthDate: format(parsedDate, 'yyyy-MM-dd'),
       benefits: data.benefits || [],
       documents: data.documents || [],
-      // 🛡️ BLINDAGEM V9: Mantém o valor literal para o Firestore
       gender: data.gender === "Masculino" || data.gender === "Feminino" ? data.gender : undefined
     };
     onSubmit(cleanFirestoreData(newCustomerData));
@@ -551,7 +548,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="text-[10px] font-bold uppercase opacity-40 flex items-center gap-2">
-                                                <CreditCard className="h-3 w-3" /> Número do Benefício
+                                                <CreditCard className="h-3 w-3" /> Nº do Benefício
                                             </FormLabel>
                                             <FormControl><Input placeholder="000.000.000-0" {...field} className="rounded-full h-10 border-zinc-200 font-mono font-bold" /></FormControl>
                                         </FormItem>

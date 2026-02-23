@@ -38,7 +38,9 @@ import {
     MessageSquareQuote,
     Clock,
     FolderLock,
-    Info
+    Info,
+    Percent,
+    Timer as TimerIcon
 } from 'lucide-react';
 import { format, parse, parseISO, isValid } from 'date-fns';
 import { cn, formatCurrency, cleanBankName, cleanFirestoreData } from '@/lib/utils';
@@ -68,7 +70,7 @@ const optionalDateString = z.string().optional().refine(val => !val || !isNaN(pa
 });
 
 const proposalSchema = z.object({
-  proposalNumber: z.string().min(1, "O número da proposta é obrigatório."),
+  proposalNumber: z.string().min(1, "O Nº da proposta é obrigatório."),
   customerId: z.string({ required_error: 'Selecione um cliente.' }),
   product: z.string({ required_error: 'Selecione um produto.' }),
   status: z.string({ required_error: 'Selecione um status.' }),
@@ -159,7 +161,6 @@ export function ProposalForm({
   const [newHistoryEntry, setNewHistoryEntry] = useState('');
   const [isAddingHistory, setIsAddingHistory] = useState(false);
   
-  // Refs para monitorar mudanças de status e logs
   const initialStatusRef = useRef<string | null>(null);
 
   const productTypes = userSettings?.productTypes || configData.productTypes;
@@ -226,20 +227,8 @@ export function ProposalForm({
   const selectedCustomer = useMemo(() => {
     return customers.find(c => c.id === selectedCustomerId);
   }, [customers, selectedCustomerId]);
-  
-  const selectedCustomerName = useMemo(() => {
-    if (!selectedCustomerId) return "Nenhum cliente selecionado";
-    return customers.find(c => c.id === selectedCustomerId)?.name || "Cliente não encontrado";
-  }, [customers, selectedCustomerId]);
 
-  const duplicateProposal = useMemo(() => {
-    if (!proposalNumberValue || proposalNumberValue.length < 3) return null;
-    return allProposals.find(p => 
-        p.proposalNumber.trim() === proposalNumberValue.trim() && 
-        p.id !== (proposal?.id || "")
-    );
-  }, [proposalNumberValue, allProposals, proposal?.id]);
-
+  // 🛡️ INTELIGÊNCIA V11: Auto-preenchimento de NB se houver apenas um
   useEffect(() => {
     if (selectedCustomer) {
         const benefits = selectedCustomer.benefits || [];
@@ -324,11 +313,6 @@ export function ProposalForm({
   }, [proposal, defaultValues, form, isClient]);
 
   function handleFormSubmit(data: ProposalFormValues) {
-    if (duplicateProposal) {
-        toast({ variant: 'destructive', title: 'Proposta Duplicada', description: `O número ${data.proposalNumber} já existe.` });
-        return;
-    }
-
     const convertToIso = (dateStr?: string) => {
         if (!dateStr || dateStr.trim() === '') return null;
         try {
@@ -346,7 +330,6 @@ export function ProposalForm({
         debtBalanceArrivalDate: convertToIso(data.debtBalanceArrivalDate),
     };
 
-    // INTELIGÊNCIA DE LINHA DO TEMPO: Registra mudança de status automaticamente ao salvar
     if (initialStatusRef.current && initialStatusRef.current !== data.status) {
         const historyEntry: ProposalHistoryEntry = {
             id: crypto.randomUUID(),
@@ -382,10 +365,6 @@ export function ProposalForm({
             setNewHistoryEntry(''); 
             toast({ title: "Histórico Atualizado" }); 
         })
-        .catch((err) => {
-            console.error(err);
-            toast({ variant: 'destructive', title: "Erro ao registrar histórico" });
-        })
         .finally(() => setIsAddingHistory(false));
   };
 
@@ -394,9 +373,8 @@ export function ProposalForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="py-4">
-        <ScrollArea className="h-[70vh] pr-4 print:h-auto print:overflow-visible">
+        <ScrollArea className="h-[70vh] pr-4 print:h-auto">
           <div className="space-y-8">
-            {/* LINHA 1: VINCULAÇÃO E STATUS */}
             <div className="space-y-4">
               <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
                 <FolderLock className="h-4 w-4" /> Registro LK RAMOS
@@ -409,7 +387,7 @@ export function ProposalForm({
                         <FormLabel>Cliente Selecionado</FormLabel>
                         <div className="flex items-center gap-2">
                             <FormControl>
-                                <Input readOnly value={selectedCustomerName} className="flex-1 bg-muted/30 font-bold" />
+                                <Input readOnly value={selectedCustomer?.name || "Nenhum cliente selecionado"} className="flex-1 bg-muted/30 font-bold" />
                             </FormControl>
                             <Button type="button" variant="outline" onClick={onOpenCustomerSearch} disabled={isReadOnly || isSaving} className="font-bold">
                                 {field.value ? 'Trocar' : 'Buscar'} Cliente
@@ -457,13 +435,11 @@ export function ProposalForm({
 
             <Separator />
 
-            {/* ESTEIRA V11: ORDEM SOLICITADA */}
             <div className="space-y-4">
               <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
                 <Clock className="h-4 w-4" /> Esteira Operacional V11
               </h3>
               
-              {/* LINHA 1: NB, ÓRGÃO, BANCO DIGITADO */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
@@ -519,7 +495,6 @@ export function ProposalForm({
                 />
               </div>
 
-              {/* LINHA 2: BANCO PORTADO, Nº PROPOSTA, TABELA */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {productValue === 'Portabilidade' ? (
                     <FormField
@@ -565,7 +540,30 @@ export function ProposalForm({
                 />
               </div>
 
-              {/* LINHA 3: DATAS DINÂMICAS CONDICIONAIS */}
+              {/* 🛠️ RESTAURAÇÃO: Prazo e Taxa de Juros */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="term"
+                  render={({ field }) => (
+                    <FormItem>
+                        <FormLabel className="flex items-center gap-2"><TimerIcon className="h-3.5 w-3.5" /> Prazo (Meses)</FormLabel>
+                        <FormControl><Input type="number" {...field} readOnly={isReadOnly || isSaving} /></FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="interestRate"
+                  render={({ field }) => (
+                    <FormItem>
+                        <FormLabel className="flex items-center gap-2"><Percent className="h-3.5 w-3.5" /> Taxa de Juros (%)</FormLabel>
+                        <FormControl><Input type="number" step="0.01" {...field} readOnly={isReadOnly || isSaving} /></FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
@@ -631,7 +629,6 @@ export function ProposalForm({
                 )}
               </div>
 
-              {/* LINHA 4: OPERADOR E PROMOTORA */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -652,7 +649,6 @@ export function ProposalForm({
 
             <Separator />
 
-            {/* FINANCEIRO */}
             <div className="space-y-4">
                 <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
                     <Check className="h-4 w-4" /> Valores Financeiros
@@ -733,7 +729,6 @@ export function ProposalForm({
 
             <Separator />
 
-            {/* HISTÓRICO / LINHA DO TEMPO */}
             <div className="space-y-4">
                 <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
                     <History className="h-4 w-4" /> Linha do Tempo
@@ -771,7 +766,6 @@ export function ProposalForm({
 
             <Separator />
 
-            {/* ANEXOS */}
             <div className="space-y-4">
                 <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
                     <FolderLock className="h-4 w-4" /> Documentação
@@ -796,7 +790,7 @@ export function ProposalForm({
         </ScrollArea>
         <div className="flex justify-end items-center pt-8 border-t bg-background">
             {!isReadOnly && (
-                <Button type="submit" disabled={isSaving || !!duplicateProposal} className="rounded-full px-10 font-black uppercase tracking-widest bg-[#00AEEF] hover:bg-[#0096D1] shadow-lg shadow-[#00AEEF]/20 transition-all border-none">
+                <Button type="submit" disabled={isSaving} className="rounded-full px-10 font-black uppercase tracking-widest bg-[#00AEEF] hover:bg-[#0096D1] shadow-lg shadow-[#00AEEF]/20 transition-all border-none">
                     {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...</> : 'Salvar Proposta'}
                 </Button>
             )}
