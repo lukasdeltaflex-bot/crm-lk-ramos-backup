@@ -30,7 +30,8 @@ import {
     Phone as PhoneIcon,
     FolderLock,
     Calendar as CalendarIcon,
-    Search
+    Search,
+    AlertCircle
 } from 'lucide-react';
 import { format, parse, isValid, differenceInYears } from 'date-fns';
 import { validateCPF, handlePhoneMask, cleanFirestoreData, cn, isWhatsApp, getWhatsAppUrl } from '@/lib/utils';
@@ -42,6 +43,7 @@ import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
 import { CustomerAttachmentUploader } from '@/components/customers/customer-attachment-uploader';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const benefitSchema = z.object({
     number: z.string().min(1, "O número do benefício é obrigatório."),
@@ -58,14 +60,14 @@ const attachmentSchema = z.object({
 const customerSchema = z.object({
   name: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres.'),
   cpf: z.string().min(11, 'CPF incompleto.').refine((val) => validateCPF(val), {
-    message: "CPF inválido.",
+    message: "CPF inválido - Correção necessária.",
   }),
   gender: z.string().nullable().optional(),
   status: z.enum(['active', 'inactive']).default('active'),
   benefits: z.array(benefitSchema).optional(),
   phone: z.string().min(10, 'O telefone é obrigatório.'),
   phone2: z.string().nullable().optional(),
-  email: z.string().email('E-mail inválido.').or(z.literal('')).nullable().optional(),
+  email: z.string().email('E-mail inválido - Formato incorreto.').or(z.literal('')).nullable().optional(),
   birthDate: z.string().refine((date) => {
     try {
       if (!date) return false;
@@ -221,7 +223,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
 
   const handleFormSubmit = (data: CustomerFormValues) => {
     if (duplicity.phone || duplicity.email || duplicity.cpf) {
-        toast({ variant: 'destructive', title: 'Existem dados duplicados no sistema' });
+        toast({ variant: 'destructive', title: 'Dados duplicados detectados', description: 'Corrija campos em vermelho.' });
         return;
     }
     const parsedDate = parse(data.birthDate, 'dd/MM/yyyy', new Date());
@@ -236,12 +238,27 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
   }
 
   const currentCustomerId = customer?.id || defaultValues?.id;
+  const hasErrors = Object.keys(form.formState.errors).length > 0;
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="py-2">
         <ScrollArea className="h-[75vh] pr-4">
           <div className="space-y-10">
+            {/* ALERTAS DE ERRO NO TOPO */}
+            {hasErrors && (
+                <Alert variant="destructive" className="rounded-2xl border-2 animate-in slide-in-from-top-4 duration-300">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle className="font-black uppercase text-xs tracking-widest">Correção Necessária</AlertTitle>
+                    <AlertDescription className="text-[10px] font-bold">
+                        {form.formState.errors.cpf && "• CPF inválido ou mal formatado. "}
+                        {form.formState.errors.email && "• E-mail fora do padrão oficial. "}
+                        {form.formState.errors.name && "• Nome muito curto. "}
+                        {form.formState.errors.birthDate && "• Data de nascimento inválida."}
+                    </AlertDescription>
+                </Alert>
+            )}
+
             {/* SEÇÃO: DADOS PESSOAIS */}
             <div className="space-y-6 relative">
                 <div className="flex items-center justify-between">
@@ -281,7 +298,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel className="text-xs font-medium text-muted-foreground">Nome Completo</FormLabel>
-                        <FormControl><Input placeholder="João da Silva" {...field} className="rounded-full h-11 px-5 border-zinc-200 focus-visible:ring-[#00AEEF]" /></FormControl>
+                        <FormControl><Input placeholder="Nome oficial do cliente" {...field} className="rounded-full h-11 px-5 border-zinc-200 focus-visible:ring-[#00AEEF] font-bold" /></FormControl>
                         <FormMessage />
                         </FormItem>
                     )}
@@ -293,7 +310,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         name="cpf"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel className="text-xs font-medium text-muted-foreground">CPF</FormLabel>
+                            <FormLabel className="text-xs font-medium text-muted-foreground">CPF (Validado)</FormLabel>
                             <FormControl>
                                 <div className="relative">
                                     <Input 
@@ -301,12 +318,12 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                                         {...field} 
                                         onChange={(e) => field.onChange(e.target.value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"))} 
                                         maxLength={14}
-                                        className={cn("rounded-full h-11 px-5 border-zinc-200", duplicity.cpf && "border-red-500 bg-red-50 text-red-900")}
+                                        className={cn("rounded-full h-11 px-5 border-zinc-200 font-bold", (duplicity.cpf || form.formState.errors.cpf) && "border-red-500 bg-red-50 text-red-900")}
                                     />
-                                    {duplicity.cpf && <AlertTriangle className="absolute right-4 top-3 h-5 w-5 text-red-500 animate-pulse" />}
+                                    {(duplicity.cpf || form.formState.errors.cpf) && <AlertTriangle className="absolute right-4 top-3 h-5 w-5 text-red-500 animate-pulse" />}
                                 </div>
                             </FormControl>
-                            <FormMessage />
+                            <FormMessage className="text-[10px] font-black uppercase" />
                             </FormItem>
                         )}
                     />
@@ -317,7 +334,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         <FormItem>
                           <FormLabel className="text-xs font-medium text-muted-foreground">Gênero</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value || ""}>
-                            <FormControl><SelectTrigger className="rounded-full h-11 px-5 border-zinc-200"><SelectValue placeholder="Selecione o gênero" /></SelectTrigger></FormControl>
+                            <FormControl><SelectTrigger className="rounded-full h-11 px-5 border-zinc-200 font-bold"><SelectValue placeholder="Selecione o gênero" /></SelectTrigger></FormControl>
                             <SelectContent>
                               <SelectItem value="Masculino">Masculino</SelectItem>
                               <SelectItem value="Feminino">Feminino</SelectItem>
@@ -335,14 +352,14 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                         name="email"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel className="text-xs font-medium text-muted-foreground">Email</FormLabel>
+                            <FormLabel className="text-xs font-medium text-muted-foreground">Email Principal</FormLabel>
                             <FormControl>
                                 <div className="relative">
                                     <Mail className="absolute left-4 top-3.5 h-4 w-4 text-muted-foreground/40" />
-                                    <Input placeholder="seu@exemplo.com" {...field} className={cn("rounded-full h-11 pl-11 border-zinc-200", duplicity.email && "border-red-500 bg-red-50")} />
+                                    <Input placeholder="seu@exemplo.com" {...field} className={cn("rounded-full h-11 pl-11 border-zinc-200 font-bold", (duplicity.email || form.formState.errors.email) && "border-red-500 bg-red-50")} />
                                 </div>
                             </FormControl>
-                            <FormMessage />
+                            <FormMessage className="text-[10px] font-black uppercase" />
                             </FormItem>
                         )}
                     />
@@ -354,9 +371,9 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                             <FormLabel className="text-xs font-medium text-muted-foreground">Telefone Principal</FormLabel>
                             <FormControl>
                                 <div className="relative">
-                                    <Input placeholder="(11) 98765-4321" {...field} className={cn("rounded-full h-11 px-5 border-zinc-200", duplicity.phone && "border-red-500 bg-red-50")} onChange={(e) => field.onChange(handlePhoneMask(e.target.value))} maxLength={15} />
+                                    <Input placeholder="(11) 98765-4321" {...field} className={cn("rounded-full h-11 px-5 border-zinc-200 font-bold", duplicity.phone && "border-red-500 bg-red-50")} onChange={(e) => field.onChange(handlePhoneMask(e.target.value))} maxLength={15} />
                                     {isWhatsApp(watchPhone) && (
-                                        <a href={getWhatsAppUrl(watchPhone)} target="_blank" rel="noopener noreferrer" className="absolute right-4 top-3.5 hover:scale-110 transition-transform">
+                                        <a href={getWhatsAppUrl(watchPhone)} target="_blank" rel="noopener noreferrer" className="absolute right-4 top-3.5 hover:scale-125 transition-transform">
                                             <WhatsAppIcon className="h-4 w-4" />
                                         </a>
                                     )}
@@ -374,9 +391,9 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                             <FormLabel className="text-xs font-medium text-muted-foreground">Telefone 2</FormLabel>
                             <FormControl>
                                 <div className="relative">
-                                    <Input placeholder="(11) 98765-4321" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(handlePhoneMask(e.target.value))} maxLength={15} className="rounded-full h-11 px-5 border-zinc-200"/>
+                                    <Input placeholder="(11) 98765-4321" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(handlePhoneMask(e.target.value))} maxLength={15} className="rounded-full h-11 px-5 border-zinc-200 font-bold"/>
                                     {isWhatsApp(watchPhone2 || '') && (
-                                        <a href={getWhatsAppUrl(watchPhone2!)} target="_blank" rel="noopener noreferrer" className="absolute right-4 top-3.5 hover:scale-110 transition-transform">
+                                        <a href={getWhatsAppUrl(watchPhone2!)} target="_blank" rel="noopener noreferrer" className="absolute right-4 top-3.5 hover:scale-125 transition-transform">
                                             <WhatsAppIcon className="h-4 w-4" />
                                         </a>
                                     )}
@@ -408,7 +425,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                                 <Input 
                                     placeholder="dd/mm/aaaa" 
                                     {...field} 
-                                    className="rounded-full h-11 px-5 border-zinc-200" 
+                                    className="rounded-full h-11 px-5 border-zinc-200 font-bold" 
                                     maxLength={10} 
                                     onChange={(e) => {
                                         let v = e.target.value.replace(/\D/g, "").substring(0, 8);
@@ -447,7 +464,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="text-[10px] font-bold uppercase opacity-40">Número do Benefício</FormLabel>
-                                            <FormControl><Input placeholder="000.000.000-0" {...field} className="rounded-full h-10 border-zinc-200 font-mono" /></FormControl>
+                                            <FormControl><Input placeholder="000.000.000-0" {...field} className="rounded-full h-10 border-zinc-200 font-mono font-bold" /></FormControl>
                                         </FormItem>
                                     )}
                                 />
@@ -457,7 +474,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="text-[10px] font-bold uppercase opacity-40">Espécie / Tipo</FormLabel>
-                                            <FormControl><Input placeholder="Aposentadoria Idade" {...field} value={field.value ?? ''} className="rounded-full h-10 border-zinc-200" /></FormControl>
+                                            <FormControl><Input placeholder="Aposentadoria Idade" {...field} value={field.value ?? ''} className="rounded-full h-10 border-zinc-200 font-bold" /></FormControl>
                                         </FormItem>
                                     )}
                                 />
@@ -484,7 +501,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                             <FormLabel className="text-xs font-medium text-muted-foreground">CEP</FormLabel>
                             <FormControl>
                                 <div className='relative'>
-                                    <Input placeholder="00000-000" {...field} value={field.value ?? ''} onBlur={handleCepBlur} maxLength={9} className="rounded-full h-11 px-5 border-zinc-200 focus-visible:ring-[#00AEEF]" />
+                                    <Input placeholder="00000-000" {...field} value={field.value ?? ''} onBlur={handleCepBlur} maxLength={9} className="rounded-full h-11 px-5 border-zinc-200 focus-visible:ring-[#00AEEF] font-bold" />
                                     {isFetchingCep && <Loader2 className="absolute right-4 top-3.5 h-4 w-4 animate-spin text-[#00AEEF]" />}
                                 </div>
                             </FormControl>
@@ -494,22 +511,22 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                     />
                     <div className="md:col-span-2">
                         <FormField control={form.control} name="street" render={({ field }) => (
-                            <FormItem><FormLabel className="text-xs font-medium text-muted-foreground">Logradouro</FormLabel><FormControl><Input placeholder="Rua / Avenida" {...field} value={field.value ?? ''} className="rounded-full h-11 px-5 border-zinc-200" /></FormControl></FormItem>
+                            <FormItem><FormLabel className="text-xs font-medium text-muted-foreground">Logradouro</FormLabel><FormControl><Input placeholder="Rua / Avenida" {...field} value={field.value ?? ''} className="rounded-full h-11 px-5 border-zinc-200 font-bold" /></FormControl></FormItem>
                         )} />
                     </div>
                     <FormField control={form.control} name="number" render={({ field }) => (
-                        <FormItem><FormLabel className="text-xs font-medium text-muted-foreground">Número</FormLabel><FormControl><Input placeholder="123" {...field} value={field.value ?? ''} className="rounded-full h-11 px-5 border-zinc-200" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="text-xs font-medium text-muted-foreground">Número</FormLabel><FormControl><Input placeholder="123" {...field} value={field.value ?? ''} className="rounded-full h-11 px-5 border-zinc-200 font-bold" /></FormControl></FormItem>
                     )} />
                 </div>
                 <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
                     <FormField control={form.control} name="neighborhood" render={({ field }) => (
-                        <FormItem><FormLabel className="text-xs font-medium text-muted-foreground">Bairro</FormLabel><FormControl><Input placeholder="Bairro" {...field} value={field.value ?? ''} className="rounded-full h-11 px-5 border-zinc-200" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="text-xs font-medium text-muted-foreground">Bairro</FormLabel><FormControl><Input placeholder="Bairro" {...field} value={field.value ?? ''} className="rounded-full h-11 px-5 border-zinc-200 font-bold" /></FormControl></FormItem>
                     )} />
                     <FormField control={form.control} name="city" render={({ field }) => (
-                        <FormItem><FormLabel className="text-xs font-medium text-muted-foreground">Cidade</FormLabel><FormControl><Input placeholder="Cidade" {...field} value={field.value ?? ''} className="rounded-full h-11 px-5 border-zinc-200" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="text-xs font-medium text-muted-foreground">Cidade</FormLabel><FormControl><Input placeholder="Cidade" {...field} value={field.value ?? ''} className="rounded-full h-11 px-5 border-zinc-200 font-bold" /></FormControl></FormItem>
                     )} />
                     <FormField control={form.control} name="state" render={({ field }) => (
-                        <FormItem><FormLabel className="text-xs font-medium text-muted-foreground">UF</FormLabel><FormControl><Input placeholder="SP" {...field} value={field.value ?? ''} className="rounded-full h-11 px-5 border-zinc-200 uppercase" maxLength={2} /></FormControl></FormItem>
+                        <FormItem><FormLabel className="text-xs font-medium text-muted-foreground">UF</FormLabel><FormControl><Input placeholder="SP" {...field} value={field.value ?? ''} className="rounded-full h-11 px-5 border-zinc-200 uppercase font-bold" maxLength={2} /></FormControl></FormItem>
                     )} />
                 </div>
             </div>
@@ -543,7 +560,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
                                 placeholder="Anotações internas sobre o perfil do cliente..." 
                                 {...field} 
                                 value={field.value ?? ''} 
-                                className="min-h-[100px] rounded-2xl border-zinc-200 bg-muted/5 p-5 focus-visible:ring-[#00AEEF]"
+                                className="min-h-[100px] rounded-2xl border-zinc-200 bg-muted/5 p-5 focus-visible:ring-[#00AEEF] font-medium"
                             />
                         </FormControl>
                         </FormItem>
@@ -556,7 +573,7 @@ export function CustomerForm({ customer, allCustomers, defaultValues, onSubmit, 
         <div className="flex justify-end pt-6 border-t mt-4 bg-white">
             <Button 
                 type="submit" 
-                disabled={isSaving || duplicity.phone || duplicity.email || duplicity.cpf} 
+                disabled={isSaving || duplicity.phone || duplicity.email || duplicity.cpf || hasErrors} 
                 className="rounded-full px-12 h-12 font-bold text-white bg-[#00AEEF] hover:bg-[#0096D1] shadow-lg shadow-[#00AEEF]/20 transition-all border-none"
             >
                 {isSaving ? (
