@@ -582,9 +582,9 @@ export function ProposalForm({
                       <FormControl><Input placeholder="Número oficial" {...field} value={field.value ?? ''} readOnly={(isReadOnly && sheetMode === 'edit') || isSaving}/></FormControl>
                       <FormMessage />
                       {duplicateProposal && (
-                        <Alert variant="destructive" className="mt-2 py-2 px-3 border-2"><AlertTriangle className="h-4 w-4" />
-                            <AlertTitle className="text-xs font-bold uppercase">Proposta Duplicada!</AlertTitle>
-                            <AlertDescription className="text-[10px] font-medium">Já pertence a <strong>{customers.find(c => c.id === duplicateProposal.customerId)?.name}</strong>.</AlertDescription>
+                        <Alert variant="destructive" className="mt-2 py-2 px-3 border-2 border-red-500 bg-red-50 animate-bounce"><AlertTriangle className="h-4 w-4" />
+                            <AlertTitle className="text-xs font-black uppercase">Proposta Duplicada!</AlertTitle>
+                            <AlertDescription className="text-[10px] font-bold">Já pertence a <strong>{customers.find(c => c.id === duplicateProposal.customerId)?.name}</strong>.</AlertDescription>
                         </Alert>
                       )}
                     </FormItem>
