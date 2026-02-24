@@ -41,29 +41,34 @@ const extractDataFromImageFlow = ai.defineFlow(
     outputSchema: ExtractFromImageOutputSchema,
   },
   async (input) => {
-    // Detecta o mime-type a partir da Data URI
+    // Detecta o mime-type a partir da Data URI para envio correto ao modelo multimodal
     let contentType = 'image/jpeg';
     const match = input.photoDataUri.match(/^data:([^;]+);base64,/);
     if (match) {
         contentType = match[1];
     }
 
-    const { output } = await ai.generate({
-      prompt: [
-        { text: `Você é um assistente de elite para correspondentes bancários.
-        Analise este documento (RG, CNH, PDF de Extrato de Empréstimos ou Ficha) e extraia os dados estruturados.
-        
-        REGRAS CRÍTICAS:
-        1. Identifique Nome, CPF e Nascimento.
-        2. EXTRATOS PDF: Localize todos os Números de Benefício (NB), seus valores de Salário/Mensalidade e bancos de cartões (RMC/RCC).
-        3. Formate a data de nascimento como YYYY-MM-DD.
-        4. Seja extremamente preciso nos caracteres para evitar erros de digitação.
-        5. Se identificar múltiplos benefícios, liste-os individualmente.` },
-        { media: { url: input.photoDataUri, contentType: contentType } }
-      ],
-      output: { schema: ExtractFromImageOutputSchema }
-    });
+    try {
+        const { output } = await ai.generate({
+          prompt: [
+            { text: `Você é um assistente de elite para correspondentes bancários.
+            Analise este documento (RG, CNH, PDF de Extrato de Empréstimos ou Ficha) e extraia os dados estruturados.
+            
+            REGRAS CRÍTICAS:
+            1. Identifique Nome, CPF e Nascimento.
+            2. EXTRATOS PDF: Localize todos os Números de Benefício (NB), seus valores de Salário/Mensalidade e bancos de cartões (RMC/RCC).
+            3. Formate a data de nascimento como YYYY-MM-DD.
+            4. Seja extremamente preciso nos caracteres para evitar erros de digitação.
+            5. Se identificar múltiplos benefícios, liste-os individualmente.` },
+            { media: { url: input.photoDataUri, contentType: contentType } }
+          ],
+          output: { schema: ExtractFromImageOutputSchema }
+        });
 
-    return output || {};
+        return output || {};
+    } catch (error) {
+        console.error("AI Generation Error:", error);
+        throw new Error("A Inteligência Artificial não conseguiu processar este documento. Verifique se o arquivo não está protegido por senha ou muito pesado.");
+    }
   }
 );

@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Loader2, Upload, Image as ImageIcon, FileText, X, Info, FileSearch, FileType } from 'lucide-react';
+import { Sparkles, Loader2, Upload, Image as ImageIcon, FileText, X, Info, FileSearch, FileType, AlertTriangle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { extractCustomerData } from '@/ai/flows/extract-customer-data-flow';
 import { extractDataFromImage } from '@/ai/flows/extract-data-from-image-flow';
@@ -46,6 +46,16 @@ export function CustomerAiForm({ onSubmit }: CustomerAiFormProps) {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // 🛡️ PROTEÇÃO DE CARGA ÚTIL: Limita a 4MB para evitar "Connection Closed"
+      if (file.size > 4 * 1024 * 1024) {
+          toast({ 
+              variant: 'destructive', 
+              title: 'Arquivo muito grande', 
+              description: 'O limite para análise via IA é de 4MB. Tente reduzir o PDF ou tirar uma foto mais leve.' 
+          });
+          return;
+      }
+
       const type = file.type.startsWith('image/') ? 'image' : file.type === 'application/pdf' ? 'pdf' : null;
       if (!type) {
           toast({ variant: 'destructive', title: 'Formato não suportado', description: 'Envie apenas imagens ou PDFs.' });
@@ -67,15 +77,20 @@ export function CustomerAiForm({ onSubmit }: CustomerAiFormProps) {
     try {
       const extractedData = await extractDataFromImage(selectedFile);
       if (!extractedData || !extractedData.name) {
-          toast({ variant: 'destructive', title: 'IA não reconheceu dados', description: 'Certifique-se de que o documento está legível.' });
+          toast({ variant: 'destructive', title: 'IA não reconheceu dados', description: 'Certifique-se de que o documento está legível e sem senhas.' });
           setIsLoading(false);
           return;
       }
       
       toast({ title: 'Documento processado com IA!' });
       onSubmit(extractedData);
-    } catch (error) {
-      toast({ variant: 'destructive', title: 'Erro no processamento do arquivo' });
+    } catch (error: any) {
+      console.error("Extraction failed:", error);
+      toast({ 
+          variant: 'destructive', 
+          title: 'Erro no processamento', 
+          description: error.message || 'A conexão foi interrompida. Tente um arquivo menor ou mais simples.' 
+      });
     } finally {
       setIsLoading(false);
     }
@@ -125,7 +140,7 @@ export function CustomerAiForm({ onSubmit }: CustomerAiFormProps) {
                             </div>
                             <div className="space-y-2">
                                 <p className="font-black text-lg uppercase tracking-tight">Leitor de Documentos IA</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] max-w-[200px]">Aceita extratos em PDF, fotos de RG ou telas de consulta bancária.</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] max-w-[200px]">Aceita extratos em PDF (até 4MB), fotos de RG ou telas de consulta bancária.</p>
                             </div>
                             <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="rounded-full px-8 h-12 font-black border-2 border-primary/20 bg-background hover:bg-primary hover:text-white transition-all">
                                 <Upload className="mr-2 h-4 w-4" />
@@ -184,7 +199,7 @@ export function CustomerAiForm({ onSubmit }: CustomerAiFormProps) {
             <Info className="h-4 w-4 text-orange-600" />
             <AlertTitle className="text-xs font-black uppercase tracking-widest text-orange-700">Dica de Performance</AlertTitle>
             <AlertDescription className="text-[10px] leading-tight text-orange-600/80 font-bold uppercase">
-                O extrator agora suporta PDFs oficiais. Você pode subir o PDF do extrato de consignações diretamente para mapear todos os benefícios e cartões.
+                O extrator agora suporta PDFs oficiais. Para evitar erros, garanta que o arquivo tenha menos de 4MB. Documentos digitais geram resultados mais precisos que fotos.
             </AlertDescription>
         </Alert>
     </div>
