@@ -17,7 +17,7 @@ const FONT_OPTIONS = [
 ];
 const ANIMATION_OPTIONS = ["instantaneo", "sutil", "atmosferico", "cinematografico"];
 const SIDEBAR_OPTIONS = ["padrão", "dark", "light"];
-const AURA_OPTIONS = ["limpo", "nebula", "aurora", "sunset", "ocean", "lavender", "mint", "pearl", "desert"];
+const AURA_OPTIONS = ["limpo", "nebula", "aurora", "sunset", "ocean", "lavender", "mint", "pearl", "desert", "velvet"];
 
 const DEFAULT_STATUS_COLORS: Record<string, string> = {
     "PAGO": "142 76% 36%",

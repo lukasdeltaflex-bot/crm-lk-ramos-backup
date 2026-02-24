@@ -12,6 +12,7 @@ export interface ThemeDefinition {
 
 export const THEMES: ThemeDefinition[] = [
     { name: "padrão", label: "Padrão", light: "217 33% 25%", dark: "217 33% 30%" },
+    { name: "black-gold", label: "Black Gold", light: "45 40% 45%", dark: "45 40% 55%" },
     { name: "zinc", label: "Cinza", light: "240 5.9% 10%", dark: "240 5.9% 90%" },
     { name: "midnight", label: "Meia-Noite", light: "222 47% 11%", dark: "222 47% 11%" },
     { name: "obsidian", label: "Obsidiana", light: "240 10% 10%", dark: "240 10% 10%" },

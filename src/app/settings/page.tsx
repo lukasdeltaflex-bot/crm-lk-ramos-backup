@@ -315,6 +315,7 @@ export default function SettingsPage() {
 
   const auraLabels: Record<string, string> = {
     "limpo": "Liso (Padrão)",
+    "velvet": "Black Gold (Elite)",
     "nebula": "Nebulosa Suave",
     "aurora": "Aurora Boreal",
     "sunset": "Sunset Pastel",
@@ -322,7 +323,6 @@ export default function SettingsPage() {
     "lavender": "Lavanda Suave",
     "mint": "Menta Fresca",
     "pearl": "Pérola Shimmer",
-    "depth": "Profundidade 3D",
     "desert": "Dunas Douradas"
   };
 
