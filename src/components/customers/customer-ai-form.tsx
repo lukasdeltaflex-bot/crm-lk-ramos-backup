@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Loader2, Camera, Upload, Image as ImageIcon, FileText, X, Info, FileSearch } from 'lucide-react';
+import { Sparkles, Loader2, Upload, Image as ImageIcon, FileText, X, Info, FileSearch, FileType } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { extractCustomerData } from '@/ai/flows/extract-customer-data-flow';
 import { extractDataFromImage } from '@/ai/flows/extract-data-from-image-flow';
@@ -17,7 +17,8 @@ interface CustomerAiFormProps {
 export function CustomerAiForm({ onSubmit }: CustomerAiFormProps) {
   const [text, setText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [fileType, setFileType] = useState<'image' | 'pdf' | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleTextExtract = async () => {
@@ -42,24 +43,31 @@ export function CustomerAiForm({ onSubmit }: CustomerAiFormProps) {
     }
   };
 
-  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      const type = file.type.startsWith('image/') ? 'image' : file.type === 'application/pdf' ? 'pdf' : null;
+      if (!type) {
+          toast({ variant: 'destructive', title: 'Formato não suportado', description: 'Envie apenas imagens ou PDFs.' });
+          return;
+      }
+      
       const reader = new FileReader();
       reader.onloadend = () => {
-        setSelectedImage(reader.result as string);
+        setSelectedFile(reader.result as string);
+        setFileType(type);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleImageExtract = async () => {
-    if (!selectedImage) return;
+  const handleFileExtract = async () => {
+    if (!selectedFile) return;
     setIsLoading(true);
     try {
-      const extractedData = await extractDataFromImage(selectedImage);
+      const extractedData = await extractDataFromImage(selectedFile);
       if (!extractedData || !extractedData.name) {
-          toast({ variant: 'destructive', title: 'IA não reconheceu dados', description: 'Tente uma foto mais nítida ou use o modo texto.' });
+          toast({ variant: 'destructive', title: 'IA não reconheceu dados', description: 'Certifique-se de que o documento está legível.' });
           setIsLoading(false);
           return;
       }
@@ -67,7 +75,7 @@ export function CustomerAiForm({ onSubmit }: CustomerAiFormProps) {
       toast({ title: 'Documento processado com IA!' });
       onSubmit(extractedData);
     } catch (error) {
-      toast({ variant: 'destructive', title: 'Erro no processamento da imagem' });
+      toast({ variant: 'destructive', title: 'Erro no processamento do arquivo' });
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +87,7 @@ export function CustomerAiForm({ onSubmit }: CustomerAiFormProps) {
             <TabsList className="grid w-full grid-cols-2 bg-muted/50 mb-4 h-12 rounded-full p-1">
                 <TabsTrigger value="image" className="gap-2 rounded-full font-bold data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
                     <ImageIcon className="h-4 w-4" />
-                    Extrair de Foto/PDF
+                    Arquivo (Foto/PDF)
                 </TabsTrigger>
                 <TabsTrigger value="text" className="gap-2 rounded-full font-bold data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
                     <FileText className="h-4 w-4" />
@@ -89,14 +97,23 @@ export function CustomerAiForm({ onSubmit }: CustomerAiFormProps) {
 
             <TabsContent value="image" className="space-y-4">
                 <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-[2rem] p-8 bg-muted/10 hover:bg-muted/20 transition-all group relative min-h-[350px]">
-                    {selectedImage ? (
-                        <div className="relative w-full max-w-sm aspect-[4/3] rounded-3xl overflow-hidden border-4 border-white shadow-2xl">
-                            <img src={selectedImage} alt="Preview" className="w-full h-full object-cover" />
+                    {selectedFile ? (
+                        <div className="relative w-full max-w-sm aspect-[4/3] rounded-3xl overflow-hidden border-4 border-white shadow-2xl flex items-center justify-center bg-background">
+                            {fileType === 'image' ? (
+                                <img src={selectedFile} alt="Preview" className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="flex flex-col items-center gap-4 animate-in zoom-in">
+                                    <div className="h-20 w-20 bg-red-500/10 rounded-2xl flex items-center justify-center border-2 border-red-500/20">
+                                        <FileType className="h-10 w-10 text-red-600" />
+                                    </div>
+                                    <p className="text-sm font-black uppercase text-red-600">Documento PDF Selecionado</p>
+                                </div>
+                            )}
                             <Button 
                                 variant="destructive" 
                                 size="icon" 
                                 className="absolute top-4 right-4 h-10 w-10 rounded-full shadow-lg"
-                                onClick={() => setSelectedImage(null)}
+                                onClick={() => { setSelectedFile(null); setFileType(null); }}
                             >
                                 <X className="h-5 w-5" />
                             </Button>
@@ -107,8 +124,8 @@ export function CustomerAiForm({ onSubmit }: CustomerAiFormProps) {
                                 <FileSearch className="h-10 w-10 text-primary" />
                             </div>
                             <div className="space-y-2">
-                                <p className="font-black text-lg uppercase tracking-tight">Análise Visual Inteligente</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] max-w-[200px]">Suba extratos, RGs ou fotos de telas para mapear benefícios e cartões.</p>
+                                <p className="font-black text-lg uppercase tracking-tight">Leitor de Documentos IA</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] max-w-[200px]">Aceita extratos em PDF, fotos de RG ou telas de consulta bancária.</p>
                             </div>
                             <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="rounded-full px-8 h-12 font-black border-2 border-primary/20 bg-background hover:bg-primary hover:text-white transition-all">
                                 <Upload className="mr-2 h-4 w-4" />
@@ -120,20 +137,19 @@ export function CustomerAiForm({ onSubmit }: CustomerAiFormProps) {
                         type="file" 
                         ref={fileInputRef} 
                         className="hidden" 
-                        accept="image/*" 
-                        onChange={handleImageSelect}
-                        capture="environment" 
+                        accept="image/*,application/pdf" 
+                        onChange={handleFileSelect}
                     />
                 </div>
 
-                {selectedImage && (
+                {selectedFile && (
                     <Button 
                         className="w-full h-14 text-sm font-black uppercase tracking-widest bg-primary shadow-xl rounded-full" 
-                        onClick={handleImageExtract} 
+                        onClick={handleFileExtract} 
                         disabled={isLoading}
                     >
                         {isLoading ? (
-                            <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Mapeando Benefícios...</>
+                            <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Mapeando Dados com IA...</>
                         ) : (
                             <><Sparkles className="mr-2 h-5 w-5 fill-current" /> Sincronizar com IA</>
                         )}
@@ -168,7 +184,7 @@ export function CustomerAiForm({ onSubmit }: CustomerAiFormProps) {
             <Info className="h-4 w-4 text-orange-600" />
             <AlertTitle className="text-xs font-black uppercase tracking-widest text-orange-700">Dica de Performance</AlertTitle>
             <AlertDescription className="text-[10px] leading-tight text-orange-600/80 font-bold uppercase">
-                A IA agora identifica automaticamente bancos de reserva RMC e RCC diretamente de extratos de empréstimos e documentos oficiais.
+                O extrator agora suporta PDFs oficiais. Você pode subir o PDF do extrato de consignações diretamente para mapear todos os benefícios e cartões.
             </AlertDescription>
         </Alert>
     </div>

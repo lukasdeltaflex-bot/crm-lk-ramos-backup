@@ -1,8 +1,8 @@
 'use server';
 /**
- * @fileOverview Fluxo Genkit para extrair dados de clientes a partir de imagens (OCR).
+ * @fileOverview Fluxo Genkit para extrair dados de clientes a partir de imagens ou PDFs (OCR).
  *
- * - extractDataFromImage - Função principal para extração via visão computacional.
+ * - extractDataFromImage - Função principal para extração via visão computacional multimodal.
  */
 
 import { ai } from '@/ai/genkit';
@@ -24,7 +24,7 @@ const ExtractFromImageOutputSchema = z.object({
     city: z.string().optional().describe('Cidade do endereço.'),
     state: z.string().optional().describe('Estado (UF) do endereço.'),
     phone: z.string().optional().describe('Telefone de contato encontrado.'),
-}).describe('Dados extraídos da imagem do documento.');
+}).describe('Dados extraídos da imagem ou PDF do documento.');
 
 export type ExtractFromImageOutput = z.infer<typeof ExtractFromImageOutputSchema>;
 
@@ -36,22 +36,30 @@ const extractDataFromImageFlow = ai.defineFlow(
   {
     name: 'extractDataFromImageFlow',
     inputSchema: z.object({
-      photoDataUri: z.string().describe("A imagem do documento como data URI Base64."),
+      photoDataUri: z.string().describe("A imagem ou PDF do documento como data URI Base64."),
     }),
     outputSchema: ExtractFromImageOutputSchema,
   },
   async (input) => {
+    // Detecta o mime-type a partir da Data URI
+    let contentType = 'image/jpeg';
+    const match = input.photoDataUri.match(/^data:([^;]+);base64,/);
+    if (match) {
+        contentType = match[1];
+    }
+
     const { output } = await ai.generate({
       prompt: [
         { text: `Você é um assistente de elite para correspondentes bancários.
-        Analise esta imagem (RG, CNH, Extrato de Empréstimos ou Ficha) e extraia os dados estruturados.
+        Analise este documento (RG, CNH, PDF de Extrato de Empréstimos ou Ficha) e extraia os dados estruturados.
         
-        REGRAS:
+        REGRAS CRÍTICAS:
         1. Identifique Nome, CPF e Nascimento.
-        2. EXTRATOS: Identifique todos os Números de Benefício (NB), seus valores de Salário/Mensalidade e bancos de cartões (RMC/RCC).
+        2. EXTRATOS PDF: Localize todos os Números de Benefício (NB), seus valores de Salário/Mensalidade e bancos de cartões (RMC/RCC).
         3. Formate a data de nascimento como YYYY-MM-DD.
-        4. Seja preciso nos caracteres para evitar erros de digitação.` },
-        { media: { url: input.photoDataUri, contentType: 'image/jpeg' } }
+        4. Seja extremamente preciso nos caracteres para evitar erros de digitação.
+        5. Se identificar múltiplos benefícios, liste-os individualmente.` },
+        { media: { url: input.photoDataUri, contentType: contentType } }
       ],
       output: { schema: ExtractFromImageOutputSchema }
     });
