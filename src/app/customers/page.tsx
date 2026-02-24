@@ -27,6 +27,7 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { CustomerAiForm } from '@/components/customers/customer-ai-form';
 import {
