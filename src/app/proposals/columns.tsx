@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ColumnDef, Header, flexRender } from '@tanstack/react-table';
@@ -409,7 +408,7 @@ export const getColumns = (
                         proposalId={p.id}
                         currentStatus={p.status}
                         product={p.product}
-                        onStatusChange={(table.options.meta as any)?.onStatusChange}
+                        onStatusChange={onStatusChange}
                     />
                 </div>
                 {isCritical && (
