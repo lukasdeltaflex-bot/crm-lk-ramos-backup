@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ColumnDef, Header, flexRender } from '@tanstack/react-table';
@@ -21,7 +22,18 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, GripVertical, ArrowUp, ArrowDown, Copy, Timer } from 'lucide-react';
+import { 
+    MoreHorizontal, 
+    GripVertical, 
+    ArrowUp, 
+    ArrowDown, 
+    Copy, 
+    Timer, 
+    Send, 
+    FileCheck, 
+    PenTool, 
+    ShieldCheck 
+} from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatCurrency, cleanBankName, cn, formatDateSafe, isWhatsApp, getWhatsAppUrl, calculateBusinessDays } from '@/lib/utils';
 import React, { useState } from 'react';
@@ -205,6 +217,36 @@ export const getColumns = (
     enableSorting: false,
     enableHiding: false,
     size: 50,
+  },
+  {
+    id: 'Etapas',
+    header: 'Etapas',
+    cell: ({ row }) => {
+        const checklist = row.original.checklist || {};
+        return (
+            <div className="flex items-center gap-1.5">
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger><Send className={cn("h-3.5 w-3.5 transition-colors", checklist.formalization ? "text-blue-500 fill-blue-500/20" : "text-muted-foreground/30")} /></TooltipTrigger>
+                        <TooltipContent><p className="text-[10px] font-bold uppercase">Formalização</p></TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger><FileCheck className={cn("h-3.5 w-3.5 transition-colors", checklist.documentation ? "text-orange-500 fill-orange-500/20" : "text-muted-foreground/30")} /></TooltipTrigger>
+                        <TooltipContent><p className="text-[10px] font-bold uppercase">Documentação</p></TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger><PenTool className={cn("h-3.5 w-3.5 transition-colors", checklist.signature ? "text-purple-500 fill-purple-500/20" : "text-muted-foreground/30")} /></TooltipTrigger>
+                        <TooltipContent><p className="text-[10px] font-bold uppercase">Assinatura</p></TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger><ShieldCheck className={cn("h-3.5 w-3.5 transition-colors", checklist.approval ? "text-green-500 fill-green-500/20" : "text-muted-foreground/30")} /></TooltipTrigger>
+                        <TooltipContent><p className="text-[10px] font-bold uppercase">Averbação</p></TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            </div>
+        )
+    },
+    size: 100,
   },
   {
     id: 'Promotora',

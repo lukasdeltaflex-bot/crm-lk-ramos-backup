@@ -8,6 +8,13 @@ export const commissionStatuses: readonly CommissionStatus[] = ['Pendente', 'Pag
 export const approvingBodies: readonly string[] = ['INSS', 'SPPREV', 'Federal', 'SIAPE', 'USP', 'GOVERNO', 'CLT', 'Outro'];
 export const expenseCategories: readonly string[] = ['Aluguel', 'Internet', 'Telefonia', 'Tráfego Pago', 'Salários', 'Impostos', 'Outros'];
 
+export const operationalSteps = [
+  { id: 'formalization', label: 'Formalização', icon: 'send' },
+  { id: 'documentation', label: 'Documentação', icon: 'file' },
+  { id: 'signature', label: 'Assinatura', icon: 'pen' },
+  { id: 'approval', label: 'Averbação', icon: 'check' }
+];
+
 export const banks: readonly string[] = [
   "Banco do Brasil S.A.",
   "Caixa Econômica Federal",

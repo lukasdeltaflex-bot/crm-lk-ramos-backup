@@ -113,6 +113,7 @@ export type Proposal = {
   attachments?: Attachment[];
   observations?: string;
   history?: ProposalHistoryEntry[];
+  checklist?: Record<string, boolean>; // Novo: Controle operacional por etapas
 };
 
 export type UserSettings = {

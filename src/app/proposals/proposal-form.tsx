@@ -1,3 +1,4 @@
+
 'use client';
 
 /**
@@ -42,7 +43,12 @@ import {
     Timer as TimerIcon,
     Wallet,
     TrendingUp,
-    CircleDollarSign
+    CircleDollarSign,
+    ListChecks,
+    Send,
+    FileCheck,
+    PenTool,
+    ShieldCheck
 } from 'lucide-react';
 import { format, parse, parseISO, isValid } from 'date-fns';
 import { cn, formatCurrency, cleanBankName, cleanFirestoreData } from '@/lib/utils';
@@ -59,6 +65,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { BankIcon } from '@/components/bank-icon';
 import { useTheme } from '@/components/theme-provider';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const attachmentSchema = z.object({
   name: z.string(),
@@ -112,6 +119,7 @@ const proposalSchema = z.object({
   
   attachments: z.array(attachmentSchema).optional(),
   observations: z.string().optional(),
+  checklist: z.record(z.boolean()).optional(),
 });
 
 type ProposalFormValues = z.infer<typeof proposalSchema>;
@@ -224,6 +232,12 @@ export function ProposalForm({
       debtBalanceArrivalDate: formatDateForForm(source?.debtBalanceArrivalDate),
       attachments: source?.attachments || [],
       observations: source?.observations || '',
+      checklist: source?.checklist || {
+        formalization: false,
+        documentation: false,
+        signature: false,
+        approval: false
+      },
     };
   }, [proposal, defaultValues, isClient]);
 
@@ -240,6 +254,7 @@ export function ProposalForm({
   const productValue = watch('product');
   const selectedCustomerId = watch('customerId');
   const currentStatusValue = watch('status');
+  const checklist = watch('checklist') || {};
 
   const selectedCustomer = useMemo(() => {
     return customers.find(c => c.id === selectedCustomerId);
@@ -294,8 +309,7 @@ export function ProposalForm({
         debtBalanceArrivalDate: convertToIso(data.debtBalanceArrivalDate),
     };
 
-    // 🛡️ BLINDAGEM FINANCEIRA ESTRITA (SALDO A RECEBER): 
-    // Ativa Pendente APENAS se houver Averbação preenchida, conforme nova regra.
+    // 🛡️ BLINDAGEM FINANCEIRA ESTRITA: Ativa Pendente apenas se houver Averbação
     const isAverbado = !!finalData.dateApproved;
     const isNotReprovado = finalData.status !== 'Reprovado';
 
@@ -305,7 +319,6 @@ export function ProposalForm({
         }
     }
 
-    // 🤖 AUDITORIA AUTOMÁTICA DE ALTERAÇÕES
     const auditEntries: ProposalHistoryEntry[] = [];
     const userName = user?.displayName || user?.email || 'Sistema';
 
@@ -372,6 +385,12 @@ export function ProposalForm({
 
   const statusColor = currentStatusValue ? (statusColors[currentStatusValue.toUpperCase()] || statusColors[currentStatusValue]) : undefined;
 
+  const toggleChecklistItem = (id: string) => {
+    if (isReadOnly) return;
+    const newChecklist = { ...checklist, [id]: !checklist[id] };
+    setValue('checklist', newChecklist, { shouldDirty: true });
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="py-4">
@@ -433,6 +452,39 @@ export function ProposalForm({
                     )}
                 />
               </div>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-4">
+                <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
+                    <ListChecks className="h-4 w-4" /> Check-list Operacional
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {[
+                        { id: 'formalization', label: 'Formalização', icon: Send },
+                        { id: 'documentation', label: 'Documentos', icon: FileCheck },
+                        { id: 'signature', label: 'Assinatura', icon: PenTool },
+                        { id: 'approval', label: 'Averbação', icon: ShieldCheck }
+                    ].map((step) => (
+                        <Button
+                            key={step.id}
+                            type="button"
+                            variant="outline"
+                            className={cn(
+                                "flex flex-col h-20 gap-2 border-2 transition-all rounded-2xl",
+                                checklist[step.id] 
+                                    ? "border-green-500 bg-green-50 text-green-700 dark:bg-green-900/20" 
+                                    : "border-muted-foreground/10 text-muted-foreground opacity-60"
+                            )}
+                            onClick={() => toggleChecklistItem(step.id)}
+                            disabled={isReadOnly || isSaving}
+                        >
+                            <step.icon className={cn("h-5 w-5", checklist[step.id] ? "animate-in zoom-in" : "")} />
+                            <span className="text-[10px] font-black uppercase tracking-widest">{step.label}</span>
+                        </Button>
+                    ))}
+                </div>
             </div>
 
             <Separator />
