@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -74,7 +73,7 @@ export function GlobalSearch() {
         </kbd>
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Nome, CPF, Proposta ou ID..." />
+        <CommandInput placeholder="Digite o ID exato, Nome ou CPF..." />
         <CommandList>
           <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
           
@@ -99,12 +98,11 @@ export function GlobalSearch() {
           <CommandSeparator />
 
           <CommandGroup heading="Resultados">
-            {/* 🛡️ BUSCA NUCLEAR V10: Prioridade Zero para ID e Proposta Exatos */}
+            {/* 🛡️ BUSCA NUCLEAR V11: Prioridade Zero e Estrita para ID */}
             {validCustomers.map((customer) => {
               const cpfNumeric = customer.cpf?.replace(/\D/g, '') || '';
-              const benefitNumbers = customer.benefits?.map(b => b.number).join(' ') || '';
-              // Injeta o ID numérico no início para prioridade absoluta
-              const searchIndex = `${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric} ${benefitNumbers}`;
+              // Adicionamos o prefixo "ID" para tornar o termo numérico mais único no índice do CMDK
+              const searchIndex = `ID${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric}`;
               
               return (
                 <CommandItem
@@ -127,7 +125,7 @@ export function GlobalSearch() {
             })}
             
             {proposals?.map((proposal) => {
-              const searchIndex = `${proposal.proposalNumber} ${proposal.product} ${proposal.bank}`;
+              const searchIndex = `PROP${proposal.proposalNumber} ${proposal.product} ${proposal.bank}`;
               return (
                 <CommandItem
                   key={proposal.id}

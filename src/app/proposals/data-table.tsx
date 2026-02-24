@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -236,22 +235,19 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         const customer = row.original.customer;
         const p = row.original;
 
-        const searchDigits = searchTerm.replace(/\D/g, '');
         const normalizedSearch = normalizeString(searchTerm);
 
-        // 🛡️ BUSCA NUCLEAR V10: Prioridade absoluta para IDs Numéricos e Propostas
+        // 🛡️ BUSCA NUCLEAR V11: Prioridade absoluta e estrita para IDs e Propostas
         if (/^\d+$/.test(searchTerm)) {
-            // Correspondência exata de Proposta ou ID
+            // Correspondência EXATA de Proposta ou ID (Isola o registro se bater o número completo)
             if (p.proposalNumber === searchTerm) return true;
             if (customer?.numericId?.toString() === searchTerm) return true;
-            // Correspondência parcial
-            if (customer?.numericId?.toString().includes(searchTerm)) return true;
-        }
-
-        // 2. CPF ou Telefone por dígitos
-        if (searchDigits.length >= 3) {
+            
+            // Busca por dígitos nos campos de documento (CPF)
             const cpfDigits = customer?.cpf?.replace(/\D/g, '') || '';
-            if (cpfDigits.includes(searchDigits)) return true;
+            if (cpfDigits.includes(searchTerm)) return true;
+
+            return false; // Bloqueia correspondência de "ID 1 e 0" quando pesquisar "10"
         }
 
         const searchableFields = [
@@ -381,7 +377,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                 <div className='relative w-full max-md group'>
                     <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80 group-focus-within:opacity-100 transition-opacity' />
                     <Input
-                        placeholder="Busca Inteligente (Nome, CPF, Proposta ou ID Exato...)"
+                        placeholder="Busca Estrita (ID ou Proposta Exata...)"
                         value={globalFilter ?? ''}
                         onChange={(e) => setGlobalFilter(e.target.value)}
                         className="pl-10 h-11 bg-background border-2 border-zinc-300 dark:border-primary/40 rounded-full text-base font-bold shadow-md"
@@ -514,11 +510,11 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                         {numSelected > 0 && (
                             <>
                                 <Separator orientation="vertical" className="h-4 bg-zinc-300 dark:bg-zinc-700" />
-                                <div className="text-[#00AEEF] font-black animate-in fade-in slide-in-from-left-2">
+                                <div className="text-primary font-black animate-in fade-in slide-in-from-left-2">
                                     VALOR BRUTO: <span className="text-foreground">{formatCurrency(totalGross)}</span>
                                 </div>
                                 <Separator orientation="vertical" className="h-4 bg-zinc-300 dark:bg-zinc-700" />
-                                <div className="text-[#00AEEF] font-black animate-in fade-in slide-in-from-left-2">
+                                <div className="text-primary font-black animate-in fade-in slide-in-from-left-2">
                                     COMISSÃO: <span className="text-foreground">{formatCurrency(totalCommission)}</span>
                                 </div>
                             </>
