@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/page-header';
 import { CustomerDataTable, type CustomerDataTableHandle } from './data-table';
 import { getColumns } from './columns';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, FileDown, UserCheck, UserX, Trash2, Sparkles, Landmark, X } from 'lucide-react';
+import { PlusCircle, FileDown, UserCheck, UserX, Trash2, Sparkles, Landmark, X, Tag } from 'lucide-react';
 import { CustomerForm } from './customer-form';
 import type { Customer, UserSettings } from '@/lib/types';
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from '@/firebase';
@@ -69,9 +69,10 @@ function CustomersPageContent() {
   const tableRef = React.useRef<CustomerDataTableHandle>(null);
   const [filter, setFilter] = React.useState('active');
   
-  // Filtros de Cartão
+  // Filtros Avançados
   const [rmcFilter, setRmcFilter] = React.useState('all');
   const [rccFilter, setRccFilter] = React.useState('all');
+  const [tagFilter, setTagFilter] = React.useState('all');
 
   const customersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
@@ -87,6 +88,7 @@ function CustomersPageContent() {
   const { data: userSettings } = useDoc<UserSettings>(settingsDocRef);
 
   const banks = userSettings?.banks || configData.banks;
+  const availableTags = userSettings?.customerTags || configData.defaultCustomerTags;
   const showLogos = userSettings?.showBankLogos ?? true;
 
   const filteredCustomers = React.useMemo(() => {
@@ -116,9 +118,15 @@ function CustomersPageContent() {
             if (!hasRcc) return false;
         }
 
+        // Filtro de Tag
+        if (tagFilter !== 'all') {
+            const hasTag = c.tags?.includes(tagFilter);
+            if (!hasTag) return false;
+        }
+
         return true;
     });
-  }, [customers, filter, rmcFilter, rccFilter]);
+  }, [customers, filter, rmcFilter, rccFilter, tagFilter]);
 
   const activeCount = React.useMemo(() => 
     (customers || []).filter(c => c.name !== 'Cliente Removido' && (c.status !== 'inactive' && getAge(c.birthDate) < 75)).length,
@@ -352,6 +360,24 @@ function CustomersPageContent() {
         </Tabs>
 
         <div className="flex items-center gap-3 flex-1 justify-end flex-wrap">
+            <div className="flex items-center gap-2">
+                <Select value={tagFilter} onValueChange={setTagFilter}>
+                    <SelectTrigger className="h-10 min-w-[160px] bg-background rounded-full text-[10px] font-black uppercase px-5 border-primary/20 text-primary shadow-sm hover:bg-primary/5 transition-colors">
+                        <div className="flex items-center gap-2">
+                            <Tag className="h-3.5 w-3.5 opacity-50" />
+                            <SelectValue placeholder="FILTRAR POR TAG" />
+                        </div>
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-2">
+                        <SelectItem value="all" className="font-black text-[10px] uppercase">Todas as Tags</SelectItem>
+                        {availableTags.map(tag => (
+                            <SelectItem key={tag} value={tag} className="font-bold text-[11px] uppercase">{tag}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                {tagFilter !== 'all' && <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-primary" onClick={() => setTagFilter('all')}><X className="h-4 w-4" /></Button>}
+            </div>
+
             <div className="flex items-center gap-2">
                 <Select value={rmcFilter} onValueChange={setRmcFilter}>
                     <SelectTrigger className="h-10 min-w-[180px] bg-background rounded-full text-[10px] font-black uppercase px-5 border-orange-200 text-orange-600 shadow-sm hover:bg-orange-50 transition-colors">

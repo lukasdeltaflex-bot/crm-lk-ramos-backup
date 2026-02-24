@@ -233,13 +233,34 @@ export const getColumns = (
                 <Link href={`/customers/${customer.id}`} className="font-bold text-primary hover:underline uppercase text-sm tracking-tight truncate inline-block" onClick={(e) => e.stopPropagation()}>
                     {customer.name}
                 </Link>
-                {age >= 74 && (
-                    <Badge variant="destructive" className="w-fit h-4 text-[8px] font-black px-1.5 py-0 animate-pulse">ALERTA 75 ANOS</Badge>
-                )}
+                <div className="flex items-center gap-1">
+                    {age >= 74 && (
+                        <Badge variant="destructive" className="w-fit h-4 text-[8px] font-black px-1.5 py-0 animate-pulse">ALERTA 75 ANOS</Badge>
+                    )}
+                    {customer.tags?.slice(0, 2).map(tag => (
+                        <Badge key={tag} variant="outline" className="h-4 text-[7px] font-black px-1.5 py-0 bg-muted/20 border-zinc-200 truncate max-w-[60px]">{tag}</Badge>
+                    ))}
+                    {(customer.tags?.length || 0) > 2 && (
+                        <span className="text-[7px] font-black text-muted-foreground">+{customer.tags!.length - 2}</span>
+                    )}
+                </div>
             </div>
         )
     },
     size: 250,
+  },
+  {
+    id: 'Tags',
+    accessorFn: (row) => row.tags?.join(', '),
+    header: 'Tags',
+    cell: ({ row }) => (
+        <div className="flex flex-wrap gap-1">
+            {row.original.tags?.map(tag => (
+                <Badge key={tag} variant="outline" className="h-5 text-[8px] font-black px-2 py-0 bg-primary/5 text-primary border-primary/20">{tag}</Badge>
+            )) || <span className="text-[10px] text-muted-foreground/30 italic">---</span>}
+        </div>
+    ),
+    size: 180,
   },
   {
     id: 'CPF',

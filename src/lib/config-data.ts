@@ -1,4 +1,3 @@
-
 import type { ProductType, ProposalStatus, CommissionStatus } from './types';
 
 export const productTypes: readonly ProductType[] = ['Margem', 'Margem CLT', 'Saque Complementar', 'Cartão - Plástico', 'Cartão com saque', 'Portabilidade', 'Refin Port', 'Refin', 'Saque FGTS'];
@@ -7,6 +6,7 @@ export const proposalStatuses: readonly ProposalStatus[] = ['Em Andamento', 'Agu
 export const commissionStatuses: readonly CommissionStatus[] = ['Pendente', 'Paga', 'Parcial'];
 export const approvingBodies: readonly string[] = ['INSS', 'SPPREV', 'Federal', 'SIAPE', 'USP', 'GOVERNO', 'CLT', 'Outro'];
 export const expenseCategories: readonly string[] = ['Aluguel', 'Internet', 'Telefonia', 'Tráfego Pago', 'Salários', 'Impostos', 'Outros'];
+export const defaultCustomerTags: readonly string[] = ['💎 VIP', '✅ Margem Livre', '⚠️ Restrição', '📞 Receptivo', '🚀 Prospecção', '👴 Aposentado', '🏦 Servidor', '💼 CLT'];
 
 export const operationalSteps = [
   { id: 'formalization', label: 'Formalização', icon: 'send' },

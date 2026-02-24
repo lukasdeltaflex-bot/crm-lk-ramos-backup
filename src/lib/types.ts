@@ -36,6 +36,7 @@ export type Customer = {
   status?: CustomerStatus;
   benefits?: Benefit[];
   cards?: CustomerCard[]; // Mantido para compatibilidade, mas priorizado via benefits
+  tags?: string[]; // Etiquetas de classificação
   phone: string;
   phone2?: string;
   email?: string;
@@ -123,6 +124,8 @@ export type UserSettings = {
   approvingBodies: string[];
   banks: string[];
   promoters?: string[];
+  customerTags?: string[]; // Etiquetas oficiais de clientes
+  tagColors?: Record<string, string>; // Cores das etiquetas
   expenseCategories: string[];
   bankDomains?: Record<string, string>;
   promoterDomains?: Record<string, string>;

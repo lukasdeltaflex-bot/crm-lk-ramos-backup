@@ -43,6 +43,8 @@ import {
     Map,
     Hash,
     CircleDollarSign,
+    Tag,
+    X,
     CreditCard as CardIcon
 } from 'lucide-react';
 import { format, parse, isValid, differenceInYears } from 'date-fns';
@@ -84,6 +86,7 @@ const customerSchema = z.object({
   gender: z.string().default(""),
   status: z.enum(['active', 'inactive']).default('active'),
   benefits: z.array(benefitSchema).optional(),
+  tags: z.array(z.string()).optional(),
   phone: z.string().min(10, 'O telefone principal é obrigatório.'),
   phone2: z.string().nullable().optional(),
   email: z.string().email('E-mail inválido.').or(z.literal('')).nullable().optional(),
@@ -125,6 +128,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
   const [isSummarizing, setIsSummarizing] = useState(false);
 
   const banks = userSettings?.banks || configData.banks;
+  const availableTags = userSettings?.customerTags || configData.defaultCustomerTags;
   const showLogos = userSettings?.showBankLogos ?? true;
 
   const initialValues = useMemo(() => {
@@ -146,6 +150,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
       gender: source?.gender || '',
       status: source?.status || 'active',
       benefits: source?.benefits || [],
+      tags: source?.tags || [],
       phone: source?.phone || '',
       phone2: source?.phone2 || '',
       email: source?.email || '',
@@ -178,6 +183,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
   const watchBirthDate = form.watch('birthDate');
   const watchObservations = form.watch('observations');
   const watchCep = form.watch('cep');
+  const watchTags = form.watch('tags') || [];
 
   const customerAge = useMemo(() => {
     if (!watchBirthDate || watchBirthDate.length < 10) return null;
@@ -262,17 +268,27 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
     }
   };
 
+  const handleTagToggle = (tag: string) => {
+    const currentTags = form.getValues('tags') || [];
+    if (currentTags.includes(tag)) {
+        form.setValue('tags', currentTags.filter(t => t !== tag), { shouldDirty: true });
+    } else {
+        form.setValue('tags', [...currentTags, tag], { shouldDirty: true });
+    }
+  };
+
   const handleFormSubmit = (data: CustomerFormValues) => {
     if (duplicity.phone || duplicity.cpf) {
         toast({ variant: 'destructive', title: 'Dados duplicados detectados', description: 'Corrija campos em vermelho.' });
         return;
     }
-    const parsedDate = parse(data.birthDate, 'dd/MM/yyyy', new Date());
+    const parsedBirthDate = parse(data.birthDate, 'dd/MM/yyyy', new Date());
     const newCustomerData: FormCustomer = {
       ...data,
       gender: data.gender as any,
-      birthDate: format(parsedDate, 'yyyy-MM-dd'),
+      birthDate: format(parsedBirthDate, 'yyyy-MM-dd'),
       benefits: data.benefits || [],
+      tags: data.tags || [],
       documents: data.documents || [],
     };
     onSubmit(newCustomerData);
@@ -485,6 +501,55 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                             </FormItem>
                         )}
                     />
+                </div>
+            </div>
+
+            <div className="h-px bg-zinc-100" />
+
+            {/* SEÇÃO DE ETIQUETAS */}
+            <div className="space-y-6">
+                <h3 className="text-xl font-bold uppercase tracking-tight text-[#00AEEF] flex items-center gap-2">
+                    <Tag className="h-5 w-5" /> Classificação e Perfil
+                </h3>
+                <div className="space-y-4">
+                    <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Etiquetas Selecionadas</p>
+                    <div className="flex flex-wrap gap-2 min-h-[40px] p-4 rounded-3xl bg-muted/5 border-2 border-dashed border-zinc-200">
+                        {watchTags.length > 0 ? watchTags.map(tag => (
+                            <Badge key={tag} className="gap-1.5 pl-3 pr-1 py-1.5 rounded-full bg-primary text-white font-bold border-none shadow-sm animate-in zoom-in-95">
+                                {tag}
+                                <button type="button" onClick={() => handleTagToggle(tag)} className="h-5 w-5 rounded-full bg-black/10 flex items-center justify-center hover:bg-black/20 transition-colors">
+                                    <X className="h-3 w-3" />
+                                </button>
+                            </Badge>
+                        )) : (
+                            <span className="text-[10px] font-black uppercase text-muted-foreground/40 italic flex items-center gap-2">
+                                <Info className="h-3.5 w-3.5" /> Nenhuma etiqueta atribuída
+                            </span>
+                        )}
+                    </div>
+                    <div className="space-y-2">
+                        <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Etiquetas Sugeridas</p>
+                        <div className="flex flex-wrap gap-2">
+                            {availableTags.map(tag => {
+                                const isSelected = watchTags.includes(tag);
+                                return (
+                                    <Button
+                                        key={tag}
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleTagToggle(tag)}
+                                        className={cn(
+                                            "rounded-full font-bold h-8 transition-all border-2",
+                                            isSelected ? "bg-primary text-white border-primary shadow-md scale-105" : "border-zinc-200 text-muted-foreground hover:border-primary/40"
+                                        )}
+                                    >
+                                        {tag}
+                                    </Button>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
             </div>
 

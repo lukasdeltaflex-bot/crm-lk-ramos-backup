@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -19,6 +20,7 @@ import {
   banks as initialBanks,
   commissionStatuses as initialCommissionStatuses,
   expenseCategories as initialExpenseCategories,
+  defaultCustomerTags as initialCustomerTags
 } from '@/lib/config-data';
 import { 
     ListChecks, 
@@ -46,7 +48,8 @@ import {
     FileDown,
     Settings2,
     RotateCcw,
-    CloudSun
+    CloudSun,
+    Tags
 } from 'lucide-react';
 import { EditableList } from '@/components/settings/editable-list';
 import { BankEditableList } from '@/components/settings/bank-editable-list';
@@ -726,6 +729,20 @@ export default function SettingsPage() {
                         <EditableList title="Órgãos Aprovadores" items={userSettings?.approvingBodies || initialApprovingBodies} setItems={(n) => saveSettingsToFirebase({ approvingBodies: n as string[] })} />
                         <EditableList title="Categorias de Despesas" items={userSettings?.expenseCategories || initialExpenseCategories} setItems={(n) => saveSettingsToFirebase({ expenseCategories: n as string[] })} />
                         
+                        <AccordionItem value="tags-clientes" className="border-b">
+                            <AccordionTrigger className="flex items-center gap-2">
+                                <Tags className="h-4 w-4 text-pink-500" />
+                                Etiquetas de Clientes (Tags)
+                            </AccordionTrigger>
+                            <AccordionContent>
+                                <EditableList 
+                                    title="Etiquetas Oficiais" 
+                                    items={userSettings?.customerTags || initialCustomerTags as any} 
+                                    setItems={(n) => saveSettingsToFirebase({ customerTags: n as string[] })} 
+                                />
+                            </AccordionContent>
+                        </AccordionItem>
+
                         <BankEditableList 
                             banks={userSettings?.banks || initialBanks} 
                             bankDomains={userSettings?.bankDomains || {}} 

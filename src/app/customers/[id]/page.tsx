@@ -34,6 +34,7 @@ import {
     Mail,
     CreditCard,
     CircleDollarSign,
+    Tag,
     CreditCard as CardIcon
 } from 'lucide-react';
 import { format, parse, differenceInMonths, isValid as isValidDate } from 'date-fns';
@@ -101,7 +102,17 @@ const CustomerInfoCard = ({ customer, onExportDossier, onToggleStatus, onGenerat
                                     {isInactive ? "Inativo" : "Ativo"}
                                 </Badge>
                             </div>
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Registro Oficial do Cliente</p>
+                            <div className="flex items-center gap-2">
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Registro Oficial do Cliente</p>
+                                {customer.tags && customer.tags.length > 0 && (
+                                    <div className="flex items-center gap-1.5 ml-2 border-l pl-3 border-border/50">
+                                        <Tag className="h-2.5 w-2.5 text-primary opacity-40" />
+                                        {customer.tags.map((tag: string) => (
+                                            <Badge key={tag} variant="outline" className="h-4 text-[7px] font-black px-1.5 py-0 bg-primary/5 text-primary border-primary/20">{tag}</Badge>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-2 print:hidden">
