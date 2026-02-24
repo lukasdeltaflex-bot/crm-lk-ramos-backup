@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -98,7 +99,7 @@ export function GlobalSearch() {
           <CommandSeparator />
 
           <CommandGroup heading="Resultados">
-            {/* 🛡️ BUSCA NUCLEAR V2: Prioridade Zero para ID e Proposta Exatos */}
+            {/* 🛡️ BUSCA NUCLEAR V10: Prioridade Zero para ID e Proposta Exatos */}
             {validCustomers.map((customer) => {
               const cpfNumeric = customer.cpf?.replace(/\D/g, '') || '';
               const benefitNumbers = customer.benefits?.map(b => b.number).join(' ') || '';
@@ -125,24 +126,27 @@ export function GlobalSearch() {
               );
             })}
             
-            {proposals?.map((proposal) => (
-              <CommandItem
-                key={proposal.id}
-                value={normalizeString(`${proposal.proposalNumber} ${proposal.product}`)}
-                onSelect={() => runCommand(() => router.push(`/proposals?open=${proposal.id}`))}
-              >
-                <div className="flex items-center justify-between w-full">
-                    <div className='flex items-center'>
-                        <FileText className="mr-2 h-4 w-4 text-muted-foreground" />
-                        <div className="flex flex-col">
-                            <span className="font-bold">Prop. {proposal.proposalNumber}</span>
-                            <span className="text-[10px] text-muted-foreground">{proposal.product} • {proposal.bank}</span>
-                        </div>
-                    </div>
-                    <Zap className='h-3 w-3 text-orange-500 opacity-0 group-aria-selected:opacity-100 transition-opacity' />
-                </div>
-              </CommandItem>
-            ))}
+            {proposals?.map((proposal) => {
+              const searchIndex = `${proposal.proposalNumber} ${proposal.product} ${proposal.bank}`;
+              return (
+                <CommandItem
+                  key={proposal.id}
+                  value={normalizeString(searchIndex)}
+                  onSelect={() => runCommand(() => router.push(`/proposals?open=${proposal.id}`))}
+                >
+                  <div className="flex items-center justify-between w-full">
+                      <div className='flex items-center'>
+                          <FileText className="mr-2 h-4 w-4 text-muted-foreground" />
+                          <div className="flex flex-col">
+                              <span className="font-bold">Prop. {proposal.proposalNumber}</span>
+                              <span className="text-[10px] text-muted-foreground">{proposal.product} • {proposal.bank}</span>
+                          </div>
+                      </div>
+                      <Zap className='h-3 w-3 text-orange-500 opacity-0 group-aria-selected:opacity-100 transition-opacity' />
+                  </div>
+                </CommandItem>
+              );
+            })}
           </CommandGroup>
         </CommandList>
       </CommandDialog>

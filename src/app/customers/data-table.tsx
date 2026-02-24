@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -201,13 +202,15 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         const searchDigits = searchTerm.replace(/\D/g, '');
         const normalizedSearch = normalizeString(searchTerm);
 
-        // 🛡️ BUSCA NUCLEAR V9: Comparação robusta para IDs e Documentos
-        // 1. ID Exato (apenas se o input for puramente número)
-        if (/^\d+$/.test(searchTerm) && customer.numericId?.toString() === searchTerm) {
-            return true;
+        // 🛡️ BUSCA NUCLEAR V10: Prioridade absoluta para IDs Numéricos
+        if (/^\d+$/.test(searchTerm)) {
+            // Correspondência exata de ID (maior prioridade)
+            if (customer.numericId?.toString() === searchTerm) return true;
+            // Correspondência parcial de ID
+            if (customer.numericId?.toString().includes(searchTerm)) return true;
         }
 
-        // 2. Busca por dígitos (CPF ou Telefone) - Aceita com ou sem pontuação
+        // 2. Busca por dígitos (CPF ou Telefone)
         if (searchDigits.length >= 3) {
             const cpfDigits = customer.cpf?.replace(/\D/g, '') || '';
             const phoneDigits = customer.phone?.replace(/\D/g, '') || '';
@@ -338,19 +341,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             <div className="flex items-center gap-6 lg:gap-8">
                 <div className="flex items-center gap-2">
                     <p>LINHAS</p>
-                    <Select
-                        value={`${table.getState().pagination.pageSize}`}
-                        onValueChange={(value) => table.setPageSize(Number(value))}
-                    >
-                        <SelectTrigger className="h-8 w-[70px] bg-background border-2 border-zinc-200 dark:border-zinc-800 rounded-full text-[10px] font-black shadow-sm">
-                            <SelectValue placeholder={table.getState().pagination.pageSize} />
-                        </SelectTrigger>
-                        <SelectContent side="top">
-                            {[10, 20, 50, 100].map((pageSize) => (
-                                <SelectItem key={pageSize} value={`${pageSize}`} className="text-[10px] font-black uppercase">{pageSize}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <p>{table.getRowModel().rows.length}</p>
                 </div>
                 <div className="text-primary font-black">
                     PÁG {table.getState().pagination.pageIndex + 1} DE {table.getPageCount()}
