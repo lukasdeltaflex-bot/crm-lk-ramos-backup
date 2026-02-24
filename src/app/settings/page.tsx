@@ -12,7 +12,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Accordion } from '@/components/ui/accordion';
+import { 
+  Accordion, 
+  AccordionContent, 
+  AccordionItem, 
+  AccordionTrigger 
+} from '@/components/ui/accordion';
 import {
   productTypes as initialProductTypes,
   proposalStatuses as initialProposalStatuses,
@@ -170,7 +175,6 @@ export default function SettingsPage() {
 
   const saveSettingsToFirebase = (updated: Partial<UserSettings>) => {
     if (settingsDocRef) {
-        // 🛡️ BLINDAGEM DE DADOS V8
         setDoc(settingsDocRef, cleanFirestoreData(updated), { merge: true });
         toast({ title: "Configurações Salvas!" });
     }
