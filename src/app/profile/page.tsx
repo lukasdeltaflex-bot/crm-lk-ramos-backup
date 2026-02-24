@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -12,9 +13,12 @@ import { toast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { updateEmail } from 'firebase/auth';
 import { cleanFirestoreData, formatCurrency } from '@/lib/utils';
-import { Trophy, Star, Crown, Medal, TrendingUp, Wallet, Target } from 'lucide-react';
+import { Trophy, Star, Crown, Medal, TrendingUp, Wallet, Share2, Copy, Mail, MessageSquareText, Check } from 'lucide-react';
 import { startOfMonth, format, parseISO, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const RecordCard = ({ title, value, subValue, icon: Icon, colorClass }: any) => (
     <Card className="relative overflow-hidden border-2 bg-card/50 shadow-sm transition-all hover:scale-[1.02] hover:shadow-md">
@@ -35,6 +39,7 @@ const RecordCard = ({ title, value, subValue, icon: Icon, colorClass }: any) => 
 export default function ProfilePage() {
     const { user, auth, isUserLoading } = useFirebase();
     const firestore = useFirestore();
+    const [copiedType, setCopiedType] = React.useState<'email' | 'whatsapp' | null>(null);
 
     const userProfileDocRef = useMemoFirebase(() => {
         if (!user || !firestore) return null;
@@ -54,16 +59,10 @@ export default function ProfilePage() {
 
         const paidProposals = proposals.filter(p => p.status === 'Pago' || p.status === 'Saldo Pago');
         
-        // 1. Maior Contrato
         const biggestOne = [...paidProposals].sort((a,b) => (b.grossAmount || 0) - (a.grossAmount || 0))[0];
-
-        // 2. Comissões Totais
         const totalCommissions = proposals.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
-
-        // 3. Volume Total Pago
         const totalVolume = paidProposals.reduce((sum, p) => sum + (p.grossAmount || 0), 0);
 
-        // 4. Recorde Mensal (Volume)
         const monthlyStats: Record<string, { volume: number, label: string }> = {};
         paidProposals.forEach(p => {
             if (!p.dateDigitized) return;
@@ -139,6 +138,26 @@ export default function ProfilePage() {
         }
     };
 
+    const handleCopySignature = (type: 'email' | 'whatsapp') => {
+        if (!userProfile) return;
+        const name = userProfile.fullName || userProfile.displayName || "Agente LK RAMOS";
+        const phone = userProfile.phone || "(00) 00000-0000";
+        const email = userProfile.email;
+
+        if (type === 'whatsapp') {
+            const text = `*${name}*\n🔹 Agente de Crédito de Elite\n🏢 *LK RAMOS*\n📞 ${phone}\n✉️ ${email}\n🚀 _Soluções financeiras de alta performance._`;
+            navigator.clipboard.writeText(text);
+        } else {
+            // Versão básica de texto para e-mail (copiar HTML rico via JS é limitado sem libs extras, então fornecemos um bom formato)
+            const text = `${name}\nAgente de Crédito de Elite | LK RAMOS\nTelefone: ${phone}\nE-mail: ${email}\nwww.lkramos.com.br`;
+            navigator.clipboard.writeText(text);
+        }
+
+        setCopiedType(type);
+        setTimeout(() => setCopiedType(null), 2000);
+        toast({ title: "Assinatura Copiada!", description: "Pronto para colar onde desejar." });
+    };
+
     const isLoading = isUserLoading || isProfileLoading || isProposalsLoading;
 
     return (
@@ -195,36 +214,110 @@ export default function ProfilePage() {
                     </div>
                 </div>
 
-                {/* FORMULÁRIO DE PERFIL */}
-                <Card className="border-border/50 shadow-lg rounded-2xl overflow-hidden">
-                    <CardHeader className="bg-muted/10 border-b border-border/50">
-                        <CardTitle className="text-xl font-bold flex items-center gap-2">
-                            <Medal className="h-5 w-5 text-primary" />
-                            Informações Pessoais
-                        </CardTitle>
-                        <CardDescription>
-                            Gerencie suas informações de acesso e como você é exibido para a equipe.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-8">
-                        {isLoading ? (
-                            <div className="space-y-4">
-                                <div className="flex items-center space-x-4">
-                                    <Skeleton className="h-24 w-24 rounded-full" />
-                                    <div className="space-y-2">
-                                        <Skeleton className="h-4 w-[250px]" />
-                                        <Skeleton className="h-4 w-[200px]" />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* FORMULÁRIO DE PERFIL */}
+                    <div className="lg:col-span-2">
+                        <Card className="border-border/50 shadow-lg rounded-2xl overflow-hidden h-full">
+                            <CardHeader className="bg-muted/10 border-b border-border/50">
+                                <CardTitle className="text-xl font-bold flex items-center gap-2">
+                                    <Medal className="h-5 w-5 text-primary" />
+                                    Informações Pessoais
+                                </CardTitle>
+                                <CardDescription>
+                                    Gerencie suas informações de acesso e como você é exibido para a equipe.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="pt-8">
+                                {isLoading ? (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center space-x-4">
+                                            <Skeleton className="h-24 w-24 rounded-full" />
+                                            <div className="space-y-2">
+                                                <Skeleton className="h-4 w-[250px]" />
+                                                <Skeleton className="h-4 w-[200px]" />
+                                            </div>
+                                        </div>
+                                        <Skeleton className="h-10 w-full" />
+                                        <Skeleton className="h-10 w-full" />
+                                        <Skeleton className="h-10 w-full" />
+                                    </div>
+                                ) : (
+                                    <ProfileForm userProfile={userProfile} onSubmit={handleProfileUpdate} />
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* ✍️ GERADOR DE ASSINATURA */}
+                    <div className="lg:col-span-1">
+                        <Card className="border-primary/20 shadow-xl rounded-2xl overflow-hidden bg-primary/[0.02] h-full">
+                            <CardHeader className="bg-primary/5 border-b border-primary/10">
+                                <CardTitle className="text-lg font-black uppercase flex items-center gap-2 text-primary">
+                                    <Share2 className="h-5 w-5" />
+                                    Assinatura Digital
+                                </CardTitle>
+                                <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Sua marca em todo lugar</CardDescription>
+                            </CardHeader>
+                            <CardContent className="pt-6 space-y-6">
+                                <div className="p-6 bg-white dark:bg-zinc-950 rounded-2xl border-2 border-primary/10 shadow-inner relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 p-2 opacity-5">
+                                        <Crown className="h-20 w-20" />
+                                    </div>
+                                    <div className="flex items-start gap-4">
+                                        <Avatar className="h-16 w-16 border-2 border-primary/20">
+                                            <AvatarImage src={userProfile?.photoURL || ''} />
+                                            <AvatarFallback className="bg-primary/5 text-primary font-black uppercase text-xl">
+                                                {userProfile?.displayName?.[0] || '..'}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div className="space-y-1">
+                                            <h4 className="font-black text-sm uppercase tracking-tight text-primary">
+                                                {userProfile?.fullName || userProfile?.displayName || "Agente LK RAMOS"}
+                                            </h4>
+                                            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Agente de Crédito de Elite</p>
+                                            <div className="h-0.5 w-10 bg-amber-500 rounded-full my-2" />
+                                            <div className="space-y-0.5">
+                                                <p className="text-[10px] font-bold text-foreground/80 flex items-center gap-1.5">
+                                                    <Mail className="h-2.5 w-2.5 text-primary opacity-60" /> {userProfile?.email}
+                                                </p>
+                                                <p className="text-[10px] font-bold text-foreground/80 flex items-center gap-1.5">
+                                                    <MessageSquareText className="h-2.5 w-2.5 text-primary opacity-60" /> {userProfile?.phone || "(00) 00000-0000"}
+                                                </p>
+                                            </div>
+                                            <div className="pt-2">
+                                                <p className="text-[8px] font-black text-primary uppercase tracking-[0.25em]">LK RAMOS INVESTIMENTOS</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <Skeleton className="h-10 w-full" />
-                                <Skeleton className="h-10 w-full" />
-                                <Skeleton className="h-10 w-full" />
-                            </div>
-                        ) : (
-                            <ProfileForm userProfile={userProfile} onSubmit={handleProfileUpdate} />
-                        )}
-                    </CardContent>
-                </Card>
+
+                                <div className="grid grid-cols-1 gap-2">
+                                    <Button 
+                                        variant="outline" 
+                                        className="rounded-full h-11 font-black uppercase text-[10px] tracking-widest gap-2 border-2"
+                                        onClick={() => handleCopySignature('email')}
+                                    >
+                                        {copiedType === 'email' ? <Check className="h-4 w-4 text-green-500" /> : <Mail className="h-4 w-4" />}
+                                        Copiar para E-mail
+                                    </Button>
+                                    <Button 
+                                        className="rounded-full h-11 font-black uppercase text-[10px] tracking-widest gap-2 bg-[#25D366] hover:bg-[#1eb954] text-white border-none shadow-lg shadow-green-500/20"
+                                        onClick={() => handleCopySignature('whatsapp')}
+                                    >
+                                        {copiedType === 'whatsapp' ? <Check className="h-4 w-4" /> : <MessageSquareText className="h-4 w-4" />}
+                                        Copiar para WhatsApp
+                                    </Button>
+                                </div>
+
+                                <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
+                                    <p className="text-[9px] text-muted-foreground leading-relaxed font-medium">
+                                        <strong>Dica Profissional:</strong> Utilize a assinatura de WhatsApp na sua primeira mensagem de saudação para transmitir autoridade imediata.
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
             </div>
         </AppLayout>
     );
