@@ -1,3 +1,4 @@
+
 'use client';
 
 /**
@@ -464,7 +465,7 @@ export function ProposalForm({
                     {[
                         { id: 'formalization', label: 'Formalização', icon: Send },
                         { id: 'documentation', label: 'Documentos', icon: FileCheck },
-                        { id: 'signature', label: 'Outro', icon: PenTool },
+                        { id: 'signature', label: 'Checklist Promotora', icon: PenTool },
                         { id: 'approval', label: 'Averbação', icon: ShieldCheck }
                     ].map((step) => (
                         <Button

@@ -11,7 +11,7 @@ export const expenseCategories: readonly string[] = ['Aluguel', 'Internet', 'Tel
 export const operationalSteps = [
   { id: 'formalization', label: 'Formalização', icon: 'send' },
   { id: 'documentation', label: 'Documentação', icon: 'file' },
-  { id: 'signature', label: 'Outro', icon: 'pen' },
+  { id: 'signature', label: 'Checklist Promotora', icon: 'pen' },
   { id: 'approval', label: 'Averbação', icon: 'check' }
 ];
 
