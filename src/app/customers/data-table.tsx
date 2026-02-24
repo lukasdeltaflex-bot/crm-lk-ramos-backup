@@ -197,21 +197,21 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         const searchTerm = String(filterValue ?? '').trim();
         if (!searchTerm) return true;
         const customer = row.original;
-
-        const searchDigits = searchTerm.replace(/\D/g, '');
         const normalizedSearch = normalizeString(searchTerm);
 
-        // 🛡️ BUSCA NUCLEAR V11: Prioridade absoluta e estrita para IDs Numéricos
+        // 🛡️ BUSCA NUCLEAR V12: Threshold de Precisão
         if (/^\d+$/.test(searchTerm)) {
-            // Correspondência EXATA de ID (Isola o registro se bater o número completo)
+            // 1. Prioridade Absoluta: Correspondência EXATA de ID
             if (customer.numericId?.toString() === searchTerm) return true;
             
-            // Busca por dígitos nos campos de documento (CPF/Telefone)
-            const cpfDigits = customer.cpf?.replace(/\D/g, '') || '';
-            const phoneDigits = customer.phone?.replace(/\D/g, '') || '';
-            if (cpfDigits.includes(searchTerm) || phoneDigits.includes(searchTerm)) return true;
+            // 2. Threshold para documentos: Se for curto (<=3), não busca em documentos p/ evitar ruído
+            if (searchTerm.length > 3) {
+                const cpfDigits = customer.cpf?.replace(/\D/g, '') || '';
+                const phoneDigits = customer.phone?.replace(/\D/g, '') || '';
+                if (cpfDigits.includes(searchTerm) || phoneDigits.includes(searchTerm)) return true;
+            }
 
-            return false; // Bloqueia correspondência de "ID 1 e 0" quando pesquisar "10"
+            return false; // Trava busca numérica para não "vazar" para IDs errados
         }
 
         // 3. Busca por texto normalizado
@@ -239,7 +239,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             <div className='relative w-full max-w-md group'>
                 <Search className='absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80 group-focus-within:opacity-100 transition-opacity' />
                 <Input
-                    placeholder="Busca Estrita (ID ou Nome...)"
+                    placeholder="ID exato ou Nome..."
                     value={globalFilter ?? ''}
                     onChange={(event) => setGlobalFilter(event.target.value)}
                     className="pl-11 w-full bg-background border-2 border-zinc-300 dark:border-primary/40 h-11 rounded-full shadow-md focus-visible:ring-primary/20 transition-all font-bold text-sm"

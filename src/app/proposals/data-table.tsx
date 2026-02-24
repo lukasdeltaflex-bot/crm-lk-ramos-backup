@@ -234,20 +234,21 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         if (!searchTerm) return true;
         const customer = row.original.customer;
         const p = row.original;
-
         const normalizedSearch = normalizeString(searchTerm);
 
-        // 🛡️ BUSCA NUCLEAR V11: Prioridade absoluta e estrita para IDs e Propostas
+        // 🛡️ BUSCA NUCLEAR V12: Threshold de Precisão
         if (/^\d+$/.test(searchTerm)) {
-            // Correspondência EXATA de Proposta ou ID (Isola o registro se bater o número completo)
+            // 1. Prioridade Absoluta e Estrita: Correspondência EXATA de Proposta ou ID
             if (p.proposalNumber === searchTerm) return true;
             if (customer?.numericId?.toString() === searchTerm) return true;
             
-            // Busca por dígitos nos campos de documento (CPF)
-            const cpfDigits = customer?.cpf?.replace(/\D/g, '') || '';
-            if (cpfDigits.includes(searchTerm)) return true;
+            // 2. Threshold para documentos: Se for curto (<=3), não busca em documentos p/ evitar ruído
+            if (searchTerm.length > 3) {
+                const cpfDigits = customer?.cpf?.replace(/\D/g, '') || '';
+                if (cpfDigits.includes(searchTerm)) return true;
+            }
 
-            return false; // Bloqueia correspondência de "ID 1 e 0" quando pesquisar "10"
+            return false; // Bloqueia correspondência parcial em IDs para não misturar ID 1 com busca de 10
         }
 
         const searchableFields = [
@@ -377,7 +378,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                 <div className='relative w-full max-md group'>
                     <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80 group-focus-within:opacity-100 transition-opacity' />
                     <Input
-                        placeholder="Busca Estrita (ID ou Proposta Exata...)"
+                        placeholder="Busca por ID ou Proposta..."
                         value={globalFilter ?? ''}
                         onChange={(e) => setGlobalFilter(e.target.value)}
                         className="pl-10 h-11 bg-background border-2 border-zinc-300 dark:border-primary/40 rounded-full text-base font-bold shadow-md"
