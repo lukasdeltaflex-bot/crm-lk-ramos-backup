@@ -1,3 +1,4 @@
+
 'use client';
 
 /**
@@ -253,6 +254,7 @@ export function ProposalForm({
   const productValue = watch('product');
   const selectedCustomerId = watch('customerId');
   const currentStatusValue = watch('status');
+  const watchDateDigitized = watch('dateDigitized');
   const checklist = watch('checklist') || {};
 
   const selectedCustomer = useMemo(() => {
@@ -271,11 +273,12 @@ export function ProposalForm({
 
   // AUTOMATIZAÇÃO: Data de Digitação Vigente para Novas Propostas
   useEffect(() => {
-    if (sheetMode === 'new' && !watch('dateDigitized')) {
+    if (sheetMode === 'new' && !watchDateDigitized) {
         setValue('dateDigitized', format(new Date(), 'dd/MM/yyyy'), { shouldValidate: true });
     }
-  }, [sheetMode, setValue, watch]);
+  }, [sheetMode, setValue, watchDateDigitized]);
 
+  // 🛡️ SINCRONIZAÇÃO DE BUSCA: Atualiza o formulário quando um novo cliente é selecionado via busca
   useEffect(() => {
     if (selectedCustomerFromSearch) {
         setValue('customerId', selectedCustomerFromSearch.id, { shouldValidate: true });

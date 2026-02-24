@@ -71,6 +71,7 @@ function ProposalsPageContent() {
   const [rowSelection, setRowSelection] = React.useState<Record<string, boolean>>({});
   const [defaultValues, setDefaultValues] = React.useState<ProposalFormData | undefined>(undefined);
   const [isSaving, setIsSaving] = React.useState(false);
+  const [formKey, setFormKey] = React.useState('new'); // 🛡️ Chave estável para evitar remount
   const tableRef = React.useRef<ProposalsDataTableHandle>(null);
   const [hasOpenedFromParam, setHasOpenedFromParam] = React.useState(false);
   
@@ -114,6 +115,7 @@ function ProposalsPageContent() {
     setSelectedProposal(undefined);
     setDefaultValues(undefined);
     setSheetMode('new');
+    setFormKey(`new-${Date.now()}`); // Nova chave apenas ao clicar no botão
     setIsDialogOpen(true);
   }, []);
 
@@ -121,6 +123,7 @@ function ProposalsPageContent() {
     setSelectedProposal(proposal);
     setDefaultValues(undefined);
     setSheetMode('edit');
+    setFormKey(`edit-${proposal.id}`);
     setIsDialogOpen(true);
   }, []);
 
@@ -128,13 +131,18 @@ function ProposalsPageContent() {
     setSelectedProposal(proposal);
     setDefaultValues(undefined);
     setSheetMode('view');
+    setFormKey(`view-${proposal.id}`);
     setIsDialogOpen(true);
   }, []);
 
-  const handleCustomerSelect = (customer: Customer) => {
+  const handleCustomerSelect = React.useCallback((customer: Customer) => {
     setNewlySelectedCustomer(customer);
     setIsCustomerSearchOpen(false);
-  };
+  }, []);
+
+  const handleCustomerSearchSelectionHandled = React.useCallback(() => {
+    setNewlySelectedCustomer(null);
+  }, []);
   
   const handleDuplicateProposal = React.useCallback((proposal: ProposalWithCustomer) => {
     const { id, proposalNumber, status, ...rest } = proposal;
@@ -151,6 +159,7 @@ function ProposalsPageContent() {
     setSelectedProposal(undefined);
     setDefaultValues(duplicatedData);
     setSheetMode('new');
+    setFormKey(`dup-${proposal.id}-${Date.now()}`);
     setIsDialogOpen(true);
   }, []);
 
@@ -326,7 +335,7 @@ function ProposalsPageContent() {
     handleStatusChange, 
     handleDuplicateProposal,
     handleToggleChecklist
-  ), [firestore, handleEditProposal, handleViewProposal, handleStatusChange, handleDuplicateProposal]);
+  ), [firestore, handleEditProposal, handleViewProposal, handleStatusChange, handleDuplicateProposal, handleToggleChecklist]);
 
   return (
     <>
@@ -370,9 +379,9 @@ function ProposalsPageContent() {
             onPointerDownOutside={(e) => e.preventDefault()}
             onInteractOutside={(e) => e.preventDefault()}
         >
-          <DialogHeader><DialogTitle>{sheetMode === 'edit' ? 'Editar' : 'Nova'} Proposta</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{sheetMode === 'edit' ? 'Editar' : 'Novo'} Proposta</DialogTitle></DialogHeader>
           <ProposalForm 
-            key={selectedProposal?.id || (defaultValues ? `dup-${Date.now()}` : 'new')}
+            key={formKey}
             proposal={selectedProposal} 
             allProposals={proposals || []}
             customers={customers || []}
@@ -384,7 +393,7 @@ function ProposalsPageContent() {
             sheetMode={sheetMode}
             onOpenCustomerSearch={() => setIsCustomerSearchOpen(true)}
             selectedCustomerFromSearch={newlySelectedCustomer}
-            onCustomerSearchSelectionHandled={() => setNewlySelectedCustomer(null)}
+            onCustomerSearchSelectionHandled={handleCustomerSearchSelectionHandled}
             isSaving={isSaving}
           />
         </DialogContent>
