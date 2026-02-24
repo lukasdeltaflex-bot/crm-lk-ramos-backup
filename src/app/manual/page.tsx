@@ -14,20 +14,20 @@ import {
     Sparkles,
     Search,
     ListChecks,
-    Copy,
     Zap,
     Layout,
-    FileDown,
     UserCheck,
     CloudSun,
     MessageSquareText,
-    History,
     Printer,
     Timer,
     Check,
     CreditCard,
     Landmark,
-    FileBadge
+    FileBadge,
+    FileCheck2,
+    Database,
+    Binary
 } from 'lucide-react';
 
 export default function ManualPage() {
@@ -57,59 +57,27 @@ export default function ManualPage() {
                                     <MessageSquareText className="h-4 w-4 text-orange-600" />
                                     <h4 className="font-bold">Smart Sales Pitch IA</h4>
                                 </div>
-                                <p className="text-xs text-muted-foreground">Na ficha do cliente, use o botão "Smart Pitch" para gerar scripts de abordagem magnéticos. A IA analisa o histórico do cliente e cria o texto perfeito para enviar via WhatsApp.</p>
+                                <p className="text-xs text-muted-foreground">Na ficha do cliente, use o botão "Smart Pitch" para gerar scripts magnéticos. O sistema agora usa links oficiais (api.whatsapp.com) garantindo compatibilidade total com PC e Celular.</p>
                             </div>
                             <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Camera className="h-4 w-4 text-blue-600" />
-                                    <h4 className="font-bold">Visão Computacional (OCR)</h4>
+                                    <h4 className="font-bold">OCR Multimodal (Fotos e PDFs)</h4>
                                 </div>
-                                <p className="text-xs text-muted-foreground">O cadastro de clientes via foto extrai instantaneamente Nome, CPF e Benefícios de documentos oficiais (RG, CNH, Extratos).</p>
+                                <p className="text-xs text-muted-foreground">O cadastro via IA agora suporta **PDFs Oficiais**. Você pode subir extratos bancários ou fotos de documentos e a IA extrairá Nome, CPF e Benefícios instantaneamente.</p>
                             </div>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 2. GESTÃO DE CARTÕES E PROSPECÇÃO */}
-                <AccordionItem value="card-management" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
+                {/* 2. BUSCA NUCLEAR V12 */}
+                <AccordionItem value="search-v12" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-blue-100 text-blue-600"><CreditCard className="h-5 w-5" /></div>
+                            <div className="p-2 rounded-xl bg-blue-100 text-blue-600"><Binary className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">2. Gestão de Cartões (RMC/RCC)</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Saque Complementar e Campanhas</p>
-                            </div>
-                        </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
-                        <div className="space-y-4">
-                            <p>O sistema agora permite um mapeamento cirúrgico para campanhas de saque complementar:</p>
-                            <ul className="space-y-3">
-                                <li className="flex gap-3">
-                                    <div className="h-5 w-5 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0"><Check className="h-3 w-3" /></div>
-                                    <p><strong>Vínculo por Benefício</strong>: Cada Número de Benefício (NB) pode ter seus bancos de RMC e RCC cadastrados individualmente.</p>
-                                </li>
-                                <li className="flex gap-3">
-                                    <div className="h-5 w-5 rounded-full bg-orange-500 text-white flex items-center justify-center shrink-0"><Landmark className="h-3 w-3" /></div>
-                                    <p><strong>Filtros Estratégicos</strong>: Na tela de Clientes, use os novos filtros de Banco RMC e RCC para listar apenas o público-alvo de um banco específico.</p>
-                                </li>
-                                <li className="flex gap-3">
-                                    <div className="h-5 w-5 rounded-full bg-green-500 text-white flex items-center justify-center shrink-0"><FileBadge className="h-3 w-3" /></div>
-                                    <p><strong>Dossiê Premium</strong>: O PDF oficial agora inclui a <strong>Idade Atual</strong> do cliente e o <strong>Mapa de Reservas</strong> completo dos cartões.</p>
-                                </li>
-                            </ul>
-                        </div>
-                    </AccordionContent>
-                </AccordionItem>
-
-                {/* 3. AGILIDADE OPERACIONAL */}
-                <AccordionItem value="operational-agility" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
-                    <AccordionTrigger className="hover:no-underline">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-purple-100 text-purple-600"><ListChecks className="h-5 w-5" /></div>
-                            <div className="text-left">
-                                <p className="font-bold text-sm">3. Agilidade Operacional</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Ações em Massa e Busca Nuclear</p>
+                                <p className="font-bold text-sm">2. Busca Nuclear V12 (Precisão)</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Localização Instantânea de Registros</p>
                             </div>
                         </div>
                     </AccordionTrigger>
@@ -117,93 +85,111 @@ export default function ManualPage() {
                         <ul className="space-y-3">
                             <li className="flex gap-3">
                                 <div className="h-5 w-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-black shrink-0">ID</div>
-                                <p><strong>Busca Nuclear Prioridade Zero</strong>: Digitar apenas números isola exclusivamente o registro por ID Numérico ou Número de Proposta, eliminando ruídos de texto.</p>
+                                <p><strong>Correspondência Estrita</strong>: Buscas numéricas curtas (ex: "10") agora isolam exclusivamente o ID exato, eliminando resultados de telefones ou CPFs que apenas contenham esses números.</p>
                             </li>
                             <li className="flex gap-3">
-                                <div className="h-5 w-5 rounded-full bg-green-500 text-white flex items-center justify-center shrink-0"><Check className="h-3 w-3" /></div>
-                                <p><strong>Baixa Coletiva (Financeiro)</strong>: Selecione múltiplos contratos e dê baixa total em comissões com um único clique.</p>
+                                <div className="h-5 w-5 rounded-full bg-orange-500 text-white flex items-center justify-center shrink-0"><Search className="h-3 w-3" /></div>
+                                <p><strong>CPF Inteligente</strong>: O motor de busca agora ignora pontuações. Você pode pesquisar por `123.456.789-01` ou apenas `12345678901` para encontrar o cliente.</p>
                             </li>
                             <li className="flex gap-3">
-                                <div className="h-5 w-5 rounded-full bg-red-500 text-white flex items-center justify-center shrink-0"><Timer className="h-3 w-3" /></div>
-                                <p><strong>Monitoramento de Ociosidade</strong>: O sistema identifica contratos sem atualização há mais de 48 horas, disparando alertas visuais de prazo crítico.</p>
+                                <div className="h-5 w-5 rounded-full bg-green-500 text-white flex items-center justify-center shrink-0"><Binary className="h-3 w-3" /></div>
+                                <p><strong>Threshold de Segurança</strong>: Para números acima de 4 dígitos, o sistema libera a busca por fragmentos (útil para localizar partes de um documento).</p>
                             </li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 4. FLUXO FINANCEIRO INTELIGENTE */}
-                <AccordionItem value="financial-logic" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
+                {/* 3. CONCILIAÇÃO IA V2 */}
+                <AccordionItem value="finance-v2" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-green-100 text-green-600"><Wallet className="h-5 w-5" /></div>
+                            <div className="p-2 rounded-xl bg-green-100 text-green-600"><FileCheck2 className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">4. Fluxo Financeiro Inteligente</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Gatilhos Automáticos e Visibilidade</p>
+                                <p className="font-bold text-sm">3. Conciliação Financeira IA V2</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Conferência de Comissões por Arquivo</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
-                        <p>O módulo financeiro opera com gatilhos automáticos para precisão de caixa:</p>
+                        <p>O novo motor de conciliação elimina o trabalho manual de conferir pagamentos:</p>
                         <div className="grid gap-3 md:grid-cols-2">
-                            <div className="p-3 rounded-lg bg-muted/20 border-dashed border-2">
-                                <h4 className="text-[10px] font-black uppercase mb-1">Gatilho de Averbação</h4>
-                                <p className="text-xs text-muted-foreground">Ao preencher a <strong>Data de Averbação</strong>, o sistema marca a comissão como "Pendente" automaticamente, alimentando seu saldo a receber.</p>
+                            <div className="p-3 rounded-xl bg-muted/20 border-2 border-dashed">
+                                <h4 className="text-[10px] font-black uppercase mb-1">Leitura de PDF de Promotora</h4>
+                                <p className="text-xs text-muted-foreground">Suba o relatório original da promotora. A IA cruza CPF e Nº da Proposta simultaneamente para achar o contrato na sua base.</p>
                             </div>
-                            <div className="p-3 rounded-lg bg-muted/20 border-dashed border-2">
-                                <h4 className="text-[10px] font-black uppercase mb-1">Radar de Busca Retroativa</h4>
-                                <p className="text-xs text-muted-foreground">Ao pesquisar na barra de busca do Financeiro, o sistema libera automaticamente a visão de todos os meses, ignorando a trava do mês vigente.</p>
+                            <div className="p-3 rounded-xl bg-muted/20 border-2 border-dashed">
+                                <h4 className="text-[10px] font-black uppercase mb-1">Destaque de Divergências</h4>
+                                <p className="text-xs text-muted-foreground">Se o valor pago for menor que o esperado, o sistema sinaliza em vermelho e sugere a "Baixa Parcial" automaticamente.</p>
                             </div>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 5. BRANDING E APARÊNCIA PREMIUM */}
-                <AccordionItem value="branding-studio" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
+                {/* 4. AUTOMATIZAÇÕES DE ESTEIRA */}
+                <AccordionItem value="automations" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-primary/10 text-primary"><Palette className="h-5 w-5" /></div>
+                            <div className="p-2 rounded-xl bg-purple-100 text-purple-600"><Bot className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">5. Branding e Estética Industrial</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Auras Atmosféricas e Transparência</p>
-                            </div>
-                        </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
-                        <ul className="list-disc pl-5 space-y-2 text-xs">
-                            <li><strong>Fundos Atmosféricos (Aura)</strong>: Ative gradientes de profundidade que brilham sob a interface (Nebula, Ocean, etc.).</li>
-                            <li><strong>Transparência Industrial (0.70)</strong>: A interface agora utiliza opacidade estratégica com desfoque de fundo, permitindo que as Auras brilhem através dos componentes.</li>
-                            <li><strong>Logotipos Inteligentes</strong>: Promotoras e Bancos exibem ícones oficiais buscados via IA para agilizar a leitura visual da esteira.</li>
-                        </ul>
-                    </AccordionContent>
-                </AccordionItem>
-
-                {/* 6. SEGURANÇA E BLINDAGEM NUCLEAR */}
-                <AccordionItem value="security-blind" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
-                    <AccordionTrigger className="hover:no-underline">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-zinc-100 text-zinc-600"><ShieldCheck className="h-5 w-5" /></div>
-                            <div className="text-left">
-                                <p className="font-bold text-sm">6. Blindagem Nuclear de Dados</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Integridade V8 e Persistência</p>
+                                <p className="font-bold text-sm">4. Automatizações de Esteira</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Redução de Cliques e Digitação</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
                         <ul className="space-y-3">
-                            <li className="flex items-start gap-2">
-                                <UserCheck className="h-4 w-4 text-emerald-600 shrink-0" />
-                                <div>
-                                    <p className="font-bold">Validação Semântica de Status</p>
-                                    <p className="text-xs text-muted-foreground">Selos de status Ativo/Inativo otimizados para alto contraste em temas claros e escuros.</p>
-                                </div>
+                            <li className="flex gap-3">
+                                <div className="h-5 w-5 rounded-full bg-purple-500 text-white flex items-center justify-center shrink-0"><Check className="h-3 w-3" /></div>
+                                <p><strong>Data de Digitação Automática</strong>: Toda nova proposta já nasce preenchida com a data de hoje.</p>
                             </li>
-                            <li className="flex items-start gap-2">
-                                <Layout className="h-4 w-4 text-blue-600 shrink-0" />
-                                <div>
-                                    <p className="font-bold">Persistência de Visão (DataTable)</p>
-                                    <p className="text-xs text-muted-foreground">Sua configuração de colunas, ordem e paginação é salva automaticamente com proteção total contra erros de hidratação.</p>
-                                </div>
+                            <li className="flex gap-3">
+                                <div className="h-5 w-5 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0"><Binary className="h-3 w-3" /></div>
+                                <p><strong>Seleção Inteligente de NB</strong>: Se o seu cliente tiver apenas um benefício cadastrado, o sistema o selecionará automaticamente ao iniciar a proposta.</p>
                             </li>
+                            <li className="flex gap-3">
+                                <div className="h-5 w-5 rounded-full bg-green-500 text-white flex items-center justify-center shrink-0"><Wallet className="h-3 w-3" /></div>
+                                <p><strong>Baixa Coletiva</strong>: No financeiro, selecione várias propostas e dê baixa total em segundos com o botão de ação em massa.</p>
+                            </li>
+                        </ul>
+                    </AccordionContent>
+                </AccordionItem>
+
+                {/* 5. GESTÃO DE CARTÕES */}
+                <AccordionItem value="card-management" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
+                    <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-xl bg-blue-100 text-blue-600"><CreditCard className="h-5 w-5" /></div>
+                            <div className="text-left">
+                                <p className="font-bold text-sm">5. Gestão de Cartões (RMC/RCC)</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Saque Complementar e Campanhas</p>
+                            </div>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
+                        <p>Mapeamento cirúrgico para campanhas de saque complementar:</p>
+                        <ul className="list-disc pl-5 space-y-2 text-xs">
+                            <li><strong>Vínculo por NB</strong>: Cada benefício armazena seus bancos de reserva individualmente.</li>
+                            <li><strong>Filtros de Prospecção</strong>: Na tela de Clientes, use os filtros de banco RMC/RCC para isolar quem tem reserva em bancos específicos.</li>
+                        </ul>
+                    </AccordionContent>
+                </AccordionItem>
+
+                {/* 6. SEGURANÇA E BRANDING */}
+                <AccordionItem value="branding-security" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
+                    <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-xl bg-zinc-100 text-zinc-600"><ShieldCheck className="h-5 w-5" /></div>
+                            <div className="text-left">
+                                <p className="font-bold text-sm">6. Branding e Segurança V8</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Identidade Visual e Blindagem de Dados</p>
+                            </div>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
+                        <ul className="list-disc pl-5 space-y-2 text-xs">
+                            <li><strong>Blindagem Nuclear V8</strong>: Motor de proteção que impede erros de salvamento e garante integridade total dos dados na nuvem.</li>
+                            <li><strong>Auras Atmosféricas</strong>: Personalize o fundo do sistema com gradientes industriais premium em "Configurações".</li>
+                            <li><strong>Backup Total</strong>: Em "Dados & Backup", exporte toda a sua base de clientes e propostas para Excel a qualquer momento.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
@@ -211,12 +197,12 @@ export default function ManualPage() {
             </Accordion>
         </div>
 
-        {/* BARRA LATERAL DE RESUMO RÁPIDO */}
+        {/* BARRA LATERAL DE ATALHOS */}
         <div className="lg:col-span-1 space-y-6">
             <Card className="border-2 border-primary/20 bg-primary/5">
                 <CardHeader className="pb-2">
                     <CardTitle className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
-                        <Zap className="h-3 w-3 fill-current" /> Atalhos Rápidos
+                        <Zap className="h-3 w-3 fill-current" /> Atalhos Mestres
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -229,15 +215,15 @@ export default function ManualPage() {
                         <p className="text-xs font-bold">CTRL + B</p>
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase">Imprimir Seleção</p>
-                        <p className="text-xs font-bold">Borderô Coletivo</p>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase">Exportar Backup</p>
+                        <p className="text-xs font-bold">Aba Dados & Backup</p>
                     </div>
                 </CardContent>
             </Card>
 
             <Card className="border-2 border-dashed border-green-500/20 bg-green-500/5">
                 <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-black uppercase tracking-widest text-green-600">Estado do Sistema</CardTitle>
+                    <CardTitle className="text-xs font-black uppercase tracking-widest text-green-600">Integridade</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="flex items-center gap-2 text-green-600">
@@ -245,7 +231,7 @@ export default function ManualPage() {
                         <span className="text-[10px] font-black uppercase">Blindagem Nuclear V8 Ativa</span>
                     </div>
                     <p className="text-[9px] text-muted-foreground mt-2 leading-tight">
-                        Versão 3.1.0 - Motor de prospecção e gestão de cartões otimizado.
+                        Versão 3.2.0 - Motor de Conciliação e Busca Nuclear aprimorados.
                     </p>
                 </CardContent>
             </Card>
