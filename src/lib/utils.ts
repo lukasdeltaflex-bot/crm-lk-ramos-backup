@@ -52,7 +52,8 @@ export function isWhatsApp(phone: string): boolean {
 
 export function getWhatsAppUrl(phone: string): string {
     const digitsOnly = phone.replace(/\D/g, '');
-    return `https://wa.me/55${digitsOnly}`;
+    // Padrão robusto para compatibilidade total (Web/App)
+    return `https://api.whatsapp.com/send?phone=55${digitsOnly}`;
 }
 
 export function handlePhoneMask(value: string): string {
