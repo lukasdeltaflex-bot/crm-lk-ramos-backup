@@ -663,7 +663,10 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                         <FormItem><FormLabel className="text-xs font-medium text-muted-foreground flex items-center gap-2"><Hash className="h-3.5 w-3.5 text-[#00AEEF]" /> Número</FormLabel><FormControl><Input placeholder="123" {...field} value={field.value ?? ''} className="rounded-full h-11 px-5 border-zinc-200 font-bold" /></FormControl></FormItem>
                     )} />
                 </div>
-                <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+                <div className='grid grid-cols-1 md:grid-cols-4 gap-6'>
+                    <FormField control={form.control} name="complement" render={({ field }) => (
+                        <FormItem><FormLabel className="text-xs font-medium text-muted-foreground flex items-center gap-2"><Home className="h-3.5 w-3.5 text-[#00AEEF]" /> Complemento</FormLabel><FormControl><Input placeholder="Apto, Bloco..." {...field} value={field.value ?? ''} className="rounded-full h-11 px-5 border-zinc-200 font-bold" /></FormControl></FormItem>
+                    )} />
                     <FormField control={form.control} name="neighborhood" render={({ field }) => (
                         <FormItem><FormLabel className="text-xs font-medium text-muted-foreground flex items-center gap-2"><MapPin className="h-3.5 w-3.5 text-[#00AEEF]" /> Bairro</FormLabel><FormControl><Input placeholder="Bairro" {...field} value={field.value ?? ''} className="rounded-full h-11 px-5 border-zinc-200 font-bold" /></FormControl></FormItem>
                     )} />
