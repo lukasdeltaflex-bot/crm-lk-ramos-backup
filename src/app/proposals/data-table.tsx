@@ -234,25 +234,32 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         if (!searchTerm) return true;
         const customer = row.original.customer;
         const p = row.original;
-        const normalizedSearch = normalizeString(searchTerm);
+        
+        const searchDigits = searchTerm.replace(/\D/g, '');
+        const cpfDigits = customer?.cpf?.replace(/\D/g, '') || '';
 
-        // 🛡️ BUSCA NUCLEAR V12: Threshold de Precisão
+        // 🛡️ BUSCA NUCLEAR V12: Prioridade Zero e Estrita para ID
         if (/^\d+$/.test(searchTerm)) {
-            // 1. Prioridade Absoluta e Estrita: Correspondência EXATA de Proposta ou ID
+            // 1. Prioridade Absoluta: Correspondência EXATA de Proposta ou ID
             if (p.proposalNumber === searchTerm) return true;
             if (customer?.numericId?.toString() === searchTerm) return true;
             
             // 2. Threshold para documentos: Se for curto (<=3), não busca em documentos p/ evitar ruído
             if (searchTerm.length > 3) {
-                const cpfDigits = customer?.cpf?.replace(/\D/g, '') || '';
                 if (cpfDigits.includes(searchTerm)) return true;
             }
 
-            return false; // Bloqueia correspondência parcial em IDs para não misturar ID 1 com busca de 10
+            return false; // Trava busca numérica para ser estrita em IDs curtos
         }
 
+        // 3. Busca por CPF via dígitos (mesmo que searchTerm tenha pontuação)
+        if (searchDigits.length > 3 && cpfDigits.includes(searchDigits)) return true;
+
+        // 4. Texto normalizado e campos literais
+        const normalizedSearch = normalizeString(searchTerm);
         const searchableFields = [
             customer?.name,
+            customer?.cpf,
             p.proposalNumber,
             p.operator,
             p.bank,
@@ -378,7 +385,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                 <div className='relative w-full max-md group'>
                     <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80 group-focus-within:opacity-100 transition-opacity' />
                     <Input
-                        placeholder="Busca por ID ou Proposta..."
+                        placeholder="Busca por ID, Nome ou Proposta..."
                         value={globalFilter ?? ''}
                         onChange={(e) => setGlobalFilter(e.target.value)}
                         className="pl-10 h-11 bg-background border-2 border-zinc-300 dark:border-primary/40 rounded-full text-base font-bold shadow-md"
@@ -460,7 +467,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                             {hg.headers.map(h => <DraggableHeader key={h.id} header={h as any} />)}
                                         </SortableContext>
                                     </TableRow>
-                                ))}
+                                    ))}
                             </TableHeader>
                             <TableBody>
                                 {table.getRowModel().rows.length > 0 ? (

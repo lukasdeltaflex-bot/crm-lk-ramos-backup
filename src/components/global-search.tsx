@@ -98,10 +98,10 @@ export function GlobalSearch() {
           <CommandSeparator />
 
           <CommandGroup heading="Resultados">
-            {/* 🛡️ BUSCA NUCLEAR V11: Prioridade Zero e Estrita para ID */}
+            {/* 🛡️ BUSCA NUCLEAR V12: Prioridade Zero e Inteligência de Dígitos */}
             {validCustomers.map((customer) => {
               const cpfNumeric = customer.cpf?.replace(/\D/g, '') || '';
-              // Adicionamos o prefixo "ID" para tornar o termo numérico mais único no índice do CMDK
+              // O índice de busca inclui Nome, CPF formatado, CPF numérico e ID fixo
               const searchIndex = `ID${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric}`;
               
               return (

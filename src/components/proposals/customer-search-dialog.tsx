@@ -40,7 +40,7 @@ export function CustomerSearchDialog({
               <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
               <CommandGroup>
                 {customers.map((customer) => {
-                  // 🛡️ BUSCA ROBUSTA V9: Inclui todas as variações de documento no índice de busca
+                  // 🛡️ BUSCA NUCLEAR V12: Inclui todas as variações de documento e ID no índice de busca
                   const cpfNumeric = customer.cpf?.replace(/\D/g, '') || '';
                   const searchIndex = normalizeString(`${customer.name} ${customer.cpf} ${cpfNumeric} ID${customer.numericId}`);
                   

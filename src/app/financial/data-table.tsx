@@ -253,7 +253,9 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         if (!searchTerm) return true;
         const customer = row.original.customer;
         const p = row.original;
-        const normalizedSearch = normalizeString(searchTerm);
+        
+        const searchDigits = searchTerm.replace(/\D/g, '');
+        const cpfDigits = customer?.cpf?.replace(/\D/g, '') || '';
 
         // 🛡️ BUSCA NUCLEAR V12: Threshold de Precisão
         if (/^\d+$/.test(searchTerm)) {
@@ -263,15 +265,20 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             
             // 2. Threshold para documentos: Se for curto (<=3), não busca em documentos p/ evitar ruído
             if (searchTerm.length > 3) {
-                const cpfDigits = customer?.cpf?.replace(/\D/g, '') || '';
                 if (cpfDigits.includes(searchTerm)) return true;
             }
 
             return false; // Trava busca numérica para ser estrita em IDs curtos
         }
 
+        // 3. Busca por CPF via dígitos (mesmo que searchTerm tenha pontuação)
+        if (searchDigits.length > 3 && cpfDigits.includes(searchDigits)) return true;
+
+        // 4. Busca por texto normalizado
+        const normalizedSearch = normalizeString(searchTerm);
         const searchableFields = [
             customer?.name,
+            customer?.cpf,
             p.proposalNumber,
             p.operator,
             p.bank,
@@ -414,7 +421,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                 <div className="flex items-center justify-between px-4 py-2 gap-4">
                     <div className='relative w-full max-md group'>
                         <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80 group-focus-within:opacity-100 transition-opacity' />
-                        <Input placeholder="Busca inteligente por Nome ou ID..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="pl-10 h-11 bg-background border-2 border-zinc-300 rounded-full text-base font-bold shadow-md" />
+                        <Input placeholder="Busca inteligente por Nome, ID ou CPF..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="pl-10 h-11 bg-background border-2 border-zinc-300 rounded-full text-base font-bold shadow-md" />
                     </div>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild><Button variant="outline" className="h-11 rounded-full px-6 font-black border-2 border-zinc-300 bg-background shadow-md gap-2 text-[10px] uppercase tracking-widest">Colunas <ChevronDown className="h-4 w-4 opacity-50" /></Button></DropdownMenuTrigger>

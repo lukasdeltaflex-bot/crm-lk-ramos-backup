@@ -197,26 +197,34 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         const searchTerm = String(filterValue ?? '').trim();
         if (!searchTerm) return true;
         const customer = row.original;
-        const normalizedSearch = normalizeString(searchTerm);
+        
+        const searchDigits = searchTerm.replace(/\D/g, '');
+        const cpfDigits = customer.cpf?.replace(/\D/g, '') || '';
+        const phoneDigits = customer.phone?.replace(/\D/g, '') || '';
 
-        // 🛡️ BUSCA NUCLEAR V12: Threshold de Precisão
+        // 🛡️ BUSCA NUCLEAR V12: Prioridade Zero e Estrita para ID
         if (/^\d+$/.test(searchTerm)) {
             // 1. Prioridade Absoluta: Correspondência EXATA de ID
             if (customer.numericId?.toString() === searchTerm) return true;
             
             // 2. Threshold para documentos: Se for curto (<=3), não busca em documentos p/ evitar ruído
             if (searchTerm.length > 3) {
-                const cpfDigits = customer.cpf?.replace(/\D/g, '') || '';
-                const phoneDigits = customer.phone?.replace(/\D/g, '') || '';
                 if (cpfDigits.includes(searchTerm) || phoneDigits.includes(searchTerm)) return true;
             }
 
             return false; // Trava busca numérica para não "vazar" para IDs errados
         }
 
-        // 3. Busca por texto normalizado
+        // 3. Busca por CPF via dígitos (mesmo que searchTerm tenha pontuação)
+        if (searchDigits.length > 3) {
+            if (cpfDigits.includes(searchDigits) || phoneDigits.includes(searchDigits)) return true;
+        }
+
+        // 4. Busca por texto normalizado
+        const normalizedSearch = normalizeString(searchTerm);
         const searchableFields = [
             customer.name,
+            customer.cpf,
             customer.city,
             customer.email,
             customer.observations
@@ -239,7 +247,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             <div className='relative w-full max-w-md group'>
                 <Search className='absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80 group-focus-within:opacity-100 transition-opacity' />
                 <Input
-                    placeholder="ID exato ou Nome..."
+                    placeholder="ID exato, Nome ou CPF..."
                     value={globalFilter ?? ''}
                     onChange={(event) => setGlobalFilter(event.target.value)}
                     className="pl-11 w-full bg-background border-2 border-zinc-300 dark:border-primary/40 h-11 rounded-full shadow-md focus-visible:ring-primary/20 transition-all font-bold text-sm"
