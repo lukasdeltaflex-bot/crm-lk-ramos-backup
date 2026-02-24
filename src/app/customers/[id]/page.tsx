@@ -1,3 +1,4 @@
+
 'use client';
 import React from 'react';
 import { useParams } from 'next/navigation';
@@ -38,7 +39,7 @@ import {
 import { format, parse, differenceInMonths, isValid as isValidDate } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { formatCurrency, getAge, cn, getWhatsAppUrl, isWhatsApp, formatDateSafe, cleanBankName } from '@/lib/utils';
+import { formatCurrency, getAge, cn, getWhatsAppUrl, isWhatsApp, formatDateSafe, cleanBankName, cleanFirestoreData } from '@/lib/utils';
 import { SimpleProposalsTable } from '@/components/customers/simple-proposals-table';
 import { CustomerAiSummary } from '@/components/customers/customer-ai-summary';
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
@@ -452,7 +453,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
                 <CustomerAiSummary customer={customer} proposals={proposals || []} />
                 <Card className="border-border/50 shadow-lg rounded-2xl overflow-hidden"><CardHeader className="bg-muted/5"><CardTitle className="text-lg font-black uppercase text-primary/80">Histórico de Propostas</CardTitle></CardHeader><CardContent className="p-0"><SimpleProposalsTable proposals={proposals || []} /></CardContent></Card>
             </div>
-            <div className="lg:col-span-1"><Card className="h-full border-border/50 shadow-lg rounded-2xl overflow-hidden sticky top-24"><CardHeader className="bg-muted/10"><CardTitle className="text-lg font-black uppercase flex items-center gap-3"><FolderLock className="h-5 w-5 text-primary opacity-60" />Arquivos</CardTitle></CardHeader><CardContent className="pt-6"><CustomerAttachmentUploader userId={user?.uid || ''} customerId={customer.id} initialAttachments={customer.documents || []} onAttachmentsChange={(docs) => updateDoc(doc(firestore!, 'customers', customer.id), { documents: docs })} /></CardContent></Card></div>
+            <div className="lg:col-span-1"><Card className="h-full border-border/50 shadow-lg rounded-2xl overflow-hidden sticky top-24"><CardHeader className="bg-muted/10"><CardTitle className="text-lg font-black uppercase flex items-center gap-3"><FolderLock className="h-5 w-5 text-primary opacity-60" />Arquivos</CardTitle></CardHeader><CardContent className="pt-6"><CustomerAttachmentUploader userId={user?.uid || ''} customerId={customer.id} initialAttachments={customer.documents || []} onAttachmentsChange={(docs) => updateDoc(doc(firestore!, 'customers', customer.id), cleanFirestoreData({ documents: docs }))} /></CardContent></Card></div>
         </div>
       </div>
 

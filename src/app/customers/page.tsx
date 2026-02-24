@@ -1,3 +1,4 @@
+
 'use client';
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -37,7 +38,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getAge, cn, cleanBankName } from '@/lib/utils';
+import { getAge, cn, cleanBankName, cleanFirestoreData } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -229,12 +230,12 @@ function CustomersPageContent() {
         const docId = (sheetMode === 'edit' && selectedCustomer) ? selectedCustomer.id : (defaultValues?.id || doc(collection(firestore, 'customers')).id);
         const docRef = doc(firestore, 'customers', docId);
         
-        const finalData = {
+        const finalData = cleanFirestoreData({
             ...formData,
             id: docId,
             ownerId: user.uid,
             numericId: (sheetMode === 'edit' && selectedCustomer) ? selectedCustomer.numericId : (customers?.length ? Math.max(...customers.map(c => c.numericId || 0)) + 1 : 1)
-        };
+        });
 
         setDoc(docRef, finalData, { merge: true })
             .then(() => {
@@ -274,28 +275,30 @@ function CustomersPageContent() {
             </DropdownMenu>
             
             {selectedCount > 0 && (
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button 
-                            variant="destructive" 
-                            className="h-10 px-6 rounded-full font-bold shadow-lg animate-in zoom-in slide-in-from-right-2"
-                        >
-                            <Trash2 className="mr-2 h-4 w-4" /> Remover ({selectedCount})
-                        </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Inativar {selectedCount} Clientes?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Esta ação irá anonimizar os dados dos registros selecionados. Os nomes serão substituídos por "Cliente Removido" e o CPF zerado por segurança.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Voltar</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleBulkAnonymize} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Confirmar Remoção</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                <div className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-300">
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button 
+                                variant="destructive" 
+                                className="h-10 px-6 rounded-full font-bold shadow-lg"
+                            >
+                                <Trash2 className="mr-2 h-4 w-4" /> Remover ({selectedCount})
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Inativar {selectedCount} Clientes?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Esta ação irá anonimizar os dados dos registros selecionados. Os nomes serão substituídos por "Cliente Removido" e o CPF zerado por segurança.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Voltar</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleBulkAnonymize} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Confirmar Remoção</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
             )}
 
             <Dialog open={isAiModalOpen} onOpenChange={setIsAiModalOpen}>
