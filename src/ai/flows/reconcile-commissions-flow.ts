@@ -1,10 +1,7 @@
 'use server';
 /**
- * @fileOverview Fluxo de IA para extrair e conciliar dados de comissões de relatórios.
- *
- * - reconcileCommissions - A função para chamar o fluxo de conciliação.
- * - ReconcileCommissionsInput - O tipo de entrada (texto do relatório).
- * - ReconcileCommissionsOutput - O tipo de saída (dados de comissão extraídos).
+ * @fileOverview Fluxo de IA V2 para extrair e conciliar dados de comissões.
+ * Suporta entrada de texto ou arquivos (PDF/Imagens) via visão computacional.
  */
 
 import { ai } from '@/ai/genkit';
@@ -12,50 +9,59 @@ import { z } from 'genkit';
 
 const CommissionDataSchema = z.object({
   customerCpf: z.string().describe('O CPF do cliente associado à comissão.'),
-  proposalIdentifier: z.string().optional().describe('Um número de contrato ou proposta, se disponível.'),
-  amountPaid: z.number().describe('O valor da comissão que foi paga.'),
+  proposalIdentifier: z.string().optional().describe('Número do contrato ou proposta.'),
+  amountPaid: z.number().describe('O valor exato da comissão que foi paga.'),
+  bankName: z.string().optional().describe('Nome do banco ou promotora no relatório.'),
 });
 
 const ReconcileCommissionsOutputSchema = z.object({
-  commissions: z.array(CommissionDataSchema).describe('Uma lista das comissões extraídas do relatório.'),
+  commissions: z.array(CommissionDataSchema).describe('Lista das comissões extraídas.'),
 });
+
 export type ReconcileCommissionsOutput = z.infer<typeof ReconcileCommissionsOutputSchema>;
 
-export async function reconcileCommissions(reportText: string): Promise<ReconcileCommissionsOutput> {
-  return reconcileCommissionsFlow(reportText);
-}
-
-const prompt = ai.definePrompt({
-  name: 'reconcileCommissionsPrompt',
-  input: { schema: z.string() },
-  output: { schema: ReconcileCommissionsOutputSchema },
-  prompt: `Você é um assistente financeiro especialista em processar relatórios de pagamento de comissões.
-Sua tarefa é analisar o texto de um relatório de pagamento e extrair uma lista de todas as comissões pagas.
-
-Para cada comissão, você deve extrair:
-1.  **CPF do Cliente**: O CPF completo, formatado como '000.000.000-00'.
-2.  **Identificador da Proposta**: Se houver um número de contrato, proposta ou referência, capture-o.
-3.  **Valor Pago**: O valor numérico exato da comissão que foi paga.
-
-Analise o texto a seguir e extraia todas as entradas de comissão que encontrar.
-
-Texto do Relatório:
-{{{input}}}
-
-Gere a saída JSON estruturada com a lista de comissões.`,
+const ReconcileInputSchema = z.object({
+    text: z.string().optional(),
+    fileDataUri: z.string().optional().describe("Data URI do arquivo (PDF ou Imagem)"),
 });
+
+export async function reconcileCommissions(input: z.infer<typeof ReconcileInputSchema>): Promise<ReconcileCommissionsOutput> {
+  return reconcileCommissionsFlow(input);
+}
 
 const reconcileCommissionsFlow = ai.defineFlow(
   {
     name: 'reconcileCommissionsFlow',
-    inputSchema: z.string(),
+    inputSchema: ReconcileInputSchema,
     outputSchema: ReconcileCommissionsOutputSchema,
   },
   async (input) => {
-    if (!input || input.trim() === '') {
-      throw new Error('O texto do relatório não pode estar vazio.');
+    const promptParts: any[] = [
+        { text: `Você é um assistente financeiro de elite para correspondentes bancários.
+        Sua tarefa é extrair uma lista de pagamentos de comissão de um relatório.
+        
+        REGRAS:
+        1. Capture CPF (formatado), Número da Proposta/Contrato e o Valor Pago (numérico).
+        2. Seja extremamente rigoroso com os valores decimais.
+        3. Se houver múltiplos contratos para o mesmo CPF, liste cada um individualmente.` }
+    ];
+
+    if (input.fileDataUri) {
+        let contentType = 'image/jpeg';
+        const match = input.fileDataUri.match(/^data:([^;]+);base64,/);
+        if (match) contentType = match[1];
+        promptParts.push({ media: { url: input.fileDataUri, contentType } });
     }
-    const { output } = await prompt(input);
-    return output!;
+
+    if (input.text) {
+        promptParts.push({ text: `Texto do Relatório:\n${input.text}` });
+    }
+
+    const { output } = await ai.generate({
+        prompt: promptParts,
+        output: { schema: ReconcileCommissionsOutputSchema }
+    });
+
+    return output || { commissions: [] };
   }
 );
