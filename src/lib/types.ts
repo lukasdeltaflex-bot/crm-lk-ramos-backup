@@ -2,6 +2,8 @@
 export type Benefit = {
   number: string;
   species?: string;
+  rmcBank?: string; // Banco do cartão RMC vinculado a este NB
+  rccBank?: string; // Banco do cartão RCC vinculado a este NB
 };
 
 export type Attachment = {
@@ -33,7 +35,7 @@ export type Customer = {
   gender?: 'Masculino' | 'Feminino';
   status?: CustomerStatus;
   benefits?: Benefit[];
-  cards?: CustomerCard[]; // Lista de cartões RMC/RCC
+  cards?: CustomerCard[]; // Mantido para compatibilidade, mas priorizado via benefits
   phone: string;
   phone2?: string;
   email?: string;

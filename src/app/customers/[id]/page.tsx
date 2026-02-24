@@ -129,60 +129,49 @@ const CustomerInfoCard = ({ customer, onExportDossier, onToggleStatus, onGenerat
                     </div>
                 </div>
 
-                {/* SEÇÃO 1.1: BENEFÍCIOS */}
+                {/* SEÇÃO 1.1: BENEFÍCIOS E CARTÕES VINCULADOS */}
                 <div className="space-y-6 pt-8 border-t border-border/40">
                     <h4 className="font-black text-[11px] uppercase tracking-[0.25em] text-primary/60 flex items-center gap-2">
-                        <CreditCard className="h-4 w-4" /> Benefícios Previdenciários
+                        <CreditCard className="h-4 w-4" /> Benefícios e Reservas de Cartão
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {customer.benefits && customer.benefits.length > 0 ? (
                             customer.benefits.map((benefit: any, idx: number) => (
-                                <div key={idx} className="p-4 rounded-2xl bg-muted/20 border border-border/50 flex flex-col gap-1.5 transition-all hover:bg-muted/30">
-                                    <span className="text-[8px] font-black text-primary/60 uppercase tracking-widest">Nº do Benefício</span>
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-black text-sm text-foreground">{benefit.number}</span>
-                                        <CopyButton text={benefit.number} label="Benefício" />
-                                    </div>
-                                    {benefit.species && <span className="text-[10px] text-muted-foreground font-bold uppercase">{benefit.species}</span>}
-                                </div>
-                            ))
-                        ) : (
-                            <div className="col-span-full p-8 text-center border-2 border-dashed rounded-2xl opacity-30 text-[10px] font-black uppercase tracking-[0.3em]">Nenhum benefício vinculado</div>
-                        )}
-                    </div>
-                </div>
-
-                {/* SEÇÃO 1.2: CARTÕES RMC/RCC */}
-                <div className="space-y-6 pt-8 border-t border-border/40">
-                    <h4 className="font-black text-[11px] uppercase tracking-[0.25em] text-[#00AEEF] flex items-center gap-2">
-                        <CardIcon className="h-4 w-4" /> Cartões e Reservas (RMC/RCC)
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {customer.cards && customer.cards.length > 0 ? (
-                            customer.cards.map((card: any, idx: number) => (
-                                <div key={idx} className="p-4 rounded-2xl bg-primary/[0.03] border border-primary/10 flex flex-col gap-3 transition-all hover:bg-primary/[0.05] hover:border-primary/20">
-                                    <div className="flex items-center justify-between">
-                                        <Badge variant="outline" className={cn(
-                                            "text-[10px] font-black px-2 py-0 h-5 border-2",
-                                            card.type === 'RMC' ? "bg-orange-50 text-orange-600 border-orange-200" : "bg-blue-50 text-blue-600 border-blue-200"
-                                        )}>
-                                            {card.type}
+                                <div key={idx} className="p-6 rounded-3xl bg-muted/20 border border-border/50 space-y-6 transition-all hover:bg-muted/30">
+                                    <div className="flex items-start justify-between">
+                                        <div className="space-y-1">
+                                            <span className="text-[8px] font-black text-primary/60 uppercase tracking-widest">Nº do Benefício</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-black text-lg text-foreground">{benefit.number}</span>
+                                                <CopyButton text={benefit.number} label="Benefício" />
+                                            </div>
+                                            {benefit.species && <span className="text-[10px] text-muted-foreground font-bold uppercase">{benefit.species}</span>}
+                                        </div>
+                                        <Badge variant="outline" className="h-6 text-[9px] font-black uppercase tracking-widest border-2 bg-background">
+                                            Vínculo Oficial
                                         </Badge>
-                                        <BankIcon 
-                                            bankName={card.bank} 
-                                            domain={userSettings?.bankDomains?.[card.bank]} 
-                                            showLogo={showLogos} 
-                                            className="h-5 w-5" 
-                                        />
                                     </div>
-                                    <div className="space-y-0.5">
-                                        <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Banco Emissor</span>
-                                        <p className="font-bold text-xs text-foreground truncate">{cleanBankName(card.bank)}</p>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="p-4 rounded-2xl bg-orange-500/[0.03] border border-orange-500/10 space-y-3">
+                                            <Badge variant="outline" className="h-5 text-[8px] font-black uppercase border-orange-200 text-orange-600 bg-orange-50">RMC</Badge>
+                                            <div className="flex items-center gap-2">
+                                                <BankIcon bankName={benefit.rmcBank} domain={userSettings?.bankDomains?.[benefit.rmcBank]} showLogo={showLogos} className="h-5 w-5" />
+                                                <p className="text-[10px] font-bold text-foreground truncate">{benefit.rmcBank ? cleanBankName(benefit.rmcBank) : "Sem Reserva"}</p>
+                                            </div>
+                                        </div>
+                                        <div className="p-4 rounded-2xl bg-blue-500/[0.03] border border-blue-500/10 space-y-3">
+                                            <Badge variant="outline" className="h-5 text-[8px] font-black uppercase border-blue-200 text-blue-600 bg-blue-50">RCC</Badge>
+                                            <div className="flex items-center gap-2">
+                                                <BankIcon bankName={benefit.rccBank} domain={userSettings?.bankDomains?.[benefit.rccBank]} showLogo={showLogos} className="h-5 w-5" />
+                                                <p className="text-[10px] font-bold text-foreground truncate">{benefit.rccBank ? cleanBankName(benefit.rccBank) : "Sem Reserva"}</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            <div className="col-span-full p-8 text-center border-2 border-dashed rounded-2xl opacity-30 text-[10px] font-black uppercase tracking-[0.3em]">Nenhuma reserva de cartão identificada</div>
+                            <div className="col-span-full p-12 text-center border-2 border-dashed rounded-3xl opacity-30 text-[10px] font-black uppercase tracking-[0.3em]">Nenhum benefício vinculado ao registro</div>
                         )}
                     </div>
                 </div>
@@ -311,6 +300,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
             ['Nome', customer.name], 
             ['CPF', customer.cpf], 
             ['Nascimento', formatDateSafe(customer.birthDate)], 
+            ['Idade Atual', `${getAge(customer.birthDate)} anos`],
             ['Telefone', customer.phone], 
             ['Endereço', `${customer.street || ''}, ${customer.number || ''} ${customer.complement || ''}`],
             ['Bairro', customer.neighborhood || '-'],
@@ -328,11 +318,16 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
     };
     
     if (customer.benefits && customer.benefits.length > 0) {
-        doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.setTextColor(0); doc.text("BENEFÍCIOS ATIVOS", 14, getFinalY() + 15);
+        doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.setTextColor(0); doc.text("BENEFÍCIOS E RESERVAS DE CARTÃO", 14, getFinalY() + 15);
         autoTable(doc, { 
             startY: getFinalY() + 18, 
-            head: [['Número', 'Espécie']], 
-            body: customer.benefits.map(b => [b.number, b.species || '-']), 
+            head: [['Número', 'Espécie', 'Cartão RMC', 'Cartão RCC']], 
+            body: customer.benefits.map(b => [
+                b.number, 
+                b.species || '-',
+                cleanBankName(b.rmcBank) || '-',
+                cleanBankName(b.rccBank) || '-'
+            ]), 
             headStyles: { fillColor: primaryColor } 
         });
     }
