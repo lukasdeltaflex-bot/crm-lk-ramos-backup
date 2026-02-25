@@ -605,9 +605,10 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                                                 <FormControl>
                                                     <div className="relative">
                                                         <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
-                                                        <Input type="number" step="0.01" className="rounded-full h-10 border-green-200 bg-green-50/10 pl-9 font-bold" />
+                                                        <Input type="number" step="0.01" className="rounded-full h-10 border-green-200 bg-green-50/10 pl-9 font-bold" {...field} value={field.value ?? 0} />
                                                     </div>
                                                 </FormControl>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
