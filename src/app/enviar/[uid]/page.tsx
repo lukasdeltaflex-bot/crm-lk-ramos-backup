@@ -119,7 +119,7 @@ export default function LeadCapturePage() {
 
   const uploadFile = async (file: File): Promise<Attachment | null> => {
     if (!storage) {
-        console.error("❌ DIAGNÓSTICO: O objeto 'storage' não foi inicializado. Verifique se o bucket está configurado no .env");
+        console.error("❌ DIAGNÓSTICO: O objeto 'storage' não foi inicializado.");
         throw new Error('storage-not-configured');
     }
 
@@ -140,10 +140,20 @@ export default function LeadCapturePage() {
             },
             (error) => {
                 console.error("❌ ERRO FATAL NO STORAGE:", {
-                    code: error.code, // Isso nos dirá se é 'unauthorized', 'bucket-not-found', etc.
+                    code: error.code,
                     message: error.message,
                     fullError: error
                 });
+
+                // Alerta específico de CORS
+                if (error.message.includes('CORS') || error.code === 'storage/unknown') {
+                    toast({
+                        variant: 'destructive',
+                        title: 'Falha de Conexão (CORS)',
+                        description: 'O servidor do Google bloqueou o upload por falta de configuração de Origem. Isso requer ajuste no Console do Cloud.'
+                    });
+                }
+                
                 reject(error);
             },
             async () => {
@@ -185,8 +195,8 @@ export default function LeadCapturePage() {
             }
         } catch (err: any) {
             let msg = "Erro desconhecido. Verifique o console (F12).";
-            if (err.code === 'storage/unauthorized') msg = "Acesso Negado. Verifique as Rules (Regras) do Storage no Firebase.";
-            if (err.message === 'storage-not-configured') msg = "O Bucket do Storage não foi definido no arquivo .env";
+            if (err.code === 'storage/unauthorized') msg = "Acesso Negado. Verifique as Rules do Storage.";
+            if (err.message === 'storage-not-configured') msg = "Configuração de Storage não detectada.";
             
             toast({ variant: 'destructive', title: 'Falha no Upload', description: msg });
             break;
@@ -472,7 +482,7 @@ export default function LeadCapturePage() {
                         <Textarea name="observations" placeholder="Deixe seu recado aqui..." className="min-h-[100px] rounded-2xl p-4 font-medium" value={formData.observations} onChange={handleInputChange} />
                     </div>
 
-                    <div className="bg-orange-500/5 p-4 rounded-2xl border border-orange-500/10 flex items-start gap-3">
+                    <div className="bg-orange-50/5 p-4 rounded-2xl border border-orange-500/10 flex items-start gap-3">
                         <Info className="h-4 w-4 text-orange-600 mt-0.5 shrink-0" />
                         <p className="text-[10px] text-orange-700 leading-relaxed font-medium">
                             <strong>Segurança LGPD:</strong> Seus dados são protegidos por criptografia de ponta a ponta e destinados exclusivamente para análise de crédito na LK Ramos.

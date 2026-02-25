@@ -8,7 +8,7 @@ import { firebaseConfig } from "./config";
 
 /**
  * 🛠️ INFRAESTRUTURA DE DADOS LK RAMOS
- * Inicialização simplificada e robusta para evitar falhas de conexão.
+ * Inicialização robusta com logs de diagnóstico de bucket.
  */
 
 let db: Firestore | null = null;
@@ -20,13 +20,11 @@ if (typeof window !== "undefined") {
         const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
         db = getFirestore(app);
         auth = getAuth(app);
-        
-        // Inicialização robusta do Storage
-        // Se o storageBucket estiver no .env, usamos. Se não, o Firebase tenta o padrão do projeto.
         storage = getStorage(app);
         
-        console.log("💎 LK RAMOS: Firebase Core carregado.", {
+        console.log("💎 LK RAMOS: Núcleo Firebase inicializado.", {
             projectId: firebaseConfig.projectId,
+            bucketName: firebaseConfig.storageBucket,
             storageAtivo: !!storage
         });
     } catch (error) {
