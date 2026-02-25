@@ -411,41 +411,6 @@ export default function DashboardPage() {
             />
         </div>
 
-        {/* 🔗 PORTAL DE CAPTURA DE LEADS */}
-        <Card className="border-2 border-primary/20 bg-primary/[0.02] shadow-lg overflow-hidden rounded-2xl">
-            <CardContent className="p-0">
-                <div className="flex flex-col md:flex-row items-center justify-between p-6 gap-6">
-                    <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                            <LinkIcon className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-black uppercase tracking-tight text-primary">Portal de Captura de Leads</h3>
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Link exclusivo para auto-cadastro do cliente</p>
-                        </div>
-                    </div>
-                    
-                    <div className="flex flex-wrap items-center gap-3">
-                        {pendingLeads && pendingLeads.length > 0 && (
-                            <Button 
-                                variant="outline" 
-                                className="h-11 rounded-full px-6 border-orange-500 bg-orange-50 text-orange-600 font-black text-[10px] uppercase tracking-widest animate-pulse"
-                                onClick={() => setIsLeadsModalOpen(true)}
-                            >
-                                <Users className="mr-2 h-4 w-4" /> {pendingLeads.length} Fichas Recebidas
-                            </Button>
-                        )}
-                        <Button 
-                            onClick={copyLeadLink}
-                            className="h-11 rounded-full px-8 font-black text-[10px] uppercase tracking-widest bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20"
-                        >
-                            <Copy className="mr-2 h-4 w-4" /> Copiar Link de Envio
-                        </Button>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             <div className="cursor-pointer" onClick={() => setDialogData({ title: 'Total Digitado (Mês Vigente)', proposals: stats.proposals.digitadoNoMes })}>
                 <StatsCard 
@@ -537,6 +502,41 @@ export default function DashboardPage() {
         <div className="w-full">
             <PartnerPerformanceCharts proposals={stats.proposals.digitadoNoMes} />
         </div>
+
+        {/* 🔗 PORTAL DE CAPTURA DE LEADS */}
+        <Card className="border-2 border-primary/20 bg-primary/[0.02] shadow-lg overflow-hidden rounded-2xl">
+            <CardContent className="p-0">
+                <div className="flex flex-col md:flex-row items-center justify-between p-6 gap-6">
+                    <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                            <LinkIcon className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-black uppercase tracking-tight text-primary">Portal de Captura de Leads</h3>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Link exclusivo para auto-cadastro do cliente</p>
+                        </div>
+                    </div>
+                    
+                    <div className="flex flex-wrap items-center gap-3">
+                        {pendingLeads && pendingLeads.length > 0 && (
+                            <Button 
+                                variant="outline" 
+                                className="h-11 rounded-full px-6 border-orange-500 bg-orange-50 text-orange-600 font-black text-[10px] uppercase tracking-widest animate-pulse"
+                                onClick={() => setIsLeadsModalOpen(true)}
+                            >
+                                <Users className="mr-2 h-4 w-4" /> {pendingLeads.length} Fichas Recebidas
+                            </Button>
+                        )}
+                        <Button 
+                            onClick={copyLeadLink}
+                            className="h-11 rounded-full px-8 font-black text-[10px] uppercase tracking-widest bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20"
+                        >
+                            <Copy className="mr-2 h-4 w-4" /> Copiar Link de Envio
+                        </Button>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <RadarWidget proposals={proposals || []} customers={customers || []} isLoading={proposalsLoading} />
