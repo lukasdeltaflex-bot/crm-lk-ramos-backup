@@ -118,12 +118,12 @@ const CustomerInfoCard = ({ customer, onExportDossier, onToggleStatus, onGenerat
                         </div>
                     </div>
                     <div className="flex items-center gap-2 print:hidden">
-                        <Button variant="outline" size="sm" className="h-10 px-4 rounded-full font-bold bg-orange-500/10 border-orange-500/20 text-orange-600" onClick={onGeneratePitch}><Zap className="mr-2 h-4 w-4 fill-current" />Smart Pitch IA</Button>
-                        <Button variant="outline" size="sm" className="h-10 px-4 rounded-full font-bold border-primary/20 bg-primary/5 text-primary" onClick={onEdit}><Pencil className="mr-2 h-4 w-4" /> Editar Cadastro</Button>
-                        <Button variant="outline" size="sm" className={cn("h-10 px-4 rounded-full font-bold", isInactive ? "text-green-600" : "text-destructive")} onClick={onToggleStatus}>{isInactive ? <><UserCheck className="mr-2 h-4 w-4" /> Reativar</> : <><UserX className="mr-2 h-4 w-4" /> Inativar</>}</Button>
-                        <Button variant="outline" size="sm" className="h-10 px-4 rounded-full bg-primary/5 border-primary/20 text-primary font-bold" onClick={onExportDossier}><FileBadge className="mr-2 h-4 w-4" />Dossiê (PDF)</Button>
-                        <Button variant="outline" size="sm" className="h-10 px-4 rounded-full font-bold" onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" />Imprimir</Button>
-                        <Link href="/customers"><Button variant="ghost" size="sm" className="h-10 px-4 rounded-full font-bold">Voltar</Button></Link>
+                        <Button variant="outline" size="sm" className="h-9 px-3.5 rounded-full text-[11px] font-bold bg-orange-500/10 border-orange-500/20 text-orange-600" onClick={onGeneratePitch}><Zap className="mr-1.5 h-3.5 w-3.5 fill-current" />Smart Pitch IA</Button>
+                        <Button variant="outline" size="sm" className="h-9 px-3.5 rounded-full text-[11px] font-bold border-primary/20 bg-primary/5 text-primary" onClick={onEdit}><Pencil className="mr-1.5 h-3.5 w-3.5" /> Editar Cadastro</Button>
+                        <Button variant="outline" size="sm" className={cn("h-9 px-3.5 rounded-full text-[11px] font-bold", isInactive ? "text-green-600 border-green-200 bg-green-50/50" : "text-destructive border-red-200 bg-red-50/50")} onClick={onToggleStatus}>{isInactive ? <><UserCheck className="mr-1.5 h-3.5 w-3.5" /> Reativar</> : <><UserX className="mr-1.5 h-3.5 w-3.5" /> Inativar</>}</Button>
+                        <Button variant="outline" size="sm" className="h-9 px-3.5 rounded-full text-[11px] bg-primary/5 border-primary/20 text-primary font-bold" onClick={onExportDossier}><FileBadge className="mr-1.5 h-3.5 w-3.5" />Dossiê (PDF)</Button>
+                        <Button variant="outline" size="sm" className="h-9 px-3.5 rounded-full text-[11px] font-bold" onClick={() => window.print()}><Printer className="mr-1.5 h-3.5 w-3.5" />Imprimir</Button>
+                        <Link href="/customers"><Button variant="secondary" size="sm" className="h-9 px-5 rounded-full text-[10px] font-black uppercase tracking-widest bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 border-none shadow-sm">Voltar</Button></Link>
                     </div>
                 </div>
             </CardHeader>
