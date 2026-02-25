@@ -120,64 +120,77 @@ export default function LeadCapturePage() {
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files || !storage || !uid) return;
+    if (!files || !uid) return;
+
+    if (!storage) {
+        toast({ 
+            variant: 'destructive', 
+            title: 'Configuração Incompleta', 
+            description: 'O Storage do Firebase não foi detectado. Verifique se as chaves no seu arquivo .env estão corretas.' 
+        });
+        return;
+    }
 
     setIsUploading(true);
+    setUploadProgress(0);
     const MAX_SIZE = 15 * 1024 * 1024; // 15MB
 
     try {
-        for (const file of Array.from(files)) {
+        const uploadPromises = Array.from(files).map(async (file) => {
             if (file.size > MAX_SIZE) {
                 toast({ 
                     variant: 'destructive', 
-                    title: 'Arquivo muito grande', 
-                    description: `O limite é 15MB. O arquivo ${file.name} foi ignorado.` 
+                    title: 'Arquivo ignorado', 
+                    description: `${file.name} ultrapassa o limite de 15MB.` 
                 });
-                continue;
+                return null;
             }
 
             const filePath = `leads_temp/${uid}/${Date.now()}_${file.name}`;
             const storageRef = ref(storage, filePath);
             const uploadTask = uploadBytesResumable(storageRef, file);
 
-            await new Promise((resolve, reject) => {
+            return new Promise<Attachment | null>((resolve, reject) => {
                 uploadTask.on('state_changed', 
-                    (snap) => setUploadProgress((snap.bytesTransferred / snap.totalBytes) * 100),
+                    (snap) => {
+                        const prog = (snap.bytesTransferred / snap.totalBytes) * 100;
+                        setUploadProgress(prog);
+                    },
                     (err) => {
-                        console.error("Firebase Storage Upload Error:", err);
+                        console.error("Storage Error:", err.code, err.message);
+                        let msg = "Falha ao subir arquivo.";
+                        if (err.code === 'storage/unauthorized') {
+                            msg = "Permissão Negada. Você precisa habilitar 'Acesso Público' nas regras do Storage no Firebase Console.";
+                        }
+                        toast({ variant: 'destructive', title: 'Erro no Upload', description: msg });
                         reject(err);
                     },
                     async () => {
                         try {
                             const url = await getDownloadURL(uploadTask.snapshot.ref);
-                            const newAttachment: Attachment = {
+                            const newAtt: Attachment = {
                                 name: file.name,
                                 url,
                                 type: file.type,
                                 size: file.size
                             };
-                            // Atualiza o estado imediatamente após cada sucesso
-                            setAttachments(prev => [...prev, newAttachment]);
-                            resolve(true);
+                            setAttachments(prev => [...prev, newAtt]);
+                            resolve(newAtt);
                         } catch (urlErr) {
                             reject(urlErr);
                         }
                     }
                 );
             });
-        }
-        toast({ title: "Arquivos anexados com sucesso!" });
-    } catch (err: any) {
-        console.error("Failed to complete upload process:", err);
-        toast({ 
-            variant: 'destructive', 
-            title: 'Erro no Upload', 
-            description: 'Não foi possível subir seus documentos. Verifique sua conexão ou tente novamente.' 
         });
+
+        await Promise.all(uploadPromises);
+        toast({ title: "Arquivos anexados!" });
+    } catch (err: any) {
+        console.error("Process Error:", err);
     } finally {
         setIsUploading(false);
         setUploadProgress(0);
-        // Reseta o input para permitir selecionar o mesmo arquivo novamente se desejar
         if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
