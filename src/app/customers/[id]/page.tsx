@@ -34,6 +34,7 @@ import {
     CircleDollarSign,
     Tag,
     Pencil,
+    Star,
     CreditCard as CardIcon
 } from 'lucide-react';
 import { format, parse, differenceInMonths, isValid as isValidDate } from 'date-fns';
@@ -74,10 +75,22 @@ const CopyButton = ({ text, label }: { text: string | undefined; label: string }
     );
 }
 
-const CustomerInfoCard = ({ customer, onExportDossier, onToggleStatus, onGeneratePitch, onEdit, userSettings }: any) => {
+const CustomerInfoCard = ({ customer, onExportDossier, onToggleStatus, onGeneratePitch, onEdit, userSettings, totalCommission }: any) => {
     const age = getAge(customer.birthDate);
     const isInactive = customer.status === 'inactive';
     const showLogos = userSettings?.showBankLogos ?? true;
+
+    // Cálculo do Score de Fidelidade (Ranking)
+    const getFidelityScore = (comm: number) => {
+        if (comm <= 0) return 0;
+        if (comm <= 500) return 1;
+        if (comm <= 1500) return 2;
+        if (comm <= 5000) return 3;
+        if (comm <= 10000) return 4;
+        return 5;
+    };
+
+    const score = getFidelityScore(totalCommission);
 
     return (
         <Card className={cn("transition-all overflow-hidden border-none shadow-none", isInactive ? "opacity-80 grayscale-[0.5]" : "bg-card")}>
@@ -102,16 +115,34 @@ const CustomerInfoCard = ({ customer, onExportDossier, onToggleStatus, onGenerat
                                     {isInactive ? "Inativo" : "Ativo"}
                                 </Badge>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Registro Oficial do Cliente</p>
-                                {customer.tags && customer.tags.length > 0 && (
-                                    <div className="flex items-center gap-1.5 ml-2 border-l pl-3 border-border/50">
-                                        <Tag className="h-2.5 w-2.5 text-primary opacity-40" />
-                                        {customer.tags.map((tag: string) => (
-                                            <Badge key={tag} variant="outline" className="h-4 text-[7px] font-black px-1.5 py-0 bg-primary/5 text-primary border-primary/20">{tag}</Badge>
-                                        ))}
-                                    </div>
-                                )}
+                            <div className="flex flex-col gap-2">
+                                <div className="flex items-center gap-2">
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Registro Oficial do Cliente</p>
+                                    {customer.tags && customer.tags.length > 0 && (
+                                        <div className="flex items-center gap-1.5 ml-2 border-l pl-3 border-border/50">
+                                            <Tag className="h-2.5 w-2.5 text-primary opacity-40" />
+                                            {customer.tags.map((tag: string) => (
+                                                <Badge key={tag} variant="outline" className="h-4 text-[7px] font-black px-1.5 py-0 bg-primary/5 text-primary border-primary/20">{tag}</Badge>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                {/* SCORE DE FIDELIDADE */}
+                                <div className="flex items-center gap-1">
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                        <Star 
+                                            key={i} 
+                                            className={cn(
+                                                "h-3.5 w-3.5", 
+                                                i < score ? "text-amber-500 fill-amber-500" : "text-zinc-200 dark:text-zinc-800"
+                                            )} 
+                                        />
+                                    ))}
+                                    <span className="text-[9px] font-black text-amber-600 uppercase ml-1 tracking-tighter">
+                                        {score === 5 ? "Diamante VIP" : score >= 3 ? "Cliente Fiel" : score > 0 ? "Fidelidade" : "Novo Cliente"}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -449,7 +480,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
             <Alert className="bg-amber-50 border-amber-200 animate-in slide-in-from-top duration-500 rounded-2xl"><Sparkles className="h-5 w-5 text-amber-600" /><AlertTitle className="text-amber-800 font-bold uppercase">Oportunidade Identificada!</AlertTitle><AlertDescription className="text-amber-700 text-sm">Contratos pagos há mais de 12 meses. Momento ideal para Refinanciamento.</AlertDescription></Alert>
         )}
         
-        <CustomerInfoCard customer={customer} onExportDossier={handleExportDossier} onToggleStatus={handleToggleStatus} onGeneratePitch={handleGeneratePitch} onEdit={() => setIsEditDialogOpen(true)} userSettings={userSettings} />
+        <CustomerInfoCard customer={customer} onExportDossier={handleExportDossier} onToggleStatus={handleToggleStatus} onGeneratePitch={handleGeneratePitch} onEdit={() => setIsEditDialogOpen(true)} userSettings={userSettings} totalCommission={businessStats.commission} />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="cursor-pointer" onClick={() => setDialogData({ title: "Histórico Total de Contratos", proposals: proposals || [] })}>
