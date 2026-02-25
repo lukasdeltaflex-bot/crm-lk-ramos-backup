@@ -76,24 +76,33 @@ export default function ManualPage() {
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 2. FIDELIDADE E SCORE DIAMANTE */}
+                {/* 2. FIDELIDADE E SMART TAGS */}
                 <AccordionItem value="fidelity-score" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-amber-100 text-amber-600"><Star className="h-5 w-5 fill-amber-500" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">2. Score de Fidelidade (Ranking)</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Classificação de Valor do Cliente</p>
+                                <p className="font-bold text-sm">2. Fidelidade e Smart Tags (Automáticas)</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Inteligência de Comportamento do Cliente</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
-                        <p>O sistema atribui automaticamente de 1 a 5 estrelas baseadas no <strong>Lucro Líquido (Comissões)</strong> gerado pelo cliente:</p>
-                        <ul className="space-y-2">
-                            <li className="flex items-center gap-2 text-xs"><div className="h-1.5 w-1.5 rounded-full bg-amber-500" /> <strong>1-2 Estrelas</strong>: Relacionamento recente ou baixo volume.</li>
-                            <li className="flex items-center gap-2 text-xs"><div className="h-1.5 w-1.5 rounded-full bg-amber-500" /> <strong>3-4 Estrelas</strong>: Cliente recorrente e fiel (Rentável).</li>
-                            <li className="flex items-center gap-2 text-xs"><div className="h-1.5 w-1.5 rounded-full bg-amber-500" /> <strong>5 Estrelas (Diamante VIP)</strong>: Mais de R$ 10.000 em comissões geradas. Prioridade máxima.</li>
-                        </ul>
+                        <div className="space-y-4">
+                            <div>
+                                <h4 className="font-bold mb-1">Score de Estrelas (Lucratividade)</h4>
+                                <p className="text-xs text-muted-foreground">Atribuído de 1 a 5 estrelas baseadas no **Lucro Líquido** gerado. Clientes 5 Estrelas são Diamante VIP (Mais de R$ 10.000 em comissões).</p>
+                            </div>
+                            <div className="p-4 rounded-xl bg-muted/20 border-2 border-dashed">
+                                <h4 className="font-bold mb-2">Smart Tags (Etiquetas de IA)</h4>
+                                <ul className="grid gap-2 md:grid-cols-2">
+                                    <li className="flex items-center gap-2 text-xs"><Badge className="bg-amber-500 h-4 text-[8px]">💎 ELITE</Badge> Comissões > R$ 5.000</li>
+                                    <li className="flex items-center gap-2 text-xs"><Badge className="bg-orange-600 h-4 text-[8px]">🔥 ATIVO</Badge> Proposta nos últimos 30 dias</li>
+                                    <li className="flex items-center gap-2 text-xs"><Badge className="bg-blue-400 h-4 text-[8px]">🧊 REATIVAR</Badge> Sem produção há 180 dias</li>
+                                    <li className="flex items-center gap-2 text-xs"><Badge className="bg-purple-500 h-4 text-[8px]">⚖️ EM ESTEIRA</Badge> Contrato em andamento</li>
+                                </ul>
+                            </div>
+                        </div>
                     </AccordionContent>
                 </AccordionItem>
 
@@ -261,7 +270,7 @@ export default function ManualPage() {
                         <span className="text-[10px] font-black uppercase">Blindagem Nuclear Ativa</span>
                     </div>
                     <p className="text-[9px] text-muted-foreground mt-2 leading-tight">
-                        Versão 3.7.0 - Score de Fidelidade e Rankings automatizados.
+                        Versão 3.8.0 - Smart Tags e Análise Comportamental Ativa.
                     </p>
                 </CardContent>
             </Card>

@@ -40,7 +40,7 @@ import {
 import { format, parse, differenceInMonths, isValid as isValidDate } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { formatCurrency, getAge, cn, getWhatsAppUrl, isWhatsApp, formatDateSafe, cleanBankName, cleanFirestoreData } from '@/lib/utils';
+import { formatCurrency, getAge, cn, getWhatsAppUrl, isWhatsApp, formatDateSafe, cleanBankName, cleanFirestoreData, getSmartTags } from '@/lib/utils';
 import { SimpleProposalsTable } from '@/components/customers/simple-proposals-table';
 import { CustomerAiSummary } from '@/components/customers/customer-ai-summary';
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
@@ -75,7 +75,7 @@ const CopyButton = ({ text, label }: { text: string | undefined; label: string }
     );
 }
 
-const CustomerInfoCard = ({ customer, onExportDossier, onToggleStatus, onGeneratePitch, onEdit, userSettings, totalCommission }: any) => {
+const CustomerInfoCard = ({ customer, proposals, onExportDossier, onToggleStatus, onGeneratePitch, onEdit, userSettings, totalCommission }: any) => {
     const age = getAge(customer.birthDate);
     const isInactive = customer.status === 'inactive';
     const showLogos = userSettings?.showBankLogos ?? true;
@@ -91,6 +91,7 @@ const CustomerInfoCard = ({ customer, onExportDossier, onToggleStatus, onGenerat
     };
 
     const score = getFidelityScore(totalCommission);
+    const smartTags = getSmartTags(customer, proposals);
 
     return (
         <Card className={cn("transition-all overflow-hidden border-none shadow-none", isInactive ? "opacity-80 grayscale-[0.5]" : "bg-card")}>
@@ -116,11 +117,18 @@ const CustomerInfoCard = ({ customer, onExportDossier, onToggleStatus, onGenerat
                                 </Badge>
                             </div>
                             <div className="flex flex-col gap-2">
-                                <div className="flex items-center gap-2">
-                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Registro Oficial do Cliente</p>
+                                <div className="flex items-center flex-wrap gap-2">
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Registro Oficial</p>
+                                    
+                                    {/* SMART TAGS (AUTOMÁTICAS) */}
+                                    {smartTags.map(tag => (
+                                        <Badge key={tag.label} className={cn("h-4 text-[7px] font-black px-1.5 py-0 border-none text-white shadow-sm", tag.color)}>
+                                            {tag.label}
+                                        </Badge>
+                                    ))}
+
                                     {customer.tags && customer.tags.length > 0 && (
-                                        <div className="flex items-center gap-1.5 ml-2 border-l pl-3 border-border/50">
-                                            <Tag className="h-2.5 w-2.5 text-primary opacity-40" />
+                                        <div className="flex items-center gap-1.5 border-l pl-2 border-border/50">
                                             {customer.tags.map((tag: string) => (
                                                 <Badge key={tag} variant="outline" className="h-4 text-[7px] font-black px-1.5 py-0 bg-primary/5 text-primary border-primary/20">{tag}</Badge>
                                             ))}
@@ -480,7 +488,16 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
             <Alert className="bg-amber-50 border-amber-200 animate-in slide-in-from-top duration-500 rounded-2xl"><Sparkles className="h-5 w-5 text-amber-600" /><AlertTitle className="text-amber-800 font-bold uppercase">Oportunidade Identificada!</AlertTitle><AlertDescription className="text-amber-700 text-sm">Contratos pagos há mais de 12 meses. Momento ideal para Refinanciamento.</AlertDescription></Alert>
         )}
         
-        <CustomerInfoCard customer={customer} onExportDossier={handleExportDossier} onToggleStatus={handleToggleStatus} onGeneratePitch={handleGeneratePitch} onEdit={() => setIsEditDialogOpen(true)} userSettings={userSettings} totalCommission={businessStats.commission} />
+        <CustomerInfoCard 
+            customer={customer} 
+            proposals={proposals || []}
+            onExportDossier={handleExportDossier} 
+            onToggleStatus={handleToggleStatus} 
+            onGeneratePitch={handleGeneratePitch} 
+            onEdit={() => setIsEditDialogOpen(true)} 
+            userSettings={userSettings} 
+            totalCommission={businessStats.commission} 
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="cursor-pointer" onClick={() => setDialogData({ title: "Histórico Total de Contratos", proposals: proposals || [] })}>

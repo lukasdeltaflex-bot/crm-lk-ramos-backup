@@ -1,7 +1,8 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { format, parseISO, isValid } from 'date-fns';
+import { format, parseISO, isValid, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import type { Customer, Proposal } from './types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -180,4 +181,48 @@ export function cleanFirestoreData(data: any): any {
         return cleaned;
     }
     return data;
+}
+
+/**
+ * 🤖 MOTOR DE SMART TAGS LK RAMOS
+ * Gera etiquetas automáticas baseadas em comportamento e dados financeiros.
+ */
+export function getSmartTags(customer: Customer, proposals: Proposal[] = []): { label: string; color: string }[] {
+    const tags: { label: string; color: string }[] = [];
+    const now = new Date();
+    
+    const customerProposals = proposals.filter(p => p.customerId === customer.id);
+    const paidProposals = customerProposals.filter(p => p.status === 'Pago' || p.status === 'Saldo Pago');
+    
+    // 💎 ELITE: Comissão total > 5000
+    const totalComm = customerProposals.reduce((s, p) => s + (p.amountPaid || 0), 0);
+    if (totalComm >= 5000) {
+        tags.push({ label: '💎 ELITE', color: 'bg-amber-500' });
+    }
+
+    // 🔥 ATIVO: Teve proposta nos últimos 30 dias
+    const hasRecent = customerProposals.some(p => {
+        const d = p.dateDigitized ? new Date(p.dateDigitized) : null;
+        return d && isValid(d) && differenceInDays(now, d) <= 30;
+    });
+    if (hasRecent) {
+        tags.push({ label: '🔥 ATIVO', color: 'bg-orange-600' });
+    }
+
+    // 🧊 REATIVAR: Nenhuma proposta nos últimos 180 dias
+    const hasAnyInLast6Months = customerProposals.some(p => {
+        const d = p.dateDigitized ? new Date(p.dateDigitized) : null;
+        return d && isValid(d) && differenceInDays(now, d) <= 180;
+    });
+    if (!hasAnyInLast6Months && customerProposals.length > 0) {
+        tags.push({ label: '🧊 REATIVAR', color: 'bg-blue-400' });
+    }
+
+    // ⚖️ EM ESTEIRA: Tem proposta que não é 'Pago' ou 'Reprovado'
+    const inFlow = customerProposals.some(p => !['Pago', 'Reprovado', 'Saldo Pago'].includes(p.status));
+    if (inFlow) {
+        tags.push({ label: '⚖️ EM ESTEIRA', color: 'bg-purple-500' });
+    }
+
+    return tags;
 }
