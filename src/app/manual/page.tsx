@@ -34,7 +34,8 @@ import {
     SmilePlus,
     Pencil,
     Star,
-    Cake
+    Cake,
+    ListTodo
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -197,13 +198,32 @@ export default function ManualPage() {
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 7. CLASSIFICAÇÃO INTELIGENTE (TAGS) */}
+                {/* 7. REGRAS DE PROPOSTA */}
+                <AccordionItem value="proposal-rules" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
+                    <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-xl bg-blue-100 text-blue-600"><ListTodo className="h-5 w-5" /></div>
+                            <div className="text-left">
+                                <p className="font-bold text-sm">7. Integridade de Propostas</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Campos Obrigatórios e Auditoria</p>
+                            </div>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
+                        <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
+                            <h4 className="font-bold mb-2">Campos Obrigatórios</h4>
+                            <p className="text-xs text-muted-foreground">Para garantir a rastreabilidade financeira, o sistema exige o preenchimento de: **Nº de Proposta**, **Banco Digitado**, **Operador** e **Promotora**. Sem estes dados, o registro não será salvo.</p>
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
+
+                {/* 8. CLASSIFICAÇÃO INTELIGENTE (TAGS) */}
                 <AccordionItem value="tags-management" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-pink-100 text-pink-600"><Tags className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">7. Gestão de Relacionamento (Tags)</p>
+                                <p className="font-bold text-sm">8. Gestão de Relacionamento (Tags)</p>
                                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Segmentação e Símbolos Visuais</p>
                             </div>
                         </div>
@@ -223,13 +243,13 @@ export default function ManualPage() {
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 8. MARKETING PESSOAL E PERFORMANCE */}
+                {/* 9. MARKETING PESSOAL E PERFORMANCE */}
                 <AccordionItem value="personal-branding" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-purple-100 text-purple-600"><UserCheck className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">8. Perfil de Elite e Autoridade</p>
+                                <p className="font-bold text-sm">9. Perfil de Elite e Autoridade</p>
                                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Recordes e Identidade Profissional</p>
                             </div>
                         </div>
@@ -291,7 +311,7 @@ export default function ManualPage() {
                         <span className="text-[10px] font-black uppercase">Blindagem Nuclear Ativa</span>
                     </div>
                     <p className="text-[9px] text-muted-foreground mt-2 leading-tight">
-                        Versão 3.9.0 - Centralização de Gestão de Clientes e Relacionamento.
+                        Versão 3.9.5 - Reforço de Integridade em Propostas.
                     </p>
                 </CardContent>
             </Card>

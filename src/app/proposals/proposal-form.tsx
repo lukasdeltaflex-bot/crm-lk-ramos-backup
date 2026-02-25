@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -416,7 +415,7 @@ export function ProposalForm({
                 name="customerId"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Cliente Selecionado</FormLabel>
+                        <FormLabel>Cliente Selecionado *</FormLabel>
                         <div className="flex items-center gap-2">
                             <FormControl>
                                 <Input readOnly value={selectedCustomer?.name || "Nenhum cliente selecionado"} className="flex-1 bg-muted/30 font-bold" />
@@ -436,7 +435,7 @@ export function ProposalForm({
                     name="product"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Produto</FormLabel>
+                        <FormLabel>Produto *</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isReadOnly || isSaving}>
                         <FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Produto" /></SelectTrigger></FormControl>
                         <SelectContent>{productTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}</SelectContent>
@@ -448,7 +447,7 @@ export function ProposalForm({
                     name="status"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Status da Esteira</FormLabel>
+                        <FormLabel>Status da Esteira *</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isReadOnly || isSaving}>
                         <FormControl>
                             <SelectTrigger 
@@ -542,7 +541,7 @@ export function ProposalForm({
                   name="bank"
                   render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Banco Digitado</FormLabel>
+                        <FormLabel>Banco Digitado *</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isReadOnly || isSaving}>
                             <FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Banco" /></SelectTrigger></FormControl>
                             <SelectContent>{banks.map(b => (
@@ -590,7 +589,7 @@ export function ProposalForm({
                   name="proposalNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nº de Proposta</FormLabel>
+                      <FormLabel>Nº de Proposta *</FormLabel>
                       <FormControl><Input placeholder="Contrato" {...field} value={field.value ?? ''} readOnly={isReadOnly || isSaving} className="font-bold"/></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -600,7 +599,7 @@ export function ProposalForm({
                   control={form.control}
                   name="table"
                   render={({ field }) => (
-                    <FormItem><FormLabel>Tabela</FormLabel><FormControl><Input placeholder="Tabela" {...field} value={field.value ?? ''} readOnly={isReadOnly || isSaving} className="font-bold"/></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Tabela *</FormLabel><FormControl><Input placeholder="Tabela" {...field} value={field.value ?? ''} readOnly={isReadOnly || isSaving} className="font-bold"/></FormControl><FormMessage /></FormItem>
                   )}
                 />
               </div>
@@ -608,7 +607,7 @@ export function ProposalForm({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField control={form.control} name="installmentAmount" render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Valor Parcela</FormLabel>
+                        <FormLabel>Valor Parcela *</FormLabel>
                         <FormControl>
                             <div className="relative">
                                 <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
@@ -619,7 +618,7 @@ export function ProposalForm({
                 )} />
                 <FormField control={form.control} name="netAmount" render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Líquido (Cliente)</FormLabel>
+                        <FormLabel>Líquido (Cliente) *</FormLabel>
                         <FormControl>
                             <div className="relative">
                                 <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
@@ -630,7 +629,7 @@ export function ProposalForm({
                 )} />
                  <FormField control={form.control} name="grossAmount" render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Bruto (Base)</FormLabel>
+                        <FormLabel>Bruto (Base) *</FormLabel>
                         <FormControl>
                             <div className="relative">
                                 <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
@@ -647,7 +646,7 @@ export function ProposalForm({
                   name="term"
                   render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="flex items-center gap-2"><TimerIcon className="h-3.5 w-3.5" /> Prazo (Meses)</FormLabel>
+                        <FormLabel className="flex items-center gap-2"><TimerIcon className="h-3.5 w-3.5" /> Prazo (Meses) *</FormLabel>
                         <FormControl><Input type="number" {...field} readOnly={isReadOnly || isSaving} /></FormControl>
                     </FormItem>
                   )}
@@ -670,7 +669,7 @@ export function ProposalForm({
                   name="dateDigitized"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Data Digitação</FormLabel>
+                      <FormLabel>Data Digitação *</FormLabel>
                       <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(applyDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -734,14 +733,14 @@ export function ProposalForm({
                   control={form.control}
                   name="operator"
                   render={({ field }) => (
-                    <FormItem><FormLabel>Operador</FormLabel><FormControl><Input placeholder="Nome do Agente" {...field} value={field.value ?? ''} readOnly={isReadOnly || isSaving} /></FormControl></FormItem>
+                    <FormItem><FormLabel>Operador *</FormLabel><FormControl><Input placeholder="Nome do Agente" {...field} value={field.value ?? ''} readOnly={isReadOnly || isSaving} /></FormControl><FormMessage /></FormItem>
                   )}
                 />
                 <FormField
                   control={form.control}
                   name="promoter"
                   render={({ field }) => (
-                    <FormItem><FormLabel>Promotora</FormLabel><FormControl><Input placeholder="Nome da Promotora" {...field} value={field.value ?? ''} readOnly={isReadOnly || isSaving} /></FormControl></FormItem>
+                    <FormItem><FormLabel>Promotora *</FormLabel><FormControl><Input placeholder="Nome da Promotora" {...field} value={field.value ?? ''} readOnly={isReadOnly || isSaving} /></FormControl><FormMessage /></FormItem>
                   )}
                 />
               </div>
@@ -757,7 +756,7 @@ export function ProposalForm({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField control={form.control} name="commissionBase" render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Base do Cálculo</FormLabel>
+                            <FormLabel>Base do Cálculo *</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value ?? 'gross'} disabled={isReadOnly || isSaving}>
                                 <FormControl><SelectTrigger className="font-bold"><SelectValue /></SelectTrigger></FormControl>
                                 <SelectContent>
@@ -769,7 +768,7 @@ export function ProposalForm({
                     )} />
                     <FormField control={form.control} name="commissionPercentage" render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Comissão (%)</FormLabel>
+                            <FormLabel>Comissão (%) *</FormLabel>
                             <FormControl>
                                 <div className="relative">
                                     <Input type="number" step="0.01" className="pr-8 font-bold" {...field} value={field.value ?? 0} readOnly={isReadOnly || isSaving} />
@@ -780,7 +779,7 @@ export function ProposalForm({
                     )} />
                     <FormField control={form.control} name="commissionValue" render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Comissão (R$)</FormLabel>
+                            <FormLabel>Comissão (R$) *</FormLabel>
                             <FormControl>
                                 <div className="relative">
                                     <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
