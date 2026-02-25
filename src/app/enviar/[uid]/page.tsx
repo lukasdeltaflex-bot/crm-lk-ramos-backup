@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { useFirestore, useDoc, useMemoFirebase, useFirebase } from '@/firebase';
 import { doc, collection, setDoc } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import type { UserSettings, Attachment } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,12 +22,19 @@ import {
     Loader2,
     Camera,
     Info,
-    X
+    X,
+    MapPin,
+    Home,
+    Map,
+    Hash,
+    CreditCard,
+    MessageSquareText
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { validateCPF, handlePhoneMask, cleanFirestoreData } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function LeadCapturePage() {
   const { uid } = useParams() as { uid: string };
@@ -39,11 +46,22 @@ export default function LeadCapturePage() {
     cpf: '',
     phone: '',
     birthDate: '',
-    email: ''
+    email: '',
+    motherName: '',
+    benefitNumber: '',
+    cep: '',
+    street: '',
+    number: '',
+    complement: '',
+    neighborhood: '',
+    city: '',
+    state: '',
+    observations: ''
   });
   
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -56,14 +74,50 @@ export default function LeadCapturePage() {
 
   const { data: userSettings, isLoading: loadingSettings } = useDoc<UserSettings>(settingsDocRef);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     let { name, value } = e.target;
     if (name === 'cpf') value = value.replace(/\D/g, "").replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4").substring(0, 14);
     if (name === 'phone') value = handlePhoneMask(value);
     if (name === 'birthDate') value = value.replace(/\D/g, "").replace(/(\d{2})(\d{2})(\d{4})/, "$1/$2/$3").substring(0, 10);
+    if (name === 'cep') {
+        value = value.replace(/\D/g, "");
+        if (value.length > 5) value = value.replace(/(\d{5})(\d)/, "$1-$2");
+        value = value.substring(0, 9);
+    }
     
     setFormData(prev => ({ ...prev, [name]: value }));
   };
+
+  // 🛡️ BUSCA AUTOMÁTICA DE CEP
+  useEffect(() => {
+    const cleanCep = formData.cep.replace(/\D/g, '');
+    if (cleanCep.length === 8) {
+        const fetchCep = async () => {
+            setIsFetchingCep(true);
+            try {
+                const response = await fetch(`/api/cep/${cleanCep}`);
+                if (!response.ok) throw new Error('Falha no proxy');
+                const data = await response.json();
+                
+                if (data && !data.erro) {
+                    setFormData(prev => ({
+                        ...prev,
+                        street: data.logradouro || '',
+                        neighborhood: data.bairro || '',
+                        city: data.localidade || '',
+                        state: data.uf || ''
+                    }));
+                    toast({ title: "Endereço localizado!" });
+                }
+            } catch (error) {
+                console.warn("Busca de CEP indisponível.");
+            } finally {
+                setIsFetchingCep(false);
+            }
+        };
+        fetchCep();
+    }
+  }, [formData.cep]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -72,9 +126,12 @@ export default function LeadCapturePage() {
     setIsUploading(true);
     const newAttachments: Attachment[] = [...attachments];
 
+    // 🚀 NOVO LIMITE: 15MB
+    const MAX_SIZE = 15 * 1024 * 1024;
+
     for (const file of Array.from(files)) {
-        if (file.size > 5 * 1024 * 1024) {
-            toast({ variant: 'destructive', title: 'Arquivo muito grande', description: 'O limite é 5MB por arquivo.' });
+        if (file.size > MAX_SIZE) {
+            toast({ variant: 'destructive', title: 'Arquivo muito grande', description: `O limite é 15MB por arquivo. O arquivo ${file.name} excedeu este limite.` });
             continue;
         }
 
@@ -127,7 +184,6 @@ export default function LeadCapturePage() {
     try {
         const leadId = doc(collection(firestore, 'leads')).id;
         
-        // Formata data para ISO
         let birthIso = '';
         try {
             const [d, m, y] = formData.birthDate.split('/');
@@ -137,11 +193,10 @@ export default function LeadCapturePage() {
         const leadData: any = {
             id: leadId,
             ownerId: uid,
+            ...formData,
             name: formData.name.toUpperCase(),
-            cpf: formData.cpf,
-            phone: formData.phone,
+            motherName: formData.motherName.toUpperCase(),
             birthDate: birthIso,
-            email: formData.email,
             status: 'pending',
             createdAt: new Date().toISOString(),
             documents: attachments
@@ -195,92 +250,55 @@ export default function LeadCapturePage() {
                 </div>
             )}
             <div>
-                <h1 className="text-xl font-black uppercase tracking-tighter">Central de Envio de Dados</h1>
-                <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest opacity-60">Ambiente Seguro e Criptografado</p>
+                <h1 className="text-xl font-black uppercase tracking-tighter">Ficha de Cadastro Segura</h1>
+                <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest opacity-60">LK RAMOS INVESTIMENTOS</p>
             </div>
         </div>
 
-        <Card className="max-w-2xl w-full border-none shadow-2xl rounded-[2rem] overflow-hidden">
+        <Card className="max-w-3xl w-full border-none shadow-2xl rounded-[2rem] overflow-hidden">
             <CardHeader className="bg-primary/5 border-b border-primary/10 p-8">
                 <CardTitle className="text-lg font-black uppercase flex items-center gap-3 text-primary">
                     <FileText className="h-5 w-5" />
-                    Ficha de Cadastro
+                    Envio de Dados e Documentos
                 </CardTitle>
-                <CardDescription className="text-xs font-medium">Preencha os campos abaixo para iniciarmos sua simulação.</CardDescription>
+                <CardDescription className="text-xs font-medium">Preencha as informações abaixo para iniciarmos seu atendimento.</CardDescription>
             </CardHeader>
             <CardContent className="p-8">
                 <form onSubmit={handleSubmit} className="space-y-10">
+                    {/* SEÇÃO 1: PESSOAL */}
                     <div className="space-y-6">
+                        <h3 className="text-sm font-black uppercase text-primary flex items-center gap-2">
+                            <User className="h-4 w-4" /> Dados Pessoais
+                        </h3>
                         <div className="grid gap-6">
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">
-                                    <User className="h-3 w-3" /> Nome Completo
-                                </Label>
-                                <Input 
-                                    name="name" 
-                                    required 
-                                    placeholder="Como está no seu documento" 
-                                    className="h-12 rounded-xl bg-zinc-100/50 border-zinc-200 font-bold focus:bg-white transition-all"
-                                    value={formData.name}
-                                    onChange={handleInputChange}
-                                />
+                                <Label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">Nome Completo</Label>
+                                <Input name="name" required placeholder="Como no seu documento" className="h-12 rounded-xl font-bold" value={formData.name} onChange={handleInputChange} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">Nome Completo da Mãe</Label>
+                                <Input name="motherName" required placeholder="Como no seu documento" className="h-12 rounded-xl font-bold" value={formData.motherName} onChange={handleInputChange} />
                             </div>
                             
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">
-                                        <FileText className="h-3 w-3" /> CPF (Apenas números)
-                                    </Label>
-                                    <Input 
-                                        name="cpf" 
-                                        required 
-                                        placeholder="000.000.000-00" 
-                                        className="h-12 rounded-xl bg-zinc-100/50 border-zinc-200 font-bold focus:bg-white"
-                                        value={formData.cpf}
-                                        onChange={handleInputChange}
-                                    />
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">CPF</Label>
+                                    <Input name="cpf" required placeholder="000.000.000-00" className="h-12 rounded-xl font-bold" value={formData.cpf} onChange={handleInputChange} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">
-                                        <Calendar className="h-3 w-3" /> Data de Nascimento
-                                    </Label>
-                                    <Input 
-                                        name="birthDate" 
-                                        required 
-                                        placeholder="DD/MM/AAAA" 
-                                        className="h-12 rounded-xl bg-zinc-100/50 border-zinc-200 font-bold focus:bg-white"
-                                        value={formData.birthDate}
-                                        onChange={handleInputChange}
-                                    />
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">Data de Nascimento</Label>
+                                    <Input name="birthDate" required placeholder="DD/MM/AAAA" className="h-12 rounded-xl font-bold" value={formData.birthDate} onChange={handleInputChange} />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">
-                                        <Phone className="h-3 w-3" /> WhatsApp de Contato
-                                    </Label>
-                                    <Input 
-                                        name="phone" 
-                                        required 
-                                        placeholder="(00) 00000-0000" 
-                                        className="h-12 rounded-xl bg-zinc-100/50 border-zinc-200 font-bold focus:bg-white"
-                                        value={formData.phone}
-                                        onChange={handleInputChange}
-                                    />
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">WhatsApp</Label>
+                                    <Input name="phone" required placeholder="(00) 00000-0000" className="h-12 rounded-xl font-bold" value={formData.phone} onChange={handleInputChange} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">
-                                        E-mail (Opcional)
-                                    </Label>
-                                    <Input 
-                                        name="email" 
-                                        type="email"
-                                        placeholder="exemplo@email.com" 
-                                        className="h-12 rounded-xl bg-zinc-100/50 border-zinc-200 font-bold focus:bg-white"
-                                        value={formData.email}
-                                        onChange={handleInputChange}
-                                    />
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2"><CreditCard className="h-3 w-3" /> Nº Benefício INSS (Opcional)</Label>
+                                    <Input name="benefitNumber" placeholder="000.000.000-0" className="h-12 rounded-xl font-bold" value={formData.benefitNumber} onChange={handleInputChange} />
                                 </div>
                             </div>
                         </div>
@@ -288,31 +306,72 @@ export default function LeadCapturePage() {
 
                     <Separator />
 
+                    {/* SEÇÃO 2: ENDEREÇO */}
+                    <div className="space-y-6">
+                        <h3 className="text-sm font-black uppercase text-primary flex items-center gap-2">
+                            <MapPin className="h-4 w-4" /> Endereço Residencial
+                        </h3>
+                        <div className="grid gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">CEP</Label>
+                                    <div className="relative">
+                                        <Input name="cep" required placeholder="00000-000" className="h-12 rounded-xl font-bold" value={formData.cep} onChange={handleInputChange} />
+                                        {isFetchingCep && <Loader2 className="absolute right-4 top-3.5 h-5 w-5 animate-spin text-primary" />}
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">Logradouro (Rua/Avenida)</Label>
+                                    <Input name="street" required placeholder="Ex: Rua das Flores" className="h-12 rounded-xl font-bold" value={formData.street} onChange={handleInputChange} />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">Número</Label>
+                                    <Input name="number" required placeholder="123" className="h-12 rounded-xl font-bold" value={formData.number} onChange={handleInputChange} />
+                                </div>
+                                <div className="sm:col-span-2 space-y-2">
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">Complemento (Opcional)</Label>
+                                    <Input name="complement" placeholder="Apto, Bloco..." className="h-12 rounded-xl font-bold" value={formData.complement} onChange={handleInputChange} />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">Bairro</Label>
+                                    <Input name="neighborhood" required placeholder="Bairro" className="h-12 rounded-xl font-bold" value={formData.neighborhood} onChange={handleInputChange} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">Cidade</Label>
+                                    <Input name="city" required placeholder="Cidade" className="h-12 rounded-xl font-bold" value={formData.city} onChange={handleInputChange} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">UF (Estado)</Label>
+                                    <Input name="state" required placeholder="SP" maxLength={2} className="h-12 rounded-xl font-bold uppercase" value={formData.state} onChange={handleInputChange} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* SEÇÃO 3: DOCUMENTOS */}
                     <div className="space-y-6">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-black uppercase tracking-tight text-primary flex items-center gap-2">
+                            <h3 className="text-sm font-black uppercase text-primary flex items-center gap-2">
                                 <Camera className="h-4 w-4" /> Fotos dos Documentos
                             </h3>
-                            <Badge variant="outline" className="text-[9px] font-bold">LIMITE 5MB</Badge>
+                            <Badge variant="outline" className="text-[9px] font-bold">LIMITE 15MB</Badge>
                         </div>
                         
-                        <div 
-                            className="border-2 border-dashed rounded-3xl p-10 flex flex-col items-center justify-center text-center gap-4 bg-muted/10 hover:bg-muted/20 transition-all cursor-pointer relative"
-                            onClick={() => fileInputRef.current?.click()}
-                        >
+                        <div className="border-2 border-dashed rounded-3xl p-10 flex flex-col items-center justify-center text-center gap-4 bg-muted/10 hover:bg-muted/20 transition-all cursor-pointer relative" onClick={() => fileInputRef.current?.click()}>
                             <Upload className="h-10 w-10 text-muted-foreground opacity-40" />
                             <div>
-                                <p className="font-bold text-sm">RG, CNH ou Extrato de Empréstimos</p>
+                                <p className="font-bold text-sm">RG, CNH ou Extrato</p>
                                 <p className="text-[10px] text-muted-foreground uppercase mt-1">Toque para abrir a câmera ou galeria</p>
                             </div>
-                            <input 
-                                type="file" 
-                                ref={fileInputRef} 
-                                multiple 
-                                className="hidden" 
-                                accept="image/*,application/pdf"
-                                onChange={handleFileUpload}
-                            />
+                            <input type="file" ref={fileInputRef} multiple className="hidden" accept="image/*,application/pdf" onChange={handleFileUpload} />
                         </div>
 
                         {isUploading && (
@@ -334,13 +393,7 @@ export default function LeadCapturePage() {
                                         </div>
                                         <span className="text-[10px] font-bold truncate pr-2 uppercase">{doc.name}</span>
                                     </div>
-                                    <Button 
-                                        type="button" 
-                                        variant="ghost" 
-                                        size="icon" 
-                                        className="h-8 w-8 text-red-500 hover:bg-red-50 rounded-full"
-                                        onClick={() => removeAttachment(idx)}
-                                    >
+                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50 rounded-full" onClick={() => removeAttachment(idx)}>
                                         <X className="h-4 w-4" />
                                     </Button>
                                 </div>
@@ -348,30 +401,32 @@ export default function LeadCapturePage() {
                         </div>
                     </div>
 
+                    <Separator />
+
+                    {/* SEÇÃO 4: OBSERVAÇÕES */}
+                    <div className="space-y-4">
+                        <Label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">
+                            <MessageSquareText className="h-3 w-3" /> Observações ou Recados
+                        </Label>
+                        <Textarea name="observations" placeholder="Algo que você queira nos contar..." className="min-h-[100px] rounded-2xl p-4 font-medium" value={formData.observations} onChange={handleInputChange} />
+                    </div>
+
                     <div className="bg-orange-500/5 p-4 rounded-2xl border border-orange-500/10 flex items-start gap-3">
                         <Info className="h-4 w-4 text-orange-600 mt-0.5 shrink-0" />
                         <p className="text-[10px] text-orange-700 leading-relaxed font-medium">
-                            <strong>Proteção de Dados:</strong> Suas informações são tratadas conforme a LGPD e enviadas diretamente para o nosso sistema seguro. Nunca compartilhamos seus dados com terceiros não autorizados.
+                            <strong>Segurança:</strong> Seus dados são protegidos pela LGPD e enviados diretamente ao sistema seguro da LK Ramos Investimentos.
                         </p>
                     </div>
 
-                    <Button 
-                        type="submit" 
-                        disabled={isSubmitting || isUploading}
-                        className="w-full h-14 rounded-full bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest shadow-xl shadow-primary/20 transition-all text-sm"
-                    >
-                        {isSubmitting ? (
-                            <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processando Ficha...</>
-                        ) : (
-                            'Enviar Dados com Segurança'
-                        )}
+                    <Button type="submit" disabled={isSubmitting || isUploading} className="w-full h-14 rounded-full bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest shadow-xl shadow-primary/20 transition-all text-sm">
+                        {isSubmitting ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Enviando...</> : 'Enviar Ficha para LK Ramos'}
                     </Button>
                 </form>
             </CardContent>
         </Card>
         
         <div className="mt-10 mb-20 text-center">
-            <p className="text-[10px] font-black uppercase text-zinc-400 tracking-[0.3em]">Ambiente Protegido por LK RAMOS</p>
+            <p className="text-[10px] font-black uppercase text-zinc-400 tracking-[0.3em]">Ambiente Protegido e Criptografado</p>
         </div>
     </div>
   );

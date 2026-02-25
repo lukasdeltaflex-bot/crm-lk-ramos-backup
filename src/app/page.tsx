@@ -23,7 +23,10 @@ import {
   Trash2,
   Download,
   ExternalLink,
-  Loader2
+  Loader2,
+  MapPin,
+  User as UserIcon,
+  CreditCard
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, isValid, startOfDay, subDays, endOfDay, subMonths, parse, eachDayOfInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -152,8 +155,19 @@ export default function DashboardPage() {
             email: lead.email || '',
             birthDate: lead.birthDate,
             status: 'active',
+            // Novos campos do Lead para o Cliente
+            cep: lead.cep || '',
+            street: lead.street || '',
+            number: lead.number || '',
+            complement: lead.complement || '',
+            neighborhood: lead.neighborhood || '',
+            city: lead.city || '',
+            state: lead.state || '',
+            benefits: lead.benefitNumber ? [{ number: lead.benefitNumber }] : [],
             documents: lead.documents || [],
-            observations: `Cadastro recebido via Portal de Leads em ${format(new Date(lead.createdAt), 'dd/MM/yyyy HH:mm')}.`
+            observations: `Cadastro recebido via Portal de Leads em ${format(new Date(lead.createdAt), 'dd/MM/yyyy HH:mm')}. 
+            Nome da Mãe: ${lead.motherName || 'Não Informado'}.
+            Observações do Cliente: ${lead.observations || 'Nenhuma'}.`
         };
 
         await setDoc(doc(firestore, 'customers', customerId), cleanFirestoreData(customerData));
@@ -558,7 +572,7 @@ export default function DashboardPage() {
       </Dialog>
 
       <Dialog open={isLeadsModalOpen} onOpenChange={setIsLeadsModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+        <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col">
             <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 font-black uppercase text-xl text-primary">
                     <Users className="h-6 w-6" /> Fichas de Leads Recebidas
@@ -569,37 +583,61 @@ export default function DashboardPage() {
                     {pendingLeads?.map((lead) => (
                         <Card key={lead.id} className="p-6 border-2 hover:border-primary/40 transition-all">
                             <div className="flex flex-col md:flex-row justify-between gap-6">
-                                <div className="space-y-4 flex-1">
+                                <div className="space-y-6 flex-1">
                                     <div className="flex items-center gap-3">
                                         <Badge className="bg-primary text-white font-black text-[10px] uppercase">Pendente</Badge>
                                         <span className="text-[10px] font-bold text-muted-foreground uppercase">{format(new Date(lead.createdAt), 'dd/MM/yyyy HH:mm')}</span>
                                     </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                                         <div>
-                                            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Nome Completo</p>
-                                            <p className="font-black text-lg uppercase tracking-tight">{lead.name}</p>
+                                            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1.5"><UserIcon className="h-3 w-3" /> Nome Completo</p>
+                                            <p className="font-black text-base uppercase tracking-tight">{lead.name}</p>
                                         </div>
                                         <div>
-                                            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Documento (CPF)</p>
+                                            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1.5"><FileText className="h-3 w-3" /> CPF</p>
                                             <p className="font-bold">{lead.cpf}</p>
                                         </div>
                                         <div>
-                                            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Telefone</p>
+                                            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1.5"><CalendarIcon className="h-3 w-3" /> Nascimento</p>
+                                            <p className="font-bold">{format(new Date(lead.birthDate + 'T00:00:00'), 'dd/MM/yyyy')}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1.5"><BadgePercent className="h-3 w-3" /> WhatsApp</p>
                                             <p className="font-bold">{lead.phone}</p>
                                         </div>
                                         <div>
-                                            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Nascimento</p>
-                                            <p className="font-bold">{format(new Date(lead.birthDate + 'T00:00:00'), 'dd/MM/yyyy')}</p>
+                                            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1.5"><CreditCard className="h-3 w-3" /> Nº Benefício INSS</p>
+                                            <p className="font-bold text-primary">{lead.benefitNumber || '---'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1.5"><UserIcon className="h-3 w-3" /> Nome da Mãe</p>
+                                            <p className="font-bold uppercase text-xs">{lead.motherName || '---'}</p>
                                         </div>
                                     </div>
+
+                                    <div className="p-4 bg-muted/20 rounded-xl border border-dashed">
+                                        <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1.5 mb-2"><MapPin className="h-3 w-3" /> Endereço Completo</p>
+                                        <p className="text-xs font-bold uppercase leading-relaxed">
+                                            {lead.street ? `${lead.street}, ${lead.number} ${lead.complement ? `(${lead.complement})` : ''}` : 'Endereço não informado'}
+                                            <br />
+                                            {lead.neighborhood} - {lead.city}/{lead.state} - CEP: {lead.cep}
+                                        </p>
+                                    </div>
+
+                                    {lead.observations && (
+                                        <div className="p-4 bg-orange-50 rounded-xl border border-orange-100">
+                                            <p className="text-[9px] font-black uppercase text-orange-600 tracking-widest flex items-center gap-1.5 mb-1"><MessageSquareText className="h-3 w-3" /> Observações do Cliente</p>
+                                            <p className="text-xs italic text-orange-800 font-medium">"{lead.observations}"</p>
+                                        </div>
+                                    )}
                                     
                                     {lead.documents && lead.documents.length > 0 && (
                                         <div className="space-y-2">
                                             <p className="text-[10px] font-black uppercase text-primary tracking-widest">Documentos Anexados</p>
                                             <div className="flex flex-wrap gap-2">
                                                 {lead.documents.map((doc, i) => (
-                                                    <a key={i} href={doc.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted border hover:bg-muted/80 transition-all">
-                                                        <Download className="h-3 w-3" />
+                                                    <a key={i} href={doc.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border hover:bg-muted/80 transition-all shadow-sm">
+                                                        <Download className="h-3 w-3 text-primary" />
                                                         <span className="text-[10px] font-bold uppercase truncate max-w-[150px]">{doc.name}</span>
                                                     </a>
                                                 ))}

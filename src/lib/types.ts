@@ -193,6 +193,16 @@ export type Lead = {
   phone: string;
   birthDate: string;
   email?: string;
+  motherName?: string;
+  benefitNumber?: string;
+  cep?: string;
+  street?: string;
+  number?: string;
+  complement?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
+  observations?: string;
   status: 'pending' | 'approved' | 'discarded';
   createdAt: string;
   documents?: Attachment[];
