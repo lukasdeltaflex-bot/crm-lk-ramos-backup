@@ -8,6 +8,7 @@ import type { Customer, Proposal } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { summarizeCustomerHistory } from '@/ai/flows/summarize-customer-history-flow';
 import { Skeleton } from '../ui/skeleton';
+import { cn, formatDateSafe } from '@/lib/utils';
 
 interface CustomerAiSummaryProps {
   customer: Customer;
@@ -26,14 +27,16 @@ export function CustomerAiSummary({ customer, proposals }: CustomerAiSummaryProp
         const proposalSummary = proposals.map(p => ({
             product: p.product,
             status: p.status,
-            grossAmount: p.grossAmount,
-            netAmount: p.netAmount,
-            commissionValue: p.commissionValue,
+            bank: p.bank,
+            dateDigitized: formatDateSafe(p.dateDigitized),
+            grossAmount: p.grossAmount || 0,
+            netAmount: p.netAmount || 0,
+            commissionValue: p.commissionValue || 0,
         }));
 
       const result = await summarizeCustomerHistory({
         customerName: customer.name,
-        customerObservations: customer.observations,
+        customerObservations: customer.observations || '',
         proposals: proposalSummary,
       });
 
@@ -42,8 +45,8 @@ export function CustomerAiSummary({ customer, proposals }: CustomerAiSummaryProp
       console.error('Error generating AI summary:', error);
       toast({
         variant: 'destructive',
-        title: 'Erro ao gerar resumo',
-        description: 'Não foi possível se conectar à IA. Tente novamente mais tarde.',
+        title: 'Erro na Inteligência Artificial',
+        description: 'Verifique sua conexão e tente novamente.',
       });
     } finally {
       setIsSummarizing(false);
@@ -51,67 +54,84 @@ export function CustomerAiSummary({ customer, proposals }: CustomerAiSummaryProp
   };
 
   const renderFormattedSummary = (text: string) => {
-    // Basic markdown-like formatting for bullet points
     return text.split('\n').map((line, index) => {
-      if (line.startsWith('* ') || line.startsWith('- ')) {
-        return <li key={index} className="ml-4">{line.substring(2)}</li>;
-      }
-      if (line.trim() === '') {
-        return <br key={index} />;
-      }
-       // Simple bold formatting
-       const parts = line.split(/(\*\*.*?\*\*)/g);
-       return (
-         <p key={index}>
-           {parts.map((part, i) =>
-             part.startsWith('**') && part.endsWith('**') ? (
-               <strong key={i}>{part.slice(2, -2)}</strong>
-             ) : (
-               part
-             )
-           )}
-         </p>
-       );
+      const trimmedLine = line.trim();
+      if (!trimmedLine) return <div key={index} className="h-2" />;
+
+      // Detecção de Listas
+      const isListItem = trimmedLine.startsWith('* ') || trimmedLine.startsWith('- ') || /^\d+\./.test(trimmedLine);
+      
+      // Processamento de Negrito (**texto**)
+      const parts = trimmedLine.split(/(\*\*.*?\*\*)/g);
+      const content = parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return <strong key={i} className="font-black text-primary">{part.slice(2, -2)}</strong>;
+        }
+        return part;
+      });
+
+      return (
+        <div 
+            key={index} 
+            className={cn(
+                "text-xs leading-relaxed mb-1",
+                isListItem ? "pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-primary/40" : ""
+            )}
+        >
+          {content}
+        </div>
+      );
     });
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div className='space-y-1.5'>
-            <CardTitle className="flex items-center gap-2">
-                <Bot />
-                Análise Estratégica com IA
+    <Card className="border-primary/20 shadow-lg overflow-hidden bg-primary/[0.02]">
+      <CardHeader className="flex flex-row items-center justify-between pb-4 bg-primary/5 border-b border-primary/10">
+        <div className='space-y-1'>
+            <CardTitle className="flex items-center gap-2 text-lg font-black uppercase text-primary">
+                <Bot className="h-5 w-5" />
+                Análise Estratégica IA
             </CardTitle>
-            <CardDescription>
-                Clique no botão para gerar um resumo do histórico e perfil do cliente.
+            <CardDescription className="text-[10px] font-bold uppercase tracking-widest opacity-60">
+                Insights sobre histórico e perfil do cliente
             </CardDescription>
         </div>
-        <Button onClick={handleGenerateSummary} disabled={isSummarizing}>
+        <Button 
+            onClick={handleGenerateSummary} 
+            disabled={isSummarizing}
+            className="rounded-full h-9 px-6 bg-primary font-black uppercase text-[10px] tracking-widest shadow-lg shadow-primary/20 transition-all border-none"
+        >
           {isSummarizing ? (
-            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> <span>Gerando...</span></>
+            <><Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> Processando...</>
           ) : (
-            <><Sparkles className="mr-2 h-4 w-4" /> <span>Gerar Análise</span></>
+            <><Sparkles className="mr-2 h-3.5 w-3.5 fill-current" /> Gerar Consultoria</>
           )}
         </Button>
       </CardHeader>
+      
       {(isSummarizing || summary) && (
-        <CardContent>
+        <CardContent className="pt-6">
           {isSummarizing ? (
-             <div className="space-y-2 rounded-md border border-dashed p-4">
-                <Skeleton className="h-4 w-1/3" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-4/5" />
+             <div className="space-y-3 p-4 border-2 border-dashed rounded-2xl bg-background/50">
+                <Skeleton className="h-3 w-1/3 bg-primary/10" />
+                <Skeleton className="h-3 w-full bg-primary/5" />
+                <Skeleton className="h-3 w-full bg-primary/5" />
+                <Skeleton className="h-3 w-4/5 bg-primary/5" />
              </div>
           ) : summary ? (
-            <div className="prose prose-sm max-w-none text-foreground bg-secondary/30 p-4 rounded-md">
-              <ul className='list-disc space-y-2'>
-                {renderFormattedSummary(summary)}
-              </ul>
+            <div className="p-6 bg-white dark:bg-zinc-950 rounded-2xl border-2 border-primary/10 shadow-inner relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-primary/20" />
+                <div className="space-y-1">
+                    {renderFormattedSummary(summary)}
+                </div>
             </div>
           ) : null}
         </CardContent>
+      )}
+      {!summary && !isSummarizing && (
+          <div className="p-8 text-center">
+              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em] opacity-40">Aguardando comando de análise estratégica</p>
+          </div>
       )}
     </Card>
   );

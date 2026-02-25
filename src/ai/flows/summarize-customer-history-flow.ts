@@ -13,6 +13,8 @@ import { z } from 'genkit';
 const ProposalSummarySchema = z.object({
   product: z.string(),
   status: z.string(),
+  bank: z.string().optional(),
+  dateDigitized: z.string().optional(),
   grossAmount: z.number(),
   netAmount: z.number(),
   commissionValue: z.number(),
@@ -35,26 +37,25 @@ export async function summarizeCustomerHistory(input: SummarizeCustomerHistoryIn
 const prompt = ai.definePrompt({
   name: 'summarizeCustomerHistoryPrompt',
   input: { schema: SummarizeCustomerHistoryInputSchema },
-  output: { schema: z.string().nullable() },
-  prompt: `Você é um assistente financeiro especialista em análise de crédito e relacionamento com o cliente.
-Sua tarefa é analisar o histórico de propostas e as anotações sobre um cliente e gerar um resumo estratégico para o agente de crédito.
+  output: { schema: z.string() },
+  prompt: `Você é um assistente financeiro de elite da LK RAMOS INVESTIMENTOS.
+Sua missão é gerar uma análise estratégica resumida do perfil do cliente {{{customerName}}}.
 
-O nome do cliente é {{{customerName}}}.
-
-**Histórico de Propostas:**
+HISTÓRICO DE OPERAÇÕES:
 {{#each proposals}}
-- Produto: {{{product}}}, Status: {{{status}}}, Valor Bruto: {{{grossAmount}}}, Comissão: {{{commissionValue}}}
+- Data: {{{dateDigitized}}}, Banco: {{{bank}}}, Produto: {{{product}}}, Status: {{{status}}}, Valor Bruto: R$ {{{grossAmount}}}, Comissão: R$ {{{commissionValue}}}
 {{/each}}
 
-**Anotações sobre o cliente:**
+OBSERVAÇÕES ADICIONAIS:
 {{{customerObservations}}}
 
-Com base nessas informações, gere um resumo que contenha:
-1.  **Análise Financeira**: Qual o volume total de negócios gerado? Qual o potencial de comissão? O cliente costuma ter propostas aprovadas?
-2.  **Análise de Relacionamento**: Com base nas observações, qual o perfil do cliente (ex: "bom relacionamento", "busca urgência", "sensível a taxas")?
-3.  **Recomendação Estratégica**: Qual poderia ser o próximo passo com este cliente? (ex: "Oferecer um refinanciamento", "Manter contato para futuras oportunidades", "Requer atenção especial devido a restrições").
+ESTRUTURA DO RESUMO (USE ESTE FORMATO):
+1. 📈 **Análise Financeira**: Resuma o volume total e a rentabilidade (comissões). Mencione se o cliente tem alta taxa de aprovação ou muitas reprovações.
+2. 🤝 **Perfil de Relacionamento**: Baseado nas observações, qual o comportamento dele? (Ex: busca urgência, fiel a um banco, cliente difícil, etc).
+3. 🚀 **Recomendação de Ouro**: Qual o próximo passo óbvio? (Ex: Oferecer Refinanciamento pois o último contrato tem 1 ano, ou aguardar margem livre).
 
-Seja conciso, use marcadores (bullet points) para clareza e forneça insights que ajudem o agente a tomar decisões. A saída deve ser em português do Brasil.`,
+Seja direto, profissional e use um tom de consultoria para o agente de crédito. Use marcadores e negrito para facilitar a leitura rápida.
+A saída deve ser em português do Brasil.`,
 });
 
 const summarizeCustomerHistoryFlow = ai.defineFlow(
@@ -66,9 +67,9 @@ const summarizeCustomerHistoryFlow = ai.defineFlow(
   async input => {
     // Se não houver propostas e nem observações, retorne uma mensagem padrão.
     if (input.proposals.length === 0 && !input.customerObservations) {
-        return 'Não há dados suficientes para gerar um resumo sobre este cliente. Adicione propostas ou observações para obter uma análise.';
+        return 'Não há dados suficientes para gerar um resumo sobre este cliente. Adicione propostas ou observações para obter uma análise estratégica.';
     }
     const { output } = await prompt(input);
-    return output || 'A IA não retornou um resumo. Por favor, tente novamente.';
+    return output || 'A IA não conseguiu processar os dados no momento. Por favor, tente novamente.';
   }
 );
