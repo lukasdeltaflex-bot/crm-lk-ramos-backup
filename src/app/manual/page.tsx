@@ -31,7 +31,8 @@ import {
     Tags,
     Trophy,
     Share2,
-    SmilePlus
+    SmilePlus,
+    Pencil
 } from 'lucide-react';
 
 export default function ManualPage() {
@@ -50,7 +51,7 @@ export default function ManualPage() {
                             <div className="p-2 rounded-xl bg-orange-100 text-orange-600"><Zap className="h-5 w-5" /></div>
                             <div className="text-left">
                                 <p className="font-bold text-sm">1. Ecossistema de IA e Vendas</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Persuasão, Visão e Resumos</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Consultoria, Visão e Persuasão</p>
                             </div>
                         </div>
                     </AccordionTrigger>
@@ -58,17 +59,17 @@ export default function ManualPage() {
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="p-4 rounded-xl bg-orange-500/5 border border-orange-500/20">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <MessageSquareText className="h-4 w-4 text-orange-600" />
-                                    <h4 className="font-bold">Smart Sales Pitch IA</h4>
+                                    <Sparkles className="h-4 w-4 text-orange-600" />
+                                    <h4 className="font-bold">Análise Estratégica IA</h4>
                                 </div>
-                                <p className="text-xs text-muted-foreground">Na ficha do cliente, use o botão "Smart Pitch" para gerar scripts magnéticos. O sistema agora usa links oficiais (api.whatsapp.com) garantindo compatibilidade total com PC e Celular.</p>
+                                <p className="text-xs text-muted-foreground">Dentro da ficha do cliente, o botão "Gerar Consultoria" agora entrega uma análise profunda. A IA cruza datas de contratos para sugerir o momento exato de um refinanciamento.</p>
                             </div>
                             <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Camera className="h-4 w-4 text-blue-600" />
                                     <h4 className="font-bold">OCR Multimodal (Fotos e PDFs)</h4>
                                 </div>
-                                <p className="text-xs text-muted-foreground">O cadastro via IA agora suporta **PDFs Oficiais**. Você pode subir extratos bancários ou fotos de documentos e a IA extrairá Nome, CPF e Benefícios instantaneamente.</p>
+                                <p className="text-xs text-muted-foreground">O cadastro via IA suporta **PDFs Oficiais**. Você pode subir extratos bancários e a IA extrairá Nome, CPF e Benefícios instantaneamente.</p>
                             </div>
                         </div>
                     </AccordionContent>
@@ -89,27 +90,42 @@ export default function ManualPage() {
                         <ul className="space-y-3">
                             <li className="flex gap-3">
                                 <div className="h-5 w-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-black shrink-0">ID</div>
-                                <p><strong>Correspondência Estrita</strong>: Buscas numéricas curtas (ex: "10") agora isolam exclusivamente o ID exato, eliminando resultados de telefones ou CPFs que apenas contenham esses números.</p>
+                                <p><strong>Correspondência Estrita</strong>: Buscas numéricas curtas (ex: "10") isolam exclusivamente o ID exato ou o número da Proposta.</p>
                             </li>
                             <li className="flex gap-3">
                                 <div className="h-5 w-5 rounded-full bg-orange-500 text-white flex items-center justify-center shrink-0"><Search className="h-3 w-3" /></div>
-                                <p><strong>CPF Inteligente</strong>: O motor de busca agora ignora pontuações. Você pode pesquisar por `123.456.789-01` ou apenas `12345678901` para encontrar o cliente.</p>
-                            </li>
-                            <li className="flex gap-3">
-                                <div className="h-5 w-5 rounded-full bg-green-500 text-white flex items-center justify-center shrink-0"><Binary className="h-3 w-3" /></div>
-                                <p><strong>Threshold de Segurança</strong>: Para números acima de 4 dígitos, o sistema libera a busca por fragmentos (útil para localizar partes de um documento).</p>
+                                <p><strong>CPF Inteligente</strong>: O motor de busca ignora pontuações. Pesquise `123.456.789-01` ou apenas `12345678901` para encontrar o cliente.</p>
                             </li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 3. CONCILIAÇÃO IA V2 */}
+                {/* 3. NAVEGAÇÃO E EDIÇÃO ÁGIL */}
+                <AccordionItem value="agile-editing" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
+                    <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-xl bg-purple-100 text-purple-600"><Pencil className="h-5 w-5" /></div>
+                            <div className="text-left">
+                                <p className="font-bold text-sm">3. Edição Contextual Direta</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Velocidade em Atualização de Dados</p>
+                            </div>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
+                        <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/20">
+                            <h4 className="font-bold mb-2">Editar de Qualquer Lugar</h4>
+                            <p className="text-xs text-muted-foreground">Não é mais necessário voltar à lista de clientes para corrigir um dado. Ao abrir a ficha de um cliente (via busca ou clique), o botão <strong>"Editar Cadastro"</strong> está disponível no topo. Isso mantém seu foco no cliente que está sendo atendido no momento.</p>
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
+
+                {/* 4. CONCILIAÇÃO IA V2 */}
                 <AccordionItem value="finance-v2" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-green-100 text-green-600"><FileCheck2 className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">3. Conciliação Financeira IA V2</p>
+                                <p className="font-bold text-sm">4. Conciliação Financeira IA V2</p>
                                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Conferência de Comissões por Arquivo</p>
                             </div>
                         </div>
@@ -119,23 +135,23 @@ export default function ManualPage() {
                         <div className="grid gap-3 md:grid-cols-2">
                             <div className="p-3 rounded-xl bg-muted/20 border-2 border-dashed">
                                 <h4 className="text-[10px] font-black uppercase mb-1">Leitura de PDF de Promotora</h4>
-                                <p className="text-xs text-muted-foreground">Suba o relatório original da promotora. A IA cruza CPF e Nº da Proposta simultaneamente para achar o contrato na sua base.</p>
+                                <p className="text-xs text-muted-foreground">Suba o relatório original da promotora. A IA cruza CPF e Nº da Proposta simultaneamente.</p>
                             </div>
                             <div className="p-3 rounded-xl bg-muted/20 border-2 border-dashed">
                                 <h4 className="text-[10px] font-black uppercase mb-1">Destaque de Divergências</h4>
-                                <p className="text-xs text-muted-foreground">Se o valor pago for menor que o esperado, o sistema sinaliza em vermelho e sugere a "Baixa Parcial" automaticamente.</p>
+                                <p className="text-xs text-muted-foreground">Se o valor pago for menor que o esperado, o sistema sinaliza em vermelho automaticamente.</p>
                             </div>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 4. CLASSIFICAÇÃO INTELIGENTE (TAGS) */}
+                {/* 5. CLASSIFICAÇÃO INTELIGENTE (TAGS) */}
                 <AccordionItem value="tags-management" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-pink-100 text-pink-600"><Tags className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">4. Gestão de Relacionamento (Tags)</p>
+                                <p className="font-bold text-sm">5. Gestão de Relacionamento (Tags)</p>
                                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Segmentação e Símbolos Visuais</p>
                             </div>
                         </div>
@@ -145,23 +161,23 @@ export default function ManualPage() {
                         <ul className="space-y-3">
                             <li className="flex gap-3">
                                 <div className="h-5 w-5 rounded-full bg-pink-500 text-white flex items-center justify-center shrink-0"><SmilePlus className="h-3 w-3" /></div>
-                                <p><strong>Atalho de Símbolos</strong>: Ao criar tags em "Configurações", use <kbd className="bg-muted px-1 rounded border">Win + .</kbd> (Windows) ou <kbd className="bg-muted px-1 rounded border">Cmd+Ctrl+Espaço</kbd> (Mac) para adicionar emojis como 💎, ✅ ou ⚠️.</p>
+                                <p><strong>Atalho de Símbolos</strong>: Ao criar tags em "Configurações", use <kbd className="bg-muted px-1 rounded border">Win + .</kbd> (Windows) ou <kbd className="bg-muted px-1 rounded border">Cmd+Ctrl+Espaço</kbd> (Mac) para adicionar emojis.</p>
                             </li>
                             <li className="flex gap-3">
                                 <div className="h-5 w-5 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0"><Check className="h-3 w-3" /></div>
-                                <p><strong>Filtros Cirúrgicos</strong>: Na tela de Clientes, você pode filtrar instantaneamente por etiquetas para focar suas campanhas apenas no perfil desejado (ex: apenas Clientes VIP).</p>
+                                <p><strong>Filtros Cirúrgicos</strong>: Na tela de Clientes, filtre por etiquetas para focar suas campanhas (ex: Clientes VIP).</p>
                             </li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 5. MARKETING PESSOAL E PERFORMANCE */}
+                {/* 6. MARKETING PESSOAL E PERFORMANCE */}
                 <AccordionItem value="personal-branding" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-purple-100 text-purple-600"><UserCheck className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">5. Perfil de Elite e Autoridade</p>
+                                <p className="font-bold text-sm">6. Perfil de Elite e Autoridade</p>
                                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Recordes e Identidade Profissional</p>
                             </div>
                         </div>
@@ -171,28 +187,28 @@ export default function ManualPage() {
                             <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Trophy className="h-4 w-4 text-amber-600" />
-                                    <h4 className="font-bold">Hall da Fama Profissional</h4>
+                                    <h4 className="font-bold">Hall da Fama</h4>
                                 </div>
-                                <p className="text-xs text-muted-foreground">O menu "Meu Perfil" agora destaca seus maiores recordes: Maior Contrato Pago, Melhor Mês de Produção e Comissões Acumuladas.</p>
+                                <p className="text-xs text-muted-foreground">O menu "Meu Perfil" destaca seus recordes: Maior Contrato Pago, Melhor Mês e Comissões Acumuladas.</p>
                             </div>
                             <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/20">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Share2 className="h-4 w-4 text-purple-600" />
                                     <h4 className="font-bold">Assinatura Profissional</h4>
                                 </div>
-                                <p className="text-xs text-muted-foreground">Gere assinaturas automáticas para E-mail e WhatsApp com seus dados e a marca da LK RAMOS com um único clique.</p>
+                                <p className="text-xs text-muted-foreground">Gere assinaturas automáticas para E-mail e WhatsApp com seus dados e a marca da LK RAMOS com um clique.</p>
                             </div>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 6. AUTOMATIZAÇÕES DE ESTEIRA */}
+                {/* 7. AUTOMATIZAÇÕES DE ESTEIRA */}
                 <AccordionItem value="automations" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-purple-100 text-purple-600"><Bot className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">6. Automatizações de Esteira</p>
+                                <p className="font-bold text-sm">7. Automatizações de Esteira</p>
                                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Redução de Cliques e Digitação</p>
                             </div>
                         </div>
@@ -201,36 +217,12 @@ export default function ManualPage() {
                         <ul className="space-y-3">
                             <li className="flex gap-3">
                                 <div className="h-5 w-5 rounded-full bg-purple-500 text-white flex items-center justify-center shrink-0"><Check className="h-3 w-3" /></div>
-                                <p><strong>Data de Digitação Automática</strong>: Toda nova proposta já nasce preenchida com a data de hoje.</p>
+                                <p><strong>Data de Digitação</strong>: Toda nova proposta já nasce preenchida com a data de hoje.</p>
                             </li>
                             <li className="flex gap-3">
                                 <div className="h-5 w-5 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0"><Binary className="h-3 w-3" /></div>
-                                <p><strong>Seleção Inteligente de NB</strong>: Se o seu cliente tiver apenas um benefício cadastrado, o sistema o selecionará automaticamente ao iniciar a proposta.</p>
+                                <p><strong>Seleção de NB</strong>: Se o cliente tiver apenas um benefício, o sistema o selecionará automaticamente.</p>
                             </li>
-                            <li className="flex gap-3">
-                                <div className="h-5 w-5 rounded-full bg-green-500 text-white flex items-center justify-center shrink-0"><Wallet className="h-3 w-3" /></div>
-                                <p><strong>Baixa Coletiva</strong>: No financeiro, selecione várias propostas e dê baixa total em segundos com o botão de ação em massa.</p>
-                            </li>
-                        </ul>
-                    </AccordionContent>
-                </AccordionItem>
-
-                {/* 7. SEGURANÇA E BRANDING */}
-                <AccordionItem value="branding-security" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
-                    <AccordionTrigger className="hover:no-underline">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-zinc-100 text-zinc-600"><ShieldCheck className="h-5 w-5" /></div>
-                            <div className="text-left">
-                                <p className="font-bold text-sm">7. Branding e Segurança V8</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Identidade Visual e Blindagem de Dados</p>
-                            </div>
-                        </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
-                        <ul className="list-disc pl-5 space-y-2 text-xs">
-                            <li><strong>Blindagem Nuclear V8</strong>: Motor de proteção que impede erros de salvamento e garante integridade total dos dados na nuvem.</li>
-                            <li><strong>Auras Atmosféricas</strong>: Personalize o fundo do sistema com gradientes industriais premium em "Configurações".</li>
-                            <li><strong>Backup Total</strong>: Em "Dados & Backup", exporte toda a sua base de clientes e propostas para Excel a qualquer momento.</li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
@@ -269,10 +261,10 @@ export default function ManualPage() {
                 <CardContent>
                     <div className="flex items-center gap-2 text-green-600">
                         <div className="h-2 w-2 rounded-full bg-current animate-pulse" />
-                        <span className="text-[10px] font-black uppercase">Blindagem Nuclear V8 Ativa</span>
+                        <span className="text-[10px] font-black uppercase">Blindagem Nuclear Ativa</span>
                     </div>
                     <p className="text-[9px] text-muted-foreground mt-2 leading-tight">
-                        Versão 3.5.0 - Motor de Tags e Marketing Pessoal integrados.
+                        Versão 3.6.0 - Edição contextual e inteligência de retenção integradas.
                     </p>
                 </CardContent>
             </Card>
