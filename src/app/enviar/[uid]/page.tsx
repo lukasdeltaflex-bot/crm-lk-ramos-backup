@@ -125,7 +125,7 @@ export default function LeadCapturePage() {
 
     setIsUploading(true);
     const newAttachments: Attachment[] = [...attachments];
-    const MAX_SIZE = 15 * 1024 * 1024; // Atualizado para 15MB conforme solicitado
+    const MAX_SIZE = 15 * 1024 * 1024; // 15MB
 
     for (const file of Array.from(files)) {
         if (file.size > MAX_SIZE) {
@@ -204,7 +204,7 @@ export default function LeadCapturePage() {
             ownerId: uid,
             ...formData,
             name: formData.name.toUpperCase(),
-            motherName: formData.motherName.toUpperCase(),
+            motherName: formData.motherName?.toUpperCase() || '',
             birthDate: birthIso,
             status: 'pending',
             createdAt: new Date().toISOString(),
@@ -390,7 +390,7 @@ export default function LeadCapturePage() {
                                 <p className="font-bold text-sm">RG, CNH ou Extrato</p>
                                 <p className="text-[10px] text-muted-foreground uppercase mt-1">Toque para anexar documentos</p>
                             </div>
-                            <input type="file" fileInputRef={fileInputRef} multiple className="hidden" accept="image/*,application/pdf" onChange={handleFileUpload} />
+                            <input type="file" ref={fileInputRef} multiple className="hidden" accept="image/*,application/pdf" onChange={handleFileUpload} />
                         </div>
 
                         {isUploading && (
