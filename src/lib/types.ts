@@ -184,3 +184,16 @@ export type Expense = {
   category: string;
   paid: boolean;
 };
+
+export type Lead = {
+  id: string;
+  ownerId: string;
+  name: string;
+  cpf: string;
+  phone: string;
+  birthDate: string;
+  email?: string;
+  status: 'pending' | 'approved' | 'discarded';
+  createdAt: string;
+  documents?: Attachment[];
+};

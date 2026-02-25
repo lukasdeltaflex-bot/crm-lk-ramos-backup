@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { AppLayout } from '@/components/app-layout';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from '@/firebase';
-import { collection, query, where, doc, setDoc } from 'firebase/firestore';
+import { collection, query, where, doc, setDoc, deleteDoc, getDocs, limit, orderBy } from 'firebase/firestore';
 import {
   FileText,
   Clock,
@@ -15,17 +15,26 @@ import {
   Filter,
   XCircle,
   CheckCircle2,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  Link as LinkIcon,
+  Copy,
+  Users,
+  Check,
+  Trash2,
+  Download,
+  ExternalLink,
+  Loader2
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, isValid, startOfDay, subDays, endOfDay, subMonths, parse, eachDayOfInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { formatCurrency, cn, calculateBusinessDays } from '@/lib/utils';
-import type { Proposal, Customer, UserProfile, UserSettings } from '@/lib/types';
+import { formatCurrency, cn, calculateBusinessDays, cleanFirestoreData } from '@/lib/utils';
+import type { Proposal, Customer, UserProfile, UserSettings, Lead } from '@/lib/types';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ProposalsStatusTable } from '@/components/dashboard/proposals-status-table';
@@ -48,6 +57,8 @@ import { ProductBreakdownChart } from '@/components/dashboard/product-breakdown-
 import { RadarWidget } from '@/components/dashboard/radar-widget';
 import { HallOfFame } from '@/components/dashboard/hall-of-fame';
 import { toast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -59,6 +70,8 @@ export default function DashboardPage() {
   const [appliedDateRange, setAppliedDateRange] = useState<DateRange | undefined>(undefined);
   const [isPrivacyMode, setIsPrivacyMode] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [isLeadsModalOpen, setIsLeadsModalOpen] = useState(false);
+  const [isApprovingLead, setIsApprovingLead] = useState(false);
   
   useEffect(() => {
     setIsClient(true);
@@ -77,17 +90,28 @@ export default function DashboardPage() {
   }, [firestore, user]);
   const { data: customers } = useCollection<Customer>(customersQuery);
 
-  const userProfileDocRef = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-    return doc(firestore, 'users', user.uid);
+  const leadsQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return query(
+        collection(firestore, 'leads'), 
+        where('ownerId', '==', user.uid),
+        where('status', '==', 'pending'),
+        orderBy('createdAt', 'desc')
+    );
   }, [firestore, user]);
-  const { data: userProfile } = useDoc<UserProfile>(userProfileDocRef);
+  const { data: pendingLeads, isLoading: leadsLoading } = useCollection<Lead>(leadsQuery);
 
   const settingsDocRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return doc(firestore, 'userSettings', user.uid);
   }, [firestore, user]);
   const { data: userSettings } = useDoc<UserSettings>(settingsDocRef);
+
+  const userProfileDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [firestore, user]);
+  const { data: userProfile } = useDoc<UserProfile>(userProfileDocRef);
 
   const handleGoalChange = async (newGoal: number) => {
     if (!user || !firestore) return;
@@ -101,55 +125,56 @@ export default function DashboardPage() {
     }
   };
 
-  const handleDateInputChange = (value: string, type: 'start' | 'end') => {
-    let v = value.replace(/\D/g, '').slice(0, 8);
-    if (v.length >= 5) {
-      v = `${v.slice(0, 2)}/${v.slice(2, 4)}/${v.slice(4)}`;
-    } else if (v.length >= 3) {
-      v = `${v.slice(0, 2)}/${v.slice(2)}`;
-    }
-    
-    if (type === 'start') setStartDateInput(v);
-    else setEndDateInput(v);
+  const copyLeadLink = () => {
+    if (!user) return;
+    const protocol = window.location.protocol;
+    const host = window.location.host;
+    const link = `${protocol}//${host}/enviar/${user.uid}`;
+    navigator.clipboard.writeText(link);
+    toast({ title: 'Link Copiado!', description: 'Envie para o cliente preencher os dados.' });
   };
 
-  const applyRange = (range: 'today' | 'yesterday' | 'week' | 'month' | 'lastMonth') => {
-    const now = new Date();
-    let from: Date;
-    let to: Date = now;
-    switch (range) {
-        case 'today': from = startOfDay(now); break;
-        case 'yesterday': from = startOfDay(subDays(now, 1)); to = endOfDay(subDays(now, 1)); break;
-        case 'week': from = startOfDay(subDays(now, 7)); break;
-        case 'month': from = startOfMonth(now); break;
-        case 'lastMonth': from = startOfMonth(subMonths(now, 1)); to = endOfMonth(subMonths(now, 1)); break;
-        default: return;
-    }
-    setStartDateInput(from.toLocaleDateString('pt-BR'));
-    setEndDateInput(to.toLocaleDateString('pt-BR'));
-    setAppliedDateRange({ from, to });
-  };
+  const handleApproveLead = async (lead: Lead) => {
+    if (!firestore || !user || !customers) return;
+    setIsApprovingLead(true);
+    try {
+        const nextNumericId = customers.length ? Math.max(...customers.map(c => c.numericId || 0)) + 1 : 1;
+        const customerId = doc(collection(firestore, 'customers')).id;
+        
+        const customerData: Partial<Customer> = {
+            id: customerId,
+            numericId: nextNumericId,
+            ownerId: user.uid,
+            name: lead.name,
+            cpf: lead.cpf,
+            phone: lead.phone,
+            email: lead.email || '',
+            birthDate: lead.birthDate,
+            status: 'active',
+            documents: lead.documents || [],
+            observations: `Cadastro recebido via Portal de Leads em ${format(new Date(lead.createdAt), 'dd/MM/yyyy HH:mm')}.`
+        };
 
-  const handleApplyFilter = () => {
-    const startDate = parse(startDateInput, 'dd/MM/yyyy', new Date());
-    const endDate = parse(endDateInput, 'dd/MM/yyyy', new Date());
-    const isValidStart = isValid(startDate) && startDateInput.length === 10;
-    const isValidEnd = isValid(endDate) && endDateInput.length === 10;
-
-    if (isValidStart && isValidEnd) {
-        setAppliedDateRange({ from: startOfDay(startDate), to: endOfDay(endDate) });
-    } else if (isValidStart) {
-        setAppliedDateRange({ from: startOfDay(startDate), to: endOfDay(startDate) });
-    } else {
-        setAppliedDateRange(undefined);
+        await setDoc(doc(firestore, 'customers', customerId), cleanFirestoreData(customerData));
+        await setDoc(doc(firestore, 'leads', lead.id), { status: 'approved' }, { merge: true });
+        
+        toast({ title: 'Cliente Aprovado!', description: `${lead.name} agora está na sua base oficial.` });
+    } catch (e) {
+        toast({ variant: 'destructive', title: 'Erro ao aprovar ficha' });
+    } finally {
+        setIsApprovingLead(false);
     }
   };
 
-  const clearDates = () => {
-    setStartDateInput('');
-    setEndDateInput('');
-    setAppliedDateRange(undefined);
-  }
+  const handleDiscardLead = async (leadId: string) => {
+    if (!firestore) return;
+    try {
+        await setDoc(doc(firestore, 'leads', leadId), { status: 'discarded' }, { merge: true });
+        toast({ title: 'Ficha Descartada' });
+    } catch (e) {
+        toast({ variant: 'destructive', title: 'Erro ao descartar' });
+    }
+  };
 
   const stats = useMemo(() => {
     if (!proposals || !isClient) return null;
@@ -282,14 +307,44 @@ export default function DashboardPage() {
     };
   }, [proposals, appliedDateRange, isClient]);
 
-  const handleShowDetails = (title: string, props: Proposal[]) => {
-    setDialogData({ title, proposals: props });
-  }
+  const handleDateInputChange = (value: string, type: 'start' | 'end') => {
+    let v = value.replace(/\D/g, '').slice(0, 8);
+    if (v.length >= 5) {
+      v = `${v.slice(0, 2)}/${v.slice(2, 4)}/${v.slice(4)}`;
+    } else if (v.length >= 3) {
+      v = `${v.slice(0, 2)}/${v.slice(2)}`;
+    }
+    
+    if (type === 'start') setStartDateInput(v);
+    else setEndDateInput(v);
+  };
+
+  const applyRange = (range: 'today' | 'yesterday' | 'week' | 'month' | 'lastMonth') => {
+    const now = new Date();
+    let from: Date;
+    let to: Date = now;
+    switch (range) {
+        case 'today': from = startOfDay(now); break;
+        case 'yesterday': from = startOfDay(subDays(now, 1)); to = endOfDay(subDays(now, 1)); break;
+        case 'week': from = startOfDay(subDays(now, 7)); break;
+        case 'month': from = startOfMonth(now); break;
+        case 'lastMonth': from = startOfMonth(subMonths(now, 1)); to = endOfMonth(subMonths(now, 1)); break;
+        default: return;
+    }
+    setStartDateInput(from.toLocaleDateString('pt-BR'));
+    setEndDateInput(to.toLocaleDateString('pt-BR'));
+    setAppliedDateRange({ from, to });
+  };
+
+  const handleApplyFilter = () => {
+    const startDate = parse(startDateInput, 'dd/MM/yyyy', new Date());
+    const endDate = parse(endDateInput, 'dd/MM/yyyy', new Date());
+    if (isValid(startDate)) {
+        setAppliedDateRange({ from: startOfDay(startDate), to: isValid(endDate) ? endOfDay(endDate) : endOfDay(startDate) });
+    }
+  };
 
   if (!stats) return null;
-
-  const rawMonthName = isClient ? format(appliedDateRange?.from || new Date(), 'MMMM', { locale: ptBR }) : 'Mês';
-  const currentMonthName = rawMonthName.charAt(0).toUpperCase() + rawMonthName.slice(1);
 
   return (
     <AppLayout>
@@ -297,7 +352,7 @@ export default function DashboardPage() {
         <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
-                <p className="text-sm text-muted-foreground">Exibindo dados para {currentMonthName}</p>
+                <p className="text-sm text-muted-foreground">Exibindo dados operacionais da LK RAMOS</p>
             </div>
             <div className="flex items-center gap-2 flex-wrap bg-card p-2 rounded-xl border border-border/50 shadow-sm">
                 <Select onValueChange={(val) => applyRange(val as any)}>
@@ -333,7 +388,7 @@ export default function DashboardPage() {
                 </div>
                 <Button size="sm" onClick={handleApplyFilter} className='h-8 bg-primary hover:bg-primary/90 rounded-full px-4'><Filter className="h-3.5 w-3.5 mr-1.5" /> Aplicar</Button>
                 {(startDateInput || appliedDateRange) && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={clearDates}><X className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setStartDateInput(''); setEndDateInput(''); setAppliedDateRange(undefined); }}><X className="h-4 w-4" /></Button>
                 )}
                 <Separator orientation="vertical" className="h-6 mx-1 hidden sm:block" />
                 <Button variant="ghost" size="icon" className='h-8 w-8' onClick={() => setIsPrivacyMode(!isPrivacyMode)}>
@@ -349,14 +404,49 @@ export default function DashboardPage() {
                 monthlyGoal={userSettings?.monthlyGoal || 150000}
                 onGoalChange={handleGoalChange}
                 isPrivacyMode={isPrivacyMode}
-                onValueClick={() => handleShowDetails('Contratos Pagos no Período', stats.proposals.pagoNoMes)}
+                onValueClick={() => setDialogData({ title: 'Contratos Pagos no Período', proposals: stats.proposals.pagoNoMes })}
                 topContributor={stats.topTotal}
                 sparklineData={stats.productionTrend}
             />
         </div>
 
+        {/* 🔗 PORTAL DE CAPTURA DE LEADS */}
+        <Card className="border-2 border-primary/20 bg-primary/[0.02] shadow-lg overflow-hidden rounded-2xl">
+            <CardContent className="p-0">
+                <div className="flex flex-col md:flex-row items-center justify-between p-6 gap-6">
+                    <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                            <LinkIcon className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-black uppercase tracking-tight text-primary">Portal de Captura de Leads</h3>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Link exclusivo para auto-cadastro do cliente</p>
+                        </div>
+                    </div>
+                    
+                    <div className="flex flex-wrap items-center gap-3">
+                        {pendingLeads && pendingLeads.length > 0 && (
+                            <Button 
+                                variant="outline" 
+                                className="h-11 rounded-full px-6 border-orange-500 bg-orange-50 text-orange-600 font-black text-[10px] uppercase tracking-widest animate-pulse"
+                                onClick={() => setIsLeadsModalOpen(true)}
+                            >
+                                <Users className="mr-2 h-4 w-4" /> {pendingLeads.length} Fichas Recebidas
+                            </Button>
+                        )}
+                        <Button 
+                            onClick={copyLeadLink}
+                            className="h-11 rounded-full px-8 font-black text-[10px] uppercase tracking-widest bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20"
+                        >
+                            <Copy className="mr-2 h-4 w-4" /> Copiar Link de Envio
+                        </Button>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            <div className="cursor-pointer" onClick={() => handleShowDetails('Total Digitado (Mês Vigente)', stats.proposals.digitadoNoMes)}>
+            <div className="cursor-pointer" onClick={() => setDialogData({ title: 'Total Digitado (Mês Vigente)', proposals: stats.proposals.digitadoNoMes })}>
                 <StatsCard 
                     title="TOTAL DIGITADO" 
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.totalDigitado)} 
@@ -368,7 +458,7 @@ export default function DashboardPage() {
                 />
             </div>
 
-            <div className="cursor-pointer" onClick={() => handleShowDetails('Pendente (Mês Atual + Anterior)', stats.statusAnalysis['Pendente'].proposals)}>
+            <div className="cursor-pointer" onClick={() => setDialogData({ title: 'Pendente (Esteira)', proposals: stats.statusAnalysis['Pendente'].proposals })}>
                 <StatsCard 
                     title="Pendente" 
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.statusAnalysis['Pendente'].total)} 
@@ -380,7 +470,7 @@ export default function DashboardPage() {
                 />
             </div>
 
-            <div className="cursor-pointer" onClick={() => handleShowDetails('Em Andamento (Mês Atual + Anterior)', stats.statusAnalysis['Em Andamento'].proposals)}>
+            <div className="cursor-pointer" onClick={() => setDialogData({ title: 'Em Andamento (Esteira)', proposals: stats.statusAnalysis['Em Andamento'].proposals })}>
                 <StatsCard 
                     title="Em Andamento" 
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.statusAnalysis['Em Andamento'].total)} 
@@ -392,7 +482,7 @@ export default function DashboardPage() {
                 />
             </div>
 
-            <div className="cursor-pointer" onClick={() => handleShowDetails('Aguardando Saldo (Mês Atual + Anterior)', stats.statusAnalysis['Aguardando Saldo'].proposals)}>
+            <div className="cursor-pointer" onClick={() => setDialogData({ title: 'Aguardando Saldo (Esteira)', proposals: stats.statusAnalysis['Aguardando Saldo'].proposals })}>
                 <StatsCard 
                     title="Aguardando Saldo" 
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.statusAnalysis['Aguardando Saldo'].total)} 
@@ -406,7 +496,7 @@ export default function DashboardPage() {
                 />
             </div>
 
-            <div className="cursor-pointer" onClick={() => handleShowDetails('Saldo Pago (Mês Atual + Anterior)', stats.statusAnalysis['Saldo Pago'].proposals)}>
+            <div className="cursor-pointer" onClick={() => setDialogData({ title: 'Saldo Pago (Esteira)', proposals: stats.statusAnalysis['Saldo Pago'].proposals })}>
                 <StatsCard 
                     title="Saldo Pago" 
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.statusAnalysis['Saldo Pago'].total)} 
@@ -418,7 +508,7 @@ export default function DashboardPage() {
                 />
             </div>
 
-            <div className="cursor-pointer" onClick={() => handleShowDetails('Reprovado (Digitados no Mês)', stats.statusAnalysis['Reprovado'].proposals)}>
+            <div className="cursor-pointer" onClick={() => setDialogData({ title: 'Reprovado (Mês)', proposals: stats.statusAnalysis['Reprovado'].proposals })}>
                 <StatsCard 
                     title="Reprovado" 
                     value={isPrivacyMode ? '•••••' : formatCurrency(stats.statusAnalysis['Reprovado'].total)} 
@@ -464,6 +554,90 @@ export default function DashboardPage() {
                     <ProposalsStatusTable proposals={dialogData?.proposals || []} customers={customers || []} />
                 </div>
             </DialogContent>
+      </Dialog>
+
+      <Dialog open={isLeadsModalOpen} onOpenChange={setIsLeadsModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+            <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 font-black uppercase text-xl text-primary">
+                    <Users className="h-6 w-6" /> Fichas de Leads Recebidas
+                </DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="flex-1 pr-4">
+                <div className="space-y-4 py-4">
+                    {pendingLeads?.map((lead) => (
+                        <Card key={lead.id} className="p-6 border-2 hover:border-primary/40 transition-all">
+                            <div className="flex flex-col md:flex-row justify-between gap-6">
+                                <div className="space-y-4 flex-1">
+                                    <div className="flex items-center gap-3">
+                                        <Badge className="bg-primary text-white font-black text-[10px] uppercase">Pendente</Badge>
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase">{format(new Date(lead.createdAt), 'dd/MM/yyyy HH:mm')}</span>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Nome Completo</p>
+                                            <p className="font-black text-lg uppercase tracking-tight">{lead.name}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Documento (CPF)</p>
+                                            <p className="font-bold">{lead.cpf}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Telefone</p>
+                                            <p className="font-bold">{lead.phone}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Nascimento</p>
+                                            <p className="font-bold">{format(new Date(lead.birthDate + 'T00:00:00'), 'dd/MM/yyyy')}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    {lead.documents && lead.documents.length > 0 && (
+                                        <div className="space-y-2">
+                                            <p className="text-[10px] font-black uppercase text-primary tracking-widest">Documentos Anexados</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {lead.documents.map((doc, i) => (
+                                                    <a key={i} href={doc.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted border hover:bg-muted/80 transition-all">
+                                                        <Download className="h-3 w-3" />
+                                                        <span className="text-[10px] font-bold uppercase truncate max-w-[150px]">{doc.name}</span>
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex flex-row md:flex-col gap-2 justify-end">
+                                    <Button 
+                                        className="bg-green-600 hover:bg-green-700 text-white font-black uppercase text-[10px] tracking-widest h-12 px-8 rounded-full shadow-lg shadow-green-500/20"
+                                        onClick={() => handleApproveLead(lead)}
+                                        disabled={isApprovingLead}
+                                    >
+                                        {isApprovingLead ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
+                                        Aprovar Ficha
+                                    </Button>
+                                    <Button 
+                                        variant="outline" 
+                                        className="text-destructive hover:bg-red-50 border-destructive/20 h-12 px-8 rounded-full font-bold uppercase text-[10px] tracking-widest"
+                                        onClick={() => handleDiscardLead(lead.id)}
+                                    >
+                                        <Trash2 className="mr-2 h-4 w-4" /> Descartar
+                                    </Button>
+                                </div>
+                            </div>
+                        </Card>
+                    ))}
+                    {(!pendingLeads || pendingLeads.length === 0) && (
+                        <div className="py-20 text-center border-2 border-dashed rounded-[2rem] bg-muted/5 opacity-40">
+                            <Users className="h-12 w-12 mx-auto mb-4" />
+                            <p className="font-black uppercase tracking-widest text-sm">Nenhum lead aguardando revisão.</p>
+                        </div>
+                    )}
+                </div>
+            </ScrollArea>
+            <DialogFooter className="p-6 border-t">
+                <Button variant="ghost" onClick={() => setIsLeadsModalOpen(false)} className="rounded-full font-bold uppercase text-[10px] tracking-widest">Fechar</Button>
+            </DialogFooter>
+        </DialogContent>
       </Dialog>
     </AppLayout>
   );

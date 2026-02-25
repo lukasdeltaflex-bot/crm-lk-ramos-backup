@@ -1,4 +1,3 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -46,6 +45,14 @@ service cloud.firestore {
     // Configurações Globais do Usuário
     match /userSettings/{userId} {
       allow read, write: if isOwner(userId);
+    }
+
+    // Leads (Público para criação, Privado para leitura)
+    match /leads/{leadId} {
+      allow create: if true;
+      allow read, update, delete: if isSignedIn() && (
+        resource == null || resource.data.ownerId == request.auth.uid
+      );
     }
     
     // Regra de fallback para evitar bloqueios inesperados em outros caminhos

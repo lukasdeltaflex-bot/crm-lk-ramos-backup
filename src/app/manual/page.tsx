@@ -36,7 +36,9 @@ import {
     Star,
     Cake,
     ListTodo,
-    AlertTriangle
+    AlertTriangle,
+    LinkIcon,
+    ArrowRight
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -277,6 +279,38 @@ export default function ManualPage() {
                     </AccordionContent>
                 </AccordionItem>
 
+                {/* 10. PORTAL DE CAPTURA DE LEADS */}
+                <AccordionItem value="leads-portal" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
+                    <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-xl bg-blue-100 text-blue-600"><LinkIcon className="h-5 w-5" /></div>
+                            <div className="text-left">
+                                <p className="font-bold text-sm">10. Portal de Auto-Cadastro (Leads)</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Automação de Entrada de Clientes</p>
+                            </div>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
+                        <div className="space-y-4">
+                            <p>Esta ferramenta transfere a digitação de dados básicos e o envio de documentos para o próprio cliente.</p>
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
+                                    <h4 className="font-bold text-xs uppercase mb-2">Como usar o Link</h4>
+                                    <p className="text-xs text-muted-foreground">No Dashboard, clique em **"Copiar Link de Envio"**. Mande este link pelo WhatsApp para o interessado. Ele verá uma página com a sua logomarca para preencher os dados.</p>
+                                </div>
+                                <div className="p-4 rounded-xl bg-green-500/5 border border-green-500/20">
+                                    <h4 className="font-bold text-xs uppercase mb-2">Revisão e Aprovação</h4>
+                                    <p className="text-xs text-muted-foreground">Quando o cliente envia, um alerta aparece no seu Dashboard. Clique em **"Fichas Recebidas"**, veja as fotos do RG/Extrato e clique em **"Aprovar"** para criar o cliente automaticamente.</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 p-3 bg-muted/20 rounded-lg border-2 border-dashed">
+                                <ArrowRight className="h-4 w-4 text-primary" />
+                                <p className="text-[10px] font-black uppercase text-muted-foreground">Isso garante 100% de precisão nos dados e economiza tempo operacional precioso.</p>
+                            </div>
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
+
             </Accordion>
         </div>
 
@@ -314,7 +348,7 @@ export default function ManualPage() {
                         <span className="text-[10px] font-black uppercase">Blindagem Nuclear Ativa</span>
                     </div>
                     <p className="text-[9px] text-muted-foreground mt-2 leading-tight">
-                        Versão 3.9.5 - Reforço de Integridade em Propostas.
+                        Versão 4.0.0 - Portal de Leads e Automação de Cadastro.
                     </p>
                 </CardContent>
             </Card>
