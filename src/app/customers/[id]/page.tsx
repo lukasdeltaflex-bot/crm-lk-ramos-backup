@@ -149,7 +149,7 @@ const CustomerInfoCard = ({ customer, onExportDossier, onToggleStatus, onGenerat
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {customer.benefits && customer.benefits.length > 0 ? (
                             customer.benefits.map((benefit: any, idx: number) => (
-                                <div key={idx} className="p-7 rounded-3xl bg-muted/20 border border-border/50 space-y-7 transition-all hover:bg-muted/30">
+                                <div key={idx} className="p-8 rounded-3xl bg-muted/20 border border-border/50 space-y-8 transition-all hover:bg-muted/30">
                                     <div className="flex items-start justify-between">
                                         <div className="space-y-1">
                                             <span className="text-[8px] font-black text-primary/60 uppercase tracking-widest">Nº do Benefício</span>
@@ -172,14 +172,14 @@ const CustomerInfoCard = ({ customer, onExportDossier, onToggleStatus, onGenerat
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="p-4 rounded-2xl bg-orange-500/[0.03] border border-orange-500/10 space-y-3">
+                                        <div className="p-5 rounded-2xl bg-orange-500/[0.03] border border-orange-500/10 space-y-4">
                                             <Badge variant="outline" className="h-5 text-[8px] font-black uppercase border-orange-200 text-orange-600 bg-orange-50">RMC</Badge>
                                             <div className="flex items-center gap-2">
                                                 <BankIcon bankName={benefit.rmcBank} domain={userSettings?.bankDomains?.[benefit.rmcBank]} showLogo={showLogos} className="h-5 w-5" />
                                                 <p className="text-[10px] font-bold text-foreground truncate">{benefit.rmcBank ? cleanBankName(benefit.rmcBank) : "Sem Reserva"}</p>
                                             </div>
                                         </div>
-                                        <div className="p-4 rounded-2xl bg-blue-500/[0.03] border border-blue-500/10 space-y-3">
+                                        <div className="p-5 rounded-2xl bg-blue-500/[0.03] border border-blue-500/10 space-y-4">
                                             <Badge variant="outline" className="h-5 text-[8px] font-black uppercase border-blue-200 text-blue-600 bg-blue-50">RCC</Badge>
                                             <div className="flex items-center gap-2">
                                                 <BankIcon bankName={benefit.rccBank} domain={userSettings?.bankDomains?.[benefit.rccBank]} showLogo={showLogos} className="h-5 w-5" />
