@@ -23,10 +23,14 @@ if (typeof window !== "undefined") {
         auth = getAuth(app);
         
         // Inicialização explícita do Storage com log de verificação
-        if (firebaseConfig.storageBucket) {
-            storage = getStorage(app);
+        // Garante que o bucket seja injetado corretamente na instância
+        const bucketName = firebaseConfig.storageBucket?.replace(/^gs:\/\//, '');
+        
+        if (bucketName) {
+            storage = getStorage(app, bucketName);
+            console.log("💎 LK RAMOS: Firebase Storage inicializado com sucesso.");
         } else {
-            console.warn("⚠️ LK RAMOS AVISO: Variável de ambiente 'storageBucket' não detectada. Uploads de arquivos não funcionarão.");
+            console.error("❌ LK RAMOS ERRO: Variável 'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET' não encontrada ou vazia no arquivo .env");
         }
     } catch (error) {
         console.error("❌ Falha crítica ao inicializar Firebase:", error);

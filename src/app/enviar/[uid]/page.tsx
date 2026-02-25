@@ -120,31 +120,43 @@ export default function LeadCapturePage() {
 
   const uploadFile = async (file: File): Promise<Attachment | null> => {
     if (!storage) {
+        console.error("❌ Firebase Storage não inicializado no cliente.");
         throw new Error('Storage não configurado');
     }
 
-    const filePath = `leads_temp/${uid}/${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+    // Garante um nome de arquivo limpo e único
+    const timestamp = Date.now();
+    const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+    const filePath = `leads_temp/${uid}/${timestamp}_${cleanName}`;
     const storageRef = ref(storage, filePath);
+    
+    console.log(`📤 Iniciando upload de: ${file.name}`);
     const uploadTask = uploadBytesResumable(storageRef, file);
 
     return new Promise((resolve, reject) => {
         uploadTask.on('state_changed', 
             (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                setUploadProgress(progress);
+                setUploadProgress(progress || 0);
+                console.log(`⏳ Progresso ${file.name}: ${Math.round(progress)}%`);
             },
             (error) => {
-                console.error("❌ Erro no upload do arquivo:", file.name, error);
+                console.error("❌ Erro fatal no Firebase Storage:", error.code, error.message);
                 reject(error);
             },
             async () => {
-                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                resolve({
-                    name: file.name,
-                    url: downloadURL,
-                    type: file.type,
-                    size: file.size
-                });
+                try {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    console.log(`✅ Upload concluído: ${file.name}`);
+                    resolve({
+                        name: file.name,
+                        url: downloadURL,
+                        type: file.type,
+                        size: file.size
+                    });
+                } catch (err) {
+                    reject(err);
+                }
             }
         );
     });
@@ -157,8 +169,8 @@ export default function LeadCapturePage() {
     if (!storage) {
         toast({ 
             variant: 'destructive', 
-            title: 'Sistema Indisponível', 
-            description: 'O serviço de armazenamento de arquivos (Storage) não está configurado. Verifique as configurações do Firebase.' 
+            title: 'Configuração Pendente', 
+            description: 'O Storage não está ativo. Verifique se a variável NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET foi configurada.' 
         });
         return;
     }
@@ -169,14 +181,12 @@ export default function LeadCapturePage() {
 
     try {
         const fileList = Array.from(files);
-        const results: Attachment[] = [];
-
         for (const file of fileList) {
             if (file.size > MAX_SIZE) {
                 toast({ 
                     variant: 'destructive', 
-                    title: 'Arquivo ignorado', 
-                    description: `${file.name} ultrapassa o limite de 15MB.` 
+                    title: 'Arquivo muito grande', 
+                    description: `${file.name} ultrapassa 15MB.` 
                 });
                 continue;
             }
@@ -184,20 +194,16 @@ export default function LeadCapturePage() {
             try {
                 const attachment = await uploadFile(file);
                 if (attachment) {
-                    results.push(attachment);
                     setAttachments(prev => [...prev, attachment]);
                 }
             } catch (err: any) {
-                let msg = "Falha ao subir arquivo.";
-                if (err.code === 'storage/unauthorized') {
-                    msg = "Permissão negada. Verifique as regras do Storage.";
-                }
-                toast({ variant: 'destructive', title: 'Erro no Upload', description: msg });
+                console.error("Erro no processamento do arquivo:", err);
+                let msg = "Erro na comunicação com o servidor.";
+                if (err.code === 'storage/unauthorized') msg = "Permissão negada no Firebase Storage. Verifique as Rules.";
+                if (err.code === 'storage/retry-limit-exceeded') msg = "Conexão instável. Tente novamente.";
+                
+                toast({ variant: 'destructive', title: 'Falha no Anexo', description: msg });
             }
-        }
-
-        if (results.length > 0) {
-            toast({ title: "Arquivos processados!" });
         }
     } finally {
         setIsUploading(false);
@@ -220,17 +226,7 @@ export default function LeadCapturePage() {
     }
 
     if (!validateCPF(formData.cpf)) {
-        toast({ variant: 'destructive', title: 'CPF Inválido', description: 'O CPF informado não é válido. Verifique os números digitados.' });
-        return;
-    }
-
-    if (formData.birthDate.length < 10) {
-        toast({ variant: 'destructive', title: 'Data Inválida', description: 'Informe sua data de nascimento completa.' });
-        return;
-    }
-
-    if (formData.phone.length < 14) {
-        toast({ variant: 'destructive', title: 'Telefone Inválido', description: 'Informe um número de WhatsApp válido com DDD.' });
+        toast({ variant: 'destructive', title: 'CPF Inválido', description: 'O CPF informado não é válido.' });
         return;
     }
 
@@ -240,8 +236,8 @@ export default function LeadCapturePage() {
         
         let birthIso = '';
         try {
-            const [d, m, y] = formData.birthDate.split('/');
-            birthIso = `${y}-${m}-${d}`;
+            const parts = formData.birthDate.split('/');
+            if (parts.length === 3) birthIso = `${parts[2]}-${parts[1]}-${parts[0]}`;
         } catch (e) {}
 
         const leadData: any = {
@@ -250,7 +246,7 @@ export default function LeadCapturePage() {
             ...formData,
             name: formData.name.toUpperCase(),
             motherName: formData.motherName?.toUpperCase() || '',
-            birthDate: birthIso,
+            birthDate: birthIso || formData.birthDate,
             status: 'pending',
             createdAt: new Date().toISOString(),
             documents: attachments
@@ -260,7 +256,7 @@ export default function LeadCapturePage() {
         setIsSuccess(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e) {
-        toast({ variant: 'destructive', title: 'Erro ao enviar', description: 'Tente novamente em alguns instantes.' });
+        toast({ variant: 'destructive', title: 'Erro ao enviar', description: 'Tente novamente em instantes.' });
     } finally {
         setIsSubmitting(false);
     }
