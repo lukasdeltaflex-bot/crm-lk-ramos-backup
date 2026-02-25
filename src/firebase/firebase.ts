@@ -8,7 +8,6 @@ import { firebaseConfig } from "./config";
 
 /**
  * 🛠️ INFRAESTRUTURA DE DADOS LK RAMOS
- * Centraliza a inicialização dos serviços garantindo estabilidade no Browser.
  */
 
 let db: Firestore | null = null;
@@ -21,15 +20,16 @@ if (typeof window !== "undefined") {
         db = getFirestore(app);
         auth = getAuth(app);
         
-        // Inicialização explícita com a URL do bucket para evitar falhas de "default bucket"
-        const bucketUrl = firebaseConfig.storageBucket ? `gs://${firebaseConfig.storageBucket}` : undefined;
-        storage = getStorage(app, bucketUrl);
+        // Inicialização robusta: se o bucket estiver vazio no .env, tenta usar o padrão do app
+        const bucketName = firebaseConfig.storageBucket;
+        storage = bucketName ? getStorage(app, `gs://${bucketName}`) : getStorage(app);
         
-        console.log("💎 LK RAMOS: Núcleo Firebase inicializado.", {
-            bucket: firebaseConfig.storageBucket || "PENDENTE"
+        console.log("💎 LK RAMOS: Firebase carregado.", {
+            bucketConfigurado: bucketName || "USANDO PADRÃO/VAZIO",
+            projectId: firebaseConfig.projectId
         });
     } catch (error) {
-        console.error("❌ Falha crítica ao inicializar Firebase:", error);
+        console.error("❌ Erro na inicialização do Firebase:", error);
     }
 }
 
