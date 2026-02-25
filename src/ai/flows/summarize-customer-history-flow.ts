@@ -27,8 +27,14 @@ const SummarizeCustomerHistoryInputSchema = z.object({
 });
 export type SummarizeCustomerHistoryInput = z.infer<typeof SummarizeCustomerHistoryInputSchema>;
 
+// O esquema de saída da Flow continua sendo uma string para compatibilidade com o componente UI
 const SummarizeCustomerHistoryOutputSchema = z.string().describe('Um resumo analítico e bem formatado do histórico do cliente.');
 export type SummarizeCustomerHistoryOutput = z.infer<typeof SummarizeCustomerHistoryOutputSchema>;
+
+// Esquema interno do prompt para garantir que a IA retorne JSON válido
+const PromptOutputSchema = z.object({
+  analysis: z.string().describe('O resumo estratégico detalhado e formatado.'),
+});
 
 export async function summarizeCustomerHistory(input: SummarizeCustomerHistoryInput): Promise<SummarizeCustomerHistoryOutput> {
   return summarizeCustomerHistoryFlow(input);
@@ -37,7 +43,15 @@ export async function summarizeCustomerHistory(input: SummarizeCustomerHistoryIn
 const prompt = ai.definePrompt({
   name: 'summarizeCustomerHistoryPrompt',
   input: { schema: SummarizeCustomerHistoryInputSchema },
-  output: { schema: z.string() },
+  output: { schema: PromptOutputSchema },
+  config: {
+    safetySettings: [
+      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+    ],
+  },
   prompt: `Você é um assistente financeiro de elite da LK RAMOS INVESTIMENTOS.
 Sua missão é gerar uma análise estratégica resumida do perfil do cliente {{{customerName}}}.
 
@@ -49,7 +63,7 @@ HISTÓRICO DE OPERAÇÕES:
 OBSERVAÇÕES ADICIONAIS:
 {{{customerObservations}}}
 
-ESTRUTURA DO RESUMO (USE ESTE FORMATO):
+ESTRUTURA DO RESUMO (Retorne no campo "analysis"):
 1. 📈 **Análise Financeira**: Resuma o volume total e a rentabilidade (comissões). Mencione se o cliente tem alta taxa de aprovação ou muitas reprovações.
 2. 🤝 **Perfil de Relacionamento**: Baseado nas observações, qual o comportamento dele? (Ex: busca urgência, fiel a um banco, cliente difícil, etc).
 3. 🚀 **Recomendação de Ouro**: Qual o próximo passo óbvio? (Ex: Oferecer Refinanciamento pois o último contrato tem 1 ano, ou aguardar margem livre).
@@ -65,11 +79,22 @@ const summarizeCustomerHistoryFlow = ai.defineFlow(
     outputSchema: SummarizeCustomerHistoryOutputSchema,
   },
   async input => {
-    // Se não houver propostas e nem observações, retorne uma mensagem padrão.
+    // Validação básica de dados
     if (input.proposals.length === 0 && !input.customerObservations) {
         return 'Não há dados suficientes para gerar um resumo sobre este cliente. Adicione propostas ou observações para obter uma análise estratégica.';
     }
-    const { output } = await prompt(input);
-    return output || 'A IA não conseguiu processar os dados no momento. Por favor, tente novamente.';
+
+    try {
+        const { output } = await prompt(input);
+        
+        if (!output || !output.analysis) {
+            throw new Error('Resposta da IA veio vazia ou malformada.');
+        }
+
+        return output.analysis;
+    } catch (error) {
+        console.error("Summarize Flow Error:", error);
+        return 'A IA não conseguiu processar os dados no momento devido a um erro técnico ou filtro de segurança. Por favor, tente novamente em alguns instantes.';
+    }
   }
 );
