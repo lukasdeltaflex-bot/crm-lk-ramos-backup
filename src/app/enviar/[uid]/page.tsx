@@ -150,7 +150,7 @@ export default function LeadCapturePage() {
                     toast({
                         variant: 'destructive',
                         title: 'Falha de Conexão (CORS)',
-                        description: 'O servidor do Google bloqueou o upload por falta de configuração de Origem. Isso requer ajuste no Console do Cloud.'
+                        description: 'O servidor do Google bloqueou o upload. Rode o comando gsutil CORS no terminal com o bucket correto.'
                     });
                 }
                 
