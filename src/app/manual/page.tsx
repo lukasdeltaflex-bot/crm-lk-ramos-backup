@@ -35,7 +35,8 @@ import {
     Pencil,
     Star,
     Cake,
-    ListTodo
+    ListTodo,
+    AlertTriangle
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -210,9 +211,18 @@ export default function ManualPage() {
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
-                        <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
-                            <h4 className="font-bold mb-2">Campos Obrigatórios</h4>
-                            <p className="text-xs text-muted-foreground">Para garantir a rastreabilidade financeira, o sistema exige o preenchimento de: **Nº de Proposta**, **Banco Digitado**, **Operador** e **Promotora**. Sem estes dados, o registro não será salvo.</p>
+                        <div className="space-y-4">
+                            <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
+                                <h4 className="font-bold mb-2">Campos Obrigatórios</h4>
+                                <p className="text-xs text-muted-foreground">Para garantir a rastreabilidade financeira, o sistema exige o preenchimento de: **Nº de Proposta**, **Banco Digitado**, **Operador** e **Promotora**. Sem estes dados, o registro não será salvo.</p>
+                            </div>
+                            <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/20">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <AlertTriangle className="h-4 w-4 text-red-600" />
+                                    <h4 className="font-bold">Verificação de Duplicidade</h4>
+                                </div>
+                                <p className="text-xs text-muted-foreground">O sistema impede o cadastro de duas propostas com o mesmo número. Caso você tente duplicar um lançamento acidentalmente, um alerta aparecerá em tempo real no campo **Nº de Proposta**.</p>
+                            </div>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
@@ -221,7 +231,7 @@ export default function ManualPage() {
                 <AccordionItem value="tags-management" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-pink-100 text-pink-600"><Tags className="h-5 w-5" /></div>
+                            <div className="p-2 rounded-xl bg-pink-100 text-pink-600"><Tags className="h-4 w-4" /></div>
                             <div className="text-left">
                                 <p className="font-bold text-sm">8. Gestão de Relacionamento (Tags)</p>
                                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Segmentação e Símbolos Visuais</p>

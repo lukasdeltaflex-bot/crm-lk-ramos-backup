@@ -254,11 +254,21 @@ export function ProposalForm({
   const selectedCustomerId = watch('customerId');
   const currentStatusValue = watch('status');
   const watchDateDigitized = watch('dateDigitized');
+  const watchProposalNumber = watch('proposalNumber');
   const checklist = watch('checklist') || {};
 
   const selectedCustomer = useMemo(() => {
     return customers.find(c => c.id === selectedCustomerId);
   }, [customers, selectedCustomerId]);
+
+  // 🕵️ VERIFICADOR DE DUPLICIDADE EM TEMPO REAL
+  const isDuplicateProposal = useMemo(() => {
+    if (!watchProposalNumber || watchProposalNumber.trim() === '') return false;
+    return allProposals.some(p => 
+        p.proposalNumber === watchProposalNumber.trim() && 
+        p.id !== proposal?.id
+    );
+  }, [watchProposalNumber, allProposals, proposal?.id]);
 
   // AUTOMATIZAÇÃO: Seleção de Benefício Único
   useEffect(() => {
@@ -301,6 +311,15 @@ export function ProposalForm({
   }, [commissionBase, commissionPercentage, grossAmount, netAmount, setValue, isReadOnly]);
 
   function handleFormSubmit(data: ProposalFormValues) {
+    if (isDuplicateProposal) {
+        toast({
+            variant: 'destructive',
+            title: '⚠️ IMPOSSÍVEL SALVAR',
+            description: 'Já existe uma proposta cadastrada com este número.'
+        });
+        return;
+    }
+
     const convertToIso = (dateStr?: string) => {
         if (!dateStr || dateStr.trim() === '') return null;
         try {
@@ -590,7 +609,23 @@ export function ProposalForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Nº de Proposta *</FormLabel>
-                      <FormControl><Input placeholder="Contrato" {...field} value={field.value ?? ''} readOnly={isReadOnly || isSaving} className="font-bold"/></FormControl>
+                      <FormControl>
+                        <div className="relative">
+                            <Input 
+                                placeholder="Contrato" 
+                                {...field} 
+                                value={field.value ?? ''} 
+                                readOnly={isReadOnly || isSaving} 
+                                className={cn("font-bold", isDuplicateProposal && "border-red-500 bg-red-50")}
+                            />
+                            {isDuplicateProposal && (
+                                <AlertTriangle className="absolute right-3 top-2.5 h-5 w-5 text-red-500 animate-pulse" />
+                            )}
+                        </div>
+                      </FormControl>
+                      {isDuplicateProposal && (
+                          <p className="text-[10px] font-bold text-red-600 uppercase mt-1 animate-in slide-in-from-top-1">⚠️ Este número já existe em sua base.</p>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -844,9 +879,13 @@ export function ProposalForm({
                 </h3>
                 {!currentProposalId ? (
                     <Alert className="bg-secondary/50 border-none">
-                        <Info className="h-4 w-4" />
-                        <AlertTitle className="text-xs font-bold uppercase">Upload Bloqueado</AlertTitle>
-                        <AlertDescription className='text-[10px]'>Salve a proposta antes de anexar arquivos.</AlertDescription>
+                        <div className="flex items-center gap-3">
+                            <Info className="h-4 w-4" />
+                            <div>
+                                <AlertTitle className="text-xs font-bold uppercase">Upload Bloqueado</AlertTitle>
+                                <AlertDescription className='text-[10px]'>Salve a proposta antes de anexar arquivos.</AlertDescription>
+                            </div>
+                        </div>
                     </Alert>
                 ) : (
                     <ProposalAttachmentUploader 
@@ -862,7 +901,11 @@ export function ProposalForm({
         </ScrollArea>
         <div className="flex justify-end items-center pt-8 border-t bg-background">
             {!isReadOnly && (
-                <Button type="submit" disabled={isSaving} className="rounded-full px-10 font-black uppercase tracking-widest bg-[#00AEEF] hover:bg-[#0096D1] shadow-lg shadow-[#00AEEF]/20 transition-all border-none">
+                <Button 
+                    type="submit" 
+                    disabled={isSaving || isDuplicateProposal} 
+                    className="rounded-full px-10 font-black uppercase tracking-widest bg-[#00AEEF] hover:bg-[#0096D1] shadow-lg shadow-[#00AEEF]/20 transition-all border-none"
+                >
                     {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...</> : 'Salvar Proposta'}
                 </Button>
             )}
