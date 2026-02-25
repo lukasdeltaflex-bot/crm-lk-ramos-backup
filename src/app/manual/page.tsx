@@ -67,7 +67,7 @@ export default function ManualPage() {
                                     <Sparkles className="h-4 w-4 text-orange-600" />
                                     <h4 className="font-bold">Análise Estratégica IA</h4>
                                 </div>
-                                <p className="text-xs text-muted-foreground">Dentro da ficha do cliente, o botão "Gerar Consultoria" entrega uma análise profunda. A IA cruza datas de contratos para sugerir o momento exato de um refinanciamento.</p>
+                                <p className="text-xs text-muted-foreground">Dentro da ficha do cliente, o botão "Gerar Consultoria" entrega uma análise profunda. A IA cruza dicas de datas de contratos para sugerir o momento exato de um refinanciamento.</p>
                             </div>
                             <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
                                 <div className="flex items-center gap-2 mb-2">
@@ -271,7 +271,7 @@ export default function ManualPage() {
                             <ul className="mt-3 space-y-2">
                                 <li className="flex items-center gap-2 text-xs"><Trophy className="h-3 w-3 text-amber-600" /> <strong>Contrato Ouro</strong>: O maior valor de proposta paga até agora no mês.</li>
                                 <li className="flex items-center gap-2 text-xs"><Zap className="h-3 w-3 text-blue-600" /> <strong>Pico de Produção</strong>: O maior volume financeiro digitado em um único dia.</li>
-                                <li className="flex items-center gap-2 text-xs"><Star className="h-3 w-3 text-purple-600" /> <strong>Estrela da Base</strong>: O cliente que mais gerou volume de contratos PAGOS no período.</li>
+                                <li className="flex items-center gap-2 text-xs"><Star className="h-3 w-3 text-purple-600" /> <strong>Estrela da Base</strong>: O cliente que mais gerou volume de contratos PAGOS no período (Exibe Nome e Sobrenome).</li>
                             </ul>
                         </div>
                     </AccordionContent>
