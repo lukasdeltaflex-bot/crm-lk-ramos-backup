@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
 import { useDoc, useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import { doc, collection, query, where, updateDoc } from 'firebase/firestore';
+import { doc, collection, query, where, updateDoc, setDoc } from 'firebase/firestore';
 import type { Customer, Proposal, UserSettings } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -35,6 +35,7 @@ import {
     CreditCard,
     CircleDollarSign,
     Tag,
+    Pencil,
     CreditCard as CardIcon
 } from 'lucide-react';
 import { format, parse, differenceInMonths, isValid as isValidDate } from 'date-fns';
@@ -59,6 +60,7 @@ import { generateSalesPitch } from '@/ai/flows/generate-sales-pitch-flow';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import { ProposalsStatusTable } from '@/components/dashboard/proposals-status-table';
 import { BankIcon } from '@/components/bank-icon';
+import { CustomerForm } from '../customer-form';
 
 const CopyButton = ({ text, label }: { text: string | undefined; label: string }) => {
     if (!text) return null;
@@ -74,7 +76,7 @@ const CopyButton = ({ text, label }: { text: string | undefined; label: string }
     );
 }
 
-const CustomerInfoCard = ({ customer, onExportDossier, onToggleStatus, onGeneratePitch, userSettings }: any) => {
+const CustomerInfoCard = ({ customer, onExportDossier, onToggleStatus, onGeneratePitch, onEdit, userSettings }: any) => {
     const age = getAge(customer.birthDate);
     const isInactive = customer.status === 'inactive';
     const showLogos = userSettings?.showBankLogos ?? true;
@@ -117,6 +119,7 @@ const CustomerInfoCard = ({ customer, onExportDossier, onToggleStatus, onGenerat
                     </div>
                     <div className="flex items-center gap-2 print:hidden">
                         <Button variant="outline" size="sm" className="h-10 px-4 rounded-full font-bold bg-orange-500/10 border-orange-500/20 text-orange-600" onClick={onGeneratePitch}><Zap className="mr-2 h-4 w-4 fill-current" />Smart Pitch IA</Button>
+                        <Button variant="outline" size="sm" className="h-10 px-4 rounded-full font-bold border-primary/20 bg-primary/5 text-primary" onClick={onEdit}><Pencil className="mr-2 h-4 w-4" /> Editar Cadastro</Button>
                         <Button variant="outline" size="sm" className={cn("h-10 px-4 rounded-full font-bold", isInactive ? "text-green-600" : "text-destructive")} onClick={onToggleStatus}>{isInactive ? <><UserCheck className="mr-2 h-4 w-4" /> Reativar</> : <><UserX className="mr-2 h-4 w-4" /> Inativar</>}</Button>
                         <Button variant="outline" size="sm" className="h-10 px-4 rounded-full bg-primary/5 border-primary/20 text-primary font-bold" onClick={onExportDossier}><FileBadge className="mr-2 h-4 w-4" />Dossiê (PDF)</Button>
                         <Button variant="outline" size="sm" className="h-10 px-4 rounded-full font-bold" onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" />Imprimir</Button>
@@ -260,14 +263,18 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
   const [isGeneratingPitch, setIsGeneratingPitch] = React.useState(false);
   const [generatedPitch, setGeneratedPitch] = React.useState('');
   const [dialogData, setDialogData] = React.useState<{ title: string; proposals: Proposal[] } | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+  const [isSaving, setIsSaving] = React.useState(false);
 
   const customerDocRef = useMemoFirebase(() => customerId && firestore ? doc(firestore, 'customers', customerId) : null, [firestore, customerId]);
   const proposalsQuery = useMemoFirebase(() => user && firestore && customerId ? query(collection(firestore, 'loanProposals'), where('ownerId', '==', user.uid), where('customerId', '==', customerId)) : null, [firestore, user, customerId]);
   const settingsDocRef = useMemoFirebase(() => user && firestore ? doc(firestore, 'userSettings', user.uid) : null, [firestore, user]);
+  const allCustomersQuery = useMemoFirebase(() => user && firestore ? query(collection(firestore, 'customers'), where('ownerId', '==', user.uid)) : null, [firestore, user]);
 
   const { data: customer, isLoading: isCustomerLoading } = useDoc<Customer>(customerDocRef);
   const { data: proposals, isLoading: areProposalsLoading } = useCollection<Proposal>(proposalsQuery);
   const { data: userSettings } = useDoc<UserSettings>(settingsDocRef);
+  const { data: allCustomers } = useCollection<Customer>(allCustomersQuery);
 
   const businessStats = React.useMemo(() => {
     if (!proposals) return { count: 0, volume: 0, commission: 0, proposalsByCommission: [] };
@@ -413,6 +420,28 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
     } catch (e) { setIsPitchModalOpen(false); } finally { setIsGeneratingPitch(false); }
   };
 
+  const handleEditSubmit = async (formData: any) => {
+    if (!firestore || !user || !customer) return;
+    setIsSaving(true);
+    try {
+        const docRef = doc(firestore, 'customers', customer.id);
+        const finalData = cleanFirestoreData({
+            ...formData,
+            id: customer.id,
+            ownerId: user.uid,
+            numericId: customer.numericId
+        });
+
+        await setDoc(docRef, finalData, { merge: true });
+        toast({ title: 'Cadastro Atualizado!' });
+        setIsEditDialogOpen(false);
+    } catch (error) {
+        toast({ variant: 'destructive', title: 'Erro ao salvar' });
+    } finally {
+        setIsSaving(false);
+    }
+  };
+
   if (isCustomerLoading || areProposalsLoading) return <AppLayout><div className="space-y-4"><div className="h-48 w-full bg-muted animate-pulse rounded-lg" /><div className="h-96 w-full bg-muted animate-pulse rounded-lg" /></div></AppLayout>;
   if (!customer) return <AppLayout><PageHeader title="Não encontrado" /></AppLayout>;
 
@@ -423,7 +452,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
             <Alert className="bg-amber-50 border-amber-200 animate-in slide-in-from-top duration-500 rounded-2xl"><Sparkles className="h-5 w-5 text-amber-600" /><AlertTitle className="text-amber-800 font-bold uppercase">Oportunidade Identificada!</AlertTitle><AlertDescription className="text-amber-700 text-sm">Contratos pagos há mais de 12 meses. Momento ideal para Refinanciamento.</AlertDescription></Alert>
         )}
         
-        <CustomerInfoCard customer={customer} onExportDossier={handleExportDossier} onToggleStatus={handleToggleStatus} onGeneratePitch={handleGeneratePitch} userSettings={userSettings} />
+        <CustomerInfoCard customer={customer} onExportDossier={handleExportDossier} onToggleStatus={handleToggleStatus} onGeneratePitch={handleGeneratePitch} onEdit={() => setIsEditDialogOpen(true)} userSettings={userSettings} />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="cursor-pointer" onClick={() => setDialogData({ title: "Histórico Total de Contratos", proposals: proposals || [] })}>
@@ -477,6 +506,19 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
                     <ProposalsStatusTable proposals={dialogData?.proposals || []} customers={[customer]} />
                 </div>
             </DialogContent>
+      </Dialog>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-4xl">
+            <DialogHeader><DialogTitle>Editar Cadastro do Cliente</DialogTitle></DialogHeader>
+            <CustomerForm 
+                customer={customer} 
+                allCustomers={allCustomers || []} 
+                userSettings={userSettings} 
+                onSubmit={handleEditSubmit}
+                isSaving={isSaving}
+            />
+        </DialogContent>
       </Dialog>
     </AppLayout>
   );
