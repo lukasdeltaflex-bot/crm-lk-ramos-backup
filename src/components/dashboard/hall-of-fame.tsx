@@ -70,6 +70,15 @@ export function HallOfFame({ proposals, customers, isLoading }: HallOfFameProps)
 
   if (!stats) return null;
 
+  const getFullShortName = (name?: string) => {
+    if (!name) return '---';
+    const parts = name.split(' ');
+    if (parts.length > 1) {
+        return `${parts[0]} ${parts[1]}`;
+    }
+    return parts[0];
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Card 1: Contrato Ouro */}
@@ -119,8 +128,8 @@ export function HallOfFame({ proposals, customers, isLoading }: HallOfFameProps)
                 </div>
                 <div className="space-y-0.5 overflow-hidden">
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-700/60 dark:text-purple-400/60">Cliente Estrela do Mês</p>
-                    <p className="text-xl font-black text-foreground truncate">
-                        {stats.bestCustomer ? stats.bestCustomer.name.split(' ')[0] : '---'}
+                    <p className="text-xl font-black text-foreground truncate uppercase">
+                        {stats.bestCustomer ? getFullShortName(stats.bestCustomer.name) : '---'}
                     </p>
                     <p className="text-[9px] font-bold text-muted-foreground uppercase opacity-60 truncate">
                         {stats.bestCustomer ? `Pagos: ${formatCurrency(stats.bestCustomerVolume)}` : "Quem será o próximo?"}
