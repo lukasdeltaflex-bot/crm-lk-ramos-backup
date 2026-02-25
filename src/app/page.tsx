@@ -46,6 +46,7 @@ import {
 import { CommissionChart } from '@/components/dashboard/commission-chart';
 import { ProductBreakdownChart } from '@/components/dashboard/product-breakdown-chart';
 import { RadarWidget } from '@/components/dashboard/radar-widget';
+import { HallOfFame } from '@/components/dashboard/hall-of-fame';
 import { toast } from '@/hooks/use-toast';
 
 export default function DashboardPage() {
@@ -164,7 +165,6 @@ export default function DashboardPage() {
 
     const safeVal = (v: any) => (v === null || v === undefined || isNaN(v)) ? 0 : Number(v);
 
-    // BLINDAGEM DE DATAS: Filtra registros com datas corrompidas para evitar crash
     const digitizedInPeriod = proposals.filter(p => {
         if (!p.dateDigitized) return false;
         const d = new Date(p.dateDigitized);
@@ -428,6 +428,10 @@ export default function DashboardPage() {
                     sparklineData={stats.statusAnalysis['Reprovado'].trend}
                 />
             </div>
+        </div>
+
+        <div className="w-full">
+            <HallOfFame proposals={proposals || []} customers={customers || []} isLoading={proposalsLoading || !customers} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

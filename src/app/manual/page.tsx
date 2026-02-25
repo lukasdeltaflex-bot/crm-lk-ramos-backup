@@ -253,33 +253,26 @@ export default function ManualPage() {
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 9. MARKETING PESSOAL E PERFORMANCE */}
-                <AccordionItem value="personal-branding" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
+                {/* 9. HALL DA FAMA (DASHBOARD) */}
+                <AccordionItem value="hall-of-fame" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-purple-100 text-purple-600"><UserCheck className="h-5 w-5" /></div>
+                            <div className="p-2 rounded-xl bg-amber-100 text-amber-600"><Trophy className="h-5 w-5 fill-amber-500" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">9. Perfil de Elite e Autoridade</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Recordes e Identidade Profissional</p>
+                                <p className="font-bold text-sm">9. Hall da Fama Mensal (Dashboard)</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Recordes e Conquistas do Mês</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Trophy className="h-4 w-4 text-amber-600" />
-                                    <h4 className="font-bold">Hall da Fama</h4>
-                                </div>
-                                <p className="text-xs text-muted-foreground">O menu "Meu Perfil" destaca seus recordes: Maior Contrato Pago, Melhor Mês e Comissões Acumuladas.</p>
-                            </div>
-                            <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/20">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Share2 className="h-4 w-4 text-purple-600" />
-                                    <h4 className="font-bold">Assinatura Profissional</h4>
-                                </div>
-                                <p className="text-xs text-muted-foreground">Gere assinaturas automáticas para WhatsApp com seus dados e a marca da LK RAMOS com um clique.</p>
-                            </div>
+                        <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
+                            <h4 className="font-bold mb-2">Monitoramento de Performance</h4>
+                            <p className="text-xs text-muted-foreground">O Dashboard agora apresenta seus recordes do mês vigente em tempo real:</p>
+                            <ul className="mt-3 space-y-2">
+                                <li className="flex items-center gap-2 text-xs"><Trophy className="h-3 w-3 text-amber-600" /> <strong>Contrato Ouro</strong>: O maior valor de proposta paga até agora no mês.</li>
+                                <li className="flex items-center gap-2 text-xs"><Zap className="h-3 w-3 text-blue-600" /> <strong>Pico de Produção</strong>: O maior volume financeiro digitado em um único dia.</li>
+                                <li className="flex items-center gap-2 text-xs"><Star className="h-3 w-3 text-purple-600" /> <strong>Estrela da Base</strong>: O cliente que mais gerou volume de negócios no período.</li>
+                            </ul>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
