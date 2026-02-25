@@ -188,7 +188,7 @@ export default function ManualPage() {
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
-                        <div className="p-4 rounded-xl bg-pink-500/5 border border-pink-500/20">
+                        <div className="p-4 rounded-xl bg-pink-500/5 border pink-500/20">
                             <h4 className="font-bold mb-2">Visão Mensal Integrada</h4>
                             <p className="text-xs text-muted-foreground">A ferramenta de aniversariantes agora faz parte da página de **Clientes**. Basta clicar na aba **"Aniversariantes"** para ver o calendário. Clique em qualquer nome para gerar uma mensagem personalizada com IA e enviar direto pelo WhatsApp.</p>
                         </div>
@@ -289,17 +289,17 @@ export default function ManualPage() {
                             <p>Esta ferramenta transfere a digitação de dados básicos e o envio de documentos para o próprio cliente, garantindo 100% de precisão.</p>
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
-                                    <h4 className="font-bold text-xs uppercase mb-2">Como usar o Link</h4>
-                                    <p className="text-xs text-muted-foreground">No Dashboard, logo abaixo dos Rankings, clique em **"Copiar Link de Envio"**. Mande este link pelo WhatsApp para o interessado. Ele verá uma página com a sua logomarca para preencher os dados.</p>
+                                    <h4 className="font-bold text-xs uppercase mb-2">Integridade de Dados</h4>
+                                    <p className="text-xs text-muted-foreground">O portal exige obrigatoriamente **Nome, CPF (validado), Nascimento e WhatsApp**. CPFs inválidos são bloqueados automaticamente.</p>
                                 </div>
                                 <div className="p-4 rounded-xl bg-green-500/5 border border-green-500/20">
                                     <h4 className="font-bold text-xs uppercase mb-2">Revisão e Aprovação</h4>
-                                    <p className="text-xs text-muted-foreground">Quando o cliente envia, um alerta piscante aparece no seu Dashboard. Clique em **"Fichas Recebidas"**, veja as fotos do RG/Extrato e clique em **"Aprovar"** para criar o cliente automaticamente.</p>
+                                    <p className="text-xs text-muted-foreground">Quando o cliente envia, um alerta aparece no Dashboard. Clique em **"Fichas Recebidas"** e em **"Aprovar"** para criar o cliente automaticamente.</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 p-3 bg-muted/20 rounded-lg border-2 border-dashed">
                                 <ArrowRight className="h-4 w-4 text-primary" />
-                                <p className="text-[10px] font-black uppercase text-muted-foreground">Isso economiza tempo operacional precioso e evita erros de digitação de CPF ou NB.</p>
+                                <p className="text-[10px] font-black uppercase text-muted-foreground">O limite de anexo é de **15MB** por arquivo, suportando PDFs pesados e fotos 4K.</p>
                             </div>
                         </div>
                     </AccordionContent>
@@ -342,7 +342,7 @@ export default function ManualPage() {
                         <span className="text-[10px] font-black uppercase">Blindagem Nuclear Ativa</span>
                     </div>
                     <p className="text-[9px] text-muted-foreground mt-2 leading-tight">
-                        Versão 4.1.0 - Dashboard Estratégico e Portal de Leads.
+                        Versão 4.2.0 - Validação de CPF e Limites Expandidos.
                     </p>
                 </CardContent>
             </Card>
