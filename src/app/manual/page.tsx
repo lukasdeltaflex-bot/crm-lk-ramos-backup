@@ -191,8 +191,8 @@ export default function ManualPage() {
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
                         <div className="p-4 rounded-xl bg-pink-500/5 border border-pink-500/20">
-                            <h4 className="font-bold mb-2">Visão Mensal de Parabéns</h4>
-                            <p className="text-xs text-muted-foreground">Acesse o menu <strong>"Aniversariantes"</strong> para ver o calendário completo do mês. Clique em qualquer nome para gerar uma mensagem personalizada com IA e enviar direto pelo WhatsApp.</p>
+                            <h4 className="font-bold mb-2">Visão Mensal Integrada</h4>
+                            <p className="text-xs text-muted-foreground">A ferramenta de aniversariantes agora faz parte da página de **Clientes**. Basta clicar na aba **"Aniversariantes"** para ver o calendário. Clique em qualquer nome para gerar uma mensagem personalizada com IA e enviar direto pelo WhatsApp.</p>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
@@ -291,7 +291,7 @@ export default function ManualPage() {
                         <span className="text-[10px] font-black uppercase">Blindagem Nuclear Ativa</span>
                     </div>
                     <p className="text-[9px] text-muted-foreground mt-2 leading-tight">
-                        Versão 3.8.0 - Smart Tags e Análise Comportamental Ativa.
+                        Versão 3.9.0 - Centralização de Gestão de Clientes e Relacionamento.
                     </p>
                 </CardContent>
             </Card>

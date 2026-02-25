@@ -1,39 +1,28 @@
 'use client';
 
-import React from 'react';
-import { AppLayout } from '@/components/app-layout';
-import { PageHeader } from '@/components/page-header';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
-import type { Customer } from '@/lib/types';
-import { BirthdayCalendar } from '@/components/customers/birthday-calendar';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function BirthdaysPage() {
-  const { user } = useUser();
-  const firestore = useFirestore();
-
-  const customersQuery = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    return query(collection(firestore, 'customers'), where('ownerId', '==', user.uid));
-  }, [firestore, user]);
-
-  const { data: customers, isLoading } = useCollection<Customer>(customersQuery);
+/**
+ * 🔄 REDIRECIONAMENTO ESTRATÉGICO
+ * A funcionalidade de Aniversários foi migrada para a aba interna de Clientes
+ * para centralizar a gestão da base em um único local.
+ */
+export default function BirthdaysRedirect() {
+  const router = useRouter();
+  
+  useEffect(() => {
+    router.replace('/customers?tab=birthdays');
+  }, [router]);
 
   return (
-    <AppLayout>
-      <div className="max-w-6xl mx-auto">
-        <PageHeader title="Central de Aniversariantes" />
-        
-        {isLoading ? (
-            <div className="space-y-6">
-                <Skeleton className="h-24 w-full rounded-2xl" />
-                <Skeleton className="h-[600px] w-full rounded-[2rem]" />
-            </div>
-        ) : (
-            <BirthdayCalendar customers={customers || []} />
-        )}
+    <div className="flex h-screen items-center justify-center">
+      <div className="text-center space-y-4">
+          <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto opacity-20" />
+          <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest animate-pulse">
+              Redirecionando para a Central de Clientes...
+          </p>
       </div>
-    </AppLayout>
+    </div>
   );
 }

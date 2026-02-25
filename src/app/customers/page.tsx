@@ -1,4 +1,3 @@
-
 'use client';
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -7,7 +6,7 @@ import { PageHeader } from '@/components/page-header';
 import { CustomerDataTable, type CustomerDataTableHandle } from './data-table';
 import { getColumns } from './columns';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, FileDown, UserCheck, UserX, Trash2, Sparkles, Landmark, X, Tag } from 'lucide-react';
+import { PlusCircle, FileDown, UserCheck, UserX, Trash2, Sparkles, Landmark, X, Tag, Cake } from 'lucide-react';
 import { CustomerForm } from './customer-form';
 import type { Customer, UserSettings } from '@/lib/types';
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from '@/firebase';
@@ -51,6 +50,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { BankIcon } from '@/components/bank-icon';
+import { BirthdayCalendar } from '@/components/customers/birthday-calendar';
 import * as configData from '@/lib/config-data';
 
 function CustomersPageContent() {
@@ -67,7 +67,10 @@ function CustomersPageContent() {
   const [rowSelection, setRowSelection] = React.useState<Record<string, boolean>>({});
   const [isSaving, setIsSaving] = React.useState(false);
   const tableRef = React.useRef<CustomerDataTableHandle>(null);
-  const [filter, setFilter] = React.useState('active');
+  
+  // Aba padrão baseada no parâmetro de URL ou 'active'
+  const initialTab = searchParams.get('tab') || 'active';
+  const [filter, setFilter] = React.useState(initialTab);
   
   // Filtros Avançados
   const [rmcFilter, setRmcFilter] = React.useState('all');
@@ -95,10 +98,12 @@ function CustomersPageContent() {
     if (!customers) return [];
     
     return customers.filter(c => {
+        // Filtro de Aba (Ativo/Inativo) - Aniversariantes usa todos os clientes internamente no componente
+        if (filter === 'birthdays') return false;
+
         // Filtro de Anonimização
         if (c.name === 'Cliente Removido') return false;
 
-        // Filtro de Aba (Ativo/Inativo)
         const age = getAge(c.birthDate);
         const isStatusMatch = filter === 'active' 
             ? (c.status !== 'inactive' && age < 75)
@@ -269,7 +274,7 @@ function CustomersPageContent() {
   return (
     <>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-        <PageHeader title="Clientes" />
+        <PageHeader title="Central de Clientes" />
         <div className="flex items-center gap-3 flex-wrap">
              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -282,7 +287,7 @@ function CustomersPageContent() {
                 </DropdownMenuContent>
             </DropdownMenu>
             
-            {selectedCount > 0 && (
+            {selectedCount > 0 && filter !== 'birthdays' && (
                 <div className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-300">
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -356,74 +361,86 @@ function CustomersPageContent() {
                 Inativos
                 <Badge variant="secondary" className="bg-white/20 text-white border-none ml-1.5 h-5 min-w-[20px] p-0 flex items-center justify-center rounded-full text-[10px] font-black">{inactiveCount}</Badge>
             </TabsTrigger>
+            <TabsTrigger 
+                value="birthdays" 
+                className={cn(
+                    "gap-2 rounded-full font-bold px-6 h-9 transition-all text-xs",
+                    "data-[state=active]:bg-pink-500 data-[state=active]:text-white shadow-none"
+                )}
+            >
+                <Cake className="h-3.5 w-3.5" />
+                Aniversariantes
+            </TabsTrigger>
             </TabsList>
         </Tabs>
 
-        <div className="flex items-center gap-3 flex-1 justify-end flex-wrap">
-            <div className="flex items-center gap-2">
-                <Select value={tagFilter} onValueChange={setTagFilter}>
-                    <SelectTrigger className="h-10 min-w-[160px] bg-background rounded-full text-[10px] font-black uppercase px-5 border-primary/20 text-primary shadow-sm hover:bg-primary/5 transition-colors">
-                        <div className="flex items-center gap-2">
-                            <Tag className="h-3.5 w-3.5 opacity-50" />
-                            <SelectValue placeholder="FILTRAR POR TAG" />
-                        </div>
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border-2">
-                        <SelectItem value="all" className="font-black text-[10px] uppercase">Todas as Tags</SelectItem>
-                        {availableTags.map(tag => (
-                            <SelectItem key={tag} value={tag} className="font-bold text-[11px] uppercase">{tag}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                {tagFilter !== 'all' && <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-primary" onClick={() => setTagFilter('all')}><X className="h-4 w-4" /></Button>}
-            </div>
+        {filter !== 'birthdays' && (
+            <div className="flex items-center gap-3 flex-1 justify-end flex-wrap">
+                <div className="flex items-center gap-2">
+                    <Select value={tagFilter} onValueChange={setTagFilter}>
+                        <SelectTrigger className="h-10 min-w-[160px] bg-background rounded-full text-[10px] font-black uppercase px-5 border-primary/20 text-primary shadow-sm hover:bg-primary/5 transition-colors">
+                            <div className="flex items-center gap-2">
+                                <Tag className="h-3.5 w-3.5 opacity-50" />
+                                <SelectValue placeholder="FILTRAR POR TAG" />
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-2">
+                            <SelectItem value="all" className="font-black text-[10px] uppercase">Todas as Tags</SelectItem>
+                            {availableTags.map(tag => (
+                                <SelectItem key={tag} value={tag} className="font-bold text-[11px] uppercase">{tag}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    {tagFilter !== 'all' && <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-primary" onClick={() => setTagFilter('all')}><X className="h-4 w-4" /></Button>}
+                </div>
 
-            <div className="flex items-center gap-2">
-                <Select value={rmcFilter} onValueChange={setRmcFilter}>
-                    <SelectTrigger className="h-10 min-w-[180px] bg-background rounded-full text-[10px] font-black uppercase px-5 border-orange-200 text-orange-600 shadow-sm hover:bg-orange-50 transition-colors">
-                        <div className="flex items-center gap-2">
-                            <Landmark className="h-3.5 w-3.5 opacity-50" />
-                            <SelectValue placeholder="BANCO RMC" />
-                        </div>
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border-2">
-                        <SelectItem value="all" className="font-black text-[10px] uppercase">Todos os Bancos RMC</SelectItem>
-                        {banks.map(b => (
-                            <SelectItem key={b} value={b} className="font-bold text-[11px] uppercase">
-                                <div className="flex items-center gap-3">
-                                    <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={showLogos} className="h-4 w-4" />
-                                    <span>{cleanBankName(b)}</span>
-                                </div>
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                {rmcFilter !== 'all' && <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-orange-600" onClick={() => setRmcFilter('all')}><X className="h-4 w-4" /></Button>}
-            </div>
+                <div className="flex items-center gap-2">
+                    <Select value={rmcFilter} onValueChange={setRmcFilter}>
+                        <SelectTrigger className="h-10 min-w-[180px] bg-background rounded-full text-[10px] font-black uppercase px-5 border-orange-200 text-orange-600 shadow-sm hover:bg-orange-50 transition-colors">
+                            <div className="flex items-center gap-2">
+                                <Landmark className="h-3.5 w-3.5 opacity-50" />
+                                <SelectValue placeholder="BANCO RMC" />
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-2">
+                            <SelectItem value="all" className="font-black text-[10px] uppercase">Todos os Bancos RMC</SelectItem>
+                            {banks.map(b => (
+                                <SelectItem key={b} value={b} className="font-bold text-[11px] uppercase">
+                                    <div className="flex items-center gap-3">
+                                        <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={showLogos} className="h-4 w-4" />
+                                        <span>{cleanBankName(b)}</span>
+                                    </div>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    {rmcFilter !== 'all' && <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-orange-600" onClick={() => setRmcFilter('all')}><X className="h-4 w-4" /></Button>}
+                </div>
 
-            <div className="flex items-center gap-2">
-                <Select value={rccFilter} onValueChange={setRccFilter}>
-                    <SelectTrigger className="h-10 min-w-[180px] bg-background rounded-full text-[10px] font-black uppercase px-5 border-blue-200 text-blue-600 shadow-sm hover:bg-blue-50 transition-colors">
-                        <div className="flex items-center gap-2">
-                            <Landmark className="h-3.5 w-3.5 opacity-50" />
-                            <SelectValue placeholder="BANCO RCC" />
-                        </div>
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border-2">
-                        <SelectItem value="all" className="font-black text-[10px] uppercase">Todos os Bancos RCC</SelectItem>
-                        {banks.map(b => (
-                            <SelectItem key={b} value={b} className="font-bold text-[11px] uppercase">
-                                <div className="flex items-center gap-3">
-                                    <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={showLogos} className="h-4 w-4" />
-                                    <span>{cleanBankName(b)}</span>
-                                </div>
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                {rccFilter !== 'all' && <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-blue-600" onClick={() => setRccFilter('all')}><X className="h-4 w-4" /></Button>}
+                <div className="flex items-center gap-2">
+                    <Select value={rccFilter} onValueChange={setRccFilter}>
+                        <SelectTrigger className="h-10 min-w-[180px] bg-background rounded-full text-[10px] font-black uppercase px-5 border-blue-200 text-blue-600 shadow-sm hover:bg-blue-50 transition-colors">
+                            <div className="flex items-center gap-2">
+                                <Landmark className="h-3.5 w-3.5 opacity-50" />
+                                <SelectValue placeholder="BANCO RCC" />
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-2">
+                            <SelectItem value="all" className="font-black text-[10px] uppercase">Todos os Bancos RCC</SelectItem>
+                            {banks.map(b => (
+                                <SelectItem key={b} value={b} className="font-bold text-[11px] uppercase">
+                                    <div className="flex items-center gap-3">
+                                        <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={showLogos} className="h-4 w-4" />
+                                        <span>{cleanBankName(b)}</span>
+                                    </div>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    {rccFilter !== 'all' && <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-blue-600" onClick={() => setRccFilter('all')}><X className="h-4 w-4" /></Button>}
+                </div>
             </div>
-        </div>
+        )}
       </div>
 
       <Dialog open={isDialog} onOpenChange={setIsDialog}>
@@ -445,13 +462,26 @@ function CustomersPageContent() {
         </DialogContent>
       </Dialog>
 
-      <CustomerDataTable 
-        columns={columns} 
-        data={filteredCustomers} 
-        isLoading={isCustomersLoading}
-        rowSelection={rowSelection}
-        setRowSelection={setRowSelection}
-       />
+      {filter === 'birthdays' ? (
+          isCustomersLoading ? (
+              <div className="space-y-6">
+                  <Skeleton className="h-24 w-full rounded-2xl" />
+                  <Skeleton className="h-[600px] w-full rounded-[2rem]" />
+              </div>
+          ) : (
+              <div className="animate-in fade-in duration-500">
+                  <BirthdayCalendar customers={customers || []} />
+              </div>
+          )
+      ) : (
+          <CustomerDataTable 
+            columns={columns} 
+            data={filteredCustomers} 
+            isLoading={isCustomersLoading}
+            rowSelection={rowSelection}
+            setRowSelection={setRowSelection}
+          />
+      )}
     </>
   );
 }

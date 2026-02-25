@@ -14,8 +14,6 @@ const links = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/customers', label: 'Clientes', icon: Users },
   { href: '/follow-ups', label: 'Retornos', icon: CalendarClock },
-  { href: '/birthdays', label: 'Aniversariantes', icon: Cake },
-  { href: '/propostas', label: 'Propostas', icon: FileText, hidden: true }, // Map legacy
   { href: '/proposals', label: 'Propostas', icon: FileText },
   { href: '/financial', label: 'Financeiro', icon: CircleDollarSign },
 ];
