@@ -147,7 +147,6 @@ export default function LeadCapturePage() {
                     fullError: error
                 });
 
-                // Alerta específico de CORS / Preflight
                 if (error.message.includes('CORS') || error.code === 'storage/unknown') {
                     const bucketName = storage.app.options.storageBucket || "studio-248448941-9c1c2.appspot.com";
                     setCorsErrorBucket(bucketName);
