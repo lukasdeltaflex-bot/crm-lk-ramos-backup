@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-nest';
+import { useParams } from 'next/navigation';
 import { useFirestore, useDoc, useMemoFirebase, useFirebase } from '@/firebase';
 import { doc, collection, setDoc } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -37,7 +37,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 export default function LeadCapturePage() {
-  const { uid } = useParams() as { uid: string };
+  const params = useParams();
+  const uid = params?.uid as string;
   const firestore = useFirestore();
   const { storage } = useFirebase();
   
@@ -242,7 +243,7 @@ export default function LeadCapturePage() {
 
   if (loadingSettings) {
     return (
-        <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-6">
+        <div className="min-h-screen flex items-center justify-center bg-background p-6">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
     );
@@ -250,17 +251,17 @@ export default function LeadCapturePage() {
 
   if (isSuccess) {
     return (
-        <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-6">
+        <div className="min-h-screen flex items-center justify-center bg-background p-6">
             <Card className="max-w-md w-full border-2 border-green-100 shadow-2xl rounded-[2.5rem] overflow-hidden text-center p-10 space-y-6">
                 <div className="h-20 w-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
                     <CheckCircle2 className="h-10 w-10 text-green-600" />
                 </div>
                 <div className="space-y-2">
-                    <h2 className="text-2xl font-black uppercase tracking-tight text-zinc-900">Dados Enviados!</h2>
+                    <h2 className="text-2xl font-black uppercase tracking-tight text-foreground">Dados Enviados!</h2>
                     <p className="text-muted-foreground font-medium">Recebemos sua ficha com sucesso. Nossa equipe entrará em contato em breve.</p>
                 </div>
                 <div className="pt-4">
-                    <p className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">LK RAMOS INVESTIMENTOS</p>
+                    <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">LK RAMOS INVESTIMENTOS</p>
                 </div>
             </Card>
         </div>
@@ -270,12 +271,12 @@ export default function LeadCapturePage() {
   const isCpfInvalid = formData.cpf.length === 14 && !validateCPF(formData.cpf);
 
   return (
-    <div className="min-h-screen bg-zinc-50 p-4 md:p-10 flex flex-col items-center">
+    <div className="min-h-screen bg-muted/30 p-4 md:p-10 flex flex-col items-center">
         <div className="mb-10 text-center space-y-4">
             {userSettings?.customLogoURL ? (
                 <img src={userSettings.customLogoURL} alt="Logo" className="h-16 mx-auto object-contain" />
             ) : (
-                <div className="h-12 w-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto">
+                <div className="h-12 w-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto border-2 border-primary/20">
                     <ShieldCheck className="h-6 w-6 text-primary" />
                 </div>
             )}
@@ -303,7 +304,9 @@ export default function LeadCapturePage() {
                                 <p>O servidor está recusando a conexão segura (Erro CORS).</p>
                                 <p className="font-bold">Rode estes comandos no terminal para liberar:</p>
                                 <div className="block bg-black text-white p-3 rounded mt-2 text-[10px] break-all leading-relaxed font-mono">
-                                    gsutil cors set cors.json gs://{corsErrorBucket}
+                                    {`echo '[{"origin": ["*"],"method": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],"responseHeader": ["Content-Type", "Authorization", "x-goog-resumable"],"maxAgeSeconds": 3600}]' > cors.json`}
+                                    <br /><br />
+                                    {`gsutil cors set cors.json gs://${corsErrorBucket}`}
                                 </div>
                             </AlertDescription>
                         </Alert>
@@ -482,7 +485,7 @@ export default function LeadCapturePage() {
                     <div className="bg-orange-50/5 p-4 rounded-2xl border border-orange-500/10 flex items-start gap-3">
                         <Info className="h-4 w-4 text-orange-600 mt-0.5 shrink-0" />
                         <p className="text-[10px] text-orange-700 leading-relaxed font-medium">
-                            <strong>Segurança LGPD:</strong> Seus dados são protegidos por criptografia de ponta a ponta e destinados exclusivamente para análise de crédito na LK Ramos.
+                            <strong>Segurança LGPD:</strong> Seus dados are protected by end-to-end encryption and intended solely for credit analysis at LK Ramos.
                         </p>
                     </div>
 
