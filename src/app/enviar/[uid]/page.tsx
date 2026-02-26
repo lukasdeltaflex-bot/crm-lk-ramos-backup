@@ -147,13 +147,13 @@ export default function LeadCapturePage() {
                     fullError: error
                 });
 
-                if (error.message.includes('CORS') || error.code === 'storage/unknown') {
+                if (error.code === 'storage/unknown' || error.message.includes('CORS')) {
                     const bucketName = storage.app.options.storageBucket || "studio-248448941-9c1c2.appspot.com";
                     setCorsErrorBucket(bucketName);
                     toast({
                         variant: 'destructive',
                         title: 'Conexão Bloqueada (CORS)',
-                        description: 'O servidor recusou a conexão. Verifique as instruções no alerta acima.'
+                        description: 'O servidor recusou a conexão.'
                     });
                 }
                 
@@ -162,7 +162,7 @@ export default function LeadCapturePage() {
             async () => {
                 try {
                     const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                    console.log(`✅ DIAGNÓSTICO: Upload finalizado com sucesso: ${downloadURL}`);
+                    console.log(`✅ DIAGNÓSTICO: Upload finalizado com success: ${downloadURL}`);
                     resolve({
                         name: file.name,
                         url: downloadURL,
@@ -197,11 +197,7 @@ export default function LeadCapturePage() {
                 setAttachments(prev => [...prev, attachment]);
             }
         } catch (err: any) {
-            let msg = "Erro desconhecido. Verifique o console (F12).";
-            if (err.code === 'storage/unauthorized') msg = "Acesso Negado. Verifique as Rules do Storage.";
-            if (err.message === 'storage-not-configured') msg = "Configuração de Storage não detectada.";
-            
-            toast({ variant: 'destructive', title: 'Falha no Upload', description: msg });
+            toast({ variant: 'destructive', title: 'Falha no Upload', description: "Erro ao enviar arquivo. Verifique o console." });
             break;
         }
     }
@@ -316,14 +312,14 @@ export default function LeadCapturePage() {
             <CardContent className="p-8">
                 <form onSubmit={handleSubmit} className="space-y-10">
                     {corsErrorBucket && (
-                        <Alert variant="destructive" className="border-2 animate-pulse">
+                        <Alert variant="destructive" className="border-2 animate-pulse mb-6">
                             <AlertTriangle className="h-5 w-5" />
-                            <AlertTitle className="font-bold">Ação Necessária no Console Google Cloud</AlertTitle>
+                            <AlertTitle className="font-bold">Ação Necessária para Habilitar Upload</AlertTitle>
                             <AlertDescription className="text-xs space-y-2">
-                                <p>O servidor de arquivos está bloqueando a conexão do seu navegador (Erro de Preflight/CORS).</p>
-                                <p className="font-bold">Rode este comando no Cloud Shell para liberar:</p>
-                                <code className="block bg-black text-white p-3 rounded mt-2 text-[10px] break-all">
-                                    gsutil cors set cors.json gs://{corsErrorBucket}
+                                <p>O servidor está recusando a conexão segura (Erro CORS).</p>
+                                <p className="font-bold">Rode estes comandos no terminal para liberar:</p>
+                                <code className="block bg-black text-white p-3 rounded mt-2 text-[10px] break-all leading-relaxed font-mono">
+                                    {"gsutil cors set cors.json gs://" + corsErrorBucket}
                                 </code>
                             </AlertDescription>
                         </Alert>
