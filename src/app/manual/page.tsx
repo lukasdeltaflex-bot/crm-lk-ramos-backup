@@ -4,7 +4,7 @@ import React from 'react';
 import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/accordion';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { 
     Palette, 
     ShieldCheck, 
@@ -59,7 +59,7 @@ export default function ManualPage() {
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
                         <div className="grid gap-4 md:grid-cols-2">
-                            <div className="p-4 rounded-xl bg-orange-500/5 border border-orange-500/20">
+                            <div className="p-4 rounded-xl bg-orange-50/5 border border-orange-500/20">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Sparkles className="h-4 w-4 text-orange-600" />
                                     <h4 className="font-bold">Análise Estratégica IA</h4>
