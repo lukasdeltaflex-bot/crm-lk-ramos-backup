@@ -307,7 +307,7 @@ export default function LeadCapturePage() {
                                 <p>O servidor de arquivos (Storage) não está respondendo ou não existe.</p>
                                 <p><strong>Como resolver:</strong> No Cloud Shell do seu projeto, rode o comando abaixo:</p>
                                 <code className="block bg-black text-white p-3 rounded text-[10px] break-all font-mono">
-                                    {"gsutil mb -p " + (userSettings?.projectId || 'ID-DO-PROJETO') + " -l us-central1 gs://studio-248448941-9c1c2.appspot.com"}
+                                    {"gsutil mb -p studio-248448941-9c1c2 -l us-central1 gs://studio-248448941-9c1c2.appspot.com"}
                                 </code>
                             </AlertDescription>
                         </Alert>
