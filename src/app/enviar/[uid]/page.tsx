@@ -137,7 +137,6 @@ export default function LeadCapturePage() {
             },
             (error) => {
                 console.error("Upload error:", error);
-                // Check for CORS or Missing Bucket
                 if (error.code === 'storage/retry-limit-exceeded' || error.code === 'storage/unauthorized') {
                     setInfraError("CORS_OR_PERMISSION");
                 }
@@ -167,11 +166,11 @@ export default function LeadCapturePage() {
     setIsUploading(true);
     setUploadProgress(0);
     setInfraError(null);
-    const MAX_SIZE = 15 * 1024 * 1024;
+    const MAX_SIZE = 4 * 1024 * 1024; // 4MB para garantir sucesso na transmissão
 
     for (const file of Array.from(files)) {
         if (file.size > MAX_SIZE) {
-            toast({ variant: 'destructive', title: 'Arquivo Excedido', description: `${file.name} é maior que 15MB.` });
+            toast({ variant: 'destructive', title: 'Arquivo Excedido', description: `${file.name} é maior que 4MB.` });
             continue;
         }
 
@@ -300,14 +299,15 @@ export default function LeadCapturePage() {
                             <AlertTriangle className="h-5 w-5" />
                             <AlertTitle className="font-bold uppercase text-xs">Atenção: Erro de Configuração</AlertTitle>
                             <AlertDescription className="text-xs space-y-2 mt-2">
-                                <p>O serviço de armazenamento não está ativo ou a conexão foi bloqueada.</p>
+                                <p>O servidor de arquivos não respondeu corretamente.</p>
                                 <p className="font-bold">Como resolver:</p>
                                 <ol className="list-decimal pl-4 space-y-1">
-                                    <li>Vá no Console do Firebase &gt; Storage e clique em "Get Started".</li>
-                                    <li>Rode este comando no Cloud Shell para liberar o acesso:</li>
+                                    <li>No console do Firebase, clique no menu "Criação" e depois em "Storage".</li>
+                                    <li>Clique em "Vamos começar" para ativar o serviço.</li>
+                                    <li>Se o problema persistir, rode o comando abaixo no Cloud Shell:</li>
                                 </ol>
                                 <code className="block bg-black text-white p-3 rounded mt-2 text-[10px] break-all leading-relaxed font-mono">
-                                    {"gsutil cors set <(echo '[{\"origin\": [\"*\"], \"method\": [\"GET\", \"POST\", \"PUT\", \"OPTIONS\"], \"responseHeader\": [\"Content-Type\"], \"maxAgeSeconds\": 3600}]') gs://studio-248448941-9c1c2.firebasestorage.app"}
+                                    {"gsutil cors set <(echo '[{\"origin\": [\"*\"], \"method\": [\"GET\", \"POST\", \"PUT\", \"DELETE\", \"OPTIONS\"], \"responseHeader\": [\"Content-Type\", \"Authorization\", \"x-goog-resumable\"], \"maxAgeSeconds\": 3600}]') gs://studio-248448941-9c1c2.firebasestorage.app"}
                                 </code>
                             </AlertDescription>
                         </Alert>
@@ -369,7 +369,7 @@ export default function LeadCapturePage() {
                             <Upload className="h-10 w-10 text-muted-foreground opacity-40" />
                             <div>
                                 <p className="font-bold text-sm">Clique para anexar</p>
-                                <p className="text-[10px] text-muted-foreground uppercase mt-1">Máximo de 15MB por arquivo</p>
+                                <p className="text-[10px] text-muted-foreground uppercase mt-1">Máximo de 4MB por arquivo</p>
                             </div>
                             <input 
                                 type="file" 
