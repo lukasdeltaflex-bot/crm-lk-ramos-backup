@@ -62,6 +62,7 @@ export default function LeadCapturePage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const settingsDocRef = useMemoFirebase(() => {
@@ -117,7 +118,7 @@ export default function LeadCapturePage() {
 
   const uploadFile = async (file: File): Promise<Attachment | null> => {
     if (!storage) {
-        throw new Error('storage-not-ready');
+        throw new Error('O serviço de armazenamento não está disponível.');
     }
 
     const timestamp = Date.now();
@@ -135,6 +136,7 @@ export default function LeadCapturePage() {
             },
             (error) => {
                 console.error("Upload error:", error);
+                setErrorDetails(error.message);
                 reject(error);
             },
             async () => {
@@ -159,6 +161,7 @@ export default function LeadCapturePage() {
     if (!files || files.length === 0) return;
 
     setIsUploading(true);
+    setErrorDetails(null);
     setUploadProgress(0);
     const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -174,7 +177,11 @@ export default function LeadCapturePage() {
                 setAttachments(prev => [...prev, attachment]);
             }
         } catch (err: any) {
-            toast({ variant: 'destructive', title: 'Falha no envio', description: "Verifique sua conexão e tente novamente." });
+            toast({ 
+                variant: 'destructive', 
+                title: 'Falha no envio', 
+                description: "O upload falhou. Verifique se o CORS foi aplicado ou tente em uma aba anônima." 
+            });
             break;
         }
     }
@@ -334,6 +341,16 @@ export default function LeadCapturePage() {
                             <Badge variant="outline" className="text-[9px] font-bold">PDF, JPG ou PNG</Badge>
                         </div>
                         
+                        {errorDetails && (
+                            <Alert variant="destructive" className="mb-4">
+                                <AlertTriangle className="h-4 w-4" />
+                                <AlertTitle>Erro de Conexão</AlertTitle>
+                                <AlertDescription>
+                                    O upload está sendo bloqueado. Tente abrir esta página em modo anônimo ou limpar o cache do navegador.
+                                </AlertDescription>
+                            </Alert>
+                        )}
+
                         <div 
                             className={cn(
                                 "border-2 border-dashed rounded-3xl p-10 flex flex-col items-center justify-center text-center gap-4 bg-muted/10 hover:bg-muted/20 transition-all cursor-pointer relative",
