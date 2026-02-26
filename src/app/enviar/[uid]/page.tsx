@@ -24,8 +24,8 @@ import {
     Camera,
     Info,
     X,
-    MapPin,
-    AlertTriangle
+    AlertTriangle,
+    CreditCard
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { validateCPF, handlePhoneMask, cleanFirestoreData, cn } from '@/lib/utils';
@@ -62,7 +62,6 @@ export default function LeadCapturePage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const settingsDocRef = useMemoFirebase(() => {
@@ -136,7 +135,6 @@ export default function LeadCapturePage() {
             },
             (error) => {
                 console.error("Upload error:", error);
-                setErrorDetails(error.message);
                 reject(error);
             },
             async () => {
@@ -161,7 +159,6 @@ export default function LeadCapturePage() {
     if (!files || files.length === 0) return;
 
     setIsUploading(true);
-    setErrorDetails(null);
     setUploadProgress(0);
     const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -180,7 +177,7 @@ export default function LeadCapturePage() {
             toast({ 
                 variant: 'destructive', 
                 title: 'Falha no envio', 
-                description: "Verifique as 'Rules' do Storage no console do Firebase e certifique-se de que estão públicas (allow write: if true)." 
+                description: "Ocorreu um erro ao salvar o arquivo. Tente novamente." 
             });
             break;
         }
@@ -330,16 +327,6 @@ export default function LeadCapturePage() {
                             </div>
                         </div>
                     </div>
-
-                    {errorDetails && (
-                        <Alert variant="destructive" className="rounded-2xl border-2">
-                            <AlertTriangle className="h-4 w-4" />
-                            <AlertTitle className="font-bold uppercase text-xs">Bloqueio de Permissão</AlertTitle>
-                            <AlertDescription className="text-[10px]">
-                                O servidor recusou o envio. Certifique-se de que as <strong>Rules</strong> do Storage no console estão como <code>allow read, write: if true;</code> e que você clicou em <strong>Publish</strong>.
-                            </AlertDescription>
-                        </Alert>
-                    )}
 
                     <Separator />
 
