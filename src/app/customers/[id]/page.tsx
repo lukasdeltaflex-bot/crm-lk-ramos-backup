@@ -35,7 +35,8 @@ import {
     Tag,
     Pencil,
     Star,
-    CreditCard as CardIcon
+    CreditCard as CardIcon,
+    SeparatorVertical
 } from 'lucide-react';
 import { format, parse, differenceInMonths, isValid as isValidDate } from 'date-fns';
 import { Button } from '@/components/ui/button';
@@ -60,6 +61,7 @@ import { StatsCard } from '@/components/dashboard/stats-card';
 import { ProposalsStatusTable } from '@/components/dashboard/proposals-status-table';
 import { BankIcon } from '@/components/bank-icon';
 import { CustomerForm } from '../customer-form';
+import { Separator } from '@/components/ui/separator';
 
 const CopyButton = ({ text, label }: { text: string | undefined; label: string }) => {
     if (!text) return null;
@@ -185,11 +187,11 @@ const CustomerInfoCard = ({ customer, proposals, onExportDossier, onToggleStatus
                     <h4 className="font-black text-[11px] uppercase tracking-[0.25em] text-primary/60 flex items-center gap-2">
                         <CreditCard className="h-4 w-4" /> Benefícios e Reservas de Cartão
                     </h4>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-4">
                         {customer.benefits && customer.benefits.length > 0 ? (
                             customer.benefits.map((benefit: any, idx: number) => (
-                                <div key={idx} className="p-8 rounded-3xl bg-muted/20 border border-border/50 space-y-8 transition-all hover:bg-muted/30">
-                                    <div className="flex items-start justify-between">
+                                <div key={idx} className="p-6 rounded-3xl bg-muted/10 border border-border/40 space-y-6 transition-all hover:bg-muted/20">
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                         <div className="space-y-1">
                                             <span className="text-[8px] font-black text-primary/60 uppercase tracking-widest">Nº do Benefício</span>
                                             <div className="flex items-center gap-2">
@@ -205,31 +207,35 @@ const CustomerInfoCard = ({ customer, proposals, onExportDossier, onToggleStatus
                                                 )}
                                             </div>
                                         </div>
-                                        <Badge variant="outline" className="h-6 text-[9px] font-black uppercase tracking-widest border-2 bg-background">
-                                            Vínculo Oficial
-                                        </Badge>
-                                    </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="p-5 rounded-2xl bg-orange-500/[0.03] border border-orange-500/10 space-y-4">
-                                            <Badge variant="outline" className="h-5 text-[8px] font-black uppercase border-orange-200 text-orange-600 bg-orange-50">RMC</Badge>
-                                            <div className="flex items-center gap-2">
-                                                <BankIcon bankName={benefit.rmcBank} domain={userSettings?.bankDomains?.[benefit.rmcBank]} showLogo={showLogos} className="h-5 w-5" />
-                                                <p className="text-[10px] font-bold text-foreground truncate">{benefit.rmcBank ? cleanBankName(benefit.rmcBank) : "Sem Reserva"}</p>
+                                        {/* NOVO FORMATO DUO-DOCK INTEGRADO */}
+                                        <div className="flex items-center bg-background/60 border border-border/50 rounded-2xl p-1 shadow-sm h-14 md:min-w-[400px]">
+                                            {/* SLOT RMC */}
+                                            <div className="flex-1 flex items-center gap-3 px-4 py-2 border-r border-border/30">
+                                                <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-orange-500/10 text-orange-600 font-black text-[8px] uppercase">RMC</div>
+                                                <div className="flex items-center gap-2 overflow-hidden">
+                                                    <BankIcon bankName={benefit.rmcBank} domain={userSettings?.bankDomains?.[benefit.rmcBank]} showLogo={showLogos} className="h-4 w-4" />
+                                                    <p className="text-[10px] font-bold text-foreground truncate max-w-[80px]">
+                                                        {benefit.rmcBank ? cleanBankName(benefit.rmcBank) : "Livre"}
+                                                    </p>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="p-5 rounded-2xl bg-blue-500/[0.03] border border-blue-500/10 space-y-4">
-                                            <Badge variant="outline" className="h-5 text-[8px] font-black uppercase border-blue-200 text-blue-600 bg-blue-50">RCC</Badge>
-                                            <div className="flex items-center gap-2">
-                                                <BankIcon bankName={benefit.rccBank} domain={userSettings?.bankDomains?.[benefit.rccBank]} showLogo={showLogos} className="h-5 w-5" />
-                                                <p className="text-[10px] font-bold text-foreground truncate">{benefit.rccBank ? cleanBankName(benefit.rccBank) : "Sem Reserva"}</p>
+                                            {/* SLOT RCC */}
+                                            <div className="flex-1 flex items-center gap-3 px-4 py-2">
+                                                <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-blue-500/10 text-blue-600 font-black text-[8px] uppercase">RCC</div>
+                                                <div className="flex items-center gap-2 overflow-hidden">
+                                                    <BankIcon bankName={benefit.rccBank} domain={userSettings?.bankDomains?.[benefit.rccBank]} showLogo={showLogos} className="h-4 w-4" />
+                                                    <p className="text-[10px] font-bold text-foreground truncate max-w-[80px]">
+                                                        {benefit.rccBank ? cleanBankName(benefit.rccBank) : "Livre"}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            <div className="col-span-full p-12 text-center border-2 border-dashed rounded-3xl opacity-30 text-[10px] font-black uppercase tracking-[0.3em]">Nenhum benefício vinculado ao registro</div>
+                            <div className="p-12 text-center border-2 border-dashed rounded-3xl opacity-30 text-[10px] font-black uppercase tracking-[0.3em]">Nenhum benefício vinculado ao registro</div>
                         )}
                     </div>
                 </div>
