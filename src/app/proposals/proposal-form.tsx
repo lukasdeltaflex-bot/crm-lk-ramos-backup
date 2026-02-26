@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -122,6 +123,14 @@ const proposalSchema = z.object({
   attachments: z.array(attachmentSchema).optional(),
   observations: z.string().optional(),
   checklist: z.record(z.boolean()).optional(),
+}).superRefine((data, ctx) => {
+  if (data.product === 'Portabilidade' && (!data.originalContractNumber || data.originalContractNumber.trim() === '')) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "O número do contrato portado é obrigatório para Portabilidade.",
+      path: ["originalContractNumber"],
+    });
+  }
 });
 
 type ProposalFormValues = z.infer<typeof proposalSchema>;
@@ -679,7 +688,7 @@ export function ProposalForm({
                             name="originalContractNumber"
                             render={({ field }) => (
                                 <FormItem className="animate-in zoom-in-95 duration-300">
-                                <FormLabel className="text-primary font-black uppercase text-[10px] tracking-widest">Nº Contrato Portado (Origem)</FormLabel>
+                                <FormLabel className="text-primary font-black uppercase text-[10px] tracking-widest">Nº Contrato Portado (Origem) *</FormLabel>
                                 <FormControl>
                                     <div className="relative">
                                         <Input 
