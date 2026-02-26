@@ -4,7 +4,7 @@ import React from 'react';
 import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/accordion';
 import { 
     Palette, 
     ShieldCheck, 
@@ -32,7 +32,8 @@ import {
     ListTodo,
     AlertTriangle,
     LinkIcon,
-    ArrowRight
+    ArrowRight,
+    HardDrive
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -223,13 +224,55 @@ export default function ManualPage() {
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 8. CLASSIFICAÇÃO INTELIGENTE (TAGS) */}
+                {/* 8. ARMAZENAMENTO E LIMITES */}
+                <AccordionItem value="storage-limits" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
+                    <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-xl bg-zinc-100 text-zinc-600"><HardDrive className="h-5 w-5" /></div>
+                            <div className="text-left">
+                                <p className="font-bold text-sm">8. Armazenamento e Capacidade</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Gestão de Espaço em Nuvem</p>
+                            </div>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
+                        <div className="space-y-4">
+                            <div className="p-4 rounded-xl bg-muted/20 border border-border">
+                                <h4 className="font-bold mb-2">Capacidade do Sistema</h4>
+                                <ul className="space-y-2">
+                                    <li className="flex items-center gap-2 text-xs">
+                                        <Check className="h-3 w-3 text-green-600" /> 
+                                        <strong>Plano Gratuito (Spark):</strong> Até 5 GB de armazenamento total.
+                                    </li>
+                                    <li className="flex items-center gap-2 text-xs">
+                                        <Check className="h-3 w-3 text-green-600" /> 
+                                        <strong>Plano Pago (Blaze):</strong> Capacidade ilimitada (pagamento sob demanda).
+                                    </li>
+                                </ul>
+                            </div>
+                            <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
+                                <h4 className="font-bold text-xs uppercase mb-2">Dicas de Economia de Espaço</h4>
+                                <p className="text-xs text-muted-foreground">
+                                    Para gerenciar centenas de clientes com eficiência nos 5GB gratuitos:
+                                    <br /><br />
+                                    1. 📱 **Fotos de Celular**: Use a configuração de "Baixa Resolução" ou mande via WhatsApp para si mesmo antes de subir (o WhatsApp reduz o tamanho sem perder a legibilidade).
+                                    <br />
+                                    2. 📄 **Documentos PDF**: Prefira arquivos gerados digitalmente a fotos de documentos, pois são muito mais leves.
+                                    <br />
+                                    3. 🗑️ **Limpeza**: Remova anexos de propostas muito antigas ou reprovadas que não serão mais utilizadas.
+                                </p>
+                            </div>
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
+
+                {/* 9. CLASSIFICAÇÃO INTELIGENTE (TAGS) */}
                 <AccordionItem value="tags-management" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-pink-100 text-pink-600"><Tags className="h-4 w-4" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">8. Gestão de Relacionamento (Tags)</p>
+                                <p className="font-bold text-sm">9. Gestão de Relacionamento (Tags)</p>
                                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Segmentação e Símbolos Visuais</p>
                             </div>
                         </div>
@@ -249,13 +292,13 @@ export default function ManualPage() {
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 9. HALL DA FAMA (DASHBOARD) */}
+                {/* 10. HALL DA FAMA (DASHBOARD) */}
                 <AccordionItem value="hall-of-fame" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-amber-100 text-amber-600"><Trophy className="h-5 w-5 fill-amber-500" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">9. Hall da Fama Mensal (Dashboard)</p>
+                                <p className="font-bold text-sm">10. Hall da Fama Mensal (Dashboard)</p>
                                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Recordes e Conquistas do Mês</p>
                             </div>
                         </div>
@@ -273,13 +316,13 @@ export default function ManualPage() {
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 10. PORTAL DE CAPTURA DE LEADS */}
+                {/* 11. PORTAL DE CAPTURA DE LEADS */}
                 <AccordionItem value="leads-portal" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-blue-100 text-blue-600"><LinkIcon className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">10. Portal de Auto-Cadastro (Leads)</p>
+                                <p className="font-bold text-sm">11. Portal de Auto-Cadastro (Leads)</p>
                                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Automação de Entrada de Clientes</p>
                             </div>
                         </div>
@@ -333,16 +376,17 @@ export default function ManualPage() {
             </Card>
 
             <Card className="border-2 border-dashed border-green-500/20 bg-green-500/5">
+                <HardDrive className="absolute top-2 right-2 h-4 w-4 text-green-600/30" />
                 <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-black uppercase tracking-widest text-green-600">Integridade</CardTitle>
+                    <CardTitle className="text-xs font-black uppercase tracking-widest text-green-600">Armazenamento</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="flex items-center gap-2 text-green-600">
                         <div className="h-2 w-2 rounded-full bg-current animate-pulse" />
-                        <span className="text-[10px] font-black uppercase">Blindagem Nuclear Ativa</span>
+                        <span className="text-[10px] font-black uppercase">5 GB Gratuitos</span>
                     </div>
                     <p className="text-[9px] text-muted-foreground mt-2 leading-tight">
-                        Versão 4.2.0 - Validação de CPF e Limites Expandidos.
+                        Capacidade de centenas de dossiês completos.
                     </p>
                 </CardContent>
             </Card>
