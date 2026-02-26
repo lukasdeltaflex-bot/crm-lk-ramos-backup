@@ -384,8 +384,8 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                                         maxLength={14}
                                         className={cn("rounded-full h-11 px-5 border-zinc-200 font-bold transition-all", (duplicity.cpf || errors.cpf) && "border-red-500 bg-red-50 ring-2 ring-red-500/20")}
                                     />
-                                    {(duplicity.cpf || errors.cpf) && <AlertTriangle className="absolute right-4 top-3 h-5 w-5 text-red-500 animate-pulse" />}
-                                    {!errors.cpf && !duplicity.cpf && watchCpf.length === 14 && <CheckCircle2 className="absolute right-4 top-3 h-5 w-5 text-green-500" />}
+                                    {(duplicity.cpf || errors.cpf) && <AlertTriangle className="absolute right-4 top-3.5 h-5 w-5 text-red-500 animate-pulse" />}
+                                    {!errors.cpf && !duplicity.cpf && watchCpf.length === 14 && <CheckCircle2 className="absolute right-4 top-3.5 h-5 w-5 text-green-500" />}
                                 </div>
                             </FormControl>
                             </FormItem>
@@ -569,118 +569,114 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                     {benefitFields.map((field, index) => (
                         <div key={field.id} className="p-6 rounded-3xl bg-muted/10 border border-border/50 space-y-6 animate-in fade-in slide-in-from-left-2">
                             <div className="flex justify-between items-start">
-                                <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name={`benefits.${index}.number`}
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="text-[10px] font-black uppercase opacity-40 flex items-center gap-2">
-                                                    <CreditCard className="h-3 w-3" /> Nº do Benefício
-                                                </FormLabel>
-                                                <FormControl><Input placeholder="000.000.000-0" {...field} className="rounded-full h-10 border-zinc-200 font-mono font-bold" /></FormControl>
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name={`benefits.${index}.species`}
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="text-[10px] font-black uppercase opacity-40 flex items-center gap-2">
-                                                    <FileText className="h-3 w-3" /> Espécie / Tipo
-                                                </FormLabel>
-                                                <FormControl><Input placeholder="Aposentadoria Idade" {...field} value={field.value ?? ''} className="rounded-full h-10 border-zinc-200 font-bold" /></FormControl>
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name={`benefits.${index}.salary`}
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="text-[10px] font-black uppercase text-green-600 flex items-center gap-2">
-                                                    <CircleDollarSign className="h-3 w-3" /> Valor do Salário (R$)
-                                                </FormLabel>
-                                                <FormControl>
+                                <div className="w-full space-y-6">
+                                    {/* DOCK 1: DADOS DO BENEFÍCIO (EMERALD/TEAL) */}
+                                    <div className="flex flex-col md:flex-row items-center gap-3 bg-background/60 border border-border/50 rounded-2xl p-1.5 shadow-sm h-auto md:h-20 w-full">
+                                        <div className="flex-1 flex flex-col justify-center px-5 border-b md:border-b-0 md:border-r border-border/30 py-3 md:py-0 w-full">
+                                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1.5">Nº do Benefício</span>
+                                            <FormField
+                                                control={form.control}
+                                                name={`benefits.${index}.number`}
+                                                render={({ field }) => (
+                                                    <FormControl><Input placeholder="000.000.000-0" {...field} className="h-9 border-none bg-transparent shadow-none p-0 focus:ring-0 font-mono font-bold text-sm" /></FormControl>
+                                                )}
+                                            />
+                                        </div>
+                                        <div className="flex-1 flex flex-col justify-center px-5 border-b md:border-b-0 md:border-r border-border/30 py-3 md:py-0 w-full">
+                                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1.5">Espécie / Tipo</span>
+                                            <FormField
+                                                control={form.control}
+                                                name={`benefits.${index}.species`}
+                                                render={({ field }) => (
+                                                    <FormControl><Input placeholder="Aposentadoria Idade" {...field} value={field.value ?? ''} className="h-9 border-none bg-transparent shadow-none p-0 focus:ring-0 font-bold text-sm" /></FormControl>
+                                                )}
+                                            />
+                                        </div>
+                                        <div className="flex-1 flex flex-col justify-center px-5 py-3 md:py-0 w-full">
+                                            <span className="text-[10px] font-black text-green-600 uppercase tracking-widest mb-1.5">Valor Salário (R$)</span>
+                                            <FormField
+                                                control={form.control}
+                                                name={`benefits.${index}.salary`}
+                                                render={({ field }) => (
                                                     <div className="relative">
-                                                        <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
-                                                        <Input 
-                                                            type="number" 
-                                                            step="0.01" 
-                                                            className="rounded-full h-10 border-green-200 bg-green-50/10 pl-9 font-bold" 
-                                                            {...field} 
-                                                            value={field.value ?? 0}
-                                                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                                                        />
+                                                        <span className="absolute left-0 top-1.5 text-[10px] font-black text-green-600/40">R$</span>
+                                                        <FormControl>
+                                                            <Input 
+                                                                type="number" 
+                                                                step="0.01" 
+                                                                className="h-9 border-none bg-transparent shadow-none pl-6 p-0 focus:ring-0 font-bold text-sm text-green-600" 
+                                                                {...field} 
+                                                                value={field.value ?? 0}
+                                                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                                            />
+                                                        </FormControl>
                                                     </div>
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                                                )}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* DOCK 2: RESERVAS DE CARTÃO (BLUE/ORANGE) */}
+                                    <div className="flex flex-col md:flex-row items-center gap-3 bg-background/60 border border-border/50 rounded-2xl p-1.5 shadow-sm h-auto md:h-20 w-full">
+                                        <div className="flex-1 flex flex-col justify-center px-5 border-b md:border-b-0 md:border-r border-border/30 py-3 md:py-0 w-full">
+                                            <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-1.5">Reserva RMC</span>
+                                            <FormField
+                                                control={form.control}
+                                                name={`benefits.${index}.rmcBank`}
+                                                render={({ field }) => (
+                                                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                                                        <FormControl>
+                                                            <SelectTrigger className="h-9 border-none bg-transparent shadow-none p-0 focus:ring-0 font-bold text-sm">
+                                                                <SelectValue placeholder="Livre / Selecione" />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            <SelectItem value="none">Sem Reserva</SelectItem>
+                                                            {banks.map(b => (
+                                                                <SelectItem key={b} value={b}>
+                                                                    <div className="flex items-center gap-2.5">
+                                                                        <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={showLogos} className="h-4 w-4" />
+                                                                        <span className="text-xs uppercase font-bold">{cleanBankName(b)}</span>
+                                                                    </div>
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                )}
+                                            />
+                                        </div>
+                                        <div className="flex-1 flex flex-col justify-center px-5 py-3 md:py-0 w-full">
+                                            <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1.5">Reserva RCC</span>
+                                            <FormField
+                                                control={form.control}
+                                                name={`benefits.${index}.rccBank`}
+                                                render={({ field }) => (
+                                                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                                                        <FormControl>
+                                                            <SelectTrigger className="h-9 border-none bg-transparent shadow-none p-0 focus:ring-0 font-bold text-sm">
+                                                                <SelectValue placeholder="Livre / Selecione" />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            <SelectItem value="none">Sem Reserva</SelectItem>
+                                                            {banks.map(b => (
+                                                                <SelectItem key={b} value={b}>
+                                                                    <div className="flex items-center gap-2.5">
+                                                                        <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={showLogos} className="h-4 w-4" />
+                                                                        <span className="text-xs uppercase font-bold">{cleanBankName(b)}</span>
+                                                                    </div>
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                )}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                                 <Button type="button" variant="ghost" size="icon" onClick={() => removeBenefit(index)} className="text-red-400 h-10 w-10 hover:bg-red-50 rounded-full ml-4">
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
-                            </div>
-
-                            {/* NOVO FORMATO DUO-DOCK NO FORMULÁRIO - ESCALA AJUSTADA */}
-                            <div className="flex items-center gap-3 bg-background/60 border border-border/50 rounded-2xl p-1.5 shadow-sm h-20 w-full">
-                                <div className="flex-1 flex flex-col justify-center px-5 border-r border-border/30">
-                                    <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-1.5">Reserva RMC</span>
-                                    <FormField
-                                        control={form.control}
-                                        name={`benefits.${index}.rmcBank`}
-                                        render={({ field }) => (
-                                            <Select onValueChange={field.onChange} value={field.value ?? ''}>
-                                                <FormControl>
-                                                    <SelectTrigger className="h-9 border-none bg-transparent shadow-none p-0 focus:ring-0 font-bold text-sm">
-                                                        <SelectValue placeholder="Livre / Selecione" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value="none">Sem Reserva</SelectItem>
-                                                    {banks.map(b => (
-                                                        <SelectItem key={b} value={b}>
-                                                            <div className="flex items-center gap-2.5">
-                                                                <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={showLogos} className="h-4 w-4" />
-                                                                <span className="text-xs uppercase font-bold">{cleanBankName(b)}</span>
-                                                            </div>
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        )}
-                                    />
-                                </div>
-                                <div className="flex-1 flex flex-col justify-center px-5">
-                                    <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1.5">Reserva RCC</span>
-                                    <FormField
-                                        control={form.control}
-                                        name={`benefits.${index}.rccBank`}
-                                        render={({ field }) => (
-                                            <Select onValueChange={field.onChange} value={field.value ?? ''}>
-                                                <FormControl>
-                                                    <SelectTrigger className="h-9 border-none bg-transparent shadow-none p-0 focus:ring-0 font-bold text-sm">
-                                                        <SelectValue placeholder="Livre / Selecione" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value="none">Sem Reserva</SelectItem>
-                                                    {banks.map(b => (
-                                                        <SelectItem key={b} value={b}>
-                                                            <div className="flex items-center gap-2.5">
-                                                                <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={showLogos} className="h-4 w-4" />
-                                                                <span className="text-xs uppercase font-bold">{cleanBankName(b)}</span>
-                                                            </div>
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        )}
-                                    />
-                                </div>
                             </div>
                         </div>
                     ))}

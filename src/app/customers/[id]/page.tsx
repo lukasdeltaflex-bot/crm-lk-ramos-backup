@@ -36,7 +36,8 @@ import {
     Pencil,
     Star,
     CreditCard as CardIcon,
-    SeparatorVertical
+    SeparatorVertical,
+    IdCard
 } from 'lucide-react';
 import { format, parse, differenceInMonths, isValid as isValidDate } from 'date-fns';
 import { Button } from '@/components/ui/button';
@@ -182,33 +183,43 @@ const CustomerInfoCard = ({ customer, proposals, onExportDossier, onToggleStatus
                     </div>
                 </div>
 
-                {/* SEÇÃO 1.1: BENEFÍCIOS E CARTÕES VINCULADOS */}
+                {/* SEÇÃO 1.1: BENEFÍCIOS E CARTÕES VINCULADOS - NOVO LAYOUT DUAL-DOCK INTEGRADO */}
                 <div className="space-y-6 pt-8 border-t border-border/40">
                     <h4 className="font-black text-[11px] uppercase tracking-[0.25em] text-primary/60 flex items-center gap-2">
                         <CreditCard className="h-4 w-4" /> Benefícios e Reservas de Cartão
                     </h4>
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         {customer.benefits && customer.benefits.length > 0 ? (
                             customer.benefits.map((benefit: any, idx: number) => (
                                 <div key={idx} className="p-6 rounded-3xl bg-muted/10 border border-border/40 space-y-6 transition-all hover:bg-muted/20">
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                        <div className="space-y-1">
-                                            <span className="text-[8px] font-black text-primary/60 uppercase tracking-widest">Nº do Benefício</span>
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-black text-lg text-foreground">{benefit.number}</span>
-                                                <CopyButton text={benefit.number} label="Benefício" />
+                                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                                        
+                                        {/* DOCK 1: IDENTIFICAÇÃO DO BENEFÍCIO (TEAL/EMERALD) */}
+                                        <div className="flex items-center bg-background/60 border border-border/50 rounded-2xl p-1.5 shadow-sm h-16 md:min-w-[440px]">
+                                            {/* SLOT NÚMERO */}
+                                            <div className="flex-1 flex items-center gap-4 px-4 py-2 border-r border-border/30">
+                                                <div className="flex items-center justify-center h-9 w-9 rounded-full bg-emerald-500/10 text-emerald-600 font-black text-[10px] uppercase shadow-sm">NB</div>
+                                                <div className="flex flex-col overflow-hidden">
+                                                    <span className="text-[8px] font-black text-emerald-600/60 uppercase tracking-widest leading-none mb-1">Nº do Benefício</span>
+                                                    <div className="flex items-center gap-1">
+                                                        <span className="font-black text-sm text-foreground tracking-tight">{benefit.number}</span>
+                                                        <CopyButton text={benefit.number} label="Benefício" />
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className='flex items-center gap-2'>
-                                                {benefit.species && <span className="text-[11px] text-muted-foreground font-bold uppercase">{benefit.species}</span>}
-                                                {benefit.salary !== undefined && benefit.salary !== null && Number(benefit.salary) > 0 && (
-                                                    <Badge variant="outline" className="h-6 bg-green-50 border-green-200 text-green-600 text-[10px] font-black uppercase">
-                                                        <CircleDollarSign className="h-3 w-3 mr-1" /> {formatCurrency(Number(benefit.salary))}
-                                                    </Badge>
-                                                )}
+                                            {/* SLOT VALOR/SALÁRIO */}
+                                            <div className="flex-1 flex items-center gap-4 px-4 py-2">
+                                                <div className="flex items-center justify-center h-9 w-9 rounded-full bg-green-500/10 text-green-600 font-black text-[10px] uppercase shadow-sm">R$</div>
+                                                <div className="flex flex-col overflow-hidden">
+                                                    <span className="text-[8px] font-black text-green-600/60 uppercase tracking-widest leading-none mb-1">Valor Mensal</span>
+                                                    <p className="text-sm font-black text-green-600 truncate tracking-tight">
+                                                        {benefit.salary ? formatCurrency(Number(benefit.salary)) : "Não Inf."}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        {/* NOVO FORMATO DUO-DOCK INTEGRADO - ESCALA AJUSTADA */}
+                                        {/* DOCK 2: RESERVAS DE CARTÃO (BLUE/ORANGE) */}
                                         <div className="flex items-center bg-background/60 border border-border/50 rounded-2xl p-1.5 shadow-sm h-16 md:min-w-[440px]">
                                             {/* SLOT RMC */}
                                             <div className="flex-1 flex items-center gap-4 px-4 py-2 border-r border-border/30">
@@ -216,7 +227,7 @@ const CustomerInfoCard = ({ customer, proposals, onExportDossier, onToggleStatus
                                                 <div className="flex items-center gap-2.5 overflow-hidden">
                                                     <BankIcon bankName={benefit.rmcBank} domain={userSettings?.bankDomains?.[benefit.rmcBank]} showLogo={showLogos} className="h-5 w-5" />
                                                     <p className="text-[11px] font-black text-foreground truncate max-w-[100px] uppercase tracking-tight">
-                                                        {benefit.rmcBank ? cleanBankName(benefit.rmcBank) : "Livre"}
+                                                        {benefit.rmcBank && benefit.rmcBank !== 'none' ? cleanBankName(benefit.rmcBank) : "Livre"}
                                                     </p>
                                                 </div>
                                             </div>
@@ -226,12 +237,17 @@ const CustomerInfoCard = ({ customer, proposals, onExportDossier, onToggleStatus
                                                 <div className="flex items-center gap-2.5 overflow-hidden">
                                                     <BankIcon bankName={benefit.rccBank} domain={userSettings?.bankDomains?.[benefit.rccBank]} showLogo={showLogos} className="h-5 w-5" />
                                                     <p className="text-[11px] font-black text-foreground truncate max-w-[100px] uppercase tracking-tight">
-                                                        {benefit.rccBank ? cleanBankName(benefit.rccBank) : "Livre"}
+                                                        {benefit.rccBank && benefit.rccBank !== 'none' ? cleanBankName(benefit.rccBank) : "Livre"}
                                                     </p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+                                    {benefit.species && (
+                                        <div className="pl-4 border-l-4 border-emerald-500/20 py-1">
+                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{benefit.species}</p>
+                                        </div>
+                                    )}
                                 </div>
                             ))
                         ) : (
