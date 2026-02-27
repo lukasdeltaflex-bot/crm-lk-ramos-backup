@@ -22,7 +22,8 @@ import {
     CheckCircle2,
     ChevronDown,
     FileSpreadsheet,
-    FileText as FilePdf
+    FileText as FilePdf,
+    BarChart3
 } from 'lucide-react';
 import {
   DropdownMenu,
