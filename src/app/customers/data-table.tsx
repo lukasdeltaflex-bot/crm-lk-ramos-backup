@@ -340,7 +340,23 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             <div className="flex items-center gap-6 lg:gap-8">
                 <div className="flex items-center gap-2">
                     <p>LINHAS</p>
-                    <p>{table.getRowModel().rows.length}</p>
+                    <Select
+                        value={String(table.getState().pagination.pageSize)}
+                        onValueChange={(value) => {
+                            table.setPageSize(Number(value));
+                        }}
+                    >
+                        <SelectTrigger className="h-8 w-[70px] border-none bg-transparent font-black p-0 focus:ring-0 shadow-none text-foreground">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-2">
+                            {[10, 20, 30, 40, 50, 100].map((pageSize) => (
+                                <SelectItem key={pageSize} value={String(pageSize)} className="font-bold text-xs">
+                                    {pageSize}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
                 <div className="text-primary font-black">
                     PÁG {table.getState().pagination.pageIndex + 1} DE {table.getPageCount()}

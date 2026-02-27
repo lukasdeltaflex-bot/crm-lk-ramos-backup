@@ -532,7 +532,23 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     <div className="flex items-center gap-6">
                         <div className="flex items-center gap-2">
                             <span>LINHAS</span>
-                            <span>{table.getRowModel().rows.length}</span>
+                            <Select
+                                value={String(table.getState().pagination.pageSize)}
+                                onValueChange={(value) => {
+                                    table.setPageSize(Number(value));
+                                }}
+                            >
+                                <SelectTrigger className="h-8 w-[70px] border-none bg-transparent font-black p-0 focus:ring-0 shadow-none text-foreground">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl border-2">
+                                    {[10, 20, 30, 40, 50, 100].map((pageSize) => (
+                                        <SelectItem key={pageSize} value={String(pageSize)} className="font-bold text-xs">
+                                            {pageSize}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="text-primary font-black">
                             PÁG {table.getState().pagination.pageIndex + 1} DE {table.getPageCount()}
