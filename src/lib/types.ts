@@ -11,6 +11,7 @@ export type Attachment = {
   url: string;
   type: string;
   size: number;
+  category?: string; // Categoria do documento (ex: RG, Extrato, Endereço)
 };
 
 export type ProposalHistoryEntry = {
@@ -205,6 +206,9 @@ export type Lead = {
   neighborhood?: string;
   city?: string;
   state?: string;
+  requestedAmount?: number;
+  maxInstallment?: number;
+  intentType?: string;
   observations?: string;
   status: 'pending' | 'approved' | 'discarded';
   createdAt: string;
