@@ -32,8 +32,10 @@ export function normalizeString(str: string): string {
   if (!str) return '';
   return str
     .toLowerCase()
+    .trim()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
 }
 
 export function isWhatsApp(phone: string): boolean {
@@ -149,7 +151,7 @@ export function validateCPF(cpf: string): boolean {
 
 export function cleanBankName(name?: string): string {
   if (!name) return '';
-  const cleaned = name.replace(/^\d+[\s-]*[-]*[\s]*/, '').trim();
+  const cleaned = name.replace(/^\d+[\s-]*[-]*[\s]*/, '').trim().replace(/\s+/g, ' ');
   return cleaned || name;
 }
 
@@ -158,8 +160,17 @@ export function cleanFirestoreData(data: any): any {
     if (data === undefined) return undefined;
     if (data instanceof Date) return data.toISOString();
     
+    // 🧹 LIMPEZA DE ERROS DE DIGITAÇÃO (ESPACIAL)
+    if (typeof data === 'string') {
+        const trimmed = data.trim();
+        // Se não houver quebras de linha (anotações), colapsamos espaços múltiplos
+        if (!trimmed.includes('\n')) {
+            return trimmed.replace(/\s+/g, ' ');
+        }
+        return trimmed;
+    }
+
     // 🛡️ PROTEÇÃO PARA FIELDVALUES (arrayUnion, deleteField, etc)
-    // Se for um objeto complexo (não literal), retornamos como está para não quebrar o Firebase.
     if (typeof data === 'object' && !Array.isArray(data)) {
         const proto = Object.getPrototypeOf(data);
         if (proto !== Object.prototype && proto !== null) {
