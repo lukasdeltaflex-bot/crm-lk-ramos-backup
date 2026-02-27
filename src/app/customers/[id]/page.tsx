@@ -558,7 +558,17 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
                 <CustomerAiSummary customer={customer} proposals={proposals || []} />
-                <Card className="border-border/50 shadow-lg rounded-2xl overflow-hidden"><CardHeader className="bg-muted/5"><CardTitle className="text-lg font-black uppercase text-primary/80">Histórico de Propostas</CardTitle></CardHeader><CardContent className="p-0"><SimpleProposalsTable proposals={proposals || []} /></CardContent></Card>
+                <Card className="border-border/50 shadow-lg rounded-2xl overflow-hidden">
+                    <CardHeader className="bg-muted/5">
+                        <CardTitle className="text-lg font-black uppercase text-primary/80">Histórico de Propostas</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <SimpleProposalsTable 
+                            proposals={proposals || []} 
+                            userSettings={userSettings || null}
+                        />
+                    </CardContent>
+                </Card>
             </div>
             <div className="lg:col-span-1"><Card className="h-full border-border/50 shadow-lg rounded-2xl overflow-hidden sticky top-24"><CardHeader className="bg-muted/10"><CardTitle className="text-lg font-black uppercase flex items-center gap-3"><FolderLock className="h-5 w-5 text-primary opacity-60" />Arquivos</CardTitle></CardHeader><CardContent className="pt-6"><CustomerAttachmentUploader userId={user?.uid || ''} customerId={customer.id} initialAttachments={customer.documents || []} onAttachmentsChange={(docs) => updateDoc(doc(firestore!, 'customers', customer.id), cleanFirestoreData({ documents: docs }))} /></CardContent></Card></div>
         </div>
