@@ -1,3 +1,4 @@
+
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
@@ -19,9 +20,9 @@ if (typeof window !== "undefined") {
     try {
         const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
         
-        // 🛡️ CONFIGURAÇÃO DE REDE V11: Habilita detecção automática de Long Polling para evitar timeouts
+        // 🛡️ CONFIGURAÇÃO DE REDE V12: Força o uso de Long Polling para evitar falhas de conexão em redes restritas
         db = initializeFirestore(app, {
-            experimentalAutoDetectLongPolling: true,
+            experimentalForceLongPolling: true,
             localCache: persistentLocalCache({
                 tabManager: persistentMultipleTabManager()
             })
@@ -32,7 +33,7 @@ if (typeof window !== "undefined") {
         // Forçamos a conexão com o bucket específico para garantir que o SDK não use um endereço vazio
         storage = getStorage(app, firebaseConfig.storageBucket);
         
-        console.log("💎 LK RAMOS: Núcleo Firebase inicializado com modo de resiliência.", {
+        console.log("💎 LK RAMOS: Núcleo Firebase inicializado com modo de resiliência total.", {
             projectId: firebaseConfig.projectId,
             bucketName: firebaseConfig.storageBucket,
             storageAtivo: !!storage
