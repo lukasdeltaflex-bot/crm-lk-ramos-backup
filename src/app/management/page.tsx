@@ -27,7 +27,10 @@ import {
     PhoneCall,
     Headset,
     EyeOff,
-    Mail
+    Mail,
+    Copy,
+    Hash,
+    User as UserIcon
 } from 'lucide-react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, setDoc, deleteDoc, orderBy } from 'firebase/firestore';
@@ -42,6 +45,21 @@ import { format, parseISO } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { cn, cleanFirestoreData, isWhatsApp, getWhatsAppUrl } from '@/lib/utils';
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
+const CopyButton = ({ text, label }: { text?: string; label: string }) => {
+    if (!text) return null;
+    const handleCopy = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(text);
+        toast({ title: `${label} copiado!` });
+    };
+    return (
+        <Button variant="ghost" size="icon" className="h-6 w-6 opacity-40 hover:opacity-100 transition-opacity" onClick={handleCopy}>
+            <Copy className="h-3 w-3" />
+        </Button>
+    );
+};
 
 export default function ManagementPage() {
   const { user } = useUser();
@@ -59,11 +77,8 @@ export default function ManagementPage() {
   const [decryptedPasswords, setDecryptedPasswords] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
 
-  // Queries globais (compartilhadas entre usuários) para notícias e links
   const newsQuery = useMemoFirebase(() => query(collection(firestore!, 'managementNews'), orderBy('date', 'desc')), []);
   const linksQuery = useMemoFirebase(() => query(collection(firestore!, 'managementQuickLinks'), orderBy('name', 'asc')), []);
-  
-  // Query privada para promotoras (logins e senhas)
   const promotersQuery = useMemoFirebase(() => user ? query(collection(firestore!, 'managementPromoters'), where('ownerId', '==', user.uid), orderBy('name', 'asc')) : null, [user]);
 
   const { data: news, isLoading: loadingNews } = useCollection(newsQuery);
@@ -242,7 +257,7 @@ export default function ManagementPage() {
             <div className="flex items-center justify-between">
                 <div className="space-y-1">
                     <h2 className="text-xl font-black uppercase tracking-tight text-blue-600">Parceiros & Promotoras</h2>
-                    <p className="text-xs text-muted-foreground">Telefones, e-mails e senhas blindadas por parceiro.</p>
+                    <p className="text-xs text-muted-foreground">Contatos, códigos e senhas blindadas por parceiro.</p>
                 </div>
                 <Button onClick={() => { setSelectedItem(null); setIsPromoterModalOpen(true); }} className="rounded-full bg-blue-600 hover:bg-blue-700 font-bold shadow-lg gap-2 h-11 px-8">
                     <PlusCircle className="h-4 w-4" /> Nova Promotora
@@ -252,6 +267,7 @@ export default function ManagementPage() {
             <div className="space-y-4">
                 {promoters?.map((promoter) => {
                     const isSupportWhatsApp = promoter.supportPhone && isWhatsApp(promoter.supportPhone);
+                    const isManagerWhatsApp = promoter.whatsapp && isWhatsApp(promoter.whatsapp);
                     
                     return (
                         <Card key={promoter.id} className="border-2 overflow-hidden shadow-sm hover:shadow-md transition-all">
@@ -263,48 +279,65 @@ export default function ManagementPage() {
                                 onClick={() => setExpandedPromoter(expandedPromoter === promoter.id ? null : promoter.id)}
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-2xl bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
-                                        <Building2 className="h-6 w-6" />
-                                    </div>
+                                    <Avatar className="h-12 w-12 rounded-2xl border-2 border-primary/10 shadow-sm">
+                                        <AvatarImage src={promoter.photoURL} />
+                                        <AvatarFallback className="bg-blue-100 text-blue-600 font-black">
+                                            <Building2 className="h-6 w-6" />
+                                        </AvatarFallback>
+                                    </Avatar>
                                     <div className="min-w-0">
-                                        <h3 className="font-black uppercase text-sm tracking-tight truncate">{promoter.name}</h3>
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="font-black uppercase text-sm tracking-tight truncate">{promoter.name}</h3>
+                                            {promoter.partnerCode && (
+                                                <Badge variant="outline" className="h-5 px-2 text-[9px] font-mono font-black border-blue-200 text-blue-600 bg-blue-50 uppercase">ID: {promoter.partnerCode}</Badge>
+                                            )}
+                                        </div>
                                         <div className="flex flex-wrap gap-x-6 gap-y-2 text-[10px] font-bold text-muted-foreground uppercase mt-2">
                                             <div className="flex items-center gap-1.5 min-w-0">
-                                                <NotebookTabs className="h-3.5 w-3.5 text-blue-500 shrink-0" /> 
-                                                <span className="truncate">Gerente: {promoter.contactName || 'Sem nome'}</span>
+                                                <UserIcon className="h-3.5 w-3.5 text-blue-500 shrink-0" /> 
+                                                <span className="truncate">Gerente: {promoter.contactName || '---'}</span>
                                                 {promoter.whatsapp && (
-                                                    <a 
-                                                        href={getWhatsAppUrl(promoter.whatsapp)} 
-                                                        target="_blank" 
-                                                        rel="noopener noreferrer" 
-                                                        className="text-[#25D366] hover:scale-125 transition-transform flex items-center p-0.5" 
-                                                        onClick={(e) => e.stopPropagation()}
-                                                    >
-                                                        <WhatsAppIcon className="h-4 w-4" />
-                                                    </a>
+                                                    <div className="flex items-center gap-1">
+                                                        <a 
+                                                            href={getWhatsAppUrl(promoter.whatsapp)} 
+                                                            target="_blank" 
+                                                            rel="noopener noreferrer" 
+                                                            className="text-[#25D366] hover:scale-125 transition-transform flex items-center" 
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            <WhatsAppIcon className="h-3.5 w-3.5" />
+                                                        </a>
+                                                        <CopyButton text={promoter.whatsapp} label="WhatsApp" />
+                                                    </div>
                                                 )}
                                             </div>
 
                                             <div className="flex items-center gap-1.5 min-w-0">
                                                 <Headset className="h-3.5 w-3.5 text-blue-500 shrink-0" /> 
                                                 <span className="truncate">Suporte: {promoter.supportPhone || '---'}</span>
-                                                {isSupportWhatsApp && (
-                                                    <a 
-                                                        href={getWhatsAppUrl(promoter.supportPhone!)} 
-                                                        target="_blank" 
-                                                        rel="noopener noreferrer" 
-                                                        className="text-[#25D366] hover:scale-125 transition-transform flex items-center p-0.5" 
-                                                        onClick={(e) => e.stopPropagation()}
-                                                    >
-                                                        <WhatsAppIcon className="h-4 w-4" />
-                                                    </a>
+                                                {promoter.supportPhone && (
+                                                    <div className="flex items-center gap-1">
+                                                        {isSupportWhatsApp && (
+                                                            <a 
+                                                                href={getWhatsAppUrl(promoter.supportPhone)} 
+                                                                target="_blank" 
+                                                                rel="noopener noreferrer" 
+                                                                className="text-[#25D366] hover:scale-125 transition-transform flex items-center" 
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            >
+                                                                <WhatsAppIcon className="h-3.5 w-3.5" />
+                                                            </a>
+                                                        )}
+                                                        <CopyButton text={promoter.supportPhone} label="Suporte" />
+                                                    </div>
                                                 )}
                                             </div>
 
-                                            {promoter.managerEmail && (
+                                            {promoter.email && (
                                                 <div className="flex items-center gap-1.5 min-w-0">
                                                     <Mail className="h-3.5 w-3.5 text-blue-500 shrink-0" />
-                                                    <a href={`mailto:${promoter.managerEmail}`} className="truncate hover:text-blue-600 transition-colors" onClick={(e) => e.stopPropagation()}>{promoter.managerEmail}</a>
+                                                    <span className="truncate">{promoter.email}</span>
+                                                    <CopyButton text={promoter.email} label="E-mail" />
                                                 </div>
                                             )}
                                         </div>
@@ -349,7 +382,10 @@ export default function ManagementPage() {
                                                     <div className="space-y-2 bg-muted/20 p-3 rounded-lg border">
                                                         <div className="flex flex-col">
                                                             <span className="text-[8px] font-black uppercase text-muted-foreground">Usuário</span>
-                                                            <span className="text-[11px] font-bold select-all">{bank.login}</span>
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-[11px] font-bold select-all">{bank.login}</span>
+                                                                <CopyButton text={bank.login} label="Login" />
+                                                            </div>
                                                         </div>
                                                         <div className="flex flex-col relative">
                                                             <span className="text-[8px] font-black uppercase text-muted-foreground">Senha AES-256</span>
@@ -357,9 +393,12 @@ export default function ManagementPage() {
                                                                 <span className="text-[11px] font-mono tracking-widest flex-1">
                                                                     {decryptedPasswords[bank.id] ? decryptedPasswords[bank.id] : '••••••••'}
                                                                 </span>
-                                                                <button onClick={() => handleShowPassword(bank.id, bank.password)} className="text-primary hover:scale-110 transition-transform">
-                                                                    {decryptedPasswords[bank.id] ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                                                                </button>
+                                                                <div className="flex items-center gap-1">
+                                                                    <button onClick={() => handleShowPassword(bank.id, bank.password)} className="text-primary hover:scale-110 transition-transform">
+                                                                        {decryptedPasswords[bank.id] ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                                                                    </button>
+                                                                    {decryptedPasswords[bank.id] && <CopyButton text={decryptedPasswords[bank.id]} label="Senha" />}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>

@@ -1,4 +1,3 @@
-
 export type Benefit = {
   number: string;
   species?: string;
@@ -74,6 +73,8 @@ export type ProposalStatus =
   | 'Saldo Pago'
   | 'Pendente'
   | 'Reprovado';
+
+export type ProposalHistory = ProposalHistoryEntry[];
 
 export type CommissionStatus = 'Pendente' | 'Paga' | 'Parcial';
 
@@ -220,6 +221,8 @@ export type ManagementPromoter = {
   id: string;
   ownerId: string;
   name: string;
+  partnerCode?: string; // Código de parceiro na promotora
+  photoURL?: string; // Logo/Foto da promotora
   contactName?: string;
   phone?: string;
   whatsapp?: string;

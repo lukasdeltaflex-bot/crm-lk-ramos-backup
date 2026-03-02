@@ -14,12 +14,16 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Save, Building2, Phone, User as UserIcon, Headset, MessageSquareText, Mail } from 'lucide-react';
+import { Loader2, Save, Building2, Phone, User as UserIcon, Headset, MessageSquareText, Mail, Hash, Upload, X, Camera } from 'lucide-react';
 import { handlePhoneMask, isWhatsApp, getWhatsAppUrl } from '@/lib/utils';
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
+import { useRef, useState } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const promoterSchema = z.object({
   name: z.string().min(2, 'O nome da promotora é obrigatório.'),
+  partnerCode: z.string().optional(),
+  photoURL: z.string().optional(),
   contactName: z.string().optional(),
   phone: z.string().optional(),
   whatsapp: z.string().optional(),
@@ -38,10 +42,15 @@ interface PromoterFormProps {
 }
 
 export function PromoterForm({ initialData, onSubmit, isSaving = false }: PromoterFormProps) {
+  const [photoPreview, setPhotoPreview] = useState<string | null>(initialData?.photoURL || null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const form = useForm<PromoterFormValues>({
     resolver: zodResolver(promoterSchema),
     defaultValues: initialData || {
       name: '',
+      partnerCode: '',
+      photoURL: '',
       contactName: '',
       phone: '',
       whatsapp: '',
@@ -55,20 +64,71 @@ export function PromoterForm({ initialData, onSubmit, isSaving = false }: Promot
   const watchWhatsapp = form.watch('whatsapp');
   const watchSupport = form.watch('supportPhone');
 
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string;
+        setPhotoPreview(dataUrl);
+        form.setValue('photoURL', dataUrl, { shouldValidate: true });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="flex items-center gap-2 font-bold uppercase text-[10px] tracking-widest"><Building2 className="h-3.5 w-3.5 text-primary" /> Nome da Promotora *</FormLabel>
-              <FormControl><Input placeholder="Ex: Master Promotora" {...field} className="font-bold" /></FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* FOTO/LOGO DA PROMOTORA */}
+        <div className="flex flex-col items-center gap-4 py-2">
+            <div className="relative group">
+                <Avatar className="h-24 w-24 border-4 border-primary/10 shadow-xl">
+                    <AvatarImage src={photoPreview || undefined} />
+                    <AvatarFallback className="bg-muted text-muted-foreground">
+                        <Building2 className="h-10 w-10 opacity-20" />
+                    </AvatarFallback>
+                </Avatar>
+                <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                    <Camera className="text-white h-6 w-6" />
+                </div>
+                {photoPreview && (
+                    <button 
+                        type="button" 
+                        onClick={() => { setPhotoPreview(null); form.setValue('photoURL', ''); }}
+                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 shadow-lg hover:bg-red-600 transition-colors"
+                    >
+                        <X className="h-3 w-3" />
+                    </button>
+                )}
+            </div>
+            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Logo do Parceiro</p>
+            <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoUpload} />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel className="flex items-center gap-2 font-bold uppercase text-[10px] tracking-widest"><Building2 className="h-3.5 w-3.5 text-primary" /> Nome da Promotora *</FormLabel>
+                    <FormControl><Input placeholder="Ex: Master Promotora" {...field} className="font-bold" /></FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+            <FormField
+                control={form.control}
+                name="partnerCode"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel className="flex items-center gap-2 font-bold uppercase text-[10px] tracking-widest"><Hash className="h-3.5 w-3.5 text-primary" /> Código de Parceiro</FormLabel>
+                    <FormControl><Input placeholder="Seu ID no sistema deles" {...field} className="font-mono font-bold" /></FormControl>
+                    </FormItem>
+                )}
+            />
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
@@ -91,9 +151,9 @@ export function PromoterForm({ initialData, onSubmit, isSaving = false }: Promot
                         <div className="relative">
                             <Input placeholder="(00) 0000-0000" {...field} onChange={(e) => field.onChange(handlePhoneMask(e.target.value))} />
                             {isWhatsApp(watchSupport || '') && (
-                                <a href={getWhatsAppUrl(watchSupport!)} target="_blank" rel="noopener noreferrer" className="absolute right-3 top-2.5 hover:scale-110 transition-transform">
+                                <div className="absolute right-3 top-2.5 flex items-center">
                                     <WhatsAppIcon className="h-4 w-4" />
-                                </a>
+                                </div>
                             )}
                         </div>
                     </FormControl>
@@ -123,9 +183,9 @@ export function PromoterForm({ initialData, onSubmit, isSaving = false }: Promot
                         <div className="relative">
                             <Input placeholder="(00) 00000-0000" {...field} onChange={(e) => field.onChange(handlePhoneMask(e.target.value))} />
                             {isWhatsApp(watchWhatsapp || '') && (
-                                <a href={getWhatsAppUrl(watchWhatsapp!)} target="_blank" rel="noopener noreferrer" className="absolute right-3 top-2.5 hover:scale-110 transition-transform">
+                                <div className="absolute right-3 top-2.5 flex items-center">
                                     <WhatsAppIcon className="h-4 w-4" />
-                                </a>
+                                </div>
                             )}
                         </div>
                     </FormControl>
