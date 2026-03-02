@@ -238,18 +238,19 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         const searchDigits = searchTerm.replace(/\D/g, '');
         const cpfDigits = customer?.cpf?.replace(/\D/g, '') || '';
 
-        // 🛡️ BUSCA NUCLEAR V12: Prioridade Zero e Estrita para ID
+        // 🛡️ BUSCA NUCLEAR V12: Prioridade Zero e Estrita para ID e Propostas Curtas
         if (/^\d+$/.test(searchTerm)) {
             // 1. Prioridade Absoluta: Correspondência EXATA de Proposta ou ID
             if (p.proposalNumber === searchTerm) return true;
             if (customer?.numericId?.toString() === searchTerm) return true;
             
-            // 2. Threshold para documentos: Se for curto (<=3), não busca em documentos p/ evitar ruído
+            // 2. Threshold para documentos: Se for curto (<=3), exige match exato de ID/Proposta acima
+            // Não busca parciais de CPF em buscas muito curtas para evitar ruído.
             if (searchTerm.length > 3) {
                 if (cpfDigits.includes(searchTerm)) return true;
             }
 
-            return false; // Trava busca numérica para ser estrita em IDs curtos
+            return false; // Trava busca numérica para não "vazar" em IDs errados
         }
 
         // 3. Busca por CPF via dígitos (mesmo que searchTerm tenha pontuação)

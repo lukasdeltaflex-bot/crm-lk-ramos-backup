@@ -224,12 +224,18 @@ html, body, *, [data-sidebar="inset"] {
 }
 
 @keyframes alert-pulse {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
-  50% { transform: scale(1.1); box-shadow: 0 0 20px 8px rgba(239, 68, 68, 0.3); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+  0% { transform: scale(1); box-shadow: 0 0 0 0 hsla(var(--status-color), 0.5); }
+  50% { transform: scale(1.05); box-shadow: 0 0 20px 8px hsla(var(--status-color), 0.3); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 hsla(var(--status-color), 0.5); }
 }
 .animate-alert-pulse {
   animation: alert-pulse 2s infinite ease-in-out;
+}
+
+.card-hot-neon {
+  box-shadow: 0 0 20px -5px hsla(var(--status-color), 0.5) !important;
+  border-color: hsl(var(--status-color)) !important;
+  animation: alert-pulse 3s infinite ease-in-out !important;
 }
 
 .print-selection .proposals-table tr:not([data-state="selected"]):not(:first-child) {

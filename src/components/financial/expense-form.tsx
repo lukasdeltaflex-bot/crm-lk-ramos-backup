@@ -125,7 +125,7 @@ export function ExpenseForm({ expense, categories, onSubmit, isSaving = false }:
             render={({ field }) => (
                 <FormItem>
                 <FormLabel>Categoria</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isSaving}>
+                <Select onValueChange={field.onChange} value={field.value} disabled={isSaving}>
                     <FormControl>
                     <SelectTrigger>
                         <SelectValue placeholder="Selecione a categoria" />
