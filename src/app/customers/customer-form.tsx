@@ -127,7 +127,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
   const { user } = useUser();
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
-  const lastProcessedCep = useRef('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const banks = userSettings?.banks || configData.banks;
   const availableTags = userSettings?.customerTags || configData.defaultCustomerTags;
@@ -274,14 +274,9 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
 
   useEffect(() => {
     const cleanCep = (watchCep || '').replace(/\D/g, '');
-    
+
     if (cleanCep.length === 8) {
-        if (cleanCep !== lastProcessedCep.current) {
-            lastProcessedCep.current = cleanCep;
-            handleCepLookup(cleanCep);
-        }
-    } else {
-        lastProcessedCep.current = '';
+      handleCepLookup(cleanCep);
     }
   }, [watchCep, handleCepLookup]);
 
