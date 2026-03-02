@@ -426,7 +426,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                         <FormItem>
                           <FormLabel className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                             <UserRound className="h-3.5 w-3.5 text-[#00AEEF]" /> Gênero
-                          </Label>
+                          </FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                                 <SelectTrigger className="rounded-full h-11 px-5 border-zinc-200 font-bold">
@@ -451,7 +451,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                             <FormItem>
                             <FormLabel className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                                 <Mail className="h-3.5 w-3.5 text-[#00AEEF]" /> E-mail
-                            </ExternalLink>
+                            </FormLabel>
                             <FormControl>
                                 <Input placeholder="exemplo@email.com" {...field} value={field.value ?? ''} className="rounded-full h-11 px-5 border-zinc-200 font-bold" />
                             </FormControl>
@@ -603,7 +603,6 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                         <div key={field.id} className="p-6 rounded-3xl bg-muted/10 border border-border/50 space-y-6 animate-in fade-in slide-in-from-left-2">
                             <div className="flex justify-between items-start">
                                 <div className="w-full space-y-6">
-                                    {/* DOCK 1: DADOS DO BENEFÍCIO (EMERALD/TEAL) */}
                                     <div className="flex flex-col md:flex-row items-center gap-3 bg-background/60 border border-border/50 rounded-2xl p-1.5 shadow-sm h-auto md:h-20 w-full">
                                         <div className="flex-1 flex flex-col justify-center px-5 border-b md:border-b-0 md:border-r border-border/30 py-3 md:py-0 w-full">
                                             <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1.5">Nº do Benefício</span>
@@ -649,7 +648,6 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                                         </div>
                                     </div>
 
-                                    {/* DOCK 2: RESERVAS DE CARTÃO (BLUE/ORANGE) */}
                                     <div className="flex flex-col md:flex-row items-center gap-3 bg-background/60 border border-border/50 rounded-2xl p-1.5 shadow-sm h-auto md:h-20 w-full">
                                         <div className="flex-1 flex flex-col justify-center px-5 border-b md:border-b-0 md:border-r border-border/30 py-3 md:py-0 w-full">
                                             <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-1.5">Reserva RMC</span>
