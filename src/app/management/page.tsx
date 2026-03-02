@@ -231,7 +231,11 @@ export default function ManagementPage() {
                                 {item.coverUrl ? (
                                     <img src={item.coverUrl} className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-500" alt={item.title} />
                                 ) : (
-                                    <Newspaper className="h-12 w-12 opacity-10" />
+                                    <div className="p-6 w-full h-full bg-primary/5 flex items-center justify-center text-center overflow-hidden">
+                                        <p className="text-[11px] text-muted-foreground font-medium leading-relaxed italic line-clamp-6">
+                                            {item.content}
+                                        </p>
+                                    </div>
                                 )}
                                 <div className="absolute top-3 right-3 flex gap-2">
                                     {item.expirationDate && (
