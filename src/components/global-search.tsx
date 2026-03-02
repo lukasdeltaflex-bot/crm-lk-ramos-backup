@@ -16,7 +16,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { collection, query, where } from 'firebase/firestore';
 import type { Customer, Proposal } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { normalizeString } from '@/lib/utils';
+import { normalizeString, getSmartTags } from '@/lib/utils';
 
 export function GlobalSearch() {
   const [open, setOpen] = React.useState(false);
@@ -73,7 +73,7 @@ export function GlobalSearch() {
         </kbd>
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Digite o ID exato, Nome ou CPF..." />
+        <CommandInput placeholder="ID, Nome, CPF ou Smart Tag (ELITE, ATIVO...)" />
         <CommandList>
           <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
           
@@ -98,11 +98,14 @@ export function GlobalSearch() {
           <CommandSeparator />
 
           <CommandGroup heading="Resultados">
-            {/* 🛡️ BUSCA NUCLEAR V12: Prioridade Zero e Inteligência de Dígitos */}
+            {/* 🛡️ BUSCA NUCLEAR V13: Indexação de Smart Tags incluída */}
             {validCustomers.map((customer) => {
               const cpfNumeric = customer.cpf?.replace(/\D/g, '') || '';
-              // O índice de busca inclui Nome, CPF formatado, CPF numérico e ID fixo
-              const searchIndex = `ID${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric}`;
+              const smartTags = getSmartTags(customer, proposals || []);
+              const smartTagsLabels = smartTags.map(st => st.label).join(' ');
+              
+              // O índice de busca inclui Nome, CPF, Smart Tags e ID
+              const searchIndex = `ID${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric} ${smartTagsLabels}`;
               
               return (
                 <CommandItem
@@ -115,7 +118,12 @@ export function GlobalSearch() {
                           <User className="mr-2 h-4 w-4 text-muted-foreground" />
                           <div className="flex flex-col">
                               <span className="font-bold text-sm">ID {customer.numericId} - {customer.name}</span>
-                              <span className="text-[10px] text-muted-foreground">CPF: {customer.cpf}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] text-muted-foreground">CPF: {customer.cpf}</span>
+                                {smartTags.slice(0, 1).map(tag => (
+                                    <span key={tag.label} className="text-[8px] font-black px-1 rounded bg-primary/5 text-primary/60 uppercase">{tag.label}</span>
+                                ))}
+                              </div>
                           </div>
                       </div>
                       <ArrowRight className='h-3 w-3 opacity-0 group-aria-selected:opacity-100 transition-opacity' />

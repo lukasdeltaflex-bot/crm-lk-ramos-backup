@@ -229,7 +229,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             customer.email,
             customer.observations,
             ...(customer.tags || []),
-            ...((customer as any).smartTags || [])
+            ...((customer as any).smartTags || []) // 💎 INDEXAÇÃO DE SMART TAGS ATIVADA
         ];
 
         return searchableFields.some(field => {
@@ -249,7 +249,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             <div className='relative w-full max-w-md group'>
                 <Search className='absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80 group-focus-within:opacity-100 transition-opacity' />
                 <Input
-                    placeholder="ID exato, Nome, CPF ou Smart Tag..."
+                    placeholder="ID exato, Nome, CPF ou Smart Tag (ELITE, ATIVO...)"
                     value={globalFilter ?? ''}
                     onChange={(event) => setGlobalFilter(event.target.value)}
                     className="pl-11 w-full bg-background border-2 border-zinc-300 dark:border-primary/40 h-11 rounded-full shadow-md focus-visible:ring-primary/20 transition-all font-bold text-sm"
