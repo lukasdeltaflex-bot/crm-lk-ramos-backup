@@ -1,14 +1,13 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Bot, Send, X, Loader2, CalendarClock, Cake, Hourglass, BadgePercent, Zap, Info, ChevronRight, MessageSquareText } from 'lucide-react';
-import type { Customer, Proposal, UserProfile, FollowUp, UserSettings } from '@/lib/types';
-import { differenceInDays, format, differenceInMonths } from 'date-fns';
+import { Bot, Send, X, Loader2, CalendarClock, Cake, Hourglass, BadgePercent, Zap, Info, ChevronRight, MessageSquareText, Wallet, Receipt } from 'lucide-react';
+import type { Customer, Proposal, UserProfile, FollowUp, UserSettings, Expense } from '@/lib/types';
+import { differenceInDays, format, differenceInMonths, parseISO, isBefore, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { calculateBusinessDays, getAge, cn, getWhatsAppUrl } from '@/lib/utils';
+import { calculateBusinessDays, getAge, cn, getWhatsAppUrl, formatCurrency } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from '@/hooks/use-toast';
 import { sendSummaryEmail } from '@/ai/flows/send-summary-email-flow';
@@ -23,6 +22,7 @@ interface DailySummaryProps {
   proposals: Proposal[];
   customers: Customer[];
   userProfile: UserProfile | null;
+  expenses?: Expense[];
 }
 
 function SummaryAlertItem({
@@ -76,7 +76,7 @@ function SummaryAlertItem({
   );
 }
 
-export function DailySummary({ proposals, customers, userProfile }: DailySummaryProps) {
+export function DailySummary({ proposals, customers, userProfile, expenses = [] }: DailySummaryProps) {
   const { user } = useUser();
   const firestore = useFirestore();
   const [isClient, setIsClient] = useState(false);
@@ -119,7 +119,7 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
   };
 
   const alertData = useMemo(() => {
-    if (!isClient || !proposals || !customers) return { birthdayAlerts: [], followUpReminders: [], commissionReminders: [], debtBalanceReminders: [], partialCommissionReminders: [], manualFollowUps: [], radarAlerts: [] };
+    if (!isClient || !proposals || !customers) return { birthdayAlerts: [], followUpReminders: [], commissionReminders: [], debtBalanceReminders: [], partialCommissionReminders: [], manualFollowUps: [], radarAlerts: [], expenseAlerts: [] };
 
     const now = new Date();
     const todayIso = format(now, 'yyyy-MM-dd');
@@ -218,8 +218,24 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
             link: '/follow-ups'
         }));
 
-    return { birthdayAlerts, followUpReminders, commissionReminders, debtBalanceReminders, partialCommissionReminders, manualFollowUps, radarAlerts };
-  }, [proposals, customers, followUps, isClient]);
+    // Alertas de Despesas Pendentes
+    const expenseAlerts = (expenses || [])
+        .filter(e => !e.paid)
+        .map(e => {
+            const dueDate = parseISO(e.date);
+            const isLate = isBefore(dueDate, startOfDay(now));
+            return {
+                id: `expense-${e.id}`,
+                title: e.description,
+                amount: e.amount,
+                date: format(dueDate, 'dd/MM/yyyy'),
+                isLate,
+                link: '/financial'
+            };
+        });
+
+    return { birthdayAlerts, followUpReminders, commissionReminders, debtBalanceReminders, partialCommissionReminders, manualFollowUps, radarAlerts, expenseAlerts };
+  }, [proposals, customers, followUps, expenses, isClient]);
   
   const visibleBirthdayAlerts = alertData.birthdayAlerts.filter(a => !dismissedItems.includes(a.id));
   const visibleFollowUpReminders = alertData.followUpReminders.filter(r => !dismissedItems.includes(r.id));
@@ -228,6 +244,7 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
   const visiblePartialCommissionReminders = alertData.partialCommissionReminders.filter(r => !dismissedItems.includes(r.id));
   const visibleManualFollowUps = alertData.manualFollowUps.filter(f => !dismissedItems.includes(f.id));
   const visibleRadarAlerts = alertData.radarAlerts.filter(r => !dismissedItems.includes(r.id));
+  const visibleExpenseAlerts = alertData.expenseAlerts.filter(e => !dismissedItems.includes(e.id));
 
   const hasVisibleAlerts = 
     visibleBirthdayAlerts.length > 0 ||
@@ -236,7 +253,8 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
     visibleDebtBalanceReminders.length > 0 ||
     visiblePartialCommissionReminders.length > 0 ||
     visibleManualFollowUps.length > 0 ||
-    visibleRadarAlerts.length > 0;
+    visibleRadarAlerts.length > 0 ||
+    visibleExpenseAlerts.length > 0;
 
   const handleSendEmail = async () => {
     if (!userProfile || !userProfile.email) {
@@ -332,6 +350,28 @@ export function DailySummary({ proposals, customers, userProfile }: DailySummary
         ) : (
             <ScrollArea className="h-[450px] w-full">
                 <div className="space-y-6 pr-4 pb-10">
+                    {/* SEÇÃO: CONTAS A PAGAR (VERMELHO) */}
+                    {visibleExpenseAlerts.length > 0 && (
+                        <div className="space-y-3">
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.25em] text-red-600 flex items-center gap-2 px-1">
+                                <Receipt className="h-3.5 w-3.5" /> Contas a Pagar (Operacional)
+                            </h3>
+                            <div className="grid gap-2.5">
+                                {visibleExpenseAlerts.map(e => (
+                                    <SummaryAlertItem 
+                                        key={e.id}
+                                        id={e.id}
+                                        icon={<Receipt className={cn("h-4.5 w-4.5", e.isLate ? "text-red-600 animate-pulse" : "text-red-400")} />}
+                                        title={e.title}
+                                        description={`Vencimento: ${e.date} | Valor: ${formatCurrency(e.amount)}. ${e.isLate ? 'DESPESA ATRASADA!' : 'Pendente de pagamento.'}`}
+                                        link={e.link}
+                                        onDismiss={handleDismiss}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {/* SEÇÃO: SALDO DEVEDOR (VERMELHO) */}
                     {visibleDebtBalanceReminders.length > 0 && (
                         <div className="space-y-3">

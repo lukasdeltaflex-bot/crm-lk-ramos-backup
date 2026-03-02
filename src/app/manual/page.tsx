@@ -34,7 +34,11 @@ import {
     LinkIcon,
     ArrowRight,
     HardDrive,
-    SearchX
+    SearchX,
+    Lock,
+    NotebookTabs,
+    UploadCloud,
+    Wallet
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -102,56 +106,88 @@ export default function ManualPage() {
                                 <h4 className="font-bold text-orange-700 flex items-center gap-2 mb-2">
                                     <AlertTriangle className="h-4 w-4" /> Alerta de Reprova Anterior
                                 </h4>
-                                <p className="text-xs text-muted-foreground">O sistema possui um **radar histórico**. Ao digitar o número do contrato, ele verifica instantaneamente se esse contrato já foi reprovado antes. Se sim, um alerta vermelho aparecerá no topo do formulário exibindo o motivo da reprova anterior (ex: Retenção ou Liquidado), evitando que você perca tempo com uma nova tentativa inútil.</p>
-                            </div>
-
-                            <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
-                                <h4 className="font-bold text-blue-700 flex items-center gap-2 mb-2">
-                                    <ListTodo className="h-4 w-4" /> Justificativa Obrigatória
-                                </h4>
-                                <p className="text-xs text-muted-foreground">Sempre que você alterar o status de uma proposta para **"Reprovado"**, o sistema exigirá que você selecione um motivo oficial. Esses motivos alimentam a inteligência do radar histórico.</p>
+                                <p className="text-xs text-muted-foreground">O sistema possui um **radar histórico**. Ao digitar o número do contrato, ele verifica instantaneamente se esse contrato já foi reprovado antes. Se sim, um alerta vermelho aparecerá no topo do formulário exibindo o motivo da reprova anterior.</p>
                             </div>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 3. FIDELIDADE E SMART TAGS */}
-                <AccordionItem value="fidelity-score" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
+                {/* 3. GESTÃO DE PARCEIROS & SEGURANÇA (NOVO) */}
+                <AccordionItem value="management-secure" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-blue-500/20">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-amber-100 text-amber-600"><Star className="h-5 w-5 fill-amber-500" /></div>
+                            <div className="p-2 rounded-xl bg-blue-100 text-blue-600"><Lock className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">3. Fidelidade e Smart Tags (Automáticas)</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Inteligência de Comportamento do Cliente</p>
+                                <p className="font-bold text-sm">3. Gestão de Parceiros & Senhas AES-256</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Criptografia Militar e Colaboração</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
-                        <div className="space-y-4">
-                            <div>
-                                <h4 className="font-bold mb-1">Score de Estrelas (Lucratividade)</h4>
-                                <p className="text-xs text-muted-foreground">Atribuído de 1 a 5 estrelas baseadas no **Lucro Líquido** gerado. Clientes 5 Estrelas são Diamante VIP (Mais de R$ 5.000 em comissões).</p>
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div className="p-4 rounded-xl bg-blue-50/5 border border-blue-200">
+                                <h4 className="font-bold text-blue-700 flex items-center gap-2 mb-2"><ShieldCheck className="h-4 w-4" /> Criptografia Blindada</h4>
+                                <p className="text-xs text-muted-foreground">Suas senhas bancárias são criptografadas via **AES-256-GCM** antes de saírem do seu navegador. Somente você, com seu login único, consegue descriptografar para visualizar.</p>
                             </div>
-                            <div className="p-4 rounded-xl bg-muted/20 border-2 border-dashed">
-                                <h4 className="font-bold mb-2">Smart Tags (Etiquetas de IA)</h4>
-                                <ul className="grid gap-2 md:grid-cols-2">
-                                    <li className="flex items-center gap-2 text-xs"><Badge className="bg-amber-500 h-4 text-[8px]">💎 ELITE</Badge> Comissões &gt; R$ 5.000</li>
-                                    <li className="flex items-center gap-2 text-xs"><Badge className="bg-orange-600 h-4 text-[8px]">🔥 ATIVO</Badge> Proposta nos últimos 30 dias</li>
-                                    <li className="flex items-center gap-2 text-xs"><Badge className="bg-blue-400 h-4 text-[8px]">🧊 REATIVAR</Badge> Sem produção há 180 dias</li>
-                                    <li className="flex items-center gap-2 text-xs"><Badge className="bg-purple-500 h-4 text-[8px]">⚖️ EM ESTEIRA</Badge> Contrato em andamento</li>
-                                </ul>
+                            <div className="p-4 rounded-xl bg-green-50/5 border border-green-200">
+                                <h4 className="font-bold text-green-700 flex items-center gap-2 mb-2"><NotebookTabs className="h-4 w-4" /> Mural Colaborativo</h4>
+                                <p className="text-xs text-muted-foreground">A aba de **Notícias** e **Links Úteis** é pública para sua equipe. Tudo o que você publicar aparecerá para seu irmão e outros sócios instantaneamente.</p>
                             </div>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 4. BUSCA NUCLEAR V12 */}
+                {/* 4. DOCUMENTAÇÃO & ESPAÇO (NOVO) */}
+                <AccordionItem value="docs-storage" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-purple-500/20">
+                    <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-xl bg-purple-100 text-purple-600"><UploadCloud className="h-5 w-5" /></div>
+                            <div className="text-left">
+                                <p className="font-bold text-sm">4. Central Multimídia & Gestão de Espaço</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Controle total de arquivos e armazenamento</p>
+                            </div>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
+                        <ul className="space-y-3">
+                            <li className="flex gap-3">
+                                <div className="h-5 w-5 rounded-full bg-purple-500 text-white flex items-center justify-center text-[10px] font-black shrink-0">1</div>
+                                <p><strong>Upload PNG/JPG/PDF</strong>: Suporte total para fotos de WhatsApp e extratos digitais com visualização rápida no sistema.</p>
+                            </li>
+                            <li className="flex gap-3">
+                                <div className="h-5 w-5 rounded-full bg-red-500 text-white flex items-center justify-center shrink-0"><Trash2 className="h-3 w-3" /></div>
+                                <p><strong>Exclusão Física</strong>: Ao remover um anexo de uma notícia ou cliente, o sistema exclui o arquivo **fisicamente do servidor**, liberando espaço no seu armazenamento em nuvem.</p>
+                            </li>
+                        </ul>
+                    </AccordionContent>
+                </AccordionItem>
+
+                {/* 5. FINANÇAS & ALERTAS (NOVO) */}
+                <AccordionItem value="finance-alerts" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-emerald-500/20">
+                    <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-xl bg-emerald-100 text-emerald-600"><Wallet className="h-5 w-5" /></div>
+                            <div className="text-left">
+                                <p className="font-bold text-sm">5. Fluxo de Caixa & Alertas de Despesas</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Saúde financeira operacional</p>
+                            </div>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
+                        <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                            <h4 className="font-bold text-emerald-700 flex items-center gap-2 mb-2"><TrendingUp className="h-4 w-4" /> Alertas no Dashboard</h4>
+                            <p className="text-xs text-muted-foreground">O painel principal agora monitora a aba **Financeiro/Despesas**. Contas pendentes ou atrasadas aparecerão no seu resumo matinal como alertas críticos, garantindo que nenhum custo operacional seja esquecido.</p>
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
+
+                {/* 6. BUSCA NUCLEAR V12 */}
                 <AccordionItem value="search-v12" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-blue-100 text-blue-600"><Binary className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">4. Busca Nuclear V12 (Precisão)</p>
+                                <p className="font-bold text-sm">6. Busca Nuclear V12 (Precisão)</p>
                                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Localização Instantânea de Registros</p>
                             </div>
                         </div>
@@ -167,110 +203,6 @@ export default function ManualPage() {
                                 <p><strong>CPF Inteligente</strong>: O motor de busca ignora pontuações. Pesquise `123.456.789-01` ou apenas `12345678901` para encontrar o cliente.</p>
                             </li>
                         </ul>
-                    </AccordionContent>
-                </AccordionItem>
-
-                {/* 5. NAVEGAÇÃO E EDIÇÃO ÁGIL */}
-                <AccordionItem value="agile-editing" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
-                    <AccordionTrigger className="hover:no-underline">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-purple-100 text-purple-600"><Pencil className="h-5 w-5" /></div>
-                            <div className="text-left">
-                                <p className="font-bold text-sm">5. Edição Contextual Direta</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Velocidade em Atualização de Dados</p>
-                            </div>
-                        </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
-                        <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/20">
-                            <h4 className="font-bold mb-2">Editar de Qualquer Lugar</h4>
-                            <p className="text-xs text-muted-foreground">Ao abrir a ficha de um cliente, o botão <strong>"Editar Cadastro"</strong> está disponível no topo. Isso permite corrigir dados instantaneamente sem sair do contexto do atendimento.</p>
-                        </div>
-                    </AccordionContent>
-                </AccordionItem>
-
-                {/* 6. CONCILIAÇÃO IA V2 */}
-                <AccordionItem value="finance-v2" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
-                    <AccordionTrigger className="hover:no-underline">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-green-100 text-green-600"><FileCheck2 className="h-5 w-5" /></div>
-                            <div className="text-left">
-                                <p className="font-bold text-sm">6. Conciliação Financeira IA V2</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Conferência de Comissões por Arquivo</p>
-                            </div>
-                        </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
-                        <p>O novo motor de conciliação elimina o trabalho manual de conferir pagamentos:</p>
-                        <div className="grid gap-3 md:grid-cols-2">
-                            <div className="p-3 rounded-xl bg-muted/20 border-2 border-dashed">
-                                <h4 className="text-[10px] font-black uppercase mb-1">Leitura de PDF de Promotora</h4>
-                                <p className="text-xs text-muted-foreground">Suba o relatório original da promotora. A IA cruza CPF e Nº da Proposta simultaneamente.</p>
-                            </div>
-                            <div className="p-3 rounded-xl bg-muted/20 border-2 border-dashed">
-                                <h4 className="text-[10px] font-black uppercase mb-1">Destaque de Divergências</h4>
-                                <p className="text-xs text-muted-foreground">Se o valor pago for menor que o esperado, o sistema sinaliza em vermelho automaticamente.</p>
-                            </div>
-                        </div>
-                    </AccordionContent>
-                </AccordionItem>
-
-                {/* 7. AGENDA DE ANIVERSÁRIOS */}
-                <AccordionItem value="birthday-calendar" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
-                    <AccordionTrigger className="hover:no-underline">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-pink-100 text-pink-600"><Cake className="h-5 w-5" /></div>
-                            <div className="text-left">
-                                <p className="font-bold text-sm">7. Agenda de Aniversários Consolidada</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Planejamento Mensal de Relacionamento</p>
-                            </div>
-                        </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
-                        <div className="p-4 rounded-xl bg-pink-500/5 border pink-500/20">
-                            <h4 className="font-bold mb-2">Visão Mensal Integrada</h4>
-                            <p className="text-xs text-muted-foreground">A ferramenta de aniversariantes agora faz parte da página de **Clientes**. Basta clicar na aba **"Aniversariantes"** para ver o calendário. Clique em qualquer nome para gerar uma mensagem personalizada com IA e enviar direto pelo WhatsApp.</p>
-                        </div>
-                    </AccordionContent>
-                </AccordionItem>
-
-                {/* 8. ARMAZENAMENTO E LIMITES */}
-                <AccordionItem value="storage-limits" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
-                    <AccordionTrigger className="hover:no-underline">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-zinc-100 text-zinc-600"><HardDrive className="h-5 w-5" /></div>
-                            <div className="text-left">
-                                <p className="font-bold text-sm">8. Armazenamento e Capacidade</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Gestão de Espaço em Nuvem</p>
-                            </div>
-                        </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
-                        <div className="space-y-4">
-                            <div className="p-4 rounded-xl bg-muted/20 border border-border">
-                                <h4 className="font-bold mb-2">Capacidade do Sistema</h4>
-                                <ul className="space-y-2">
-                                    <li className="flex items-center gap-2 text-xs">
-                                        <Check className="h-3 w-3 text-green-600" /> 
-                                        <strong>Plano Gratuito (Spark):</strong> Até 5 GB de armazenamento total.
-                                    </li>
-                                    <li className="flex items-center gap-2 text-xs">
-                                        <Check className="h-3 w-3 text-green-600" /> 
-                                        <strong>Plano Pago (Blaze):</strong> Capacidade ilimitada (pagamento sob demanda).
-                                    </li>
-                                </ul>
-                            </div>
-                            <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
-                                <h4 className="font-bold text-xs uppercase mb-2">Dicas de Economia de Espaço</h4>
-                                <p className="text-xs text-muted-foreground">
-                                    Para gerenciar centenas de clientes com eficiência nos 5GB gratuitos:
-                                    <br /><br />
-                                    1. 📱 **Fotos de Celular**: Use a configuração de "Baixa Resolução" ou mande via WhatsApp para si mesmo antes de subir.
-                                    <br />
-                                    2. 📄 **Documentos PDF**: Prefira arquivos gerados digitalmente a fotos de documentos.
-                                </p>
-                            </div>
-                        </div>
                     </AccordionContent>
                 </AccordionItem>
 
@@ -312,7 +244,7 @@ export default function ManualPage() {
                         <span className="text-[10px] font-black uppercase">5 GB Gratuitos</span>
                     </div>
                     <p className="text-[9px] text-muted-foreground mt-2 leading-tight">
-                        Capacidade de centenas de dossiês completos.
+                        Capacidade para milhares de dossiês. Excluir anexos libera espaço em tempo real.
                     </p>
                 </CardContent>
             </Card>

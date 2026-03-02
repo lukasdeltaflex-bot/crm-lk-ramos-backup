@@ -158,7 +158,7 @@ export function NewsForm({ initialData, onSubmit, isSaving = false }: NewsFormPr
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full overflow-hidden">
         <ScrollArea className="flex-1 pr-4">
             <div className="space-y-8 py-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -308,7 +308,7 @@ export function NewsForm({ initialData, onSubmit, isSaving = false }: NewsFormPr
             </div>
         </ScrollArea>
 
-        <div className="flex justify-end pt-6 border-t mt-4 shrink-0">
+        <div className="flex justify-end pt-6 border-t mt-4 shrink-0 bg-background">
           <Button type="submit" disabled={isSaving || isUploading} className="rounded-full px-12 h-12 font-black uppercase text-[11px] tracking-[0.2em] shadow-xl bg-primary shadow-primary/20 transition-all border-none">
             {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Publicando...</> : <><Save className="mr-2 h-4 w-4" /> Salvar Publicação</>}
           </Button>

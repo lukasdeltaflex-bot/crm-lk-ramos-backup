@@ -34,7 +34,7 @@ import {
 import { format, startOfMonth, endOfMonth, isValid, startOfDay, subDays, endOfDay, subMonths, parse, eachDayOfInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency, cn, calculateBusinessDays, cleanFirestoreData } from '@/lib/utils';
-import type { Proposal, Customer, UserProfile, UserSettings, Lead } from '@/lib/types';
+import type { Proposal, Customer, UserProfile, UserSettings, Lead, Expense } from '@/lib/types';
 import {
   Dialog,
   DialogContent,
@@ -108,6 +108,12 @@ export default function DashboardPage() {
   }, [firestore, user]);
   const { data: pendingLeads, isLoading: leadsLoading } = useCollection<Lead>(leadsQuery);
 
+  const expensesQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return collection(firestore, 'users', user.uid, 'expenses');
+  }, [firestore, user]);
+  const { data: expenses } = useCollection<Expense>(expensesQuery);
+
   const settingsDocRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return doc(firestore, 'userSettings', user.uid);
@@ -144,7 +150,6 @@ export default function DashboardPage() {
   const handleApproveLead = async (lead: Lead) => {
     if (!firestore || !user || !customers) return;
 
-    // 🛡️ TRAVA DE DUPLICIDADE (BUG #3 RESOLVIDO)
     const leadCpfClean = lead.cpf.replace(/\D/g, '');
     const existingCustomer = customers.find(c => c.cpf?.replace(/\D/g, '') === leadCpfClean);
 
@@ -412,7 +417,7 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <RadarWidget proposals={proposals || []} customers={customers || []} isLoading={proposalsLoading} />
-            <DailySummary proposals={proposals || []} customers={customers || []} userProfile={userProfile || null} />
+            <DailySummary proposals={proposals || []} customers={customers || []} userProfile={userProfile || null} expenses={expenses || []} />
         </div>
 
         <div className="w-full"><RecentProposals proposals={proposals || []} customers={customers || []} isLoading={proposalsLoading} /></div>

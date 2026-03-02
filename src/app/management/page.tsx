@@ -96,7 +96,6 @@ export default function ManagementPage() {
     try {
         const docId = id || doc(collection(firestore!, collectionName)).id;
         const docRef = doc(firestore!, collectionName, docId);
-        // Mantém o ownerId para permissão de edição futura, mas o read é global via Rules
         await setDoc(docRef, cleanFirestoreData({ ...data, id: docId, ownerId: user.uid }), { merge: true });
         toast({ title: 'Salvo com sucesso!' });
         closeModals();
@@ -270,7 +269,6 @@ export default function ManagementPage() {
                                     <div className="min-w-0">
                                         <h3 className="font-black uppercase text-sm tracking-tight truncate">{promoter.name}</h3>
                                         <div className="flex flex-wrap gap-x-6 gap-y-2 text-[10px] font-bold text-muted-foreground uppercase mt-2">
-                                            {/* GERENTE */}
                                             <div className="flex items-center gap-1.5 min-w-0">
                                                 <NotebookTabs className="h-3.5 w-3.5 text-blue-500 shrink-0" /> 
                                                 <span className="truncate">Gerente: {promoter.contactName || 'Sem nome'}</span>
@@ -287,7 +285,6 @@ export default function ManagementPage() {
                                                 )}
                                             </div>
 
-                                            {/* SUPORTE */}
                                             <div className="flex items-center gap-1.5 min-w-0">
                                                 <Headset className="h-3.5 w-3.5 text-blue-500 shrink-0" /> 
                                                 <span className="truncate">Suporte: {promoter.supportPhone || '---'}</span>
@@ -304,7 +301,6 @@ export default function ManagementPage() {
                                                 )}
                                             </div>
 
-                                            {/* E-MAIL GERENTE */}
                                             {promoter.managerEmail && (
                                                 <div className="flex items-center gap-1.5 min-w-0">
                                                     <Mail className="h-3.5 w-3.5 text-blue-500 shrink-0" />
@@ -422,14 +418,14 @@ export default function ManagementPage() {
       </Tabs>
 
       <Dialog open={isNewsModalOpen} onOpenChange={setIsNewsModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col rounded-[2.5rem]">
-            <DialogHeader className="px-6 pt-6 shrink-0">
+        <DialogContent className="max-w-4xl h-[90vh] overflow-hidden flex flex-col rounded-[2.5rem] p-0">
+            <DialogHeader className="px-8 pt-8 pb-4 shrink-0 border-b">
                 <DialogTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2">
                     <Newspaper className="h-5 w-5 text-primary" />
-                    {selectedItem ? 'Publicação' : 'Criar Notícia'}
+                    {selectedItem ? 'Editar Publicação' : 'Criar Nova Notícia'}
                 </DialogTitle>
             </DialogHeader>
-            <div className="flex-1 overflow-hidden px-6 pb-6 mt-4">
+            <div className="flex-1 overflow-hidden px-8 py-4">
                 <NewsForm initialData={selectedItem} onSubmit={(d) => handleSave('managementNews', d, selectedItem?.id)} isSaving={isSaving} />
             </div>
         </DialogContent>
