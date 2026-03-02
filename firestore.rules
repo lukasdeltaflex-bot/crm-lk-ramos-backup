@@ -9,6 +9,40 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    // 🛡️ NOVAS COLEÇÕES ISOLADAS (GESTÃO & NOTÍCIAS)
+    // Regras estritas por ownerId para garantir privacidade total
+    match /managementNews/{newsId} {
+      allow read, write: if isSignedIn() && (
+        resource == null || resource.data.ownerId == request.auth.uid
+      ) && (
+        request.resource == null || request.resource.data.ownerId == request.auth.uid
+      );
+    }
+
+    match /managementPromoters/{promoterId} {
+      allow read, write: if isSignedIn() && (
+        resource == null || resource.data.ownerId == request.auth.uid
+      ) && (
+        request.resource == null || request.resource.data.ownerId == request.auth.uid
+      );
+      
+      match /bankLogins/{bankId} {
+        allow read, write: if isSignedIn() && (
+          resource == null || resource.data.ownerId == request.auth.uid
+        ) && (
+          request.resource == null || request.resource.data.ownerId == request.auth.uid
+        );
+      }
+    }
+
+    match /managementQuickLinks/{linkId} {
+      allow read, write: if isSignedIn() && (
+        resource == null || resource.data.ownerId == request.auth.uid
+      ) && (
+        request.resource == null || request.resource.data.ownerId == request.auth.uid
+      );
+    }
+
     // Perfil do Usuário e Configurações
     match /users/{userId} {
       allow read, write: if isOwner(userId);

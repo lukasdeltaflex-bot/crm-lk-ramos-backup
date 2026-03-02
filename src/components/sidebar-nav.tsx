@@ -8,7 +8,7 @@ import {
   SidebarMenuButton,
   useSidebar
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, FileText, Users, CircleDollarSign, Cog, User, CalendarClock, BookOpen, Cake } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, CircleDollarSign, Cog, User, CalendarClock, BookOpen, NotebookTabs } from 'lucide-react';
 
 const links = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -16,6 +16,7 @@ const links = [
   { href: '/follow-ups', label: 'Retornos', icon: CalendarClock },
   { href: '/proposals', label: 'Propostas', icon: FileText },
   { href: '/financial', label: 'Financeiro', icon: CircleDollarSign },
+  { href: '/management', label: 'Gestão & Notícias', icon: NotebookTabs },
 ];
 
 const bottomLinks = [
@@ -38,7 +39,6 @@ export function SidebarNav() {
     <>
     <SidebarMenu>
       {links.filter(l => !l.hidden).map((link) => {
-        // Lógica de ativação inteligente: exata para o dashboard, ou por início de caminho para as outras seções
         const isActive = link.href === '/' 
             ? pathname === '/' 
             : pathname.startsWith(link.href);
