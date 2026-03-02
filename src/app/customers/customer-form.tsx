@@ -237,9 +237,11 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
   const handleCepLookup = useCallback(async (cleanCep: string) => {
     if (cleanCep.length !== 8) return;
     
+    console.log("🚀 DISPARANDO BUSCA CEP:", cleanCep);
     setIsFetchingCep(true);
     try {
         const response = await fetch(`/api/cep/${cleanCep}`);
+        console.log("📦 RESPOSTA API CEP:", response.status);
         
         if (!response.ok) {
             throw new Error('Falha na conexão com o serviço de CEP.');
@@ -248,6 +250,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
         const data = await response.json();
         
         if (data && data.erro) {
+            console.warn("⚠️ CEP NÃO ENCONTRADO NA BASE");
             toast({ 
                 variant: 'destructive', 
                 title: 'CEP não localizado', 
@@ -257,6 +260,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
         }
 
         if (data) {
+            console.log("✅ DADOS EXTRAÍDOS:", data);
             form.setValue('street', data.logradouro || '', { shouldValidate: true, shouldDirty: true });
             form.setValue('neighborhood', data.bairro || '', { shouldValidate: true, shouldDirty: true });
             form.setValue('city', data.localidade || '', { shouldValidate: true, shouldDirty: true });
@@ -264,7 +268,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
             toast({ title: "Endereço localizado!" });
         }
     } catch (error: any) {
-        console.warn("Erro na busca de CEP:", error.message);
+        console.error("❌ ERRO REAL BUSCA CEP:", error);
     } finally {
         setIsFetchingCep(false);
     }
@@ -272,6 +276,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
 
   useEffect(() => {
     const cleanCep = (watchCep || '').replace(/\D/g, '');
+    console.log("🔍 MONITORANDO CEP:", cleanCep);
 
     if (cleanCep.length === 8) {
       handleCepLookup(cleanCep);
