@@ -151,7 +151,6 @@ export default function DashboardPage() {
 
     const safeVal = (v: any) => (v === null || v === undefined || isNaN(v)) ? 0 : Number(v);
 
-    // 🛡️ OTIMIZAÇÃO V14: Filtro de passagem única para reduzir complexidade O(n^2)
     const digitizedInPeriod: Proposal[] = [];
     const digitizedInPrevPeriod: Proposal[] = [];
     const paidInPeriod: Proposal[] = [];
@@ -167,7 +166,18 @@ export default function DashboardPage() {
             if (d >= prevMonthStart && d <= prevMonthEnd) digitizedInPrevPeriod.push(p);
         }
 
-        if (statusLists[p.status]) statusLists[p.status].push(p);
+        // Para status operacionais (esteira), mostramos o estado atual do que está na mesa
+        if (p.status !== 'Reprovado' && statusLists[p.status]) {
+            statusLists[p.status].push(p);
+        }
+
+        // 🛡️ REGRA SOLICITADA: Reprovados apenas do mês vigente (evento da reprova)
+        if (p.status === 'Reprovado') {
+            const rejectionDate = p.statusUpdatedAt ? new Date(p.statusUpdatedAt) : (p.dateDigitized ? new Date(p.dateDigitized) : null);
+            if (rejectionDate && isValid(rejectionDate) && rejectionDate >= fromDate && rejectionDate <= effectiveToDate) {
+                statusLists['Reprovado'].push(p);
+            }
+        }
 
         if (p.status === 'Pago' && p.datePaidToClient) {
             const pd = new Date(p.datePaidToClient);
@@ -280,12 +290,12 @@ export default function DashboardPage() {
                 <StatsCard title="TOTAL DIGITADO" value={isPrivacyMode ? '•••••' : formatCurrency(stats.totalDigitado)} icon={FileText} description="PRODUÇÃO MENSAL" topContributor={stats.topTotal} percentage={stats.digitizedTrendPercentage} sparklineData={stats.productionTrend}/>
             </div>
             {['Pendente', 'Em Andamento', 'Aguardando Saldo', 'Saldo Pago', 'Reprovado'].map(s => (
-                <div key={s} className="cursor-pointer" onClick={() => setDialogData({ title: `${s} (Esteira)`, proposals: stats.statusAnalysis[s].proposals })}>
+                <div key={s} className="cursor-pointer" onClick={() => setDialogData({ title: `${s} (${s === 'Reprovado' ? 'Mês Vigente' : 'Esteira'})`, proposals: stats.statusAnalysis[s].proposals })}>
                     <StatsCard 
                         title={s} 
                         value={isPrivacyMode ? '•••••' : formatCurrency(stats.statusAnalysis[s].total)} 
                         icon={s === 'Pendente' ? BadgePercent : s === 'Em Andamento' ? Hourglass : s === 'Aguardando Saldo' ? Clock : s === 'Saldo Pago' ? CheckCircle2 : XCircle} 
-                        description={s === 'Reprovado' ? "PRODUÇÃO MENSAL" : "ESTEIRA"} 
+                        description={s === 'Reprovado' ? "TOTAL REPROVADO NO MÊS" : "ESTEIRA ATUAL"} 
                         topContributor={stats.statusAnalysis[s].top} 
                         isHot={stats.hotStatus === s} 
                         isCritical={s === 'Aguardando Saldo' && stats.criticalPortabilityCount > 0}
