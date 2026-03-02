@@ -127,6 +127,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
   const { user } = useUser();
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [lastProcessedCep, setLastProcessedCep] = useState('');
 
   const banks = userSettings?.banks || configData.banks;
   const availableTags = userSettings?.customerTags || configData.defaultCustomerTags;
@@ -195,35 +196,29 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
     return null;
   }, [watchBirthDate]);
 
-  // 🛡️ BLINDAGEM NUCLEAR V15: Verificação de duplicidade ignorando o próprio ID para evitar Falso Positivo
   const duplicity = useMemo(() => {
     const results = { phone: false, email: false, cpf: false };
     if (!allCustomers || allCustomers.length === 0) return results;
     
-    // Identifica o ID atual (Firestore) e o ID Numérico para exclusão mútua na busca
     const currentId = customer?.id || defaultValues?.id;
     const currentNumericId = customer?.numericId;
     
     const cleanPhone = (watchPhone || '').replace(/\D/g, '');
     const cleanCpf = (watchCpf || '').replace(/\D/g, '');
 
-    // Só valida duplicidade se os campos tiverem tamanho mínimo significativo para evitar spam de alertas
     const isPhoneSignificant = cleanPhone.length >= 10;
     const isCpfSignificant = cleanCpf.length >= 11;
 
     if (!isPhoneSignificant && !isCpfSignificant) return results;
 
     allCustomers.forEach(c => {
-        // Pula o próprio registro sendo editado (Evita o Falso Positivo)
         if (currentId && c.id === currentId) return;
         if (currentNumericId && c.numericId === currentNumericId) return;
 
-        // Compara telefone (limpo)
         if (isPhoneSignificant && c.phone?.replace(/\D/g, '') === cleanPhone) {
             results.phone = true;
         }
         
-        // Compara CPF (limpo)
         if (isCpfSignificant && c.cpf?.replace(/\D/g, '') === cleanCpf) {
             results.cpf = true;
         }
@@ -266,12 +261,17 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
 
   useEffect(() => {
     const cleanCep = (watchCep || '').replace(/\D/g, '');
-    const isActuallyChanging = form.formState.dirtyFields.cep;
     
-    if (cleanCep.length === 8 && isActuallyChanging) {
+    // 🛡️ CORREÇÃO BUG CEP SUBSEQUENTE: 
+    // Removemos a trava de dirtyFields e usamos uma memória de processamento (lastProcessedCep)
+    // para garantir que qualquer mudança para um novo CEP de 8 dígitos dispare a busca.
+    if (cleanCep.length === 8 && cleanCep !== lastProcessedCep) {
         handleCepLookup(cleanCep);
+        setLastProcessedCep(cleanCep);
+    } else if (cleanCep.length < 8 && lastProcessedCep !== '') {
+        setLastProcessedCep(''); // Reseta quando o campo é limpo para permitir nova busca do mesmo CEP se necessário
     }
-  }, [watchCep, handleCepLookup, form.formState.dirtyFields.cep]);
+  }, [watchCep, handleCepLookup, lastProcessedCep]);
 
   const handleSummarize = async () => {
     if (!watchObservations || watchObservations.trim().length < 10) {
