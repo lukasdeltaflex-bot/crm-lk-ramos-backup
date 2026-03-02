@@ -46,13 +46,17 @@ export function CustomerAiForm({ onSubmit }: CustomerAiFormProps) {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // 🛡️ PROTEÇÃO DE CARGA ÚTIL: Limita a 4MB para evitar "Connection Closed"
-      if (file.size > 4 * 1024 * 1024) {
+      // 🛡️ PROTEÇÃO DE CARGA ÚTIL V2: Limita a 4MB para evitar timeouts no motor de IA
+      const MAX_SIZE_MB = 4;
+      const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+
+      if (file.size > MAX_SIZE_BYTES) {
           toast({ 
               variant: 'destructive', 
-              title: 'Arquivo muito grande', 
-              description: 'O limite para análise via IA é de 4MB. Tente reduzir o PDF ou tirar uma foto mais leve.' 
+              title: 'Arquivo muito pesado', 
+              description: `O limite para análise via IA é de ${MAX_SIZE_MB}MB. Reduza a resolução da foto ou o tamanho do PDF antes de enviar.` 
           });
+          if (event.target) event.target.value = '';
           return;
       }
 
@@ -140,7 +144,7 @@ export function CustomerAiForm({ onSubmit }: CustomerAiFormProps) {
                             </div>
                             <div className="space-y-2">
                                 <p className="font-black text-lg uppercase tracking-tight">Leitor de Documentos IA</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] max-w-[200px]">Aceita extratos em PDF (até 4MB), fotos de RG ou telas de consulta bancária.</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] max-w-[200px]">Aceita extratos em PDF, fotos de RG ou telas de consulta bancária.</p>
                             </div>
                             <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="rounded-full px-8 h-12 font-black border-2 border-primary/20 bg-background hover:bg-primary hover:text-white transition-all">
                                 <Upload className="mr-2 h-4 w-4" />
@@ -197,9 +201,9 @@ export function CustomerAiForm({ onSubmit }: CustomerAiFormProps) {
 
         <Alert className="bg-orange-500/[0.03] border-orange-500/20 rounded-2xl">
             <Info className="h-4 w-4 text-orange-600" />
-            <AlertTitle className="text-xs font-black uppercase tracking-widest text-orange-700">Dica de Performance</AlertTitle>
+            <AlertTitle className="text-xs font-black uppercase tracking-widest text-orange-700">Blindagem de Performance</AlertTitle>
             <AlertDescription className="text-[10px] leading-tight text-orange-600/80 font-bold uppercase">
-                O extrator agora suporta PDFs oficiais. Para evitar erros, garanta que o arquivo tenha menos de 4MB. Documentos digitais geram resultados mais precisos que fotos.
+                O limite para análise via IA é de 4MB por arquivo. Para fotos tiradas diretamente da câmera, use o modo de baixa resolução ou envie via WhatsApp para si mesmo antes de subir aqui.
             </AlertDescription>
         </Alert>
     </div>

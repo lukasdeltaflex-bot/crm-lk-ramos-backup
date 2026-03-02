@@ -8,7 +8,7 @@ import { useMemo, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import { Button } from '../ui/button';
 import { Eye, EyeOff, TrendingUp } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 interface CommissionChartProps {
@@ -20,18 +20,26 @@ export function CommissionChart({ proposals }: CommissionChartProps) {
     const data = useMemo(() => {
         const monthlyData: { [key: string]: number } = {};
 
+        // 🛡️ BLINDAGEM DE CÁLCULO: Inicializa meses vazios para evitar NaN
+        const monthOrder = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+        monthOrder.forEach(m => monthlyData[m.toLowerCase()] = 0);
+
         proposals.forEach(p => {
-            if (p.commissionStatus !== 'Pendente' && p.commissionPaymentDate && p.amountPaid) {
-                const date = new Date(p.commissionPaymentDate);
-                const monthKey = format(date, 'MMM', { locale: ptBR }).replace('.', '').toLowerCase(); 
-                if (!monthlyData[monthKey]) {
-                    monthlyData[monthKey] = 0;
+            if (p.commissionStatus !== 'Pendente' && p.commissionPaymentDate) {
+                try {
+                    const date = new Date(p.commissionPaymentDate);
+                    if (isValid(date)) {
+                        const monthKey = format(date, 'MMM', { locale: ptBR }).replace('.', '').toLowerCase(); 
+                        const amount = Number(p.amountPaid) || 0;
+                        if (monthlyData.hasOwnProperty(monthKey)) {
+                            monthlyData[monthKey] += amount;
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Invalid date in commission chart:", p.commissionPaymentDate);
                 }
-                monthlyData[monthKey] += p.amountPaid;
             }
         });
-
-        const monthOrder = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         
         return monthOrder.map(monthName => ({
             name: monthName,

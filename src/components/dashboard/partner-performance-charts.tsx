@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
@@ -70,7 +69,7 @@ export function PartnerPerformanceCharts({ proposals }: PartnerPerformanceCharts
     const dataMap: Record<string, number> = {};
     proposals.forEach(p => {
       const bank = p.bank || 'Não Informado';
-      const amount = p.commissionBase === 'net' ? (p.netAmount || 0) : (p.grossAmount || 0);
+      const amount = Number(p.commissionBase === 'net' ? (p.netAmount || 0) : (p.grossAmount || 0)) || 0;
       dataMap[bank] = (dataMap[bank] || 0) + amount;
     });
 
@@ -84,7 +83,7 @@ export function PartnerPerformanceCharts({ proposals }: PartnerPerformanceCharts
     const dataMap: Record<string, number> = {};
     proposals.forEach(p => {
       const promoter = p.promoter || 'Não Informada';
-      const amount = p.commissionBase === 'net' ? (p.netAmount || 0) : (p.grossAmount || 0);
+      const amount = Number(p.commissionBase === 'net' ? (p.netAmount || 0) : (p.grossAmount || 0)) || 0;
       dataMap[promoter] = (dataMap[promoter] || 0) + amount;
     });
 
@@ -99,7 +98,7 @@ export function PartnerPerformanceCharts({ proposals }: PartnerPerformanceCharts
     proposals.forEach(p => {
       if (p.status === 'Pago' || p.status === 'Saldo Pago') {
         const operator = p.operator || 'Sem Operador';
-        const amount = p.commissionBase === 'net' ? (p.netAmount || 0) : (p.grossAmount || 0);
+        const amount = Number(p.commissionBase === 'net' ? (p.netAmount || 0) : (p.grossAmount || 0)) || 0;
         dataMap[operator] = (dataMap[operator] || 0) + amount;
       }
     });
@@ -148,7 +147,17 @@ export function PartnerPerformanceCharts({ proposals }: PartnerPerformanceCharts
     </div>
   );
 
-  if (proposals.length === 0) return null;
+  if (proposals.length === 0) return (
+    <Card className="h-full border-border/50 shadow-md">
+        <CardHeader>
+            <CardTitle className="text-xl font-headline text-primary">Rankings de Produção</CardTitle>
+            <CardDescription>Aguardando propostas para gerar análise</CardDescription>
+        </CardHeader>
+        <CardContent className="h-[300px] flex items-center justify-center text-muted-foreground border-2 border-dashed rounded-xl m-6">
+            Sem dados suficientes no período.
+        </CardContent>
+    </Card>
+  );
 
   return (
     <Card className="h-full border-border/50 shadow-md">
