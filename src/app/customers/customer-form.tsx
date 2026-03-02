@@ -242,19 +242,37 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
     setIsFetchingCep(true);
     try {
         const response = await fetch(`/api/cep/${cleanCep}`);
-        if (!response.ok) throw new Error('Falha no proxy');
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Falha na conexão com o serviço de CEP.');
+        }
+
         const data = await response.json();
         
-        if (data && !data.erro) {
+        if (data && data.erro) {
+            toast({ 
+                variant: 'destructive', 
+                title: 'CEP não localizado', 
+                description: 'Este código não existe na base oficial dos Correios.' 
+            });
+            return;
+        }
+
+        if (data) {
             form.setValue('street', data.logradouro || '', { shouldValidate: true, shouldDirty: true });
             form.setValue('neighborhood', data.bairro || '', { shouldValidate: true, shouldDirty: true });
             form.setValue('city', data.localidade || '', { shouldValidate: true, shouldDirty: true });
             form.setValue('state', data.uf || '', { shouldValidate: true, shouldDirty: true });
             toast({ title: "Endereço localizado!" });
         }
-    } catch (error) {
-        console.warn("Busca automática de CEP indisponível.");
-        toast({ variant: 'destructive', title: 'CEP não encontrado', description: 'Verifique o número e tente novamente.' });
+    } catch (error: any) {
+        console.warn("Erro na busca de CEP:", error.message);
+        toast({ 
+            variant: 'destructive', 
+            title: 'Busca Indisponível', 
+            description: error.message || 'Verifique sua conexão e tente novamente.' 
+        });
     } finally {
         setIsFetchingCep(false);
     }
@@ -263,13 +281,14 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
   useEffect(() => {
     const cleanCep = (watchCep || '').replace(/\D/g, '');
     
-    // 🛡️ RESET AGRESSIVO: Se não tem 8 dígitos, libera a memória para permitir nova busca
+    // 🛡️ GATILHO DE BUSCA V15: Detecção exata de 8 dígitos para disparo único
     if (cleanCep.length === 8) {
         if (cleanCep !== lastProcessedCep.current) {
             handleCepLookup(cleanCep);
             lastProcessedCep.current = cleanCep;
         }
     } else {
+        // Se o usuário apagar ou alterar, limpa a trava para permitir nova busca ao atingir 8 dígitos
         lastProcessedCep.current = '';
     }
   }, [watchCep, handleCepLookup]);

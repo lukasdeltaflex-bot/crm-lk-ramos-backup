@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 
 /**
  * 🛡️ BACKEND PROXY (Node.js / Next.js API Route)
- * Esta função roda no servidor, não no navegador do usuário.
- * Ela é imune a bloqueios de rede do browser (CORS) e extensões.
+ * Esta função roda no servidor e é responsável por consultar o ViaCEP.
+ * Removido o cache agressivo para evitar falhas em consultas consecutivas no App Hosting.
  */
 export async function GET(
   request: Request,
@@ -17,21 +17,22 @@ export async function GET(
   }
 
   try {
+    // 🛡️ NO-CACHE: Garante que cada busca seja fresca, ideal para testes de múltiplos CEPs
     const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`, {
+      cache: 'no-store',
       headers: {
         'Accept': 'application/json',
-      },
-      next: { revalidate: 3600 } // Cache de 1 hora no servidor
+      }
     });
 
     if (!response.ok) {
-      throw new Error('Falha na comunicação com ViaCEP');
+      return NextResponse.json({ error: 'Serviço externo indisponível' }, { status: 502 });
     }
 
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
     console.error('CEP Proxy Error:', error);
-    return NextResponse.json({ error: 'Falha na rede externa' }, { status: 500 });
+    return NextResponse.json({ error: 'Falha na comunicação com o serviço de CEP' }, { status: 500 });
   }
 }
