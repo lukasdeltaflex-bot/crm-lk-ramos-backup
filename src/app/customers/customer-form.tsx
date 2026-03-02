@@ -53,7 +53,7 @@ import { validateCPF, handlePhoneMask, cn, isWhatsApp, getWhatsAppUrl, cleanBank
 import type { Customer, UserSettings } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
@@ -127,7 +127,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
   const { user } = useUser();
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
-  const [lastProcessedCep, setLastProcessedCep] = useState('');
+  const lastProcessedCep = useRef('');
 
   const banks = userSettings?.banks || configData.banks;
   const availableTags = userSettings?.customerTags || configData.defaultCustomerTags;
@@ -262,16 +262,15 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
   useEffect(() => {
     const cleanCep = (watchCep || '').replace(/\D/g, '');
     
-    // 🛡️ CORREÇÃO BUG CEP SUBSEQUENTE: 
-    // Removemos a trava de dirtyFields e usamos uma memória de processamento (lastProcessedCep)
-    // para garantir que qualquer mudança para um novo CEP de 8 dígitos dispare a busca.
-    if (cleanCep.length === 8 && cleanCep !== lastProcessedCep) {
-        handleCepLookup(cleanCep);
-        setLastProcessedCep(cleanCep);
-    } else if (cleanCep.length < 8 && lastProcessedCep !== '') {
-        setLastProcessedCep(''); // Reseta quando o campo é limpo para permitir nova busca do mesmo CEP se necessário
+    if (cleanCep.length === 8) {
+        if (cleanCep !== lastProcessedCep.current) {
+            handleCepLookup(cleanCep);
+            lastProcessedCep.current = cleanCep;
+        }
+    } else if (cleanCep.length === 0) {
+        lastProcessedCep.current = ''; // Reseta memória ao limpar campo
     }
-  }, [watchCep, handleCepLookup, lastProcessedCep]);
+  }, [watchCep, handleCepLookup]);
 
   const handleSummarize = async () => {
     if (!watchObservations || watchObservations.trim().length < 10) {
