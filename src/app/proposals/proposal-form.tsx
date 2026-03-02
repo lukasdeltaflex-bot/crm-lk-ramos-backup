@@ -87,7 +87,6 @@ const proposalSchema = z.object({
   status: z.string({ required_error: 'Selecione um status.' }),
   rejectionReason: z.string().optional(),
   
-  // 🛡️ BLINDAGEM FINANCEIRA: Campos de comissão agora explícitos no esquema para evitar sobrescritas acidentais
   commissionStatus: z.string().optional(),
   amountPaid: z.coerce.number().optional(),
   commissionPaymentDate: z.string().optional(),
@@ -129,11 +128,21 @@ const proposalSchema = z.object({
   observations: z.string().optional(),
   checklist: z.record(z.boolean()).optional(),
 }).superRefine((data, ctx) => {
+  // 🛡️ REGRA 2: Nº Contrato Obrigatório para Portabilidade
   if (data.product === 'Portabilidade' && (!data.originalContractNumber || data.originalContractNumber.trim() === '')) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: "O número do contrato portado é obrigatório para Portabilidade.",
       path: ["originalContractNumber"],
+    });
+  }
+
+  // 🛡️ REGRA 1: Justificativa Obrigatória para Status Reprovado
+  if (data.status === 'Reprovado' && (!data.rejectionReason || data.rejectionReason.trim() === '')) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Selecione o motivo da reprova para continuar.",
+      path: ["rejectionReason"],
     });
   }
 });
@@ -233,7 +242,6 @@ export function ProposalForm({
       status: source?.status || 'Em Andamento',
       rejectionReason: source?.rejectionReason || '',
       
-      // 🛡️ PRESERVAÇÃO FINANCEIRA: Garante que dados de pagamento não se percam ou mudem sozinhos
       commissionStatus: source?.commissionStatus || '',
       amountPaid: source?.amountPaid || 0,
       commissionPaymentDate: source?.commissionPaymentDate ? formatDateForForm(source.commissionPaymentDate) : '',
@@ -301,19 +309,12 @@ export function ProposalForm({
     );
   }, [watchOriginalContract, allProposals, proposal?.id, productValue]);
 
-  /**
-   * 🛡️ MOTOR DE AUDITORIA DE DUPLICIDADE V2
-   * Verifica se o número da proposta já existe em qualquer outro registro da base.
-   */
   const isDuplicateProposal = useMemo(() => {
     const cleanNum = watchProposalNumber?.trim().toUpperCase();
     if (!cleanNum || cleanNum === '') return false;
     
     return allProposals.some(p => {
-        // Ignora o próprio documento se estivermos editando
         if (proposal?.id && p.id === proposal.id) return false;
-        
-        // Compara números de forma normalizada
         return p.proposalNumber?.trim().toUpperCase() === cleanNum;
     });
   }, [watchProposalNumber, allProposals, proposal?.id]);
@@ -360,16 +361,7 @@ export function ProposalForm({
         toast({
             variant: 'destructive',
             title: '⚠️ BLOQUEIO DE SEGURANÇA',
-            description: 'Já existe uma proposta cadastrada com este número exato. Verifique os dados.'
-        });
-        return;
-    }
-
-    if (data.status === 'Reprovado' && !data.rejectionReason) {
-        toast({
-            variant: 'destructive',
-            title: '⚠️ MOTIVO OBRIGATÓRIO',
-            description: 'Você deve especificar o motivo da reprova para salvar.'
+            description: 'Já existe uma proposta cadastrada com este número exato.'
         });
         return;
     }
@@ -395,7 +387,6 @@ export function ProposalForm({
     const isAverbado = !!finalData.dateApproved;
     const isNotReprovado = finalData.status !== 'Reprovado';
 
-    // 🛡️ REGRAS DE COMISSÃO: Inicializa apenas se estiver vazio. Nunca muda status 'Paga' automaticamente.
     if (isNotReprovado && isAverbado) {
         if (!finalData.commissionStatus || finalData.commissionStatus === '') {
             finalData.commissionStatus = 'Pendente';
