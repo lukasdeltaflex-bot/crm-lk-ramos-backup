@@ -42,11 +42,9 @@ import {
     Home,
     Map,
     Hash,
-    CircleDollarSign,
-    Tag,
     X,
     Info,
-    CreditCard as CardIcon
+    Tag
 } from 'lucide-react';
 import { format, parse, isValid, differenceInYears } from 'date-fns';
 import { validateCPF, handlePhoneMask, cn, isWhatsApp, getWhatsAppUrl, cleanBankName } from '@/lib/utils';
