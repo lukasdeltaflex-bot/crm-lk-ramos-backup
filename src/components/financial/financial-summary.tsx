@@ -69,14 +69,14 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
 
     // 2. COMISSÃO RECEBIDA
     const receivedInPeriod = allProposals.filter(p => {
-        if (p.commissionStatus !== 'Paga' || !p.commissionPaymentDate) return false;
+        if (p.commissionStatus !== 'Paga' && p.commissionStatus !== 'Parcial' || !p.commissionPaymentDate) return false;
         const d = new Date(p.commissionPaymentDate);
         return d >= fromDate && d <= effectiveToDate;
     });
     const totalComissaoRecebida = receivedInPeriod.reduce((sum, p) => sum + safeValue(p.amountPaid), 0);
 
     const receivedInPrev = allProposals.filter(p => {
-        if (p.commissionStatus !== 'Paga' || !p.commissionPaymentDate) return false;
+        if (p.commissionStatus !== 'Paga' && p.commissionStatus !== 'Parcial' || !p.commissionPaymentDate) return false;
         const d = new Date(p.commissionPaymentDate);
         return d >= prevMonthStart && d <= prevMonthEnd;
     }).reduce((sum, p) => sum + safeValue(p.amountPaid), 0);
@@ -84,6 +84,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
     const receivedTrend = receivedInPrev > 0 ? ((totalComissaoRecebida - receivedInPrev) / receivedInPrev) * 100 : 0;
 
     // 3. SALDO A RECEBER (Averbados)
+    // 🛡️ CORREÇÃO BUG #2: Abatendo o que já foi pago parcialmente
     const averbados = allProposals.filter(p => {
         const hasAverbacao = !!p.dateApproved;
         const isNotFullyPaid = p.commissionStatus !== 'Paga';
@@ -118,7 +119,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
         const dEnd = endOfDay(day);
         return allProposals
             .filter(p => {
-                if (p.commissionStatus !== 'Paga' || !p.commissionPaymentDate) return false;
+                if ((p.commissionStatus !== 'Paga' && p.commissionStatus !== 'Parcial') || !p.commissionPaymentDate) return false;
                 const d = new Date(p.commissionPaymentDate);
                 return d >= dStart && d <= dEnd;
             })
@@ -177,7 +178,7 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
                     title="SALDO A RECEBER"
                     value={isPrivacyMode ? privacyPlaceholder : formatCurrency(totalSaldoAReceber)}
                     icon={Hourglass}
-                    description="APENAS CONTRATOS AVERBADOS"
+                    description="COMISSÕES AVERBADAS RESTANTES"
                     isHot={metrics.hotKpi === "SALDO A RECEBER"}
                     sparklineData={productionTrend.map(v => v * 0.8)}
                 />

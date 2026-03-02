@@ -8,7 +8,7 @@ import { getColumns } from './columns';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, FileDown, UserCheck, UserX, Trash2, Sparkles, Landmark, X, Tag, Cake } from 'lucide-react';
 import { CustomerForm } from './customer-form';
-import type { Customer, UserSettings } from '@/lib/types';
+import type { Customer, UserSettings, Proposal } from '@/lib/types';
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from '@/firebase';
 import { collection, doc, updateDoc, setDoc, query, where, writeBatch } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
@@ -37,7 +37,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getAge, cn, cleanBankName, cleanFirestoreData } from '@/lib/utils';
+import { getAge, cn, cleanBankName, cleanFirestoreData, getSmartTags } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -68,11 +68,9 @@ function CustomersPageContent() {
   const [isSaving, setIsSaving] = React.useState(false);
   const tableRef = React.useRef<CustomerDataTableHandle>(null);
   
-  // Aba padrão baseada no parâmetro de URL ou 'active'
   const initialTab = searchParams.get('tab') || 'active';
   const [filter, setFilter] = React.useState(initialTab);
   
-  // Filtros Avançados
   const [rmcFilter, setRmcFilter] = React.useState('all');
   const [rccFilter, setRccFilter] = React.useState('all');
   const [tagFilter, setTagFilter] = React.useState('all');
@@ -82,26 +80,40 @@ function CustomersPageContent() {
     return query(collection(firestore, 'customers'), where('ownerId', '==', user.uid));
   }, [firestore, user]);
 
+  const proposalsQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return query(collection(firestore, 'loanProposals'), where('ownerId', '==', user.uid));
+  }, [firestore, user]);
+
   const settingsDocRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return doc(firestore, 'userSettings', user.uid);
   }, [firestore, user]);
 
   const { data: customers, isLoading: isCustomersLoading } = useCollection<Customer>(customersQuery);
+  const { data: proposals } = useCollection<Proposal>(proposalsQuery);
   const { data: userSettings } = useDoc<UserSettings>(settingsDocRef);
 
   const banks = userSettings?.banks || configData.banks;
   const availableTags = userSettings?.customerTags || configData.defaultCustomerTags;
   const showLogos = userSettings?.showBankLogos ?? true;
 
-  const filteredCustomers = React.useMemo(() => {
+  const processedCustomers = React.useMemo(() => {
     if (!customers) return [];
     
-    return customers.filter(c => {
-        // Filtro de Aba (Ativo/Inativo) - Aniversariantes usa todos os clientes internamente no componente
-        if (filter === 'birthdays') return false;
+    // 🛡️ ENRIQUECIMENTO COM SMART TAGS (BUG #1)
+    return customers.map(c => {
+        const smartTags = getSmartTags(c, proposals || []);
+        return {
+            ...c,
+            smartTags: smartTags.map(st => st.label)
+        };
+    });
+  }, [customers, proposals]);
 
-        // Filtro de Anonimização
+  const filteredCustomers = React.useMemo(() => {
+    return processedCustomers.filter(c => {
+        if (filter === 'birthdays') return false;
         if (c.name === 'Cliente Removido') return false;
 
         const age = getAge(c.birthDate);
@@ -111,35 +123,32 @@ function CustomersPageContent() {
         
         if (!isStatusMatch) return false;
 
-        // Filtro de Banco RMC
         if (rmcFilter !== 'all') {
             const hasRmc = c.benefits?.some(b => b.rmcBank === rmcFilter);
             if (!hasRmc) return false;
         }
 
-        // Filtro de Banco RCC
         if (rccFilter !== 'all') {
             const hasRcc = c.benefits?.some(b => b.rccBank === rccFilter);
             if (!hasRcc) return false;
         }
 
-        // Filtro de Tag
         if (tagFilter !== 'all') {
-            const hasTag = c.tags?.includes(tagFilter);
+            const hasTag = c.tags?.includes(tagFilter) || c.smartTags?.includes(tagFilter);
             if (!hasTag) return false;
         }
 
         return true;
     });
-  }, [customers, filter, rmcFilter, rccFilter, tagFilter]);
+  }, [processedCustomers, filter, rmcFilter, rccFilter, tagFilter]);
 
   const activeCount = React.useMemo(() => 
-    (customers || []).filter(c => c.name !== 'Cliente Removido' && (c.status !== 'inactive' && getAge(c.birthDate) < 75)).length,
-  [customers]);
+    processedCustomers.filter(c => c.name !== 'Cliente Removido' && (c.status !== 'inactive' && getAge(c.birthDate) < 75)).length,
+  [processedCustomers]);
 
   const inactiveCount = React.useMemo(() => 
-    (customers || []).filter(c => c.name !== 'Cliente Removido' && (c.status === 'inactive' || getAge(c.birthDate) >= 75)).length,
-  [customers]);
+    processedCustomers.filter(c => c.name !== 'Cliente Removido' && (c.status === 'inactive' || getAge(c.birthDate) >= 75)).length,
+  [processedCustomers]);
 
   const handleNewCustomer = React.useCallback(() => {
     setSelectedCustomer(undefined);
@@ -247,7 +256,7 @@ function CustomersPageContent() {
             ...formData,
             id: docId,
             ownerId: user.uid,
-            numericId: (sheetMode === 'edit' && selectedCustomer) ? selectedCustomer.numericId : (customers?.length ? Math.max(...customers.map(c => c.numericId || 0)) + 1 : 1)
+            numericId: (sheetMode === 'edit' && selectedCustomer) ? selectedCustomer.numericId : (processedCustomers?.length ? Math.max(...processedCustomers.map(c => c.numericId || 0)) + 1 : 1)
         });
 
         setDoc(docRef, finalData, { merge: true })
@@ -454,7 +463,7 @@ function CustomersPageContent() {
             key={selectedCustomer?.id || (defaultValues?.id ? `ai-${defaultValues.id}` : 'new')}
             onSubmit={handleFormSubmit}
             customer={selectedCustomer}
-            allCustomers={customers || []}
+            allCustomers={processedCustomers || []}
             userSettings={userSettings}
             defaultValues={defaultValues}
             isSaving={isSaving}
@@ -470,7 +479,7 @@ function CustomersPageContent() {
               </div>
           ) : (
               <div className="animate-in fade-in duration-500">
-                  <BirthdayCalendar customers={customers || []} />
+                  <BirthdayCalendar customers={processedCustomers || []} />
               </div>
           )
       ) : (

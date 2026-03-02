@@ -237,12 +237,10 @@ export const getColumns = (
                     {age >= 74 && (
                         <Badge variant="destructive" className="w-fit h-4 text-[8px] font-black px-1.5 py-0 animate-pulse">ALERTA 75 ANOS</Badge>
                     )}
-                    {customer.tags?.slice(0, 2).map(tag => (
-                        <Badge key={tag} variant="outline" className="h-4 text-[7px] font-black px-1.5 py-0 bg-muted/20 border-zinc-200 truncate max-w-[60px]">{tag}</Badge>
+                    {/* 🛡️ SMART TAGS NA TABELA (BUG #1) */}
+                    {(customer as any).smartTags?.slice(0, 2).map((tag: string) => (
+                        <Badge key={tag} className={cn("h-4 text-[7px] font-black px-1.5 py-0 border-none text-white shadow-sm", tag.includes('ELITE') ? 'bg-amber-500' : tag.includes('ATIVO') ? 'bg-orange-600' : 'bg-blue-400')}>{tag}</Badge>
                     ))}
-                    {(customer.tags?.length || 0) > 2 && (
-                        <span className="text-[7px] font-black text-muted-foreground">+{customer.tags!.length - 2}</span>
-                    )}
                 </div>
             </div>
         )
