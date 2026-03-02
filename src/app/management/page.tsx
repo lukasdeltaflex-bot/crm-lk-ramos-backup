@@ -63,11 +63,8 @@ export default function ManagementPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   // Firestore Queries
-  // 🔓 COMPARTILHADO: Notícias e Links agora aparecem para TODOS (sem filtro de ownerId no read)
   const newsQuery = useMemoFirebase(() => query(collection(firestore!, 'managementNews'), orderBy('date', 'desc')), []);
   const linksQuery = useMemoFirebase(() => query(collection(firestore!, 'managementQuickLinks'), orderBy('name', 'asc')), []);
-  
-  // 🔒 PRIVADO: Promotoras permanecem individuais por segurança de senha
   const promotersQuery = useMemoFirebase(() => user ? query(collection(firestore!, 'managementPromoters'), where('ownerId', '==', user.uid), orderBy('name', 'asc')) : null, [user]);
 
   const { data: news, isLoading: loadingNews } = useCollection(newsQuery);
@@ -366,9 +363,16 @@ export default function ManagementPage() {
       </Tabs>
 
       <Dialog open={isNewsModalOpen} onOpenChange={setIsNewsModalOpen}>
-        <DialogContent className="max-w-3xl">
-            <DialogHeader><DialogTitle>{selectedItem ? 'Visualizar / Editar Notícia' : 'Publicar Nova Notícia'}</DialogTitle></DialogHeader>
-            <NewsForm initialData={selectedItem} onSubmit={(d) => handleSave('managementNews', d, selectedItem?.id)} isSaving={isSaving} />
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col rounded-[2rem]">
+            <DialogHeader className="px-6 pt-6 shrink-0">
+                <DialogTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2">
+                    <Newspaper className="h-5 w-5 text-primary" />
+                    {selectedItem ? 'Editar Publicação' : 'Criar Nova Notícia'}
+                </DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 overflow-hidden px-6 pb-6 mt-4">
+                <NewsForm initialData={selectedItem} onSubmit={(d) => handleSave('managementNews', d, selectedItem?.id)} isSaving={isSaving} />
+            </div>
         </DialogContent>
       </Dialog>
 
