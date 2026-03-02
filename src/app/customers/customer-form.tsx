@@ -232,6 +232,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
         
         if (!response.ok) {
             console.error("❌ Erro na ponte da API de CEP.");
+            toast({ variant: 'destructive', title: 'Falha na conexão', description: 'O serviço de CEP está temporariamente indisponível.' });
             return;
         }
 
@@ -401,7 +402,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                                         className={cn("rounded-full h-11 px-5 border-zinc-200 font-bold transition-all", (duplicity.cpf || errors.cpf) && "border-red-500 bg-red-50 ring-2 ring-red-500/20")}
                                     />
                                     {(duplicity.cpf || errors.cpf) && <AlertTriangle className="absolute right-4 top-3.5 h-5 w-5 text-red-500 animate-pulse" />}
-                                    {!errors.cpf && !duplicity.cpf && watchCpf.length === 14 && <CheckCircle2 className="absolute right-4 top-3.5 h-5 w-5 text-green-500" />}
+                                    {!errors.cpf && !duplicity.cpf && (watchCpf || '').length === 14 && <CheckCircle2 className="absolute right-4 top-3.5 h-5 w-5 text-green-500" />}
                                 </div>
                             </FormControl>
                             </FormItem>
