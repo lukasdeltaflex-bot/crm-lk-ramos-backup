@@ -41,7 +41,8 @@ import {
     Wallet,
     Clock,
     Trash2,
-    TrendingUp
+    TrendingUp,
+    Receipt
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -203,8 +204,8 @@ export default function ManualPage() {
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
                         <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
-                            <h4 className="font-bold text-emerald-700 flex items-center gap-2 mb-2"><TrendingUp className="h-4 w-4" /> Alertas no Dashboard</h4>
-                            <p className="text-xs text-muted-foreground">O painel principal monitora a aba **Financeiro/Despesas**. Contas pendentes ou atrasadas aparecerão no seu resumo matinal como alertas críticos.</p>
+                            <h4 className="font-bold text-emerald-700 flex items-center gap-2 mb-2"><Receipt className="h-4 w-4" /> Alertas no Dashboard</h4>
+                            <p className="text-xs text-muted-foreground">O painel principal monitora a aba **Financeiro/Despesas**. Contas pendentes ou atrasadas aparecerão no seu resumo matinal como alertas críticos na seção de Inteligência Diária.</p>
                         </div>
                     </AccordionContent>
                 </AccordionItem>

@@ -89,19 +89,14 @@ export default function ManagementPage() {
   const [bankLogins, setBankLogins] = useState<any[]>([]);
   const [loadingLogins, setLoadingLogins] = useState(false);
 
-  // 🛡️ FILTRO DE EXPIRAÇÃO V2
   const news = React.useMemo(() => {
     if (!rawNews) return [];
     const today = startOfDay(new Date());
     
     return rawNews.filter(item => {
-        // Se não tem data de expiração, é permanente
         if (!item.expirationDate) return true;
-        
         try {
             const expDate = startOfDay(parseISO(item.expirationDate));
-            // A notícia expira no final do dia marcado. 
-            // Se hoje é DEPOIS do dia de expiração, removemos.
             return !isAfter(today, expDate);
         } catch (e) {
             return true;
@@ -323,7 +318,6 @@ export default function ManagementPage() {
                                             )}
                                         </div>
                                         <div className="flex flex-wrap gap-x-8 gap-y-3 text-[11px] font-bold text-muted-foreground uppercase mt-3">
-                                            {/* GERENTE */}
                                             <div className="flex items-center gap-2 min-w-0">
                                                 <UserIcon className="h-4 w-4 text-blue-500 shrink-0" /> 
                                                 <span className="truncate">Gerente: {promoter.contactName || '---'}</span>
@@ -350,7 +344,6 @@ export default function ManagementPage() {
                                                 )}
                                             </div>
 
-                                            {/* SUPORTE */}
                                             <div className="flex items-center gap-2 min-w-0">
                                                 <Headset className="h-4 w-4 text-blue-500 shrink-0" /> 
                                                 <span className="truncate">Suporte: {promoter.supportPhone || '---'}</span>
@@ -372,7 +365,6 @@ export default function ManagementPage() {
                                                 )}
                                             </div>
 
-                                            {/* EMAIL INSTITUCIONAL */}
                                             {promoter.email && (
                                                 <div className="flex items-center gap-2 min-w-0">
                                                     <Mail className="h-4 w-4 text-blue-500 shrink-0" />
@@ -522,12 +514,14 @@ export default function ManagementPage() {
             <DialogHeader><DialogTitle>{selectedItem ? 'Editar Login' : 'Vincular Banco'}</DialogTitle></DialogHeader>
             <BankForm initialData={selectedItem} onSubmit={(d) => handleSaveBank(d, selectedItem?.id)} isSaving={isSaving} />
         </DialogContent>
+      </Dialog>
 
       <Dialog open={isLinkModalOpen} onOpenChange={setIsLinkModalOpen}>
         <DialogContent className="max-w-md rounded-[2rem]">
             <DialogHeader><DialogTitle>{selectedItem ? 'Editar Atalho' : 'Novo Link'}</DialogTitle></DialogHeader>
             <QuickLinkForm initialData={selectedItem} onSubmit={(d) => handleSave('managementQuickLinks', d, selectedItem?.id)} isSaving={isSaving} />
         </DialogContent>
+      </Dialog>
 
     </AppLayout>
   );
