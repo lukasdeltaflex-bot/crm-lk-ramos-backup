@@ -40,29 +40,34 @@ export function normalizeString(str: string): string {
 }
 
 /**
- * 🛡️ VALIDAÇÃO WHATSAPP V2 (FLEXÍVEL)
- * Aceita 11 dígitos (DDD + 9 + 8) ou 13 dígitos (55 + DDD + 9 + 8)
+ * 🛡️ VALIDAÇÃO WHATSAPP V3 (TOTALMENTE FLEXÍVEL)
+ * Aceita 10 dígitos (fixo/celular sem 9), 11 dígitos (celular com 9) ou variantes com 55.
+ * O objetivo é garantir que o ícone apareça para facilitar o contato.
  */
 export function isWhatsApp(phone: string): boolean {
     if (!phone) return false;
     const digitsOnly = phone.replace(/\D/g, '');
     
-    // Se tiver 13 dígitos, remove o 55 inicial para validar o resto
-    const baseNumber = digitsOnly.length === 13 && digitsOnly.startsWith('55') 
+    // Remove o 55 inicial se existir para validar o corpo do número
+    const baseNumber = digitsOnly.length >= 12 && digitsOnly.startsWith('55') 
         ? digitsOnly.substring(2) 
         : digitsOnly;
 
-    const isValidLength = baseNumber.length === 11;
-    const startsWithNine = baseNumber[2] === '9';
+    // Consideramos apto para WhatsApp se tiver entre 10 e 11 dígitos
+    // (Abrangendo números antigos ou novos com 9)
+    const isValidLength = baseNumber.length >= 10 && baseNumber.length <= 11;
     const isNotRepeated = !/^(\d)\1+$/.test(baseNumber);
 
-    return isValidLength && startsWithNine && isNotRepeated;
+    return isValidLength && isNotRepeated;
 }
 
 export function getWhatsAppUrl(phone: string): string {
+    if (!phone) return "";
     const digitsOnly = phone.replace(/\D/g, '');
-    // Se já começar com 55, não adiciona novamente
-    const finalNumber = digitsOnly.startsWith('55') ? digitsOnly : `55${digitsOnly}`;
+    // Se o número tem 10 ou 11 dígitos, adicionamos o 55 do Brasil
+    const finalNumber = (digitsOnly.length === 10 || digitsOnly.length === 11) 
+        ? `55${digitsOnly}` 
+        : digitsOnly;
     return `https://api.whatsapp.com/send?phone=${finalNumber}`;
 }
 

@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Save, Building2, Phone, User as UserIcon, Headset, MessageSquareText } from 'lucide-react';
+import { Loader2, Save, Building2, Phone, User as UserIcon, Headset, MessageSquareText, Mail } from 'lucide-react';
 import { handlePhoneMask } from '@/lib/utils';
 
 const promoterSchema = z.object({
@@ -24,6 +24,8 @@ const promoterSchema = z.object({
   phone: z.string().optional(),
   whatsapp: z.string().optional(),
   supportPhone: z.string().optional(),
+  email: z.string().email('E-mail inválido.').or(z.literal('')).optional(),
+  managerEmail: z.string().email('E-mail inválido.').or(z.literal('')).optional(),
   observations: z.string().optional(),
 });
 
@@ -44,6 +46,8 @@ export function PromoterForm({ initialData, onSubmit, isSaving = false }: Promot
       phone: '',
       whatsapp: '',
       supportPhone: '',
+      email: '',
+      managerEmail: '',
       observations: '',
     },
   });
@@ -104,6 +108,31 @@ export function PromoterForm({ initialData, onSubmit, isSaving = false }: Promot
                     <FormItem>
                     <FormLabel className="flex items-center gap-2 font-bold uppercase text-[10px] tracking-widest text-green-600"><Phone className="h-3.5 w-3.5" /> WhatsApp Gerente</FormLabel>
                     <FormControl><Input placeholder="(00) 00000-0000" {...field} onChange={(e) => field.onChange(handlePhoneMask(e.target.value))} /></FormControl>
+                    </FormItem>
+                )}
+            />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel className="flex items-center gap-2 font-bold uppercase text-[10px] tracking-widest"><Mail className="h-3.5 w-3.5 text-primary" /> E-mail Promotora</FormLabel>
+                    <FormControl><Input placeholder="contato@promotora.com" {...field} type="email" /></FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+            <FormField
+                control={form.control}
+                name="managerEmail"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel className="flex items-center gap-2 font-bold uppercase text-[10px] tracking-widest"><Mail className="h-3.5 w-3.5 text-blue-600" /> E-mail do Gerente</FormLabel>
+                    <FormControl><Input placeholder="gerente@promotora.com" {...field} type="email" /></FormControl>
+                    <FormMessage />
                     </FormItem>
                 )}
             />

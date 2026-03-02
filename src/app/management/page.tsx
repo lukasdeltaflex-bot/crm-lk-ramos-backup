@@ -30,7 +30,8 @@ import {
     Headset,
     EyeOff,
     Download,
-    FileText
+    FileText,
+    Mail
 } from 'lucide-react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, setDoc, deleteDoc, orderBy } from 'firebase/firestore';
@@ -262,39 +263,73 @@ export default function ManagementPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-black uppercase text-sm tracking-tight">{promoter.name}</h3>
-                                        <div className="flex flex-wrap items-center gap-4 text-[10px] font-bold text-muted-foreground uppercase mt-1.5">
-                                            <div className="flex items-center gap-1.5">
-                                                <NotebookTabs className="h-3.5 w-3.5 text-blue-500" /> 
-                                                <span>Gerente: {promoter.contactName || 'Sem nome'}</span>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2 text-[10px] font-bold text-muted-foreground uppercase mt-2">
+                                            {/* GERENTE */}
+                                            <div className="flex items-center gap-1.5 min-w-0">
+                                                <NotebookTabs className="h-3.5 w-3.5 text-blue-500 shrink-0" /> 
+                                                <span className="truncate">Gerente: {promoter.contactName || 'Sem nome'}</span>
                                                 {promoter.whatsapp && (
-                                                    <div className="flex items-center gap-1 ml-1">
-                                                        <span className="opacity-60">{promoter.whatsapp}</span>
-                                                        {isManagerWhatsApp && (
-                                                            <a href={getWhatsAppUrl(promoter.whatsapp)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:scale-125 transition-transform" onClick={(e) => e.stopPropagation()}>
-                                                                <WhatsAppIcon className="h-3.5 w-3.5" />
-                                                            </a>
-                                                        )}
+                                                    <div className="flex items-center gap-1 ml-1 shrink-0">
+                                                        <a 
+                                                            href={getWhatsAppUrl(promoter.whatsapp)} 
+                                                            target="_blank" 
+                                                            rel="noopener noreferrer" 
+                                                            className="text-green-500 hover:scale-125 transition-transform flex items-center" 
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            <WhatsAppIcon className="h-3.5 w-3.5" />
+                                                        </a>
                                                     </div>
                                                 )}
                                             </div>
-                                            <div className="flex items-center gap-1.5">
-                                                <Headset className="h-3.5 w-3.5 text-blue-500" /> 
-                                                <span>Suporte: {promoter.supportPhone || 'Não inf.'}</span>
+
+                                            {/* SUPORTE */}
+                                            <div className="flex items-center gap-1.5 min-w-0">
+                                                <Headset className="h-3.5 w-3.5 text-blue-500 shrink-0" /> 
+                                                <span className="truncate">Suporte: {promoter.supportPhone || 'Não inf.'}</span>
                                                 {isSupportWhatsApp && (
-                                                    <a href={getWhatsAppUrl(promoter.supportPhone!)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:scale-125 transition-transform" onClick={(e) => e.stopPropagation()}>
+                                                    <a 
+                                                        href={getWhatsAppUrl(promoter.supportPhone!)} 
+                                                        target="_blank" 
+                                                        rel="noopener noreferrer" 
+                                                        className="text-green-500 hover:scale-125 transition-transform flex items-center" 
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
                                                         <WhatsAppIcon className="h-3.5 w-3.5" />
                                                     </a>
                                                 )}
                                             </div>
+
+                                            {/* FIXO */}
                                             {promoter.phone && (
-                                                <div className="flex items-center gap-1.5">
-                                                    <PhoneCall className="h-3.5 w-3.5 text-blue-500" /> 
-                                                    <span>Fixo: {promoter.phone}</span>
+                                                <div className="flex items-center gap-1.5 min-w-0">
+                                                    <PhoneCall className="h-3.5 w-3.5 text-blue-500 shrink-0" /> 
+                                                    <span className="truncate">Fixo: {promoter.phone}</span>
                                                     {isPhoneWhatsApp && (
-                                                        <a href={getWhatsAppUrl(promoter.phone)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:scale-125 transition-transform" onClick={(e) => e.stopPropagation()}>
+                                                        <a 
+                                                            href={getWhatsAppUrl(promoter.phone)} 
+                                                            target="_blank" 
+                                                            rel="noopener noreferrer" 
+                                                            className="text-green-500 hover:scale-125 transition-transform flex items-center" 
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
                                                             <WhatsAppIcon className="h-3.5 w-3.5" />
                                                         </a>
                                                     )}
+                                                </div>
+                                            )}
+
+                                            {/* E-MAILS */}
+                                            {promoter.email && (
+                                                <div className="flex items-center gap-1.5 min-w-0">
+                                                    <Mail className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                                                    <a href={`mailto:${promoter.email}`} className="truncate hover:text-blue-600 transition-colors" onClick={(e) => e.stopPropagation()}>{promoter.email}</a>
+                                                </div>
+                                            )}
+                                            {promoter.managerEmail && (
+                                                <div className="flex items-center gap-1.5 min-w-0">
+                                                    <Mail className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                                                    <a href={`mailto:${promoter.managerEmail}`} className="truncate hover:text-blue-600 transition-colors" onClick={(e) => e.stopPropagation()}>Gerente: {promoter.managerEmail}</a>
                                                 </div>
                                             )}
                                         </div>

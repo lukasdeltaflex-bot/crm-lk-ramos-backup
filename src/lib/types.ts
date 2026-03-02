@@ -224,5 +224,7 @@ export type ManagementPromoter = {
   phone?: string;
   whatsapp?: string;
   supportPhone?: string;
+  email?: string;
+  managerEmail?: string;
   observations?: string;
 }
