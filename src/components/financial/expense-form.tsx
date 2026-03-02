@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -52,7 +53,7 @@ export function ExpenseForm({ expense, categories, onSubmit, isSaving = false }:
       description: '',
       amount: 0,
       date: format(new Date(), 'yyyy-MM-dd'),
-      category: categories[0] || 'Outros',
+      category: expense?.category || categories[0] || 'Outros',
       paid: false,
     },
   });
@@ -60,14 +61,14 @@ export function ExpenseForm({ expense, categories, onSubmit, isSaving = false }:
   useEffect(() => {
     if (expense) {
       form.reset({
-        description: expense.description,
-        amount: expense.amount,
-        date: expense.date,
-        category: expense.category,
+        description: expense.description || '',
+        amount: expense.amount ?? 0,
+        date: expense.date || format(new Date(), 'yyyy-MM-dd'),
+        category: expense.category || categories[0] || 'Outros',
         paid: expense.paid ?? false,
       });
     }
-  }, [expense, form]);
+  }, [expense, form, categories]);
 
   return (
     <Form {...form}>
@@ -79,7 +80,7 @@ export function ExpenseForm({ expense, categories, onSubmit, isSaving = false }:
             <FormItem>
               <FormLabel>Descrição da Despesa</FormLabel>
               <FormControl>
-                <Input placeholder="Ex: Pagamento Aluguel Junho" {...field} disabled={isSaving} />
+                <Input placeholder="Ex: Pagamento Aluguel Junho" {...field} value={field.value ?? ''} disabled={isSaving} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -92,11 +93,11 @@ export function ExpenseForm({ expense, categories, onSubmit, isSaving = false }:
                 name="amount"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Valor</FormLabel>
+                    <FormLabel>Valor (R$)</FormLabel>
                     <FormControl>
                         <div className="relative">
                             <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
-                            <Input type="number" step="0.01" className="pl-9" placeholder="0.00" {...field} disabled={isSaving} />
+                            <Input type="number" step="0.01" className="pl-9 font-bold text-red-600" placeholder="0.00" {...field} value={field.value ?? 0} disabled={isSaving} />
                         </div>
                     </FormControl>
                     <FormMessage />
@@ -110,7 +111,7 @@ export function ExpenseForm({ expense, categories, onSubmit, isSaving = false }:
                     <FormItem>
                     <FormLabel>Data de Vencimento/Pago</FormLabel>
                     <FormControl>
-                        <Input type="date" {...field} disabled={isSaving} />
+                        <Input type="date" {...field} value={field.value ?? ''} disabled={isSaving} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
@@ -125,7 +126,13 @@ export function ExpenseForm({ expense, categories, onSubmit, isSaving = false }:
             render={({ field }) => (
                 <FormItem>
                 <FormLabel>Categoria</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value} disabled={isSaving}>
+                <Select 
+                    key={expense?.id || 'new'}
+                    onValueChange={field.onChange} 
+                    value={field.value} 
+                    defaultValue={field.value}
+                    disabled={isSaving}
+                >
                     <FormControl>
                     <SelectTrigger>
                         <SelectValue placeholder="Selecione a categoria" />
