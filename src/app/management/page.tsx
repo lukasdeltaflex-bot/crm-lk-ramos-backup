@@ -239,6 +239,7 @@ export default function ManagementPage() {
                 {promoters?.map((promoter) => {
                     const isSupportWhatsApp = promoter.supportPhone && isWhatsApp(promoter.supportPhone);
                     const isManagerWhatsApp = promoter.whatsapp && isWhatsApp(promoter.whatsapp);
+                    const isPhoneWhatsApp = promoter.phone && isWhatsApp(promoter.phone);
 
                     return (
                         <Card key={promoter.id} className="border-2 overflow-hidden shadow-sm hover:shadow-md transition-all">
@@ -258,12 +259,12 @@ export default function ManagementPage() {
                                         <div className="flex flex-wrap items-center gap-4 text-[10px] font-bold text-muted-foreground uppercase mt-1.5">
                                             <div className="flex items-center gap-1.5">
                                                 <NotebookTabs className="h-3.5 w-3.5 text-blue-500" /> 
-                                                <span>{promoter.contactName || 'Sem gerente'}</span>
+                                                <span>Gerente: {promoter.contactName || 'Sem nome'}</span>
                                                 {promoter.whatsapp && (
                                                     <div className="flex items-center gap-1 ml-1">
                                                         <span className="opacity-60">{promoter.whatsapp}</span>
                                                         {isManagerWhatsApp && (
-                                                            <a href={getWhatsAppUrl(promoter.whatsapp)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:scale-110 transition-transform" onClick={(e) => e.stopPropagation()}>
+                                                            <a href={getWhatsAppUrl(promoter.whatsapp)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:scale-125 transition-transform" onClick={(e) => e.stopPropagation()}>
                                                                 <WhatsAppIcon className="h-3.5 w-3.5" />
                                                             </a>
                                                         )}
@@ -274,11 +275,22 @@ export default function ManagementPage() {
                                                 <Headset className="h-3.5 w-3.5 text-blue-500" /> 
                                                 <span>Suporte: {promoter.supportPhone || 'Não inf.'}</span>
                                                 {isSupportWhatsApp && (
-                                                    <a href={getWhatsAppUrl(promoter.supportPhone!)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:scale-110 transition-transform" onClick={(e) => e.stopPropagation()}>
+                                                    <a href={getWhatsAppUrl(promoter.supportPhone!)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:scale-125 transition-transform" onClick={(e) => e.stopPropagation()}>
                                                         <WhatsAppIcon className="h-3.5 w-3.5" />
                                                     </a>
                                                 )}
                                             </div>
+                                            {promoter.phone && (
+                                                <div className="flex items-center gap-1.5">
+                                                    <PhoneCall className="h-3.5 w-3.5 text-blue-500" /> 
+                                                    <span>Fixo: {promoter.phone}</span>
+                                                    {isPhoneWhatsApp && (
+                                                        <a href={getWhatsAppUrl(promoter.phone)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:scale-125 transition-transform" onClick={(e) => e.stopPropagation()}>
+                                                            <WhatsAppIcon className="h-3.5 w-3.5" />
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -422,7 +434,6 @@ export default function ManagementPage() {
             <DialogHeader><DialogTitle>{selectedItem ? 'Editar Atalho' : 'Novo Link Rápido'}</DialogTitle></DialogHeader>
             <QuickLinkForm initialData={selectedItem} onSubmit={(d) => handleSave('managementQuickLinks', d, selectedItem?.id)} isSaving={isSaving} />
         </DialogContent>
-      </Dialog>
 
     </AppLayout>
   );

@@ -1,3 +1,4 @@
+
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { format, parseISO, isValid, differenceInDays } from 'date-fns';
@@ -38,25 +39,31 @@ export function normalizeString(str: string): string {
     .replace(/\s+/g, ' ');
 }
 
+/**
+ * 🛡️ VALIDAÇÃO WHATSAPP V2 (FLEXÍVEL)
+ * Aceita 11 dígitos (DDD + 9 + 8) ou 13 dígitos (55 + DDD + 9 + 8)
+ */
 export function isWhatsApp(phone: string): boolean {
     if (!phone) return false;
     const digitsOnly = phone.replace(/\D/g, '');
     
-    // Requisitos LK RAMOS para ser WhatsApp (Celular Brasileiro Real):
-    // 1. Deve ter exatamente 11 dígitos (DDD + 9 + 8 dígitos)
-    const isValidLength = digitsOnly.length === 11;
-    // 2. O terceiro dígito (início do número) deve ser '9'
-    const startsWithNine = digitsOnly[2] === '9';
-    // 3. Não deve ser uma sequência de números idênticos (ex: 11111111111)
-    const isNotRepeated = !/^(\d)\1+$/.test(digitsOnly);
+    // Se tiver 13 dígitos, remove o 55 inicial para validar o resto
+    const baseNumber = digitsOnly.length === 13 && digitsOnly.startsWith('55') 
+        ? digitsOnly.substring(2) 
+        : digitsOnly;
+
+    const isValidLength = baseNumber.length === 11;
+    const startsWithNine = baseNumber[2] === '9';
+    const isNotRepeated = !/^(\d)\1+$/.test(baseNumber);
 
     return isValidLength && startsWithNine && isNotRepeated;
 }
 
 export function getWhatsAppUrl(phone: string): string {
     const digitsOnly = phone.replace(/\D/g, '');
-    // Padrão robusto para compatibilidade total (Web/App)
-    return `https://api.whatsapp.com/send?phone=55${digitsOnly}`;
+    // Se já começar com 55, não adiciona novamente
+    const finalNumber = digitsOnly.startsWith('55') ? digitsOnly : `55${digitsOnly}`;
+    return `https://api.whatsapp.com/send?phone=${finalNumber}`;
 }
 
 export function handlePhoneMask(value: string): string {
@@ -160,17 +167,14 @@ export function cleanFirestoreData(data: any): any {
     if (data === undefined) return undefined;
     if (data instanceof Date) return data.toISOString();
     
-    // 🧹 LIMPEZA DE ERROS DE DIGITAÇÃO (ESPACIAL)
     if (typeof data === 'string') {
         const trimmed = data.trim();
-        // Se não houver quebras de linha (anotações), colapsamos espaços múltiplos
         if (!trimmed.includes('\n')) {
             return trimmed.replace(/\s+/g, ' ');
         }
         return trimmed;
     }
 
-    // 🛡️ PROTEÇÃO PARA FIELDVALUES (arrayUnion, deleteField, etc)
     if (typeof data === 'object' && !Array.isArray(data)) {
         const proto = Object.getPrototypeOf(data);
         if (proto !== Object.prototype && proto !== null) {
@@ -194,24 +198,17 @@ export function cleanFirestoreData(data: any): any {
     return data;
 }
 
-/**
- * 🤖 MOTOR DE SMART TAGS LK RAMOS
- * Gera etiquetas automáticas baseadas em comportamento e dados financeiros.
- */
 export function getSmartTags(customer: Customer, proposals: Proposal[] = []): { label: string; color: string }[] {
     const tags: { label: string; color: string }[] = [];
     const now = new Date();
     
     const customerProposals = proposals.filter(p => p.customerId === customer.id);
-    const paidProposals = customerProposals.filter(p => p.status === 'Pago' || p.status === 'Saldo Pago');
     
-    // 💎 ELITE: Comissão total > 5000
     const totalComm = customerProposals.reduce((s, p) => s + (p.amountPaid || 0), 0);
     if (totalComm >= 5000) {
         tags.push({ label: '💎 ELITE', color: 'bg-amber-500' });
     }
 
-    // 🔥 ATIVO: Teve proposta nos últimos 30 dias
     const hasRecent = customerProposals.some(p => {
         const d = p.dateDigitized ? new Date(p.dateDigitized) : null;
         return d && isValid(d) && differenceInDays(now, d) <= 30;
@@ -220,7 +217,6 @@ export function getSmartTags(customer: Customer, proposals: Proposal[] = []): { 
         tags.push({ label: '🔥 ATIVO', color: 'bg-orange-600' });
     }
 
-    // 🧊 REATIVAR: Nenhuma proposta nos últimos 180 dias
     const hasAnyInLast6Months = customerProposals.some(p => {
         const d = p.dateDigitized ? new Date(p.dateDigitized) : null;
         return d && isValid(d) && differenceInDays(now, d) <= 180;
@@ -229,7 +225,6 @@ export function getSmartTags(customer: Customer, proposals: Proposal[] = []): { 
         tags.push({ label: '🧊 REATIVAR', color: 'bg-blue-400' });
     }
 
-    // ⚖️ EM ESTEIRA: Tem proposta que não é 'Pago' ou 'Reprovado'
     const inFlow = customerProposals.some(p => !['Pago', 'Reprovado', 'Saldo Pago'].includes(p.status));
     if (inFlow) {
         tags.push({ label: '⚖️ EM ESTEIRA', color: 'bg-purple-500' });
