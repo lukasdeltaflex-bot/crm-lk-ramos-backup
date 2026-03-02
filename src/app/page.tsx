@@ -143,6 +143,20 @@ export default function DashboardPage() {
 
   const handleApproveLead = async (lead: Lead) => {
     if (!firestore || !user || !customers) return;
+
+    // 🛡️ TRAVA DE DUPLICIDADE (BUG #3 RESOLVIDO)
+    const leadCpfClean = lead.cpf.replace(/\D/g, '');
+    const existingCustomer = customers.find(c => c.cpf?.replace(/\D/g, '') === leadCpfClean);
+
+    if (existingCustomer) {
+        toast({
+            variant: 'destructive',
+            title: '⚠️ DUPLICIDADE DETECTADA',
+            description: `O cliente ${existingCustomer.name} já possui este CPF cadastrado (ID ${existingCustomer.numericId}). A aprovação foi bloqueada.`
+        });
+        return;
+    }
+
     setIsApprovingLead(true);
     try {
         const nextNumericId = customers.length ? Math.max(...customers.map(c => c.numericId || 0)) + 1 : 1;
