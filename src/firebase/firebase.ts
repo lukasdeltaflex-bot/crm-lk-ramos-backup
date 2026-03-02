@@ -9,7 +9,7 @@ import { firebaseConfig } from "./config";
 
 /**
  * 🛠️ INFRAESTRUTURA DE DADOS LK RAMOS
- * Inicialização robusta com definição explícita do bucket e configurações de resiliência de rede.
+ * Inicialização robusta com modo de resiliência de rede ativado.
  */
 
 let db: Firestore | null = null;
@@ -18,9 +18,15 @@ let storage: FirebaseStorage | null = null;
 
 if (typeof window !== "undefined") {
     try {
+        // Diagnóstico de Configuração
+        if (firebaseConfig.apiKey === "AIzaSyXXXXXXXXXXXX") {
+            console.warn("⚠️ [LK RAMOS] ALERTA DE CONEXÃO: Você está usando chaves de API de exemplo. O Firestore não conseguirá conectar ao banco de dados real até que você configure seu arquivo .env ou src/firebase/config.ts com as credenciais do seu console Firebase.");
+        }
+
         const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
         
-        // 🛡️ CONFIGURAÇÃO DE REDE V12: Força o uso de Long Polling para evitar falhas de conexão em redes restritas
+        // 🛡️ CONFIGURAÇÃO DE REDE V13: Força o uso de Long Polling para máxima compatibilidade com proxies e firewalls
+        // localCache permite que o app funcione offline caso a internet oscile
         db = initializeFirestore(app, {
             experimentalForceLongPolling: true,
             localCache: persistentLocalCache({
@@ -29,14 +35,12 @@ if (typeof window !== "undefined") {
         });
 
         auth = getAuth(app);
-        
-        // Forçamos a conexão com o bucket específico para garantir que o SDK não use um endereço vazio
         storage = getStorage(app, firebaseConfig.storageBucket);
         
-        console.log("💎 LK RAMOS: Núcleo Firebase inicializado com modo de resiliência total.", {
-            projectId: firebaseConfig.projectId,
-            bucketName: firebaseConfig.storageBucket,
-            storageAtivo: !!storage
+        console.log("💎 LK RAMOS: Núcleo Firebase sincronizado.", {
+            serviço: "Firestore",
+            modo: "Resiliência (Long Polling)",
+            projeto: firebaseConfig.projectId
         });
     } catch (error) {
         console.error("❌ Erro crítico na inicialização do Firebase:", error);
