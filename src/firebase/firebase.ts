@@ -25,8 +25,7 @@ if (typeof window !== "undefined") {
 
         const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
         
-        // 🛡️ CONFIGURAÇÃO DE REDE V13: Força o uso de Long Polling para máxima compatibilidade com proxies e firewalls
-        // localCache permite que o app funcione offline caso a internet oscile
+        // 🛡️ CONFIGURAÇÃO DE REDE V14: Long Polling habilitado para estabilidade em ambientes de build/cloud
         db = initializeFirestore(app, {
             experimentalForceLongPolling: true,
             localCache: persistentLocalCache({
@@ -37,11 +36,7 @@ if (typeof window !== "undefined") {
         auth = getAuth(app);
         storage = getStorage(app, firebaseConfig.storageBucket);
         
-        console.log("💎 LK RAMOS: Núcleo Firebase sincronizado.", {
-            serviço: "Firestore",
-            modo: "Resiliência (Long Polling)",
-            projeto: firebaseConfig.projectId
-        });
+        console.log("💎 LK RAMOS: Núcleo Firebase sincronizado.");
     } catch (error) {
         console.error("❌ Erro crítico na inicialização do Firebase:", error);
     }

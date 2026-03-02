@@ -9,9 +9,8 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  experimental: {
-    // Reduzido para o essencial para evitar InvariantError: clientReferenceManifest
-  },
+  // Otimização para Firebase App Hosting (Docker/Cloud Run)
+  output: 'standalone',
   images: {
     remotePatterns: [
       {
