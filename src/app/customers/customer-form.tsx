@@ -548,14 +548,16 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                 <div className="space-y-4">
                     <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Etiquetas Selecionadas</p>
                     <div className="flex flex-wrap gap-2 min-h-[40px] p-4 rounded-3xl bg-muted/5 border-2 border-dashed border-zinc-200">
-                        {watchTags.length > 0 ? watchTags.length > 0 ? watchTags.map(tag => (
-                            <Badge key={tag} className="gap-1.5 pl-3 pr-1 py-1.5 rounded-full bg-primary text-white font-bold border-none shadow-sm animate-in zoom-in-95">
-                                {tag}
-                                <button type="button" onClick={() => handleTagToggle(tag)} className="h-5 w-5 rounded-full bg-black/10 flex items-center justify-center hover:bg-black/20 transition-colors">
-                                    <X className="h-3 w-3" />
-                                </button>
-                            </Badge>
-                        )) : (
+                        {watchTags && watchTags.length > 0 ? (
+                            watchTags.map(tag => (
+                                <Badge key={tag} className="gap-1.5 pl-3 pr-1 py-1.5 rounded-full bg-primary text-white font-bold border-none shadow-sm animate-in zoom-in-95">
+                                    {tag}
+                                    <button type="button" onClick={() => handleTagToggle(tag)} className="h-5 w-5 rounded-full bg-black/10 flex items-center justify-center hover:bg-black/20 transition-colors">
+                                        <X className="h-3 w-3" />
+                                    </button>
+                                </Badge>
+                            ))
+                        ) : (
                             <span className="text-[10px] font-black uppercase text-muted-foreground/40 italic flex items-center gap-2">
                                 <Info className="h-3.5 w-3.5" /> Nenhuma etiqueta atribuída
                             </span>
