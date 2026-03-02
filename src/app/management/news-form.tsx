@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -22,7 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { format } from 'date-fns';
-import { Loader2, Save, ImageIcon, ScrollText, Link as LinkIcon, Upload, X, FileText, Trash2 } from 'lucide-react';
+import { Loader2, Save, ImageIcon, ScrollText, Link as LinkIcon, Upload, X, FileText, Trash2, Clock } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useState, useRef } from 'react';
 import { useFirebase } from '@/firebase';
@@ -46,6 +47,7 @@ const newsSchema = z.object({
   externalLink: z.string().url('URL inválida.').or(z.literal('')).optional(),
   status: z.enum(['Draft', 'Published']),
   date: z.string(),
+  expirationDate: z.string().optional(),
   attachments: z.array(attachmentSchema).optional(),
 });
 
@@ -73,6 +75,7 @@ export function NewsForm({ initialData, onSubmit, isSaving = false }: NewsFormPr
       externalLink: '',
       status: 'Draft',
       date: format(new Date(), 'yyyy-MM-dd'),
+      expirationDate: '',
       attachments: [],
     },
   });
@@ -161,7 +164,7 @@ export function NewsForm({ initialData, onSubmit, isSaving = false }: NewsFormPr
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full overflow-hidden">
         <ScrollArea className="flex-1 pr-4">
             <div className="space-y-8 py-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <FormField
                         control={form.control}
                         name="status"
@@ -189,6 +192,19 @@ export function NewsForm({ initialData, onSubmit, isSaving = false }: NewsFormPr
                         <FormItem>
                             <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-primary/60">Data de Publicação</FormLabel>
                             <FormControl><Input type="date" {...field} className="h-11 rounded-xl font-bold" /></FormControl>
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="expirationDate"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-orange-600 flex items-center gap-2">
+                                <Clock className="h-3 w-3" /> Remover automaticamente em:
+                            </FormLabel>
+                            <FormControl><Input type="date" {...field} className="h-11 rounded-xl font-bold border-orange-200 bg-orange-50/10" /></FormControl>
+                            <FormDescription className="text-[9px] uppercase font-bold text-orange-600/60">Deixe vazio para notícia permanente.</FormDescription>
                         </FormItem>
                         )}
                     />

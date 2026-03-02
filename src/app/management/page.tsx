@@ -30,7 +30,8 @@ import {
     Mail,
     Copy,
     Hash,
-    User as UserIcon
+    User as UserIcon,
+    Clock
 } from 'lucide-react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, setDoc, deleteDoc, orderBy } from 'firebase/firestore';
@@ -41,7 +42,7 @@ import { PromoterForm } from './promoter-form';
 import { BankForm } from './bank-form';
 import { QuickLinkForm } from './quick-link-form';
 import { decryptPassword } from '@/lib/crypto-utils';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isAfter, startOfDay } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { cn, cleanFirestoreData, isWhatsApp, getWhatsAppUrl } from '@/lib/utils';
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
@@ -81,12 +82,32 @@ export default function ManagementPage() {
   const linksQuery = useMemoFirebase(() => query(collection(firestore!, 'managementQuickLinks'), orderBy('name', 'asc')), []);
   const promotersQuery = useMemoFirebase(() => user ? query(collection(firestore!, 'managementPromoters'), where('ownerId', '==', user.uid), orderBy('name', 'asc')) : null, [user]);
 
-  const { data: news, isLoading: loadingNews } = useCollection(newsQuery);
+  const { data: rawNews, isLoading: loadingNews } = useCollection(newsQuery);
   const { data: promoters, isLoading: loadingPromoters } = useCollection(promotersQuery);
   const { data: links, isLoading: loadingLinks } = useCollection(linksQuery);
 
   const [bankLogins, setBankLogins] = useState<any[]>([]);
   const [loadingLogins, setLoadingLogins] = useState(false);
+
+  // 🛡️ FILTRO DE EXPIRAÇÃO V2
+  const news = React.useMemo(() => {
+    if (!rawNews) return [];
+    const today = startOfDay(new Date());
+    
+    return rawNews.filter(item => {
+        // Se não tem data de expiração, é permanente
+        if (!item.expirationDate) return true;
+        
+        try {
+            const expDate = startOfDay(parseISO(item.expirationDate));
+            // A notícia expira no final do dia marcado. 
+            // Se hoje é DEPOIS do dia de expiração, removemos.
+            return !isAfter(today, expDate);
+        } catch (e) {
+            return true;
+        }
+    });
+  }, [rawNews]);
 
   useEffect(() => {
     if (expandedPromoter && user) {
@@ -217,9 +238,16 @@ export default function ManagementPage() {
                                 ) : (
                                     <Newspaper className="h-12 w-12 opacity-10" />
                                 )}
-                                <Badge className={cn("absolute top-3 right-3 font-black text-[8px] uppercase", item.status === 'Published' ? "bg-green-600" : "bg-orange-500")}>
-                                    {item.status === 'Published' ? 'Publicado' : 'Rascunho'}
-                                </Badge>
+                                <div className="absolute top-3 right-3 flex gap-2">
+                                    {item.expirationDate && (
+                                        <Badge className="bg-orange-600 text-white font-black text-[8px] uppercase gap-1">
+                                            <Clock className="h-2.5 w-2.5" /> Expira: {format(parseISO(item.expirationDate), 'dd/MM')}
+                                        </Badge>
+                                    )}
+                                    <Badge className={cn("font-black text-[8px] uppercase", item.status === 'Published' ? "bg-green-600" : "bg-orange-500")}>
+                                        {item.status === 'Published' ? 'Publicado' : 'Rascunho'}
+                                    </Badge>
+                                </div>
                                 {item.ownerId === user?.uid && (
                                     <Button 
                                         variant="destructive" 
@@ -494,14 +522,12 @@ export default function ManagementPage() {
             <DialogHeader><DialogTitle>{selectedItem ? 'Editar Login' : 'Vincular Banco'}</DialogTitle></DialogHeader>
             <BankForm initialData={selectedItem} onSubmit={(d) => handleSaveBank(d, selectedItem?.id)} isSaving={isSaving} />
         </DialogContent>
-      </Dialog>
 
       <Dialog open={isLinkModalOpen} onOpenChange={setIsLinkModalOpen}>
         <DialogContent className="max-w-md rounded-[2rem]">
             <DialogHeader><DialogTitle>{selectedItem ? 'Editar Atalho' : 'Novo Link'}</DialogTitle></DialogHeader>
             <QuickLinkForm initialData={selectedItem} onSubmit={(d) => handleSave('managementQuickLinks', d, selectedItem?.id)} isSaving={isSaving} />
         </DialogContent>
-      </Dialog>
 
     </AppLayout>
   );

@@ -38,7 +38,10 @@ import {
     Lock,
     NotebookTabs,
     UploadCloud,
-    Wallet
+    Wallet,
+    Clock,
+    Trash2,
+    TrendingUp
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -112,7 +115,7 @@ export default function ManualPage() {
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 3. GESTÃO DE PARCEIROS & SEGURANÇA (NOVO) */}
+                {/* 3. GESTÃO DE PARCEIROS & SEGURANÇA */}
                 <AccordionItem value="management-secure" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-blue-500/20">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
@@ -127,23 +130,48 @@ export default function ManualPage() {
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="p-4 rounded-xl bg-blue-50/5 border border-blue-200">
                                 <h4 className="font-bold text-blue-700 flex items-center gap-2 mb-2"><ShieldCheck className="h-4 w-4" /> Criptografia Blindada</h4>
-                                <p className="text-xs text-muted-foreground">Suas senhas bancárias são criptografadas via **AES-256-GCM** antes de saírem do seu navegador. Somente você, com seu login único, consegue descriptografar para visualizar.</p>
+                                <p className="text-xs text-muted-foreground">Suas senhas bancárias são criptografadas via **AES-256-GCM** antes de saírem do seu navegador. Somente você consegue descriptografar.</p>
                             </div>
                             <div className="p-4 rounded-xl bg-green-50/5 border border-green-200">
                                 <h4 className="font-bold text-green-700 flex items-center gap-2 mb-2"><NotebookTabs className="h-4 w-4" /> Mural Colaborativo</h4>
-                                <p className="text-xs text-muted-foreground">A aba de **Notícias** e **Links Úteis** é pública para sua equipe. Tudo o que você publicar aparecerá para seu irmão e outros sócios instantaneamente.</p>
+                                <p className="text-xs text-muted-foreground">A aba de **Notícias** e **Links Úteis** é pública para sua equipe. Tudo o que você publicar aparecerá para seus sócios instantaneamente.</p>
                             </div>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 4. DOCUMENTAÇÃO & ESPAÇO (NOVO) */}
+                {/* 4. TEMPORIZADOR DE NOTÍCIAS (NOVO) */}
+                <AccordionItem value="news-timer" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-orange-500/20">
+                    <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-xl bg-orange-100 text-orange-600"><Clock className="h-5 w-5" /></div>
+                            <div className="text-left">
+                                <p className="font-bold text-sm">4. Temporizador Inteligente de Avisos</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Publicações com data de validade</p>
+                            </div>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
+                        <div className="p-4 rounded-xl bg-orange-500/5 border border-orange-200">
+                            <h4 className="font-bold text-orange-700 flex items-center gap-2 mb-2"><Clock className="h-4 w-4" /> Expiração Automática</h4>
+                            <p className="text-xs text-muted-foreground">
+                                Agora você pode definir uma **Data de Remoção** ao criar uma notícia. 
+                                <br/><br/>
+                                • **Aviso Temporário**: Defina a data e a notícia sumirá do mural sozinha após o prazo (ex: comunicado de feriado).
+                                <br/>
+                                • **Aviso Permanente**: Deixe o campo vazio e a notícia ficará no mural até que você a exclua manualmente.
+                            </p>
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
+
+                {/* 5. DOCUMENTAÇÃO & ESPAÇO */}
                 <AccordionItem value="docs-storage" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-purple-500/20">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-purple-100 text-purple-600"><UploadCloud className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">4. Central Multimídia & Gestão de Espaço</p>
+                                <p className="font-bold text-sm">5. Central Multimídia & Gestão de Espaço</p>
                                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Controle total de arquivos e armazenamento</p>
                             </div>
                         </div>
@@ -156,19 +184,19 @@ export default function ManualPage() {
                             </li>
                             <li className="flex gap-3">
                                 <div className="h-5 w-5 rounded-full bg-red-500 text-white flex items-center justify-center shrink-0"><Trash2 className="h-3 w-3" /></div>
-                                <p><strong>Exclusão Física</strong>: Ao remover um anexo de uma notícia ou cliente, o sistema exclui o arquivo **fisicamente do servidor**, liberando espaço no seu armazenamento em nuvem.</p>
+                                <p><strong>Exclusão Física</strong>: Ao remover um anexo, o sistema exclui o arquivo **fisicamente do servidor**, liberando espaço em tempo real.</p>
                             </li>
                         </ul>
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 5. FINANÇAS & ALERTAS (NOVO) */}
+                {/* 6. FINANÇAS & ALERTAS */}
                 <AccordionItem value="finance-alerts" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-emerald-500/20">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-emerald-100 text-emerald-600"><Wallet className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">5. Fluxo de Caixa & Alertas de Despesas</p>
+                                <p className="font-bold text-sm">6. Fluxo de Caixa & Alertas de Despesas</p>
                                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Saúde financeira operacional</p>
                             </div>
                         </div>
@@ -176,33 +204,8 @@ export default function ManualPage() {
                     <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
                         <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
                             <h4 className="font-bold text-emerald-700 flex items-center gap-2 mb-2"><TrendingUp className="h-4 w-4" /> Alertas no Dashboard</h4>
-                            <p className="text-xs text-muted-foreground">O painel principal agora monitora a aba **Financeiro/Despesas**. Contas pendentes ou atrasadas aparecerão no seu resumo matinal como alertas críticos, garantindo que nenhum custo operacional seja esquecido.</p>
+                            <p className="text-xs text-muted-foreground">O painel principal monitora a aba **Financeiro/Despesas**. Contas pendentes ou atrasadas aparecerão no seu resumo matinal como alertas críticos.</p>
                         </div>
-                    </AccordionContent>
-                </AccordionItem>
-
-                {/* 6. BUSCA NUCLEAR V12 */}
-                <AccordionItem value="search-v12" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-primary/10">
-                    <AccordionTrigger className="hover:no-underline">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-blue-100 text-blue-600"><Binary className="h-5 w-5" /></div>
-                            <div className="text-left">
-                                <p className="font-bold text-sm">6. Busca Nuclear V12 (Precisão)</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Localização Instantânea de Registros</p>
-                            </div>
-                        </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
-                        <ul className="space-y-3">
-                            <li className="flex gap-3">
-                                <div className="h-5 w-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-black shrink-0">ID</div>
-                                <p><strong>Correspondência Estrita</strong>: Buscas numéricas curtas (ex: "10") isolam exclusivamente o ID exato ou o número da Proposta.</p>
-                            </li>
-                            <li className="flex gap-3">
-                                <div className="h-5 w-5 rounded-full bg-orange-500 text-white flex items-center justify-center shrink-0"><Search className="h-3 w-3" /></div>
-                                <p><strong>CPF Inteligente</strong>: O motor de busca ignora pontuações. Pesquise `123.456.789-01` ou apenas `12345678901` para encontrar o cliente.</p>
-                            </li>
-                        </ul>
                     </AccordionContent>
                 </AccordionItem>
 
