@@ -37,7 +37,6 @@ import {
     Mail,
     Phone,
     Calendar,
-    CreditCard,
     MapPin,
     Home,
     Map,
@@ -47,11 +46,11 @@ import {
     Tag
 } from 'lucide-react';
 import { format, parse, isValid, differenceInYears } from 'date-fns';
-import { validateCPF, handlePhoneMask, cn, isWhatsApp, getWhatsAppUrl, cleanBankName } from '@/lib/utils';
+import { validateCPF, handlePhoneMask, cn, isWhatsApp, getWhatsAppUrl, cleanBankName, cleanFirestoreData } from '@/lib/utils';
 import type { Customer, UserSettings } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
-import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
@@ -223,24 +222,12 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
     return results;
   }, [allCustomers, watchPhone, watchCpf, customer?.id, customer?.numericId, defaultValues?.id]);
 
-  useEffect(() => {
-    if (duplicity.cpf && watchCpf.length === 14) {
-        toast({
-            variant: 'destructive',
-            title: '⚠️ CPF JÁ CADASTRADO',
-            description: 'Este documento já pertence a outro cliente no sistema.'
-        });
-    }
-  }, [duplicity.cpf, watchCpf]);
-
   const handleCepLookup = useCallback(async (cleanCep: string) => {
     if (cleanCep.length !== 8) return;
     
-    console.log("🚀 DISPARANDO BUSCA CEP:", cleanCep);
     setIsFetchingCep(true);
     try {
         const response = await fetch(`/api/cep/${cleanCep}`);
-        console.log("📦 RESPOSTA API CEP:", response.status);
         
         if (!response.ok) {
             console.warn("⚠️ Falha na conexão com o serviço de CEP.");
@@ -250,7 +237,6 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
         const data = await response.json();
         
         if (data && data.erro) {
-            console.warn("⚠️ CEP NÃO ENCONTRADO NA BASE");
             toast({ 
                 variant: 'destructive', 
                 title: 'CEP não localizado', 
@@ -260,7 +246,6 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
         }
 
         if (data) {
-            console.log("✅ DADOS EXTRAÍDOS:", data);
             form.setValue('street', data.logradouro || '', { shouldValidate: true, shouldDirty: true });
             form.setValue('neighborhood', data.bairro || '', { shouldValidate: true, shouldDirty: true });
             form.setValue('city', data.localidade || '', { shouldValidate: true, shouldDirty: true });
@@ -268,7 +253,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
             toast({ title: "Endereço localizado!" });
         }
     } catch (error: any) {
-        console.error("❌ ERRO REAL BUSCA CEP:", error);
+        console.error("❌ ERRO BUSCA CEP:", error);
     } finally {
         setIsFetchingCep(false);
     }
@@ -276,7 +261,6 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
 
   useEffect(() => {
     const cleanCep = (watchCep || '').replace(/\D/g, '');
-    console.log("🔍 MONITORANDO CEP:", cleanCep);
 
     if (cleanCep.length === 8) {
       handleCepLookup(cleanCep);
