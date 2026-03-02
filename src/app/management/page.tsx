@@ -267,7 +267,6 @@ export default function ManagementPage() {
             <div className="space-y-4">
                 {promoters?.map((promoter) => {
                     const isSupportWhatsApp = promoter.supportPhone && isWhatsApp(promoter.supportPhone);
-                    const isManagerWhatsApp = promoter.whatsapp && isWhatsApp(promoter.whatsapp);
                     
                     return (
                         <Card key={promoter.id} className="border-2 overflow-hidden shadow-sm hover:shadow-md transition-all">
@@ -289,10 +288,14 @@ export default function ManagementPage() {
                                         <div className="flex items-center gap-2">
                                             <h3 className="font-black uppercase text-sm tracking-tight truncate">{promoter.name}</h3>
                                             {promoter.partnerCode && (
-                                                <Badge variant="outline" className="h-5 px-2 text-[9px] font-mono font-black border-blue-200 text-blue-600 bg-blue-50 uppercase">ID: {promoter.partnerCode}</Badge>
+                                                <div className="flex items-center gap-1 animate-in zoom-in-95">
+                                                    <Badge variant="outline" className="h-5 px-2 text-[9px] font-mono font-black border-blue-200 text-blue-600 bg-blue-50 uppercase">ID: {promoter.partnerCode}</Badge>
+                                                    <CopyButton text={promoter.partnerCode} label="Código Parceiro" />
+                                                </div>
                                             )}
                                         </div>
                                         <div className="flex flex-wrap gap-x-6 gap-y-2 text-[10px] font-bold text-muted-foreground uppercase mt-2">
+                                            {/* GERENTE */}
                                             <div className="flex items-center gap-1.5 min-w-0">
                                                 <UserIcon className="h-3.5 w-3.5 text-blue-500 shrink-0" /> 
                                                 <span className="truncate">Gerente: {promoter.contactName || '---'}</span>
@@ -310,8 +313,16 @@ export default function ManagementPage() {
                                                         <CopyButton text={promoter.whatsapp} label="WhatsApp" />
                                                     </div>
                                                 )}
+                                                {promoter.managerEmail && (
+                                                    <div className="flex items-center gap-1 border-l pl-2 ml-1">
+                                                        <Mail className="h-3 w-3 text-blue-400" />
+                                                        <span className="lowercase font-medium">{promoter.managerEmail}</span>
+                                                        <CopyButton text={promoter.managerEmail} label="E-mail Gerente" />
+                                                    </div>
+                                                )}
                                             </div>
 
+                                            {/* SUPORTE */}
                                             <div className="flex items-center gap-1.5 min-w-0">
                                                 <Headset className="h-3.5 w-3.5 text-blue-500 shrink-0" /> 
                                                 <span className="truncate">Suporte: {promoter.supportPhone || '---'}</span>
@@ -333,10 +344,11 @@ export default function ManagementPage() {
                                                 )}
                                             </div>
 
+                                            {/* EMAIL INSTITUCIONAL */}
                                             {promoter.email && (
                                                 <div className="flex items-center gap-1.5 min-w-0">
                                                     <Mail className="h-3.5 w-3.5 text-blue-500 shrink-0" />
-                                                    <span className="truncate">{promoter.email}</span>
+                                                    <span className="truncate">Institucional: {promoter.email}</span>
                                                     <CopyButton text={promoter.email} label="E-mail" />
                                                 </div>
                                             )}
