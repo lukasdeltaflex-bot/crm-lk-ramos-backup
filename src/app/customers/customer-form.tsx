@@ -195,32 +195,48 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
     return null;
   }, [watchBirthDate]);
 
-  // 🛡️ CORREÇÃO DO BUG 3: Verificação de duplicidade ignorando o próprio ID na edição
+  // 🛡️ BLINDAGEM NUCLEAR V15: Verificação de duplicidade ignorando o próprio ID para evitar Falso Positivo
   const duplicity = useMemo(() => {
     const results = { phone: false, email: false, cpf: false };
-    if (!allCustomers) return results;
+    if (!allCustomers || allCustomers.length === 0) return results;
     
-    // Identifica o ID atual para permitir edição sem falso positivo
+    // Identifica o ID atual (Firestore) e o ID Numérico para exclusão mútua na busca
     const currentId = customer?.id || defaultValues?.id;
-    const cleanPhone = watchPhone?.replace(/\D/g, '');
-    const cleanCpf = watchCpf?.replace(/\D/g, '');
+    const currentNumericId = customer?.numericId;
+    
+    const cleanPhone = (watchPhone || '').replace(/\D/g, '');
+    const cleanCpf = (watchCpf || '').replace(/\D/g, '');
+
+    // Só valida duplicidade se os campos tiverem tamanho mínimo significativo para evitar spam de alertas
+    const isPhoneSignificant = cleanPhone.length >= 10;
+    const isCpfSignificant = cleanCpf.length >= 11;
+
+    if (!isPhoneSignificant && !isCpfSignificant) return results;
 
     allCustomers.forEach(c => {
-        // Pula o próprio registro sendo editado
+        // Pula o próprio registro sendo editado (Evita o Falso Positivo)
         if (currentId && c.id === currentId) return;
+        if (currentNumericId && c.numericId === currentNumericId) return;
 
-        if (cleanPhone && c.phone?.replace(/\D/g, '') === cleanPhone) results.phone = true;
-        if (cleanCpf && c.cpf?.replace(/\D/g, '') === cleanCpf) results.cpf = true;
+        // Compara telefone (limpo)
+        if (isPhoneSignificant && c.phone?.replace(/\D/g, '') === cleanPhone) {
+            results.phone = true;
+        }
+        
+        // Compara CPF (limpo)
+        if (isCpfSignificant && c.cpf?.replace(/\D/g, '') === cleanCpf) {
+            results.cpf = true;
+        }
     });
     return results;
-  }, [allCustomers, watchPhone, watchCpf, customer?.id, defaultValues?.id]);
+  }, [allCustomers, watchPhone, watchCpf, customer?.id, customer?.numericId, defaultValues?.id]);
 
   useEffect(() => {
     if (duplicity.cpf && watchCpf.length === 14) {
         toast({
             variant: 'destructive',
             title: '⚠️ CPF JÁ CADASTRADO',
-            description: 'Este documento já existe no sistema em outro cadastro.'
+            description: 'Este documento já pertence a outro cliente no sistema.'
         });
     }
   }, [duplicity.cpf, watchCpf]);
@@ -285,7 +301,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
 
   const handleFormSubmit = (data: CustomerFormValues) => {
     if (duplicity.phone || duplicity.cpf) {
-        toast({ variant: 'destructive', title: 'Dados duplicados detectados', description: 'Corrija campos em vermelho.' });
+        toast({ variant: 'destructive', title: 'Dados duplicados detectados', description: 'Verifique os campos marcados em vermelho.' });
         return;
     }
     const parsedBirthDate = parse(data.birthDate, 'dd/MM/yyyy', new Date());
