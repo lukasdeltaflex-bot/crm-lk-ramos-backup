@@ -60,7 +60,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Card } from '@/components/ui/card';
-import { Filter, X, Search, Calendar as CalendarIcon, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Landmark, Building2 } from 'lucide-react';
+import { Filter, X, Search, Calendar as CalendarIcon, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Landmark, Building2, User } from 'lucide-react';
 import type { ProposalStatus, UserSettings } from '@/lib/types';
 import { DraggableHeader } from './columns';
 import type { ProposalWithCustomer } from './page';
@@ -96,6 +96,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const [globalFilter, setGlobalFilter] = React.useState('');
   const [bankFilter, setBankFilter] = React.useState('all');
   const [promoterFilter, setPromoterFilter] = React.useState('all');
+  const [operatorFilter, setOperatorFilter] = React.useState('all');
   const [startDateInput, setStartDateInput] = React.useState('');
   const [endDateInput, setEndDateInput] = React.useState('');
   const [appliedDateRange, setAppliedDateRange] = React.useState<DateRange | undefined>(undefined);
@@ -127,6 +128,9 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 
         const savedPromoter = localStorage.getItem('lk-proposals-filter-promoter');
         if (savedPromoter) setPromoterFilter(savedPromoter);
+
+        const savedOperator = localStorage.getItem('lk-proposals-filter-operator');
+        if (savedOperator) setOperatorFilter(savedOperator);
 
         const savedSearch = localStorage.getItem('lk-proposals-filter-search');
         if (savedSearch) setGlobalFilter(savedSearch);
@@ -162,6 +166,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         localStorage.setItem('lk-proposals-filter-status', statusFilter);
         localStorage.setItem('lk-proposals-filter-bank', bankFilter);
         localStorage.setItem('lk-proposals-filter-promoter', promoterFilter);
+        localStorage.setItem('lk-proposals-filter-operator', operatorFilter);
         localStorage.setItem('lk-proposals-filter-search', globalFilter);
         localStorage.setItem('lk-proposals-filter-dates', JSON.stringify({
             startStr: startDateInput,
@@ -173,7 +178,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         localStorage.setItem('lk-proposals-order', JSON.stringify(columnOrder));
         localStorage.setItem('lk-proposals-sizing', JSON.stringify(columnSizing));
     }
-  }, [statusFilter, bankFilter, promoterFilter, globalFilter, appliedDateRange, startDateInput, endDateInput, columnVisibility, columnOrder, columnSizing, isClient]);
+  }, [statusFilter, bankFilter, promoterFilter, operatorFilter, globalFilter, appliedDateRange, startDateInput, endDateInput, columnVisibility, columnOrder, columnSizing, isClient]);
 
   const handlePaginationChange = (updater: any) => {
     setPagination((old) => {
@@ -213,6 +218,10 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         list = list.filter(p => p.promoter === promoterFilter);
     }
 
+    if (operatorFilter !== 'all') {
+        list = list.filter(p => (p.operator || 'Sem Operador') === operatorFilter);
+    }
+
     if (appliedDateRange && appliedDateRange.from) {
         const fromDate = appliedDateRange.from;
         const toDate = appliedDateRange.to ? endOfDay(appliedDateRange.to) : endOfDay(appliedDateRange.from);
@@ -224,7 +233,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     }
     
     return list;
-  }, [data, statusFilter, bankFilter, promoterFilter, appliedDateRange]);
+  }, [data, statusFilter, bankFilter, promoterFilter, operatorFilter, appliedDateRange]);
 
   const table = useReactTable({
     data: filteredData,
@@ -320,11 +329,12 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 
   const banksList = React.useMemo(() => Array.from(new Set(data.map(p => p.bank))).sort(), [data]);
   const promotersList = React.useMemo(() => Array.from(new Set(data.map(p => p.promoter))).sort(), [data]);
+  const operatorsList = React.useMemo(() => Array.from(new Set(data.map(p => p.operator || 'Sem Operador'))).sort(), [data]);
 
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
         <div className="space-y-4">
-            <div className="flex items-center justify-between flex-wrap gap-4 bg-muted/10 dark:bg-zinc-900/30 p-2 rounded-xl border-2 border-zinc-200 dark:border-primary/20 shadow-sm">
+            <div className="flex items-center justify-between flex-wrap gap-4 bg-muted/10 dark:bg-zinc-900/30 p-3 rounded-2xl border-2 border-zinc-200 dark:border-primary/20 shadow-sm">
                 <Tabs value={statusFilter} onValueChange={setStatusFilter}>
                     <TabsList className="h-auto flex-wrap justify-start bg-transparent p-0 gap-1">
                         <TabsTrigger value="Todos" className="font-bold px-4 h-9">Todos</TabsTrigger>
@@ -344,11 +354,36 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     </TabsList>
                 </Tabs>
 
-                <div className="flex items-center gap-2 ml-auto">
-                    <Select value={bankFilter} onValueChange={setBankFilter}>
-                        <SelectTrigger className="h-8 min-w-[140px] bg-background border rounded-full text-[9px] font-black uppercase px-3 shadow-sm hover:bg-primary/5 transition-colors">
+                <div className="flex items-center gap-3 ml-auto flex-nowrap overflow-x-auto pb-1 md:pb-0">
+                    <Select value={operatorFilter} onValueChange={setOperatorFilter}>
+                        <SelectTrigger className="h-10 min-w-[180px] bg-background border rounded-full text-[10px] font-black uppercase px-5 shadow-sm hover:bg-primary/5 transition-colors">
                             <div className="flex items-center gap-2 truncate">
-                                <Landmark className="h-3 w-3 text-primary/60 shrink-0" />
+                                <User className="h-4 w-4 text-primary/60 shrink-0" />
+                                <SelectValue placeholder="OPERADOR" />
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-2">
+                            <SelectItem value="all" className="font-black text-[10px] uppercase">
+                                <div className="flex items-center gap-3">
+                                    <User className="h-4 w-4 text-primary" />
+                                    <span>Todos Operadores</span>
+                                </div>
+                            </SelectItem>
+                            {operatorsList.map(op => (
+                                <SelectItem key={op} value={op} className="font-bold text-[11px] uppercase">
+                                    <div className="flex items-center gap-3">
+                                        <User className="h-4 w-4 text-muted-foreground" />
+                                        <span>{op}</span>
+                                    </div>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
+                    <Select value={bankFilter} onValueChange={setBankFilter}>
+                        <SelectTrigger className="h-10 min-w-[180px] bg-background border rounded-full text-[10px] font-black uppercase px-5 shadow-sm hover:bg-primary/5 transition-colors">
+                            <div className="flex items-center gap-2 truncate">
+                                <Landmark className="h-4 w-4 text-primary/60 shrink-0" />
                                 <SelectValue placeholder="BANCO" />
                             </div>
                         </SelectTrigger>
@@ -371,9 +406,9 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     </Select>
 
                     <Select value={promoterFilter} onValueChange={setPromoterFilter}>
-                        <SelectTrigger className="h-8 min-w-[140px] bg-background border rounded-full text-[9px] font-black uppercase px-3 shadow-sm hover:bg-primary/5 transition-colors">
+                        <SelectTrigger className="h-10 min-w-[180px] bg-background border rounded-full text-[10px] font-black uppercase px-5 shadow-sm hover:bg-primary/5 transition-colors">
                             <div className="flex items-center gap-2 truncate">
-                                <Building2 className="h-3 w-3 text-primary/60 shrink-0" />
+                                <Building2 className="h-4 w-4 text-primary/60 shrink-0" />
                                 <SelectValue placeholder="PROMOTORA" />
                             </div>
                         </SelectTrigger>

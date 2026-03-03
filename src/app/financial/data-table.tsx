@@ -343,7 +343,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         <div className="space-y-4 w-full">
             <FinancialSummary rows={data} currentMonthRange={startOfMonth(new Date()) as any} isPrivacyMode={isPrivacyMode} isFiltered={!!globalFilter} onShowDetails={onShowDetails} userSettings={userSettings} />
 
-            <div className="flex flex-wrap items-center justify-between gap-4 bg-muted/10 dark:bg-zinc-900/30 p-2 rounded-xl border-2 border-zinc-200 dark:border-primary/20 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-4 bg-muted/10 dark:bg-zinc-900/30 p-3 rounded-2xl border-2 border-zinc-200 dark:border-primary/20 shadow-sm">
                 <Tabs value={statusFilter} onValueChange={setStatusFilter}>
                     <TabsList className="bg-transparent p-0 gap-1 h-auto flex-wrap">
                         <TabsTrigger value="Todos" className="font-bold px-4 h-9">Todos</TabsTrigger>
@@ -353,11 +353,11 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                     </TabsList>
                 </Tabs>
 
-                <div className="flex items-center gap-2 ml-auto flex-wrap justify-end">
+                <div className="flex items-center gap-3 ml-auto flex-nowrap overflow-x-auto pb-1 md:pb-0">
                     <Select value={operatorFilter} onValueChange={setOperatorFilter}>
-                        <SelectTrigger className="h-8 min-w-[140px] bg-background border rounded-full text-[9px] font-black uppercase px-3 shadow-sm hover:bg-primary/5 transition-colors">
+                        <SelectTrigger className="h-10 min-w-[180px] bg-background border rounded-full text-[10px] font-black uppercase px-5 shadow-sm hover:bg-primary/5 transition-colors">
                             <div className="flex items-center gap-2 truncate">
-                                <User className="h-3 w-3 text-primary/60 shrink-0" />
+                                <User className="h-4 w-4 text-primary/60 shrink-0" />
                                 <SelectValue placeholder="OPERADOR" />
                             </div>
                         </SelectTrigger>
@@ -380,9 +380,9 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                     </Select>
 
                     <Select value={bankFilter} onValueChange={setBankFilter}>
-                        <SelectTrigger className="h-8 min-w-[140px] bg-background border rounded-full text-[9px] font-black uppercase px-3 shadow-sm hover:bg-primary/5 transition-colors">
+                        <SelectTrigger className="h-10 min-w-[180px] bg-background border rounded-full text-[10px] font-black uppercase px-5 shadow-sm hover:bg-primary/5 transition-colors">
                             <div className="flex items-center gap-2 truncate">
-                                <Landmark className="h-3 w-3 text-primary/60 shrink-0" />
+                                <Landmark className="h-4 w-4 text-primary/60 shrink-0" />
                                 <SelectValue placeholder="BANCO" />
                             </div>
                         </SelectTrigger>
@@ -405,9 +405,9 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                     </Select>
 
                     <Select value={promoterFilter} onValueChange={setPromoterFilter}>
-                        <SelectTrigger className="h-8 min-w-[140px] bg-background border rounded-full text-[9px] font-black uppercase px-3 shadow-sm hover:bg-primary/5 transition-colors">
+                        <SelectTrigger className="h-10 min-w-[180px] bg-background border rounded-full text-[10px] font-black uppercase px-5 shadow-sm hover:bg-primary/5 transition-colors">
                             <div className="flex items-center gap-2 truncate">
-                                <Building2 className="h-3 w-3 text-primary/60 shrink-0" />
+                                <Building2 className="h-4 w-4 text-primary/60 shrink-0" />
                                 <SelectValue placeholder="PROMOTORA" />
                             </div>
                         </SelectTrigger>
