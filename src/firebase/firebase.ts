@@ -1,4 +1,3 @@
-
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
@@ -25,9 +24,9 @@ if (typeof window !== "undefined") {
 
         const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
         
-        // 🛡️ CONFIGURAÇÃO DE REDE V15: Long Polling e Auto-Detect habilitados para máxima compatibilidade em nuvem
+        // 🛡️ CONFIGURAÇÃO DE REDE V16: Auto-Detect habilitado para máxima compatibilidade.
+        // experimentalForceLongPolling e experimentalAutoDetectLongPolling não podem ser usados juntos.
         db = initializeFirestore(app, {
-            experimentalForceLongPolling: true,
             experimentalAutoDetectLongPolling: true,
             localCache: persistentLocalCache({
                 tabManager: persistentMultipleTabManager()

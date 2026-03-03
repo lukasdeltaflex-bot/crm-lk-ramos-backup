@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -237,7 +236,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
         const response = await fetch(`/api/cep/${cleanCep}`);
         
         if (!response.ok) {
-            toast({ variant: 'destructive', title: 'Falha na conexão', description: 'O serviço de CEP está temporariamente indisponível.' });
+            console.warn("CEP Proxy offline ou indisponível.");
             return;
         }
 
