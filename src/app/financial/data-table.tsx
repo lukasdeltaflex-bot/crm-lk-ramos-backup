@@ -60,7 +60,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { X, Filter, Search, Calendar as CalendarIcon, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Landmark, Building2 } from 'lucide-react';
+import { X, Filter, Search, Calendar as CalendarIcon, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Landmark, Building2, User } from 'lucide-react';
 import { cn, cleanBankName, normalizeString, formatCurrency } from '@/lib/utils';
 import type { Proposal, Customer, UserSettings } from '@/lib/types';
 import { FinancialSummary } from '@/components/financial/financial-summary';
@@ -103,6 +103,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   const [globalFilter, setGlobalFilter] = React.useState('');
   const [bankFilter, setBankFilter] = React.useState('all');
   const [promoterFilter, setPromoterFilter] = React.useState('all');
+  const [operatorFilter, setOperatorFilter] = React.useState('all');
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
   const [isClient, setIsClient] = React.useState(false);
 
@@ -122,7 +123,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   const [endDateInput, setEndDateInput] = React.useState('');
   const [appliedDateRange, setAppliedDateRange] = React.useState<DateRange | undefined>(undefined);
 
-  // 🛡️ PERSISTÊNCIA DE FILTROS (BUG #2)
   React.useEffect(() => {
     setIsClient(true);
     try {
@@ -137,6 +137,9 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
 
         const savedPromoter = localStorage.getItem('lk-financial-filter-promoter');
         if (savedPromoter) setPromoterFilter(savedPromoter);
+
+        const savedOperator = localStorage.getItem('lk-financial-filter-operator');
+        if (savedOperator) setOperatorFilter(savedOperator);
 
         const savedSearch = localStorage.getItem('lk-financial-filter-search');
         if (savedSearch) setGlobalFilter(savedSearch);
@@ -172,6 +175,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         localStorage.setItem('lk-financial-filter-status', statusFilter);
         localStorage.setItem('lk-financial-filter-bank', bankFilter);
         localStorage.setItem('lk-financial-filter-promoter', promoterFilter);
+        localStorage.setItem('lk-financial-filter-operator', operatorFilter);
         localStorage.setItem('lk-financial-filter-search', globalFilter);
         localStorage.setItem('lk-financial-filter-dates', JSON.stringify({
             startStr: startDateInput,
@@ -183,7 +187,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         localStorage.setItem('lk-financial-order', JSON.stringify(columnOrder));
         localStorage.setItem('lk-financial-sizing', JSON.stringify(columnSizing));
     }
-  }, [statusFilter, bankFilter, promoterFilter, globalFilter, appliedDateRange, startDateInput, endDateInput, columnVisibility, columnOrder, columnSizing, isClient]);
+  }, [statusFilter, bankFilter, promoterFilter, operatorFilter, globalFilter, appliedDateRange, startDateInput, endDateInput, columnVisibility, columnOrder, columnSizing, isClient]);
 
   const handlePaginationChange = (updater: any) => {
     setPagination((old) => {
@@ -233,6 +237,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
 
     if (bankFilter !== 'all') list = list.filter(p => p.bank === bankFilter);
     if (promoterFilter !== 'all') list = list.filter(p => p.promoter === promoterFilter);
+    if (operatorFilter !== 'all') list = list.filter(p => (p.operator || 'Sem Operador') === operatorFilter);
 
     if (appliedDateRange && appliedDateRange.from) {
         const fromDate = appliedDateRange.from;
@@ -244,7 +249,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     }
 
     return list;
-  }, [data, statusFilter, bankFilter, promoterFilter, appliedDateRange, globalFilter]);
+  }, [data, statusFilter, bankFilter, promoterFilter, operatorFilter, appliedDateRange, globalFilter]);
 
   const table = useReactTable({
     data: filteredData,
@@ -273,7 +278,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         const searchDigits = searchTerm.replace(/\D/g, '');
         const cpfDigits = customer?.cpf?.replace(/\D/g, '') || '';
 
-        // 🛡️ BUSCA NUCLEAR V14: Reconhecimento de nomes limpos de bancos
         if (/^\d+$/.test(searchTerm)) {
             if (customer?.numericId?.toString() === searchTerm) return true;
             if (p.proposalNumber === searchTerm) return true;
@@ -292,7 +296,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             p.proposalNumber,
             p.operator,
             p.bank,
-            cleanBankName(p.bank), // Reconhece "Itau" mesmo se salvo como "341 - Itau"
+            cleanBankName(p.bank),
             p.promoter
         ];
 
@@ -326,6 +330,12 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     }
   };
 
+  const operatorsList = React.useMemo(() => {
+    const ops = new Set<string>();
+    data.forEach(p => ops.add(p.operator || 'Sem Operador'));
+    return Array.from(ops).sort();
+  }, [data]);
+
   React.useImperativeHandle(ref, () => ({ table }));
 
   return (
@@ -343,9 +353,31 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                     </TabsList>
                 </Tabs>
 
-                <div className="flex items-center gap-2 ml-auto">
+                <div className="flex items-center gap-2 ml-auto flex-wrap justify-end">
+                    <Select value={operatorFilter} onValueChange={setOperatorFilter}>
+                        <SelectTrigger className="h-10 min-w-[180px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-[11px] font-black uppercase px-6 shadow-sm">
+                            <SelectValue placeholder="OPERADOR" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-2">
+                            <SelectItem value="all" className="font-black text-[10px] uppercase">
+                                <div className="flex items-center gap-3">
+                                    <User className="h-4 w-4 text-primary" />
+                                    <span>Todos Operadores</span>
+                                </div>
+                            </SelectItem>
+                            {operatorsList.map(op => (
+                                <SelectItem key={op} value={op} className="font-bold text-[11px] uppercase">
+                                    <div className="flex items-center gap-3">
+                                        <User className="h-4 w-4 text-muted-foreground" />
+                                        <span>{op}</span>
+                                    </div>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
                     <Select value={bankFilter} onValueChange={setBankFilter}>
-                        <SelectTrigger className="h-10 min-w-[200px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-[11px] font-black uppercase px-6 shadow-sm">
+                        <SelectTrigger className="h-10 min-w-[180px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-[11px] font-black uppercase px-6 shadow-sm">
                             <SelectValue placeholder="BANCO" />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-2">
@@ -367,7 +399,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                     </Select>
 
                     <Select value={promoterFilter} onValueChange={setPromoterFilter}>
-                        <SelectTrigger className="h-10 min-w-[200px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-[11px] font-black uppercase px-6 shadow-sm">
+                        <SelectTrigger className="h-10 min-w-[180px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-[11px] font-black uppercase px-6 shadow-sm">
                             <SelectValue placeholder="PROMOTORA" />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-2">
