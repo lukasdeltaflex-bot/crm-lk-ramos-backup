@@ -34,7 +34,13 @@ export function RadarWidget({ proposals, customers, isLoading }: RadarWidgetProp
           
           // 🛡️ BLINDAGEM DE CRASH: Valida a data antes de processar
           try {
-              const paidDate = parseISO(p.datePaidToClient);
+              let paidDate: Date;
+              if (p.datePaidToClient.includes('T')) {
+                  paidDate = parseISO(p.datePaidToClient);
+              } else {
+                  paidDate = new Date(p.datePaidToClient.replace(/-/g, '/'));
+              }
+              
               if (!isValid(paidDate)) return false;
               return differenceInMonths(now, paidDate) >= 12;
           } catch (e) {
@@ -48,7 +54,14 @@ export function RadarWidget({ proposals, customers, isLoading }: RadarWidgetProp
         const oldest = [...maturedProposals].sort((a,b) => (a.datePaidToClient || '').localeCompare(b.datePaidToClient || ''))[0];
         
         try {
-            const paidDate = parseISO(oldest.datePaidToClient!);
+            let paidDate: Date;
+            if (oldest.datePaidToClient!.includes('T')) {
+                paidDate = parseISO(oldest.datePaidToClient!);
+            } else {
+                paidDate = new Date(oldest.datePaidToClient!.replace(/-/g, '/'));
+            }
+            
+            if (!isValid(paidDate)) return null;
             const months = differenceInMonths(now, paidDate);
 
             return {

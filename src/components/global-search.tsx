@@ -101,7 +101,7 @@ export function GlobalSearch() {
             {validCustomers.map((customer) => {
               const cpfNumeric = customer.cpf?.replace(/\D/g, '') || '';
               const smartTags = getSmartTags(customer, proposals || []);
-              const smartTagsLabels = smartTags.map(st => st.label).join(' ');
+              const smartTagsLabels = smartTags.map(tag => tag.label).join(' ');
               const searchIndex = `ID${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric} ${smartTagsLabels}`;
               
               return (

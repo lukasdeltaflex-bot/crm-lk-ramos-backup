@@ -20,9 +20,19 @@ export function formatCurrency(amount: number) {
  * Garante que a data seja interpretada como o dia local, sem deslocamentos de UTC.
  */
 export function getAge(birthDate: string): number {
-  if (!birthDate || !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) return 0;
+  if (!birthDate || !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
+      // Tenta converter se estiver no formato BR
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(birthDate)) {
+          const [d, m, y] = birthDate.split('/').map(Number);
+          const birth = new Date(y, m - 1, d);
+          const today = new Date();
+          let age = today.getFullYear() - birth.getFullYear();
+          if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--;
+          return age;
+      }
+      return 0;
+  }
   
-  // Força a data a ser tratada como local para evitar que 00:00 UTC mude o dia
   const [year, month, day] = birthDate.split('-').map(Number);
   const today = new Date();
   const birth = new Date(year, month - 1, day);
@@ -89,7 +99,6 @@ export function formatDateSafe(dateString?: string, formatStr: string = "dd/MM/y
         }
         const parts = dateString.split('-');
         if (parts.length === 3) {
-            // Cria data local sem horas para evitar shift de dia
             const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
             return format(date, formatStr, { locale: ptBR });
         }
@@ -149,12 +158,27 @@ export function cleanBankName(name?: string): string {
   return cleaned || name;
 }
 
+/**
+ * 🛡️ BLINDAGEM DE DADOS FIREBASE V2
+ * Ignora objetos que não são "puros" (como FieldValue.delete ou arrayUnion)
+ * para evitar corrupção de comandos do banco de dados.
+ */
 export function cleanFirestoreData(data: any): any {
     if (data === null) return null;
     if (data === undefined) return undefined;
     if (data instanceof Date) return data.toISOString();
+    
+    // Se for um objeto especial do Firebase (FieldValue), não tentamos limpar suas chaves internas
+    if (typeof data === 'object' && data.constructor.name !== 'Object' && !Array.isArray(data)) {
+        return data;
+    }
+
     if (typeof data === 'string') return data.trim();
-    if (Array.isArray(data)) return data.map(item => cleanFirestoreData(item)).filter(i => i !== undefined);
+    
+    if (Array.isArray(data)) {
+        return data.map(item => cleanFirestoreData(item)).filter(i => i !== undefined);
+    }
+    
     if (typeof data === 'object') {
         const cleaned: any = {};
         Object.keys(data).forEach(key => {

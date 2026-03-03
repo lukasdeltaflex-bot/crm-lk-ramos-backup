@@ -141,10 +141,13 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
     
     if (source?.birthDate) {
         try {
-            const date = source.birthDate.includes('-') 
-              ? parse(source.birthDate, 'yyyy-MM-dd', new Date())
-              : parse(source.birthDate, 'dd/MM/yyyy', new Date());
-            if (isValid(date)) formattedBirthDate = format(date, 'dd/MM/yyyy');
+            // Suporta formatos ISO (YYYY-MM-DD) ou BR (DD/MM/YYYY) vindos do banco
+            if (source.birthDate.includes('-')) {
+                const parts = source.birthDate.split('-');
+                if (parts.length === 3) formattedBirthDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            } else {
+                formattedBirthDate = source.birthDate;
+            }
         } catch (e) {}
     }
 
@@ -205,41 +208,37 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
     if (!allCustomers || allCustomers.length === 0) return results;
     
     const currentId = customer?.id || defaultValues?.id;
-    const currentNumericId = customer?.numericId;
     
+    // Normalização nuclear para evitar duplicidade por formatação
     const cleanPhone = (watchPhone || '').replace(/\D/g, '');
     const cleanCpf = (watchCpf || '').replace(/\D/g, '');
 
-    const isPhoneSignificant = cleanPhone.length >= 10;
-    const isCpfSignificant = cleanCpf.length >= 11;
-
-    if (!isPhoneSignificant && !isCpfSignificant) return results;
+    if (cleanPhone.length < 10 && cleanCpf.length < 11) return results;
 
     allCustomers.forEach(c => {
         if (currentId && c.id === currentId) return;
-        if (currentNumericId && c.numericId === currentNumericId) return;
 
-        if (isPhoneSignificant && c.phone?.replace(/\D/g, '') === cleanPhone) {
+        if (cleanPhone.length >= 10 && c.phone?.replace(/\D/g, '') === cleanPhone) {
             results.phone = true;
         }
         
-        if (isCpfSignificant && c.cpf?.replace(/\D/g, '') === cleanCpf) {
+        if (cleanCpf.length >= 11 && c.cpf?.replace(/\D/g, '') === cleanCpf) {
             results.cpf = true;
         }
     });
     return results;
-  }, [allCustomers, watchPhone, watchCpf, customer?.id, customer?.numericId, defaultValues?.id]);
+  }, [allCustomers, watchPhone, watchCpf, customer?.id, defaultValues?.id]);
 
   const handleCepLookup = useCallback(async (cleanCep: string) => {
     if (cleanCep.length !== 8) return;
     
     setIsFetchingCep(true);
     try {
+        console.log("🔍 Iniciando busca de CEP:", cleanCep);
         const response = await fetch(`/api/cep/${cleanCep}`);
         
         if (!response.ok) {
-            console.warn("CEP Proxy offline ou indisponível.");
-            setIsFetchingCep(false);
+            console.error("❌ Erro na ponte da API de CEP.");
             return;
         }
 
@@ -251,7 +250,6 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                 title: 'CEP não localizado', 
                 description: 'Este código não existe na base oficial dos Correios.' 
             });
-            setIsFetchingCep(false);
             return;
         }
 
@@ -271,7 +269,6 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
 
   useEffect(() => {
     const cleanCep = (watchCep || '').replace(/\D/g, '');
-
     if (cleanCep.length === 8) {
       handleCepLookup(cleanCep);
     }
@@ -309,7 +306,6 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
         return;
     }
     
-    // 🛡️ BLINDAGEM DE DATA: Trata ambos os formatos
     let birthIso = '';
     try {
         if (data.birthDate.includes('-')) {
@@ -321,7 +317,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
             }
         }
     } catch (e) {
-        toast({ variant: 'destructive', title: 'Data Inválida' });
+        toast({ variant: 'destructive', title: 'Data de Nascimento Inválida' });
         return;
     }
 
@@ -341,7 +337,6 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
     onSubmit(newCustomerData);
   }
 
-  const currentCustomerId = customer?.id || defaultValues?.id;
   const errors = form.formState.errors;
   const hasErrors = Object.keys(errors).length > 0;
 
@@ -803,7 +798,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                 </h3>
                 <CustomerAttachmentUploader 
                     userId={user?.uid || 'system'} 
-                    customerId={currentCustomerId || 'new'} 
+                    customerId={customer?.id || 'new'} 
                     initialAttachments={form.getValues('documents') || []} 
                     onAttachmentsChange={(docs) => form.setValue('documents', docs, { shouldValidate: true })}
                     isReadOnly={false}
