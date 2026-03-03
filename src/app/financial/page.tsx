@@ -23,13 +23,16 @@ import {
     ChevronDown,
     FileSpreadsheet,
     FileText as FilePdf,
-    BarChart3
+    BarChart3,
+    Printer
 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import {
   Sheet,
@@ -200,6 +203,18 @@ export default function FinancialPage() {
     }
   };
 
+  const handlePrint = (onlySelected = false) => {
+    if (onlySelected) {
+        document.body.classList.add('print-selection');
+    }
+    window.print();
+    if (onlySelected) {
+        window.addEventListener('afterprint', () => {
+            document.body.classList.remove('print-selection');
+        }, { once: true });
+    }
+  };
+
   const handleExportToExcel = async (onlySelected = false) => {
     const table = tableRef.current?.table;
     if (!table) return;
@@ -227,7 +242,7 @@ export default function FinancialPage() {
     const ws = utils.json_to_sheet(dataToExport);
     const wb = utils.book_new();
     utils.book_append_sheet(wb, ws, 'Financeiro');
-    writeFile(wb, onlySelected ? 'financeiro_selecionado.xlsx' : 'financeiro_lk_ramos.xlsx');
+    writeFile(wb, onlySelected ? 'financeiro_selecionado.xlsx' : 'financeiro_completo.xlsx');
   };
 
   const handleExportToPdf = async (onlySelected = false) => {
@@ -240,7 +255,6 @@ export default function FinancialPage() {
     const rowsSource = onlySelected ? table.getFilteredSelectedRowModel().rows : table.getFilteredRowModel().rows;
     const doc = new jsPDF('landscape');
     
-    // 🛡️ LOGO NO PDF FINANCEIRO
     if (userSettings?.customLogoURL) {
         try {
             doc.addImage(userSettings.customLogoURL, 'PNG', 14, 8, 35, 15, undefined, 'FAST');
@@ -281,7 +295,7 @@ export default function FinancialPage() {
         headStyles: { fillColor: [40, 74, 127] }
     });
 
-    doc.save(`financeiro_${onlySelected ? 'selecao' : 'completo'}_${format(new Date(), 'dd_MM_yyyy')}.pdf`);
+    doc.save(`financeiro_${onlySelected ? 'selecao' : 'completo'}.pdf`);
     toast({ title: 'PDF Gerado!' });
   };
 
@@ -363,24 +377,53 @@ export default function FinancialPage() {
                             <DropdownMenuItem onSelect={() => handleBulkCommissionUpdate('Pendente')} className="text-destructive">Estornar para PENDENTE</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
-
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="h-10 px-6 rounded-full font-bold text-xs">
-                                <FileDown className="mr-2 h-4 w-4" /> Exportar Seleção <ChevronDown className="ml-2 h-3 w-3" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onSelect={() => handleExportToExcel(true)} className="gap-2">
-                                <FileSpreadsheet className="h-4 w-4 text-green-600" /> Excel (.xlsx)
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => handleExportToPdf(true)} className="gap-2">
-                                <FilePdf className="h-4 w-4 text-red-600" /> PDF (.pdf)
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                 </div>
             )}
+
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="h-10 px-6 rounded-full font-bold text-xs gap-2">
+                        <Printer className="h-4 w-4" /> Imprimir <ChevronDown className="h-3 w-3 opacity-50" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => handlePrint(false)}>Imprimir Tudo</DropdownMenuItem>
+                    {selectedCount > 0 && (
+                        <DropdownMenuItem onSelect={() => handlePrint(true)} className="font-bold text-primary">
+                            Imprimir Seleção ({selectedCount})
+                        </DropdownMenuItem>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="h-10 px-6 rounded-full font-bold border-border/50 hover:bg-muted/50 transition-all text-xs gap-2">
+                        <FileDown className="h-4 w-4" /> Exportar <ChevronDown className="h-3 w-3 opacity-50" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Formato Excel</DropdownMenuLabel>
+                    <DropdownMenuItem onSelect={() => handleExportToExcel(false)} className="gap-2">
+                        <FileSpreadsheet className="h-4 w-4 text-green-600" /> Exportar Tudo
+                    </DropdownMenuItem>
+                    {selectedCount > 0 && (
+                        <DropdownMenuItem onSelect={() => handleExportToExcel(true)} className="gap-2 font-bold">
+                            <FileSpreadsheet className="h-4 w-4 text-green-600" /> Exportar Seleção ({selectedCount})
+                        </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>Formato PDF</DropdownMenuLabel>
+                    <DropdownMenuItem onSelect={() => handleExportToPdf(false)} className="gap-2">
+                        <FilePdf className="h-4 w-4 text-red-600" /> Exportar Tudo
+                    </DropdownMenuItem>
+                    {selectedCount > 0 && (
+                        <DropdownMenuItem onSelect={() => handleExportToPdf(true)} className="gap-2 font-bold">
+                            <FilePdf className="h-4 w-4 text-red-600" /> Exportar Seleção ({selectedCount})
+                        </DropdownMenuItem>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
 
             <Dialog open={isOperatorsDialogOpen} onOpenChange={setIsOperatorsDialogOpen}>
                 <Button variant="outline" className="h-10 px-6 rounded-full font-bold text-xs" onClick={() => setIsOperatorsDialogOpen(true)}>
@@ -406,22 +449,6 @@ export default function FinancialPage() {
                     <div className="flex-1 overflow-y-auto"><PromoterEfficiencyReport proposals={summaryProposals} /></div>
                 </DialogContent>
             </Dialog>
-
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="h-10 px-6 rounded-full font-bold text-xs">
-                        <FileDown className="mr-2 h-4 w-4" /> Exportar Tudo <ChevronDown className="ml-2 h-3 w-3" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => handleExportToExcel(false)} className="gap-2">
-                        <FileSpreadsheet className="h-4 w-4 text-green-600" /> Excel (.xlsx)
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => handleExportToPdf(false)} className="gap-2">
-                        <FilePdf className="h-4 w-4 text-red-600" /> PDF (.pdf)
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
             
             <Dialog open={isReconciliationOpen} onOpenChange={setIsReconciliationOpen}>
                 <Button variant="outline" className="h-10 px-6 rounded-full font-bold text-xs" onClick={() => setIsReconciliationOpen(true)}>

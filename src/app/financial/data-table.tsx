@@ -460,7 +460,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                 {appliedDateRange && <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { setStartDateInput(''); setEndDateInput(''); setAppliedDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
             </div>
 
-            <Card className="rounded-[1.5rem] border-2 border-zinc-200 bg-card shadow-xl overflow-hidden p-1">
+            <Card ref={tableContainerRef} className="proposals-table rounded-[1.5rem] border-2 border-zinc-200 bg-card shadow-xl overflow-hidden p-1">
                 <div className="flex items-center justify-between px-4 py-2 gap-4">
                     <div className='relative w-full max-md group'>
                         <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80 group-focus-within:opacity-100 transition-opacity' />

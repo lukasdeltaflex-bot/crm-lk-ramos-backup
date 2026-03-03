@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/page-header';
 import { ProposalsDataTable, type ProposalsDataTableHandle } from './data-table';
 import { getColumns } from './columns';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, FileDown, Trash2, Printer, CheckCircle2, ChevronDown } from 'lucide-react';
+import { PlusCircle, FileDown, Trash2, Printer, CheckCircle2, ChevronDown, FileSpreadsheet, FileText as FilePdf } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -27,8 +27,10 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
+    DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { cleanFirestoreData } from '@/lib/utils';
+import { cleanFirestoreData, formatCurrency, cleanBankName } from '@/lib/utils';
+import { format } from 'date-fns';
 
 export type ProposalWithCustomer = Proposal & { customer: Customer | undefined };
 type ProposalFormData = Partial<Omit<Proposal, 'id' | 'ownerId'>>;
@@ -213,12 +215,89 @@ function ProposalsPageContent() {
     }
   };
 
-  const handlePrintSelection = () => {
-    document.body.classList.add('print-selection');
+  const handlePrint = (onlySelected = false) => {
+    if (onlySelected) {
+        document.body.classList.add('print-selection');
+    }
     window.print();
-    window.addEventListener('afterprint', () => {
-        document.body.classList.remove('print-selection');
-    }, { once: true });
+    if (onlySelected) {
+        window.addEventListener('afterprint', () => {
+            document.body.classList.remove('print-selection');
+        }, { once: true });
+    }
+  };
+
+  const handleExportToExcel = async (onlySelected = false) => {
+    const table = tableRef.current?.table;
+    if (!table) return;
+    const { utils, writeFile } = await import('xlsx');
+    const rows = onlySelected ? table.getFilteredSelectedRowModel().rows : table.getFilteredRowModel().rows;
+    
+    const dataToExport = rows.map(r => {
+        const p = r.original;
+        return {
+            'Data Digitação': p.dateDigitized ? format(new Date(p.dateDigitized), 'dd/MM/yyyy') : '-',
+            'Cliente': p.customer?.name || '-',
+            'CPF': p.customer?.cpf || '-',
+            'Nº Proposta': p.proposalNumber,
+            'Produto': p.product,
+            'Valor Bruto': p.grossAmount,
+            'Banco': cleanBankName(p.bank),
+            'Status': p.status,
+            'Promotora': p.promoter
+        };
+    });
+
+    const worksheet = utils.json_to_sheet(dataToExport);
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, 'Propostas');
+    writeFile(workbook, onlySelected ? 'propostas_selecionadas.xlsx' : 'todas_propostas.xlsx');
+  };
+
+  const handleExportToPdf = async (onlySelected = false) => {
+    const table = tableRef.current?.table;
+    if (!table || !user) return;
+
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+    
+    const rowsSource = onlySelected ? table.getFilteredSelectedRowModel().rows : table.getFilteredRowModel().rows;
+    const doc = new jsPDF('landscape');
+    
+    // Header
+    const title = onlySelected ? "RELATÓRIO DE PROPOSTAS (SELEÇÃO)" : "RELATÓRIO DE PROPOSTAS COMPLETO";
+    doc.setFontSize(18);
+    doc.setTextColor(40, 74, 127);
+    doc.text(title, 14, 15);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 22);
+
+    const tableData = rowsSource.map(r => {
+        const p = r.original;
+        return [
+            p.dateDigitized ? format(new Date(p.dateDigitized), 'dd/MM/yyyy') : '-',
+            p.customer?.name || '-',
+            p.customer?.cpf || '-',
+            p.proposalNumber,
+            p.product,
+            formatCurrency(p.grossAmount),
+            cleanBankName(p.bank),
+            p.status
+        ];
+    });
+
+    autoTable(doc, {
+        startY: 30,
+        head: [['Data', 'Cliente', 'CPF', 'Nº Proposta', 'Produto', 'Vlr Bruto', 'Banco', 'Status']],
+        body: tableData,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [40, 74, 127] }
+    });
+
+    doc.save(`propostas_${onlySelected ? 'selecionadas' : 'completo'}.pdf`);
+    toast({ title: 'PDF Gerado!' });
   };
 
   React.useEffect(() => {
@@ -243,28 +322,12 @@ function ProposalsPageContent() {
     }
   }, [searchParams, isLoading, proposalsWithCustomerData, hasOpenedFromParam, handleNewProposal, handleEditProposal, router]);
 
-  const handleExportToExcel = async () => {
-    const table = tableRef.current?.table;
-    if (!table) return;
-    const { utils, writeFile } = await import('xlsx');
-    const rows = table.getFilteredRowModel().rows;
-    const worksheet = utils.json_to_sheet(rows.map(r => r.original));
-    const workbook = utils.book_new();
-    utils.book_append_sheet(workbook, worksheet, 'Propostas');
-    writeFile(workbook, 'propostas.xlsx');
-  };
-
   const handleStatusChange = async (proposalId: string, newStatus: ProposalStatus, productType?: string) => {
     if (!firestore || !user) return;
-    
-    // 🛡️ REMOÇÃO DA REDUNDÂNCIA: O StatusCell agora lida sozinho com o motivo de reprova.
-    // Não precisamos disparar o modal principal aqui, pois isso duplicava a tela de justificativa.
     
     const proposal = proposals?.find(p => p.id === proposalId);
     if (!proposal || proposal.status === newStatus) return;
 
-    // Se o status já foi atualizado pelo StatusCell (que faz o updateDoc internamente),
-    // apenas retornamos para evitar o loop de handleStatusChange.
     if (newStatus === 'Reprovado') return;
 
     const now = new Date().toISOString();
@@ -375,14 +438,54 @@ function ProposalsPageContent() {
                     <Button variant="destructive" className="h-10 px-6 rounded-full font-bold text-xs" onClick={() => handleBulkStatusChange('Reprovado')}>
                         <Trash2 className="mr-2 h-4 w-4" /> Cancelar
                     </Button>
-                    <Button variant="outline" className="h-10 px-6 rounded-full font-bold text-xs" onClick={handlePrintSelection}>
-                        <Printer className="mr-2 h-4 w-4" /> Imprimir
-                    </Button>
                 </div>
             )}
-            <Button variant="outline" className="h-10 px-6 rounded-full font-bold border-border/50 hover:bg-muted/50 transition-all text-xs" onClick={handleExportToExcel}>
-                <FileDown className="mr-2 h-4 w-4" /> Exportar
-            </Button>
+
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="h-10 px-6 rounded-full font-bold text-xs gap-2">
+                        <Printer className="h-4 w-4" /> Imprimir <ChevronDown className="h-3 w-3 opacity-50" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => handlePrint(false)}>Imprimir Tudo</DropdownMenuItem>
+                    {selectedCount > 0 && (
+                        <DropdownMenuItem onSelect={() => handlePrint(true)} className="font-bold text-primary">
+                            Imprimir Seleção ({selectedCount})
+                        </DropdownMenuItem>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="h-10 px-6 rounded-full font-bold border-border/50 hover:bg-muted/50 transition-all text-xs gap-2">
+                        <FileDown className="h-4 w-4" /> Exportar <ChevronDown className="h-3 w-3 opacity-50" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Formato Excel</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => handleExportToExcel(false)} className="gap-2">
+                        <FileSpreadsheet className="h-4 w-4 text-green-600" /> Exportar Tudo
+                    </DropdownMenuItem>
+                    {selectedCount > 0 && (
+                        <DropdownMenuItem onSelect={() => handleExportToExcel(true)} className="gap-2 font-bold">
+                            <FileSpreadsheet className="h-4 w-4 text-green-600" /> Exportar Seleção ({selectedCount})
+                        </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>Formato PDF</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => handleExportToPdf(false)} className="gap-2">
+                        <FilePdf className="h-4 w-4 text-red-600" /> Exportar Tudo
+                    </DropdownMenuItem>
+                    {selectedCount > 0 && (
+                        <DropdownMenuItem onSelect={() => handleExportToPdf(true)} className="gap-2 font-bold">
+                            <FilePdf className="h-4 w-4 text-red-600" /> Exportar Seleção ({selectedCount})
+                        </DropdownMenuItem>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
+
             <Button onClick={handleNewProposal} className="h-10 px-8 rounded-full font-bold bg-[#00AEEF] hover:bg-[#0096D1] text-white shadow-lg shadow-[#00AEEF]/20 transition-all border-none text-xs">
                 <PlusCircle className="mr-2 h-4 w-4" /> Nova Proposta
             </Button>

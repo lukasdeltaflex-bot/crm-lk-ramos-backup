@@ -238,6 +238,9 @@ html, body, *, [data-sidebar="inset"] {
   animation: alert-pulse 3s infinite ease-in-out !important;
 }
 
-.print-selection .proposals-table tr:not([data-state="selected"]):not(:first-child) {
+/* 🛡️ SUPORTE A IMPRESSÃO DE SELEÇÃO */
+@media print {
+  .print-selection .proposals-table tr:not([data-state="selected"]):not(:first-child) {
     display: none !important;
+  }
 }
