@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -75,6 +74,8 @@ export function CustomerAttachmentUploader({
             title: 'Falha no Armazenamento', 
             description: `Erro ao enviar ${file.name}. Verifique as permissões de acesso.` 
         });
+        
+        // 🛡️ UX: Reseta o estado de upload em caso de erro para liberar a UI
         setUploadingFiles(prev => {
             const newUploading = { ...prev };
             delete newUploading[file.name];

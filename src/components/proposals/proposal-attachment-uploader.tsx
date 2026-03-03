@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -56,7 +55,6 @@ export function ProposalAttachmentUploader({
         return;
     }
 
-    // Pasta organizada: proposals/ID_USUARIO/ID_PROPOSTA/timestamp_nome
     const filePath = `proposals/${userId}/${proposalId}/${Date.now()}_${file.name}`;
     const storageRef = ref(storage, filePath);
     const uploadTask = uploadBytesResumable(storageRef, file);
@@ -85,6 +83,7 @@ export function ProposalAttachmentUploader({
             description: errorMessage 
         });
 
+        // 🛡️ UX: Reseta o estado de upload em caso de erro
         setUploadingFiles(prev => {
             const newUploading = { ...prev };
             delete newUploading[file.name];
@@ -127,7 +126,6 @@ export function ProposalAttachmentUploader({
         toast({ title: 'Anexo Removido' });
       })
       .catch((error) => {
-        // Se o arquivo já não existir fisicamente, apenas removemos da lista
         if (error.code === 'storage/object-not-found') {
             const updatedAttachments = attachments.filter(att => att.url !== attachmentToDelete.url);
             setAttachments(updatedAttachments);

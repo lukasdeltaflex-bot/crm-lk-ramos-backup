@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { format, parseISO, isValid, differenceInDays, startOfDay } from 'date-fns';
+import { format, parseISO, isValid, differenceInDays, startOfDay, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Customer, Proposal } from './types';
 
@@ -16,27 +16,38 @@ export function formatCurrency(amount: number) {
 }
 
 /**
- * 🛡️ MOTOR DE DATAS V2 (BLINDAGEM DE FUSO HORÁRIO)
- * Garante que a data seja interpretada como o dia local, sem deslocamentos de UTC.
+ * 🛡️ MOTOR DE DATAS V3 (DETECÇÃO DE FORMATO)
+ * Resolve falhas de parsing entre ISO (DB) e BR (Input).
  */
+export function parseDateSafe(dateStr: string | undefined | null): Date | null {
+    if (!dateStr) return null;
+    
+    try {
+        // 1. Tenta formato ISO (YYYY-MM-DD...)
+        if (dateStr.includes('-') && dateStr.indexOf('-') === 4) {
+            const date = parseISO(dateStr);
+            if (isValid(date)) return date;
+        }
+
+        // 2. Tenta formato BR (DD/MM/YYYY)
+        if (dateStr.includes('/')) {
+            const date = parse(dateStr, 'dd/MM/yyyy', new Date());
+            if (isValid(date)) return date;
+        }
+
+        // 3. Fallback genérico (pode falhar em meses/dias invertidos dependendo do browser)
+        const fallback = new Date(dateStr);
+        return isValid(fallback) ? fallback : null;
+    } catch (e) {
+        return null;
+    }
+}
+
 export function getAge(birthDate: string): number {
-  if (!birthDate || !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
-      // Tenta converter se estiver no formato BR
-      if (/^\d{2}\/\d{2}\/\d{4}$/.test(birthDate)) {
-          const [d, m, y] = birthDate.split('/').map(Number);
-          const birth = new Date(y, m - 1, d);
-          const today = new Date();
-          let age = today.getFullYear() - birth.getFullYear();
-          if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--;
-          return age;
-      }
-      return 0;
-  }
+  const birth = parseDateSafe(birthDate);
+  if (!birth) return 0;
   
-  const [year, month, day] = birthDate.split('-').map(Number);
   const today = new Date();
-  const birth = new Date(year, month - 1, day);
-  
   let age = today.getFullYear() - birth.getFullYear();
   const m = today.getMonth() - birth.getMonth();
   if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
@@ -91,34 +102,19 @@ export function handlePhoneMask(value: string): string {
 }
 
 export function formatDateSafe(dateString?: string, formatStr: string = "dd/MM/yyyy"): string {
-    if (!dateString) return '-';
-    try {
-        if (dateString.includes('T')) {
-            const date = parseISO(dateString);
-            return isValid(date) ? format(date, formatStr, { locale: ptBR }) : '-';
-        }
-        const parts = dateString.split('-');
-        if (parts.length === 3) {
-            const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-            return format(date, formatStr, { locale: ptBR });
-        }
-        return '-';
-    } catch (e) {
-        return '-';
-    }
+    const date = parseDateSafe(dateString);
+    return date ? format(date, formatStr, { locale: ptBR }) : '-';
 }
 
 export function calculateBusinessDays(startDateStr: string | Date): number {
-    const start = typeof startDateStr === 'string' 
-        ? (startDateStr.includes('T') ? parseISO(startDateStr) : new Date(startDateStr.replace(/-/g, '/')))
-        : new Date(startDateStr);
-        
-    if (isNaN(start.getTime())) return 0;
+    const start = typeof startDateStr === 'string' ? parseDateSafe(startDateStr) : startDateStr;
+    if (!start || isNaN(start.getTime())) return 0;
     
     let count = 0;
-    const curDate = startOfDay(start);
+    const curDate = startOfDay(new Date(start));
     const now = startOfDay(new Date());
     
+    // Começa a contar a partir do dia seguinte
     curDate.setDate(curDate.getDate() + 1);
 
     while (curDate <= now) {
@@ -158,17 +154,11 @@ export function cleanBankName(name?: string): string {
   return cleaned || name;
 }
 
-/**
- * 🛡️ BLINDAGEM DE DADOS FIREBASE V2
- * Ignora objetos que não são "puros" (como FieldValue.delete ou arrayUnion)
- * para evitar corrupção de comandos do banco de dados.
- */
 export function cleanFirestoreData(data: any): any {
     if (data === null) return null;
     if (data === undefined) return undefined;
     if (data instanceof Date) return data.toISOString();
     
-    // Se for um objeto especial do Firebase (FieldValue), não tentamos limpar suas chaves internas
     if (typeof data === 'object' && data.constructor.name !== 'Object' && !Array.isArray(data)) {
         return data;
     }
@@ -197,13 +187,13 @@ export function getSmartTags(customer: Customer, proposals: Proposal[] = []): { 
     const totalComm = customerProposals.reduce((s, p) => s + (p.amountPaid || 0), 0);
     if (totalComm >= 5000) tags.push({ label: '💎 ELITE', color: 'bg-amber-500' });
     const hasRecent = customerProposals.some(p => {
-        const d = p.dateDigitized ? new Date(p.dateDigitized) : null;
-        return d && isValid(d) && differenceInDays(now, d) <= 30;
+        const d = parseDateSafe(p.dateDigitized);
+        return d && differenceInDays(now, d) <= 30;
     });
     if (hasRecent) tags.push({ label: '🔥 ATIVO', color: 'bg-orange-600' });
     const hasAnyInLast6Months = customerProposals.some(p => {
-        const d = p.dateDigitized ? new Date(p.dateDigitized) : null;
-        return d && isValid(d) && differenceInDays(now, d) <= 180;
+        const d = parseDateSafe(p.dateDigitized);
+        return d && differenceInDays(now, d) <= 180;
     });
     if (!hasAnyInLast6Months && customerProposals.length > 0) tags.push({ label: '🧊 REATIVAR', color: 'bg-blue-400' });
     if (customerProposals.some(p => !['Pago', 'Reprovado', 'Saldo Pago'].includes(p.status))) tags.push({ label: '⚖️ EM ESTEIRA', color: 'bg-purple-500' });

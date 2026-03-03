@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Zap, ChevronRight, User, TrendingUp } from 'lucide-react';
 import type { Customer, Proposal } from '@/lib/types';
-import { differenceInMonths, isValid, parseISO } from 'date-fns';
+import { differenceInMonths } from 'date-fns';
 import Link from 'next/link';
-import { formatCurrency, getAge } from '@/lib/utils';
+import { formatCurrency, getAge, parseDateSafe } from '@/lib/utils';
 import { Badge } from '../ui/badge';
 import { ScrollArea } from '../ui/scroll-area';
 
@@ -30,7 +30,6 @@ export function RadarWidget({ proposals, customers, isLoading }: RadarWidgetProp
     const now = new Date();
     
     const opportunities = customers
-      // 🛡️ REGRAS DE NEGÓCIO: Apenas clientes ATIVOS e com idade permitida
       .filter(c => c.status === 'active' && getAge(c.birthDate) < 75)
       .map(customer => {
         const maturedProposals = proposals.filter(p => {
@@ -38,46 +37,24 @@ export function RadarWidget({ proposals, customers, isLoading }: RadarWidgetProp
           if (p.status !== 'Pago' && p.status !== 'Saldo Pago') return false;
           if (!p.datePaidToClient) return false;
           
-          // 🛡️ BLINDAGEM DE CRASH: Valida a data antes de processar
-          try {
-              let paidDate: Date;
-              if (p.datePaidToClient.includes('T')) {
-                  paidDate = parseISO(p.datePaidToClient);
-              } else {
-                  paidDate = new Date(p.datePaidToClient.replace(/-/g, '/'));
-              }
-              
-              if (!isValid(paidDate)) return false;
-              return differenceInMonths(now, paidDate) >= 12;
-          } catch (e) {
-              return false;
-          }
+          const paidDate = parseDateSafe(p.datePaidToClient);
+          if (!paidDate) return false;
+          return differenceInMonths(now, paidDate) >= 12;
         });
 
         if (maturedProposals.length === 0) return null;
 
-        // Identifica a proposta mais antiga paga para retenção
         const oldest = [...maturedProposals].sort((a,b) => (a.datePaidToClient || '').localeCompare(b.datePaidToClient || ''))[0];
         
-        try {
-            let paidDate: Date;
-            if (oldest.datePaidToClient!.includes('T')) {
-                paidDate = parseISO(oldest.datePaidToClient!);
-            } else {
-                paidDate = new Date(oldest.datePaidToClient!.replace(/-/g, '/'));
-            }
-            
-            if (!isValid(paidDate)) return null;
-            const months = differenceInMonths(now, paidDate);
+        const paidDate = parseDateSafe(oldest.datePaidToClient);
+        if (!paidDate) return null;
+        const months = differenceInMonths(now, paidDate);
 
-            return {
-              customer,
-              months,
-              lastProposal: oldest
-            };
-        } catch (e) {
-            return null;
-        }
+        return {
+          customer,
+          months,
+          lastProposal: oldest
+        };
       })
       .filter((opt): opt is NonNullable<typeof opt> => opt !== null)
       .sort((a, b) => b.months - a.months)

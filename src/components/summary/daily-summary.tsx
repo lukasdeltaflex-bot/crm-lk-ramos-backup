@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Bot, Send, X, Loader2, CalendarClock, Cake, Hourglass, BadgePercent, Zap, Info, ChevronRight, MessageSquareText, Wallet, Receipt } from 'lucide-react';
 import type { Customer, Proposal, UserProfile, FollowUp, UserSettings, Expense } from '@/lib/types';
-import { differenceInDays, format, differenceInMonths, parseISO, isBefore, startOfDay } from 'date-fns';
+import { differenceInDays, format, differenceInMonths, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { calculateBusinessDays, getAge, cn, getWhatsAppUrl, formatCurrency } from '@/lib/utils';
+import { calculateBusinessDays, getAge, cn, getWhatsAppUrl, formatCurrency, parseDateSafe } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from '@/hooks/use-toast';
 import { sendSummaryEmail } from '@/ai/flows/send-summary-email-flow';
@@ -119,7 +119,6 @@ export function DailySummary({ proposals, customers, userProfile, expenses = [] 
   };
 
   const alertData = useMemo(() => {
-    // 🛡️ BLINDAGEM DE HIDRATAÇÃO: Retorna dados vazios se não for no cliente
     if (!isClient || !proposals || !customers) return { birthdayAlerts: [], followUpReminders: [], commissionReminders: [], debtBalanceReminders: [], partialCommissionReminders: [], manualFollowUps: [], radarAlerts: [], expenseAlerts: [] };
 
     const now = new Date();
@@ -143,7 +142,8 @@ export function DailySummary({ proposals, customers, userProfile, expenses = [] 
                 if (p.customerId !== c.id) return false;
                 if (p.status !== 'Pago' && p.status !== 'Saldo Pago') return false;
                 if (!p.datePaidToClient) return false;
-                return differenceInMonths(now, new Date(p.datePaidToClient)) >= 12;
+                const paidDate = parseDateSafe(p.datePaidToClient);
+                return paidDate && differenceInMonths(now, paidDate) >= 12;
             });
         })
         .map(c => ({
@@ -154,12 +154,17 @@ export function DailySummary({ proposals, customers, userProfile, expenses = [] 
         }));
 
     const followUpReminders = proposals
-      .filter(p => p.status === 'Em Andamento' && p.dateDigitized && differenceInDays(now, new Date(p.dateDigitized)) > 20)
+      .filter(p => p.status === 'Em Andamento' && p.dateDigitized)
+      .map(p => {
+          const digitDate = parseDateSafe(p.dateDigitized);
+          return { ...p, digitDate };
+      })
+      .filter(p => p.digitDate && differenceInDays(now, p.digitDate) > 20)
       .map(p => ({
         id: `proposal-fup-${p.id}`,
         customerName: customerMap.get(p.customerId)?.name || 'Cliente Desconhecido',
         proposalNumber: p.proposalNumber,
-        daysOpen: differenceInDays(now, new Date(p.dateDigitized)),
+        daysOpen: differenceInDays(now, p.digitDate!),
         link: `/proposals?search=${p.proposalNumber}`
       }));
 
@@ -167,14 +172,18 @@ export function DailySummary({ proposals, customers, userProfile, expenses = [] 
       .filter(p => 
         (p.status === 'Pago' || p.status === 'Saldo Pago') && 
         p.commissionStatus === 'Pendente' &&
-        p.datePaidToClient && 
-        differenceInDays(now, new Date(p.datePaidToClient)) > 7
+        p.datePaidToClient
       )
+      .map(p => {
+          const paidDate = parseDateSafe(p.datePaidToClient);
+          return { ...p, paidDate };
+      })
+      .filter(p => p.paidDate && differenceInDays(now, p.paidDate) > 7)
       .map(p => ({
         id: `commission-${p.id}`,
         customerName: customerMap.get(p.customerId)?.name || 'Cliente Desconhecido',
         proposalNumber: p.proposalNumber,
-        daysPending: differenceInDays(now, new Date(p.datePaidToClient!)),
+        daysPending: differenceInDays(now, p.paidDate!),
         link: `/proposals?search=${p.proposalNumber}`
       }));
 
@@ -183,29 +192,33 @@ export function DailySummary({ proposals, customers, userProfile, expenses = [] 
             p.product === 'Portabilidade' &&
             p.status === 'Aguardando Saldo' &&
             p.dateDigitized &&
-            calculateBusinessDays(new Date(p.dateDigitized)) >= 5
+            calculateBusinessDays(p.dateDigitized) >= 5
         )
         .map(p => ({
             id: `debt-${p.id}`,
             customerName: customerMap.get(p.customerId)?.name || 'Cliente Desconhecido',
             proposalNumber: p.proposalNumber,
-            daysWaiting: calculateBusinessDays(new Date(p.dateDigitized)),
+            daysWaiting: calculateBusinessDays(p.dateDigitized),
             link: `/proposals?search=${p.proposalNumber}`
         }));
     
     const partialCommissionReminders = proposals
         .filter(p => 
             p.commissionStatus === 'Parcial' &&
-            p.commissionPaymentDate && 
-            differenceInDays(now, new Date(p.commissionPaymentDate)) > 15
+            p.commissionPaymentDate
         )
+        .map(p => {
+            const lastPayDate = parseDateSafe(p.commissionPaymentDate);
+            return { ...p, lastPayDate };
+        })
+        .filter(p => p.lastPayDate && differenceInDays(now, p.lastPayDate) > 15)
         .map(p => ({
             id: `partial-${p.id}`,
             customerName: customerMap.get(p.customerId)?.name || 'Cliente Desconhecido',
             proposalNumber: p.proposalNumber,
             amountPaid: p.amountPaid,
             totalCommission: p.commissionValue,
-            daysSincePayment: differenceInDays(now, new Date(p.commissionPaymentDate!)),
+            daysSincePayment: differenceInDays(now, p.lastPayDate!),
             link: `/proposals?search=${p.proposalNumber}`
         }));
 
@@ -222,7 +235,7 @@ export function DailySummary({ proposals, customers, userProfile, expenses = [] 
     const expenseAlerts = (expenses || [])
         .filter(e => !e.paid)
         .map(e => {
-            const dueDate = parseISO(e.date);
+            const dueDate = parseDateSafe(e.date) || new Date();
             const isLate = isBefore(dueDate, startOfDay(now));
             return {
                 id: `expense-${e.id}`,
