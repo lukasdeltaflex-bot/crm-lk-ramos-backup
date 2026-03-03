@@ -548,7 +548,7 @@ export default function ManagementPage() {
                     <ScrollArea className="flex-1 px-8 py-8">
                         <div className="space-y-10 max-w-3xl mx-auto pb-20">
                             {selectedItem.coverUrl && (
-                                <img src={selectedItem.coverUrl} className="w-full h-auto rounded-3xl shadow-xl border-4 border-white" alt="Capa" />
+                                <img src={selectedItem.coverUrl} className="max-w-[85%] h-auto mx-auto rounded-3xl shadow-xl border-4 border-white block" alt="Capa" />
                             )}
 
                             <div className="prose prose-zinc dark:prose-invert max-w-none">
