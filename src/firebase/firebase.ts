@@ -25,9 +25,10 @@ if (typeof window !== "undefined") {
 
         const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
         
-        // 🛡️ CONFIGURAÇÃO DE REDE V14: Long Polling habilitado para estabilidade em ambientes de build/cloud
+        // 🛡️ CONFIGURAÇÃO DE REDE V15: Long Polling e Auto-Detect habilitados para máxima compatibilidade em nuvem
         db = initializeFirestore(app, {
             experimentalForceLongPolling: true,
+            experimentalAutoDetectLongPolling: true,
             localCache: persistentLocalCache({
                 tabManager: persistentMultipleTabManager()
             })
@@ -36,7 +37,7 @@ if (typeof window !== "undefined") {
         auth = getAuth(app);
         storage = getStorage(app, firebaseConfig.storageBucket);
         
-        console.log("💎 LK RAMOS: Núcleo Firebase sincronizado.");
+        console.log("💎 LK RAMOS: Núcleo Firebase sincronizado com modo de alta resiliência.");
     } catch (error) {
         console.error("❌ Erro crítico na inicialização do Firebase:", error);
     }

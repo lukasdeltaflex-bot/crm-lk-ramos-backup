@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -28,7 +29,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { MessageSquareText, Loader2, AlertTriangle } from 'lucide-react';
+import { MessageSquareText, Loader2 } from 'lucide-react';
 
 interface StatusCellProps {
   proposalId: string;
@@ -180,9 +181,7 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
 
                 {pendingStatus === 'Reprovado' && (
                     <div className="space-y-2 animate-in slide-in-from-top-2">
-                        <Label className="text-[9px] font-black uppercase tracking-widest text-red-600 flex items-center gap-1.5">
-                            <AlertTriangle className="h-3 w-3" /> Motivo da Reprova *
-                        </Label>
+                        <Label className="text-[9px] font-black uppercase tracking-widest text-red-600">Motivo da Reprova *</Label>
                         <Select value={rejectionReason} onValueChange={setRejectionReason}>
                             <SelectTrigger className="border-red-200 bg-red-50/50 font-bold h-11 rounded-xl">
                                 <SelectValue placeholder="Selecione por que foi reprovado" />
