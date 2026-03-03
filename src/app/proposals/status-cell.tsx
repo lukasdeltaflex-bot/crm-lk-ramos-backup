@@ -48,7 +48,6 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
   const [rejectionReason, setRejectionReason] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // 🛡️ SINCRONIZAÇÃO DE CONFIGURAÇÕES: Busca os motivos de reprova editados pelo usuário
   const settingsDocRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return doc(firestore, 'userSettings', user.uid);

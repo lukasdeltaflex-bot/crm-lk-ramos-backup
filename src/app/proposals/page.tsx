@@ -146,7 +146,6 @@ function ProposalsPageContent() {
   const handleDuplicateProposal = React.useCallback((proposal: Proposal) => {
     const { id, proposalNumber, status, history, commissionStatus, amountPaid, commissionPaymentDate, ...rest } = proposal;
     
-    // 🛡️ RESET FINANCEIRO NA DUPLICAÇÃO: Impede que a cópia herde o status de paga do original
     const duplicatedData: ProposalFormData = {
         ...rest,
         proposalNumber: '',
@@ -257,21 +256,16 @@ function ProposalsPageContent() {
 
   const handleStatusChange = async (proposalId: string, newStatus: ProposalStatus, productType?: string) => {
     if (!firestore || !user) return;
+    
+    // 🛡️ REMOÇÃO DA REDUNDÂNCIA: O StatusCell agora lida sozinho com o motivo de reprova.
+    // Não precisamos disparar o modal principal aqui, pois isso duplicava a tela de justificativa.
+    
     const proposal = proposals?.find(p => p.id === proposalId);
     if (!proposal || proposal.status === newStatus) return;
 
-    // 🛡️ GATILHO INTELIGENTE: Se clicar em Reprovado fora do formulário, abre o modal de edição para colocar o motivo
-    if (newStatus === 'Reprovado') {
-        const fullProposal = proposalsWithCustomerData.find(p => p.id === proposalId);
-        if (fullProposal) {
-            setSelectedProposal(fullProposal);
-            setDefaultValues({ status: 'Reprovado' });
-            setSheetMode('edit');
-            setFormKey(`reprove-${proposalId}-${Date.now()}`);
-            setIsDialogOpen(true);
-            return;
-        }
-    }
+    // Se o status já foi atualizado pelo StatusCell (que faz o updateDoc internamente),
+    // apenas retornamos para evitar o loop de handleStatusChange.
+    if (newStatus === 'Reprovado') return;
 
     const now = new Date().toISOString();
     const userName = user.displayName || user.email || 'Sistema';
@@ -324,17 +318,14 @@ function ProposalsPageContent() {
     if (!firestore || !user) return;
     setIsSaving(true);
     
-    // Se estivermos editando, usamos o ID existente, senão criamos um novo
     const docRef = sheetMode === 'edit' && selectedProposal ? doc(firestore, 'loanProposals', selectedProposal.id) : doc(collection(firestore, 'loanProposals'));
     
-    // 🛡️ BLINDAGEM DE DADOS: O formulário de propostas agora preserva commissionStatus e amountPaid
     const finalData = cleanFirestoreData({ 
         ...data, 
         id: docRef.id, 
         ownerId: user.uid 
     });
     
-    // Usamos setDoc com merge: true para garantir que outros metadados não definidos no formulário sejam mantidos
     setDoc(docRef, finalData, { merge: true })
         .then(() => {
             toast({ title: 'Proposta Salva!' });
