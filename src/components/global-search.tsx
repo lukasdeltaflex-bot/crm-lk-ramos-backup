@@ -16,7 +16,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { collection, query, where } from 'firebase/firestore';
 import type { Customer, Proposal } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { normalizeString, getSmartTags } from '@/lib/utils';
+import { normalizeString, getSmartTags, cleanBankName } from '@/lib/utils';
 
 export function GlobalSearch() {
   const [open, setOpen] = React.useState(false);
@@ -98,13 +98,10 @@ export function GlobalSearch() {
           <CommandSeparator />
 
           <CommandGroup heading="Resultados">
-            {/* 🛡️ BUSCA NUCLEAR V13: Indexação de Smart Tags incluída */}
             {validCustomers.map((customer) => {
               const cpfNumeric = customer.cpf?.replace(/\D/g, '') || '';
               const smartTags = getSmartTags(customer, proposals || []);
               const smartTagsLabels = smartTags.map(st => st.label).join(' ');
-              
-              // O índice de busca inclui Nome, CPF, Smart Tags e ID
               const searchIndex = `ID${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric} ${smartTagsLabels}`;
               
               return (
