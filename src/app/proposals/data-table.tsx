@@ -253,7 +253,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         const searchDigits = searchTerm.replace(/\D/g, '');
         const cpfDigits = customer?.cpf?.replace(/\D/g, '') || '';
 
-        // 🛡️ BUSCA NUCLEAR V14: Reconhecimento de nomes limpos de bancos
         if (/^\d+$/.test(searchTerm)) {
             if (p.proposalNumber === searchTerm) return true;
             if (customer?.numericId?.toString() === searchTerm) return true;
@@ -267,14 +266,13 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 
         const normalizedSearch = normalizeString(searchTerm);
         
-        // 💎 INCLUI NOME LIMPO DO BANCO NO ÍNDICE DE BUSCA
         const searchableFields = [
             customer?.name,
             customer?.cpf,
             p.proposalNumber,
             p.operator,
             p.bank,
-            cleanBankName(p.bank), // Reconhece "Itau" mesmo se salvo como "341 - Itau"
+            cleanBankName(p.bank),
             p.promoter
         ];
 
@@ -348,8 +346,11 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 
                 <div className="flex items-center gap-2 ml-auto">
                     <Select value={bankFilter} onValueChange={setBankFilter}>
-                        <SelectTrigger className="h-10 min-w-[180px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-[11px] font-black uppercase px-6 shadow-sm">
-                            <SelectValue placeholder="BANCO" />
+                        <SelectTrigger className="h-8 min-w-[140px] bg-background border rounded-full text-[9px] font-black uppercase px-3 shadow-sm hover:bg-primary/5 transition-colors">
+                            <div className="flex items-center gap-2 truncate">
+                                <Landmark className="h-3 w-3 text-primary/60 shrink-0" />
+                                <SelectValue placeholder="BANCO" />
+                            </div>
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-2">
                             <SelectItem value="all" className="font-black text-[10px] uppercase">
@@ -370,8 +371,11 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     </Select>
 
                     <Select value={promoterFilter} onValueChange={setPromoterFilter}>
-                        <SelectTrigger className="h-10 min-w-[180px] bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full text-[11px] font-black uppercase px-6 shadow-sm">
-                            <SelectValue placeholder="PROMOTORA" />
+                        <SelectTrigger className="h-8 min-w-[140px] bg-background border rounded-full text-[9px] font-black uppercase px-3 shadow-sm hover:bg-primary/5 transition-colors">
+                            <div className="flex items-center gap-2 truncate">
+                                <Building2 className="h-3 w-3 text-primary/60 shrink-0" />
+                                <SelectValue placeholder="PROMOTORA" />
+                            </div>
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-2">
                             <SelectItem value="all" className="font-black text-[10px] uppercase">
