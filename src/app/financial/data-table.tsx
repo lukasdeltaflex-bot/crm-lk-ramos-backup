@@ -341,7 +341,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor))}>
         <div className="space-y-4 w-full">
-            <FinancialSummary rows={data} currentMonthRange={startOfMonth(new Date()) as any} isPrivacyMode={isPrivacyMode} isFiltered={!!globalFilter} onShowDetails={onShowDetails} userSettings={userSettings} />
+            <FinancialSummary rows={data} currentMonthRange={startOfDay(currentMonthRange.from) as any} isPrivacyMode={isPrivacyMode} isFiltered={!!globalFilter} onShowDetails={onShowDetails} userSettings={userSettings} />
 
             <div className="flex flex-wrap items-center justify-between gap-4 bg-muted/10 dark:bg-zinc-900/30 p-3 rounded-2xl border-2 border-zinc-200 dark:border-primary/20 shadow-sm">
                 <Tabs value={statusFilter} onValueChange={setStatusFilter}>
@@ -357,7 +357,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                     <Select value={operatorFilter} onValueChange={setOperatorFilter}>
                         <SelectTrigger className="h-10 min-w-[180px] bg-background border rounded-full text-[10px] font-black uppercase px-5 shadow-sm hover:bg-primary/5 transition-colors">
                             <div className="flex items-center gap-2 truncate">
-                                <User className="h-4 w-4 text-primary/60 shrink-0" />
                                 <SelectValue placeholder="OPERADOR" />
                             </div>
                         </SelectTrigger>
@@ -382,7 +381,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                     <Select value={bankFilter} onValueChange={setBankFilter}>
                         <SelectTrigger className="h-10 min-w-[180px] bg-background border rounded-full text-[10px] font-black uppercase px-5 shadow-sm hover:bg-primary/5 transition-colors">
                             <div className="flex items-center gap-2 truncate">
-                                <Landmark className="h-4 w-4 text-primary/60 shrink-0" />
                                 <SelectValue placeholder="BANCO" />
                             </div>
                         </SelectTrigger>
@@ -407,7 +405,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                     <Select value={promoterFilter} onValueChange={setPromoterFilter}>
                         <SelectTrigger className="h-10 min-w-[180px] bg-background border rounded-full text-[10px] font-black uppercase px-5 shadow-sm hover:bg-primary/5 transition-colors">
                             <div className="flex items-center gap-2 truncate">
-                                <Building2 className="h-4 w-4 text-primary/60 shrink-0" />
                                 <SelectValue placeholder="PROMOTORA" />
                             </div>
                         </SelectTrigger>

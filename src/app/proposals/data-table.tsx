@@ -358,7 +358,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     <Select value={operatorFilter} onValueChange={setOperatorFilter}>
                         <SelectTrigger className="h-10 min-w-[180px] bg-background border rounded-full text-[10px] font-black uppercase px-5 shadow-sm hover:bg-primary/5 transition-colors">
                             <div className="flex items-center gap-2 truncate">
-                                <User className="h-4 w-4 text-primary/60 shrink-0" />
                                 <SelectValue placeholder="OPERADOR" />
                             </div>
                         </SelectTrigger>
@@ -383,7 +382,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     <Select value={bankFilter} onValueChange={setBankFilter}>
                         <SelectTrigger className="h-10 min-w-[180px] bg-background border rounded-full text-[10px] font-black uppercase px-5 shadow-sm hover:bg-primary/5 transition-colors">
                             <div className="flex items-center gap-2 truncate">
-                                <Landmark className="h-4 w-4 text-primary/60 shrink-0" />
                                 <SelectValue placeholder="BANCO" />
                             </div>
                         </SelectTrigger>
@@ -408,7 +406,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     <Select value={promoterFilter} onValueChange={setPromoterFilter}>
                         <SelectTrigger className="h-10 min-w-[180px] bg-background border rounded-full text-[10px] font-black uppercase px-5 shadow-sm hover:bg-primary/5 transition-colors">
                             <div className="flex items-center gap-2 truncate">
-                                <Building2 className="h-4 w-4 text-primary/60 shrink-0" />
                                 <SelectValue placeholder="PROMOTORA" />
                             </div>
                         </SelectTrigger>
