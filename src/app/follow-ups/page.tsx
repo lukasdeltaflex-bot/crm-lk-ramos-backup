@@ -95,16 +95,16 @@ export default function FollowUpsPage() {
         notes: actionNotes
     });
 
-    setDoc(docRef, updateData, { merge: true })
-        .then(() => {
-            toast({ title: 'Ação realizada com sucesso' });
-            setIsActionDialogOpen(false);
-        })
-        .catch(async (e) => {
-            console.error("❌ CRM ERROR:", e);
-            toast({ variant: 'destructive', title: 'Erro ao salvar', description: 'Não foi possível atualizar o status.' });
-        })
-        .finally(() => setIsSaving(false));
+    try {
+        await setDoc(docRef, updateData, { merge: true });
+        toast({ title: 'Ação realizada com sucesso' });
+        setIsActionDialogOpen(false);
+    } catch (e: any) {
+        console.error("❌ CRM ERROR:", e);
+        toast({ variant: 'destructive', title: 'Erro ao salvar', description: 'Não foi possível atualizar o status.' });
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   const handleReschedule = async () => {
@@ -163,16 +163,16 @@ export default function FollowUpsPage() {
         status: 'pending'
     });
 
-    setDoc(docRef, finalData, { merge: true })
-        .then(() => {
-            toast({ title: 'Agendado com sucesso!' });
-            setIsFormOpen(false);
-        })
-        .catch(async (e) => {
-            console.error("❌ CRM ERROR:", e);
-            toast({ variant: 'destructive', title: 'Falha ao Salvar', description: 'Verifique sua conexão ou permissões.' });
-        })
-        .finally(() => setIsSaving(false));
+    try {
+        await setDoc(docRef, finalData, { merge: true });
+        toast({ title: 'Agendado com sucesso!' });
+        setIsFormOpen(false);
+    } catch (e: any) {
+        console.error("❌ CRM ERROR:", e);
+        toast({ variant: 'destructive', title: 'Falha ao Salvar', description: 'Verifique sua conexão ou permissões.' });
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   const handleCalendarDateSelect = (date: Date) => {
@@ -185,7 +185,6 @@ export default function FollowUpsPage() {
     if (followUp.status === 'cancelled') return <Badge variant="secondary" className="bg-slate-100 text-slate-500">Cancelado</Badge>;
     if (followUp.status === 'rescheduled') return <Badge variant="secondary" className="bg-blue-100 text-blue-700">Reagendado</Badge>;
     
-    // Normalização manual de fuso para comparação visual de badges
     const [year, month, day] = followUp.dueDate.split('-').map(Number);
     const date = new Date(year, month - 1, day);
     const today = startOfDay(new Date());
@@ -199,7 +198,7 @@ export default function FollowUpsPage() {
     <AppLayout>
       <div className="flex items-center justify-between mb-8">
         <PageHeader title="Mecanismo de Retornos" />
-        <Button onClick={() => { setSelectedFollowUp(undefined); setIsFormOpen(true); }}>
+        <Button onClick={() => { setSelectedFollowUp(undefined); setIsFormOpen(true); }} disabled={isSaving}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Novo Retorno
         </Button>
@@ -311,7 +310,7 @@ export default function FollowUpsPage() {
                                             </div>
                                             <p className="mt-2 text-sm line-clamp-1 opacity-80">{f.description}</p>
                                         </div>
-                                        <Button variant="ghost" size="icon" className="shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
+                                        <Button variant="ghost" size="icon" className="shrink-0 group-hover:bg-primary group-hover:text-white transition-colors" disabled={isSaving}>
                                             <CheckCircle2 className="h-5 w-5" />
                                         </Button>
                                     </div>
@@ -363,7 +362,7 @@ export default function FollowUpsPage() {
       </div>
 
       <Dialog open={isActionDialogOpen} onOpenChange={setIsActionDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>Realizar Retorno: {selectedFollowUp?.contactName}</DialogTitle>
             <DialogDescription>O que foi conversado com o contato?</DialogDescription>
@@ -397,7 +396,7 @@ export default function FollowUpsPage() {
       </Dialog>
 
       <Dialog open={isRescheduleOpen} onOpenChange={setIsRescheduleOpen}>
-        <DialogContent className="max-w-xs">
+        <DialogContent className="max-w-xs" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>Nova Data</DialogTitle>
           </DialogHeader>
@@ -419,7 +418,7 @@ export default function FollowUpsPage() {
       </Dialog>
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>{selectedFollowUp ? 'Editar Retorno' : 'Agendar Novo Retorno'}</DialogTitle>
           </DialogHeader>

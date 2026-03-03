@@ -154,7 +154,7 @@ function CustomersPageContent() {
     setSelectedCustomer(undefined);
     setDefaultValues(undefined);
     setSheetMode('new');
-    setFormKey(`new-${Date.now()}`); // Força recriação do formulário
+    setFormKey(`new-${Date.now()}`); 
     setIsDialog(true);
   }, []);
 
@@ -236,6 +236,7 @@ function CustomersPageContent() {
 
   const handleAnonymizeCustomer = async (customerId: string) => {
     if (!firestore) return;
+    setIsSaving(true);
     const docRef = doc(firestore, 'customers', customerId);
     
     const dataToUpdate = { 
@@ -248,17 +249,21 @@ function CustomersPageContent() {
         status: 'inactive' 
     };
     
-    updateDoc(docRef, dataToUpdate)
-        .then(() => toast({ title: 'Cliente Anonimizado (LGPD OK)' }))
-        .catch(async (error) => {
-            if (error.code === 'permission-denied') {
-                errorEmitter.emit('permission-error', new FirestorePermissionError({
-                    path: docRef.path,
-                    operation: 'update',
-                    requestResourceData: dataToUpdate
-                }));
-            }
-        });
+    try {
+        await updateDoc(docRef, dataToUpdate);
+        toast({ title: 'Cliente Anonimizado (LGPD OK)' });
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'update',
+                requestResourceData: dataToUpdate
+            }));
+        }
+        toast({ variant: 'destructive', title: 'Erro ao anonimizar cliente' });
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   const handleFormSubmit = async (formData: any) => {
@@ -275,20 +280,18 @@ function CustomersPageContent() {
             numericId: (sheetMode === 'edit' && selectedCustomer) ? selectedCustomer.numericId : (processedCustomers?.length ? Math.max(...processedCustomers.map(c => c.numericId || 0)) + 1 : 1)
         });
 
-        setDoc(docRef, finalData, { merge: true })
-            .then(() => {
-                toast({ title: 'Cliente Salvo!' });
-                setIsDialog(false);
-            })
-            .catch(async (error) => {
-                if (error.code === 'permission-denied') {
-                    errorEmitter.emit('permission-error', new FirestorePermissionError({
-                        path: docRef.path,
-                        operation: 'write',
-                        requestResourceData: finalData
-                    }));
-                }
-            });
+        await setDoc(docRef, finalData, { merge: true });
+        toast({ title: 'Cliente Salvo!' });
+        setIsDialog(false);
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'write',
+                requestResourceData: finalData
+            }));
+        }
+        toast({ variant: 'destructive', title: 'Erro ao salvar cliente' });
     } finally {
         setIsSaving(false);
     }
@@ -319,6 +322,7 @@ function CustomersPageContent() {
                             <Button 
                                 variant="destructive" 
                                 className="h-10 px-6 rounded-full font-bold shadow-lg"
+                                disabled={isSaving}
                             >
                                 <Trash2 className="mr-2 h-4 w-4" /> Remover ({selectedCount})
                             </Button>
@@ -347,7 +351,7 @@ function CustomersPageContent() {
                 >
                     <Sparkles className="h-4 w-4 mr-2" /> Novo Cliente com IA
                 </Button>
-                <DialogContent className="max-w-xl">
+                <DialogContent className="max-w-xl" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
                     <DialogHeader><DialogTitle>Assistente Visual de Cadastro</DialogTitle></DialogHeader>
                     <CustomerAiForm onSubmit={handleAiFormSubmit} />
                 </DialogContent>

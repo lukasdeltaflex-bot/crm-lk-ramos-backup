@@ -258,7 +258,7 @@ const CustomerInfoCard = ({ customer, proposals, onExportDossier, onToggleStatus
                                                 <div className="flex items-center justify-center h-9 w-9 rounded-full bg-orange-50/10 text-orange-600 font-black text-[10px] uppercase shadow-sm">RMC</div>
                                                 <div className="flex items-center gap-2.5 overflow-hidden">
                                                     <BankIcon bankName={benefit.rmcBank} domain={userSettings?.bankDomains?.[benefit.rmcBank]} showLogo={showLogos} className="h-5 w-5" />
-                                                    <p className="text-[11px] font-black text-foreground truncate max-w-[100px] uppercase tracking-tight">
+                                                    <p className="text-[11px] font-black text-foreground truncate max-w-[140px] uppercase tracking-tight">
                                                         {benefit.rmcBank && benefit.rmcBank !== 'none' ? cleanBankName(benefit.rmcBank) : "Livre"}
                                                     </p>
                                                 </div>
@@ -268,7 +268,7 @@ const CustomerInfoCard = ({ customer, proposals, onExportDossier, onToggleStatus
                                                 <div className="flex items-center justify-center h-9 w-9 rounded-full bg-blue-500/10 text-blue-600 font-black text-[10px] uppercase shadow-sm">RCC</div>
                                                 <div className="flex items-center gap-2.5 overflow-hidden">
                                                     <BankIcon bankName={benefit.rccBank} domain={userSettings?.bankDomains?.[benefit.rccBank]} showLogo={showLogos} className="h-5 w-5" />
-                                                    <p className="text-[11px] font-black text-foreground truncate max-w-[100px] uppercase tracking-tight">
+                                                    <p className="text-[11px] font-black text-foreground truncate max-w-[140px] uppercase tracking-tight">
                                                         {benefit.rccBank && benefit.rccBank !== 'none' ? cleanBankName(benefit.rccBank) : "Livre"}
                                                     </p>
                                                 </div>
@@ -500,9 +500,14 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
   const handleToggleStatus = async () => {
     if (!firestore || !customerId || !customer) return;
+    setIsSaving(true);
     const newStatus = customer.status === 'inactive' ? 'active' : 'inactive';
-    updateDoc(doc(firestore, 'customers', customerId), { status: newStatus });
-    toast({ title: `Cliente ${newStatus === 'active' ? 'Ativado' : 'Inativado'}` });
+    try {
+        await updateDoc(doc(firestore, 'customers', customerId), { status: newStatus });
+        toast({ title: `Cliente ${newStatus === 'active' ? 'Ativado' : 'Inativado'}` });
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   const handleGeneratePitch = async () => {
@@ -614,7 +619,34 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         </div>
       </div>
 
-      <Dialog open={isPitchModalOpen} onOpenChange={setIsPitchModalOpen}><DialogContent className="max-w-md rounded-[2rem]"><DialogHeader><DialogTitle className="flex items-center gap-2 text-xl font-black uppercase"><MessageSquareText className="h-5 w-5 text-orange-500" />Smart Pitch IA</DialogTitle></DialogHeader><div className="py-4">{isGeneratingPitch ? <div className="flex flex-col items-center justify-center py-10 gap-4"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="text-xs text-muted-foreground animate-pulse font-black uppercase">Criando script magnético...</p></div> : <div className="space-y-4"><textarea className="w-full min-h-[200px] p-4 rounded-2xl border-2 bg-muted/30 text-sm focus:ring-2 focus:ring-primary outline-none" value={generatedPitch} onChange={(e) => setGeneratedPitch(e.target.value)} /><p className="text-[10px] text-muted-foreground text-center font-bold uppercase">Edite o texto antes de enviar.</p></div>}</div><DialogFooter className="flex gap-2"><Button variant="ghost" className="rounded-full font-bold" onClick={() => setIsPitchModalOpen(false)}>Cancelar</Button><Button className="flex-1 rounded-full font-bold bg-[#25D366] text-white gap-2" onClick={() => { window.open(`${getWhatsAppUrl(customer.phone)}&text=${encodeURIComponent(generatedPitch)}`, '_blank'); setIsPitchModalOpen(false); }} disabled={isGeneratingPitch || !generatedPitch}><WhatsAppIcon className="h-4 w-4" />Enviar para WhatsApp</Button></DialogFooter></DialogContent></Dialog>
+      <Dialog open={isPitchModalOpen} onOpenChange={setIsPitchModalOpen}>
+        <DialogContent className="max-w-md rounded-[2rem]" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+            <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-xl font-black uppercase">
+                    <MessageSquareText className="h-5 w-5 text-orange-500" /> Smart Pitch IA
+                </DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+                {isGeneratingPitch ? (
+                    <div className="flex flex-col items-center justify-center py-10 gap-4">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <p className="text-xs text-muted-foreground animate-pulse font-black uppercase">Criando script magnético...</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        <textarea className="w-full min-h-[200px] p-4 rounded-2xl border-2 bg-muted/30 text-sm focus:ring-2 focus:ring-primary outline-none" value={generatedPitch} onChange={(e) => setGeneratedPitch(e.target.value)} />
+                        <p className="text-[10px] text-muted-foreground text-center font-bold uppercase">Edite o texto antes de enviar.</p>
+                    </div>
+                )}
+            </div>
+            <DialogFooter className="flex gap-2">
+                <Button variant="ghost" className="rounded-full font-bold" onClick={() => setIsPitchModalOpen(false)}>Cancelar</Button>
+                <Button className="flex-1 rounded-full font-bold bg-[#25D366] text-white gap-2" onClick={() => { window.open(`${getWhatsAppUrl(customer.phone)}&text=${encodeURIComponent(generatedPitch)}`, '_blank'); setIsPitchModalOpen(false); }} disabled={isGeneratingPitch || !generatedPitch}>
+                    <WhatsAppIcon className="h-4 w-4" />Enviar para WhatsApp
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!dialogData} onOpenChange={(isOpen) => !isOpen && setDialogData(null)}>
             <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
@@ -626,7 +658,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       </Dialog>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-4xl" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
             <DialogHeader><DialogTitle>Editar Cadastro do Cliente</DialogTitle></DialogHeader>
             <CustomerForm 
                 customer={customer} 

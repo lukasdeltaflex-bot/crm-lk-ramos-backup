@@ -321,8 +321,15 @@ export default function FinancialPage() {
     }
   
     const docRef = doc(firestore, 'loanProposals', proposal.id);
-    setDoc(docRef, cleanFirestoreData(proposalToUpdate), { merge: true });
-    toast({ title: 'Status Atualizado!' });
+    setIsSaving(true);
+    try {
+        await setDoc(docRef, cleanFirestoreData(proposalToUpdate), { merge: true });
+        toast({ title: 'Status Atualizado!' });
+    } catch (e) {
+        toast({ variant: 'destructive', title: 'Erro ao atualizar status' });
+    } finally {
+        setIsSaving(false);
+    }
   }, [firestore, user]);
 
   const handleFormSubmit = async (data: CommissionFormValues) => {
@@ -343,9 +350,16 @@ export default function FinancialPage() {
       ownerId: user.uid
     };
     
-    setDoc(doc(firestore, 'loanProposals', selectedProposal.id), cleanFirestoreData(proposalToUpdate), { merge: true });
-    setIsSheetOpen(false);
-    toast({ title: 'Salvo!' });
+    setIsSaving(true);
+    try {
+        await setDoc(doc(firestore, 'loanProposals', selectedProposal.id), cleanFirestoreData(proposalToUpdate), { merge: true });
+        setIsSheetOpen(false);
+        toast({ title: 'Salvo!' });
+    } catch (e) {
+        toast({ variant: 'destructive', title: 'Erro ao salvar comissão' });
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   const totalExpensesAmount = React.useMemo(() => {
@@ -368,7 +382,7 @@ export default function FinancialPage() {
                 <div className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-300">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="h-10 px-6 rounded-full font-bold border-green-500/30 bg-green-500/5 text-green-600 text-xs">
+                            <Button variant="outline" className="h-10 px-6 rounded-full font-bold border-green-500/30 bg-green-500/5 text-green-600 text-xs" disabled={isSaving}>
                                 <CheckCircle2 className="mr-2 h-4 w-4" /> Baixa Coletiva ({selectedCount}) <ChevronDown className="ml-2 h-3 w-3" />
                             </Button>
                         </DropdownMenuTrigger>
@@ -454,14 +468,17 @@ export default function FinancialPage() {
                 <Button variant="outline" className="h-10 px-6 rounded-full font-bold text-xs" onClick={() => setIsReconciliationOpen(true)}>
                     <FileCheck2 className="mr-2 h-4 w-4" /> Conciliar IA
                 </Button>
-                <DialogContent className="max-w-4xl"><DialogHeader><DialogTitle>Conciliação Financeira IA</DialogTitle></DialogHeader><CommissionReconciliation proposals={summaryProposals} onFinished={() => setIsReconciliationOpen(false)} /></DialogContent>
+                <DialogContent className="max-w-4xl" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+                    <DialogHeader><DialogTitle>Conciliação Financeira IA</DialogTitle></DialogHeader>
+                    <CommissionReconciliation proposals={summaryProposals} onFinished={() => setIsReconciliationOpen(false)} />
+                </DialogContent>
             </Dialog>
             <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setIsPrivacyMode(!isPrivacyMode)}>{isPrivacyMode ? <EyeOff /> : <Eye />}</Button>
         </div>
       </div>
 
        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="w-full max-w-md">
+        <SheetContent className="w-full max-w-md" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
           <SheetHeader><SheetTitle>Editar Lançamento de Comissão</SheetTitle></SheetHeader>
           <CommissionForm proposal={selectedProposal} onSubmit={handleFormSubmit} />
         </SheetContent>
@@ -494,7 +511,7 @@ export default function FinancialPage() {
                 <TabsContent value="expenses" className="space-y-6">
                     <div className="flex justify-between items-center bg-muted/10 p-4 rounded-2xl border">
                         <StatsCard title="Total Despesas (Mês)" value={isPrivacyMode ? '•••••' : formatCurrency(totalExpensesAmount)} icon={Wallet} className="bg-red-50/10 border-red-200" />
-                        <Button className="rounded-full font-bold bg-red-600 hover:bg-red-700" onClick={() => { setSelectedExpense(undefined); setIsExpenseFormOpen(true); }}><PlusCircle className="mr-2 h-4 w-4" /> Lançar Despesa</Button>
+                        <Button className="rounded-full font-bold bg-red-600 hover:bg-red-700" onClick={() => { setSelectedExpense(undefined); setIsExpenseFormOpen(true); }} disabled={isSaving}><PlusCircle className="mr-2 h-4 w-4" /> Lançar Despesa</Button>
                     </div>
                     <ExpenseTable expenses={expenses || []} onEdit={(e) => { setSelectedExpense(e); setIsExpenseFormOpen(true); }} onDelete={(id) => deleteDoc(doc(firestore!, 'users', user!.uid, 'expenses', id))} />
                 </TabsContent>
@@ -503,15 +520,22 @@ export default function FinancialPage() {
       )}
 
       <Dialog open={isExpenseFormOpen} onOpenChange={setIsExpenseFormOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
             <DialogHeader><DialogTitle>Gasto Operacional</DialogTitle></DialogHeader>
-            <ExpenseForm expense={selectedExpense} categories={userSettings?.expenseCategories || initialExpenseCategories} onSubmit={(data) => {
+            <ExpenseForm expense={selectedExpense} categories={userSettings?.expenseCategories || initialExpenseCategories} onSubmit={async (data) => {
                 const id = selectedExpense?.id || doc(collection(firestore!, 'users', user!.uid, 'expenses')).id;
                 const finalData = cleanFirestoreData({ ...data, id, ownerId: user!.uid });
-                setDoc(doc(firestore!, 'users', user!.uid, 'expenses', id), finalData);
-                setIsExpenseFormOpen(false);
-                toast({ title: 'Gasto Salvo!' });
-            }} />
+                setIsSaving(true);
+                try {
+                    await setDoc(doc(firestore!, 'users', user!.uid, 'expenses', id), finalData);
+                    setIsExpenseFormOpen(false);
+                    toast({ title: 'Gasto Salvo!' });
+                } catch (e) {
+                    toast({ variant: 'destructive', title: 'Erro ao salvar despesa' });
+                } finally {
+                    setIsSaving(false);
+                }
+            }} isSaving={isSaving} />
         </DialogContent>
       </Dialog>
 

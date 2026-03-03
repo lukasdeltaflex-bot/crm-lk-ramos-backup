@@ -356,17 +356,22 @@ function ProposalsPageContent() {
     dataToUpdate.history = arrayUnion(historyEntry);
     
     const docRef = doc(firestore, 'loanProposals', proposalId);
-    updateDoc(docRef, cleanFirestoreData(dataToUpdate))
-        .then(() => toast({ title: 'Status Atualizado!' }))
-        .catch(async (error) => {
-            if (error.code === 'permission-denied') {
-                errorEmitter.emit('permission-error', new FirestorePermissionError({
-                    path: docRef.path,
-                    operation: 'update',
-                    requestResourceData: dataToUpdate
-                }));
-            }
-        });
+    setIsSaving(true);
+    try {
+        await updateDoc(docRef, cleanFirestoreData(dataToUpdate));
+        toast({ title: 'Status Atualizado!' });
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'update',
+                requestResourceData: dataToUpdate
+            }));
+        }
+        toast({ variant: 'destructive', title: 'Erro ao atualizar status' });
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   const handleToggleChecklist = async (proposalId: string, stepId: string, currentValue: boolean) => {
@@ -374,9 +379,15 @@ function ProposalsPageContent() {
     const docRef = doc(firestore, 'loanProposals', proposalId);
     const updatePath = `checklist.${stepId}`;
     
-    updateDoc(docRef, { [updatePath]: !currentValue })
-        .then(() => toast({ title: "Etapa atualizada!" }))
-        .catch(() => toast({ variant: 'destructive', title: "Erro na atualização" }));
+    setIsSaving(true);
+    try {
+        await updateDoc(docRef, { [updatePath]: !currentValue });
+        toast({ title: "Etapa atualizada!" });
+    } catch (e) {
+        toast({ variant: 'destructive', title: "Erro na atualização" });
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   const handleFormSubmit = async (data: any) => {
@@ -391,22 +402,22 @@ function ProposalsPageContent() {
         ownerId: user.uid 
     });
     
-    setDoc(docRef, finalData, { merge: true })
-        .then(() => {
-            toast({ title: 'Proposta Salva!' });
-            setIsDialogOpen(false);
-        })
-        .catch(async (error) => {
-            if (error.code === 'permission-denied') {
-                errorEmitter.emit('permission-error', new FirestorePermissionError({
-                    path: docRef.path,
-                    operation: 'write',
-                    requestResourceData: finalData
-                }));
-            }
-            toast({ variant: 'destructive', title: 'Erro ao salvar proposta' });
-        })
-        .finally(() => setIsSaving(false));
+    try {
+        await setDoc(docRef, finalData, { merge: true });
+        toast({ title: 'Proposta Salva!' });
+        setIsDialogOpen(false);
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'write',
+                requestResourceData: finalData
+            }));
+        }
+        toast({ variant: 'destructive', title: 'Erro ao salvar proposta' });
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   const columns = React.useMemo(() => getColumns(
@@ -427,7 +438,7 @@ function ProposalsPageContent() {
                 <div className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-300">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="h-10 px-6 rounded-full font-bold border-primary/30 bg-primary/5 text-primary text-xs">
+                            <Button variant="outline" className="h-10 px-6 rounded-full font-bold border-primary/30 bg-primary/5 text-primary text-xs" disabled={isSaving}>
                                 <CheckCircle2 className="mr-2 h-4 w-4" /> Alterar Status ({selectedCount}) <ChevronDown className="ml-2 h-3 w-3" />
                             </Button>
                         </DropdownMenuTrigger>
@@ -437,7 +448,7 @@ function ProposalsPageContent() {
                             ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
-                    <Button variant="destructive" className="h-10 px-6 rounded-full font-bold text-xs" onClick={() => handleBulkStatusChange('Reprovado')}>
+                    <Button variant="destructive" className="h-10 px-6 rounded-full font-bold text-xs" onClick={() => handleBulkStatusChange('Reprovado')} disabled={isSaving}>
                         <Trash2 className="mr-2 h-4 w-4" /> Cancelar
                     </Button>
                 </div>

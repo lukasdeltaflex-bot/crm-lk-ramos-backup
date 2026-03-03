@@ -35,7 +35,7 @@ import {
     Download,
     Video as VideoIcon,
     FileText,
-    Image as ImageIcon,
+    ImageIcon,
     PlayCircle
 } from 'lucide-react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -118,7 +118,6 @@ export default function ManagementPage() {
   }, [rawNews, isMounted]);
 
   useEffect(() => {
-    // 🛡️ [SEGURANÇA]: Limpa senhas descriptografadas ao fechar ou trocar de promotora
     setDecryptedPasswords({});
     
     if (expandedPromoter && user) {
@@ -180,11 +179,14 @@ export default function ManagementPage() {
     if (!firestore) return;
     if (!confirm("Tem certeza que deseja excluir permanentemente este item?")) return;
     
+    setIsSaving(true);
     try {
         await deleteDoc(doc(firestore, collectionPath, id));
         toast({ title: 'Item removido com sucesso!' });
     } catch (e) { 
         toast({ variant: 'destructive', title: 'Erro ao excluir' }); 
+    } finally {
+        setIsSaving(false);
     }
   };
 
@@ -238,7 +240,7 @@ export default function ManagementPage() {
                     <h2 className="text-xl font-black uppercase tracking-tight">Mural do Correspondente</h2>
                     <p className="text-xs text-muted-foreground">Conteúdo compartilhado para toda a equipe.</p>
                 </div>
-                <Button onClick={() => { setSelectedItem(null); setIsNewsModalOpen(true); }} className="rounded-full bg-primary font-bold shadow-lg gap-2 h-11 px-8">
+                <Button onClick={() => { setSelectedItem(null); setIsNewsModalOpen(true); }} className="rounded-full bg-primary font-bold shadow-lg gap-2 h-11 px-8" disabled={isSaving}>
                     <PlusCircle className="h-4 w-4" /> Criar Notícia
                 </Button>
             </div>
@@ -281,6 +283,7 @@ export default function ManagementPage() {
                                         className="absolute top-3 left-3 h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10"
                                         onClick={(e) => { e.stopPropagation(); handleDelete('managementNews', item.id); }}
                                         title="Excluir Notícia"
+                                        disabled={isSaving}
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
@@ -295,7 +298,7 @@ export default function ManagementPage() {
                             </CardHeader>
                             <CardContent className="p-5 pt-0 flex gap-2" onClick={(e) => e.stopPropagation()}>
                                 {item.ownerId === user?.uid && (
-                                    <Button variant="outline" size="sm" className="rounded-full font-bold text-[10px] uppercase h-9 w-10 px-0 shrink-0" onClick={() => { setSelectedItem(item); setIsNewsModalOpen(true); }}>
+                                    <Button variant="outline" size="sm" className="rounded-full font-bold text-[10px] uppercase h-9 w-10 px-0 shrink-0" onClick={() => { setSelectedItem(item); setIsNewsModalOpen(true); }} disabled={isSaving}>
                                         <Edit className="h-3.5 w-3.5" />
                                     </Button>
                                 )}
@@ -313,7 +316,7 @@ export default function ManagementPage() {
                     <h2 className="text-xl font-black uppercase tracking-tight text-blue-600">Parceiros & Promotoras</h2>
                     <p className="text-xs text-muted-foreground">Contatos, códigos e senhas blindadas por parceiro.</p>
                 </div>
-                <Button onClick={() => { setSelectedItem(null); setIsPromoterModalOpen(true); }} className="rounded-full bg-blue-600 hover:bg-blue-700 font-bold shadow-lg gap-2 h-11 px-8">
+                <Button onClick={() => { setSelectedItem(null); setIsPromoterModalOpen(true); }} className="rounded-full bg-blue-600 hover:bg-blue-700 font-bold shadow-lg gap-2 h-11 px-8" disabled={isSaving}>
                     <PlusCircle className="h-4 w-4" /> Nova Promotora
                 </Button>
             </div>
@@ -407,8 +410,8 @@ export default function ManagementPage() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full" onClick={(e) => { e.stopPropagation(); setSelectedItem(promoter); setIsPromoterModalOpen(true); }}><Edit className="h-5 w-5" /></Button>
-                                    <Button variant="ghost" size="icon" className="h-10 w-10 text-red-500 rounded-full" onClick={(e) => { e.stopPropagation(); handleDelete('managementPromoters', promoter.id); }}><Trash2 className="h-5 w-5" /></Button>
+                                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full" onClick={(e) => { e.stopPropagation(); setSelectedItem(promoter); setIsPromoterModalOpen(true); }} disabled={isSaving}><Edit className="h-5 w-5" /></Button>
+                                    <Button variant="ghost" size="icon" className="h-10 w-10 text-red-500 rounded-full" onClick={(e) => { e.stopPropagation(); handleDelete('managementPromoters', promoter.id); }} disabled={isSaving}><Trash2 className="h-5 w-5" /></Button>
                                     {expandedPromoter === promoter.id ? <ChevronUp className="h-6 w-6 text-muted-foreground" /> : <ChevronDown className="h-6 w-6 text-muted-foreground" />}
                                 </div>
                             </div>
@@ -419,7 +422,7 @@ export default function ManagementPage() {
                                         <h4 className="text-[11px] font-black uppercase tracking-[0.25em] text-muted-foreground flex items-center gap-2.5">
                                             <Lock className="h-4 w-4" /> Logins Bancários Blindados
                                         </h4>
-                                        <Button size="sm" variant="outline" className="rounded-full h-9 px-5 font-bold text-[11px] uppercase gap-2 border-primary/20 text-primary" onClick={() => { setSelectedPromoterId(promoter.id); setSelectedItem(null); setIsBankModalOpen(true); }}>
+                                        <Button size="sm" variant="outline" className="rounded-full h-9 px-5 font-bold text-[11px] uppercase gap-2 border-primary/20 text-primary" onClick={() => { setSelectedPromoterId(promoter.id); setSelectedItem(null); setIsBankModalOpen(true); }} disabled={isSaving}>
                                             <PlusCircle className="h-4 w-4" /> Vincular Login
                                         </Button>
                                     </div>
@@ -438,8 +441,8 @@ export default function ManagementPage() {
                                                             <span className="font-black text-xs uppercase truncate max-w-[140px]">{bank.bankName}</span>
                                                         </div>
                                                         <div className="flex gap-1.5 opacity-0 group-hover/bank:opacity-100 transition-opacity">
-                                                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSelectedPromoterId(promoter.id); setSelectedItem(bank); setIsBankModalOpen(true); }}><Edit className="h-4 w-4" /></Button>
-                                                            <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(`managementPromoters/${promoter.id}/bankLogins`, bank.id)}><Trash2 className="h-4 w-4" /></Button>
+                                                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSelectedPromoterId(promoter.id); setSelectedItem(bank); setIsBankModalOpen(true); }} disabled={isSaving}><Edit className="h-4 w-4" /></Button>
+                                                            <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(`managementPromoters/${promoter.id}/bankLogins`, bank.id)} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
                                                         </div>
                                                     </div>
                                                     <div className="space-y-3 bg-muted/20 p-4 rounded-xl border">
@@ -457,7 +460,7 @@ export default function ManagementPage() {
                                                                     {decryptedPasswords[bank.id] ? decryptedPasswords[bank.id] : '••••••••'}
                                                                 </span>
                                                                 <div className="flex items-center gap-1.5">
-                                                                    <button onClick={() => handleShowPassword(bank.id, bank.password)} className="text-primary hover:scale-110 transition-transform">
+                                                                    <button onClick={() => handleShowPassword(bank.id, bank.password)} className="text-primary hover:scale-110 transition-transform" disabled={isSaving}>
                                                                         {decryptedPasswords[bank.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                                                     </button>
                                                                     {decryptedPasswords[bank.id] && <CopyButton text={decryptedPasswords[bank.id]} label="Senha" />}
@@ -488,7 +491,7 @@ export default function ManagementPage() {
                     <h2 className="text-xl font-black uppercase tracking-tight text-emerald-600">Área de Links Rápidos</h2>
                     <p className="text-xs text-muted-foreground">Atalhos compartilhados para agilizar o acesso.</p>
                 </div>
-                <Button onClick={() => { setSelectedItem(null); setIsLinkModalOpen(true); }} className="rounded-full bg-emerald-600 hover:bg-emerald-700 font-bold shadow-lg gap-2 h-11 px-8">
+                <Button onClick={() => { setSelectedItem(null); setIsLinkModalOpen(true); }} className="rounded-full bg-emerald-600 hover:bg-emerald-700 font-bold shadow-lg gap-2 h-11 px-8" disabled={isSaving}>
                     <PlusCircle className="h-4 w-4" /> Novo Atalho
                 </Button>
             </div>
@@ -509,8 +512,8 @@ export default function ManagementPage() {
                         </a>
                         {link.ownerId === user?.uid && (
                             <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={() => { setSelectedItem(link); setIsLinkModalOpen(true); }} className="p-1.5 bg-white shadow rounded-full text-muted-foreground hover:text-primary"><Edit className="h-3 w-3" /></button>
-                                <button onClick={() => handleDelete('managementQuickLinks', link.id)} className="p-1.5 bg-white shadow rounded-full text-red-500 hover:text-red-600"><Trash2 className="h-3 w-3" /></button>
+                                <button onClick={() => { setSelectedItem(link); setIsLinkModalOpen(true); }} className="p-1.5 bg-white shadow rounded-full text-muted-foreground hover:text-primary" disabled={isSaving}><Edit className="h-3 w-3" /></button>
+                                <button onClick={() => handleDelete('managementQuickLinks', link.id)} className="p-1.5 bg-white shadow rounded-full text-red-500 hover:text-red-600" disabled={isSaving}><Trash2 className="h-3 w-3" /></button>
                             </div>
                         )}
                     </div>
@@ -521,7 +524,7 @@ export default function ManagementPage() {
 
       {/* MODAL DE EDIÇÃO/CRIAÇÃO DE NOTÍCIA */}
       <Dialog open={isNewsModalOpen} onOpenChange={setIsNewsModalOpen}>
-        <DialogContent className="max-w-4xl h-[90vh] overflow-hidden flex flex-col rounded-[2.5rem] p-0">
+        <DialogContent className="max-w-4xl h-[90vh] overflow-hidden flex flex-col rounded-[2.5rem] p-0" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
             <DialogHeader className="px-8 pt-8 pb-4 shrink-0 border-b">
                 <DialogTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2">
                     <Newspaper className="h-5 w-5 text-primary" />
@@ -639,7 +642,7 @@ export default function ManagementPage() {
       </Dialog>
 
       <Dialog open={isPromoterModalOpen} onOpenChange={setIsPromoterModalOpen}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-hidden flex flex-col rounded-[2rem] p-0">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-hidden flex flex-col rounded-[2rem] p-0" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
             <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
                 <DialogTitle className="text-xl font-black uppercase tracking-tight">
                     {selectedItem ? 'Editar Promotora' : 'Nova Promotora'}
@@ -652,7 +655,7 @@ export default function ManagementPage() {
       </Dialog>
 
       <Dialog open={isBankModalOpen} onOpenChange={setIsBankModalOpen}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-hidden flex flex-col rounded-[2rem] p-0">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-hidden flex flex-col rounded-[2rem] p-0" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
             <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
                 <DialogTitle className="text-xl font-black uppercase tracking-tight">
                     {selectedItem ? 'Editar Login' : 'Vincular Banco'}
@@ -665,7 +668,7 @@ export default function ManagementPage() {
       </Dialog>
 
       <Dialog open={isLinkModalOpen} onOpenChange={setIsLinkModalOpen}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-hidden flex flex-col rounded-[2rem] p-0">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-hidden flex flex-col rounded-[2rem] p-0" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
             <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
                 <DialogTitle className="text-xl font-black uppercase tracking-tight">
                     {selectedItem ? 'Editar Atalho' : 'Novo Link'}
