@@ -24,10 +24,10 @@ if (typeof window !== "undefined") {
 
         const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
         
-        // 🛡️ CONFIGURAÇÃO DE REDE V16: Auto-Detect habilitado para máxima compatibilidade.
-        // experimentalForceLongPolling e experimentalAutoDetectLongPolling não podem ser usados juntos.
+        // 🛡️ CONFIGURAÇÃO DE REDE V17: Force Long Polling habilitado.
+        // Resolve o erro de "Backend didn't respond within 10 seconds" em redes com restrições.
         db = initializeFirestore(app, {
-            experimentalAutoDetectLongPolling: true,
+            experimentalForceLongPolling: true,
             localCache: persistentLocalCache({
                 tabManager: persistentMultipleTabManager()
             })
@@ -36,7 +36,7 @@ if (typeof window !== "undefined") {
         auth = getAuth(app);
         storage = getStorage(app, firebaseConfig.storageBucket);
         
-        console.log("💎 LK RAMOS: Núcleo Firebase sincronizado com modo de alta resiliência.");
+        console.log("💎 LK RAMOS: Núcleo Firebase sincronizado com modo de alta resiliência (Long Polling).");
     } catch (error) {
         console.error("❌ Erro crítico na inicialização do Firebase:", error);
     }
