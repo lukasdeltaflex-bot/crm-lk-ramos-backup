@@ -72,7 +72,7 @@ const attachmentSchema = z.object({
   name: z.string(),
   url: z.string(),
   type: z.string(),
-  size: n.number(),
+  size: z.number(),
 });
 
 const optionalDateString = z.string().optional().refine(val => !val || !isNaN(parse(val, 'dd/MM/yyyy', new Date()).getTime()), {
