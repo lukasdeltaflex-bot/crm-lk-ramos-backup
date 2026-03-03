@@ -67,6 +67,7 @@ export default function ManagementPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const [activeTab, setActiveTab] = useState('news');
+  const [isMounted, setIsMounted] = useState(false);
   
   const [isNewsModalOpen, setIsNewsModalOpen] = useState(false);
   const [isPromoterModalOpen, setIsPromoterModalOpen] = useState(false);
@@ -79,6 +80,10 @@ export default function ManagementPage() {
   const [decryptedPasswords, setDecryptedPasswords] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const newsQuery = useMemoFirebase(() => query(collection(firestore!, 'managementNews'), orderBy('date', 'desc')), []);
   const linksQuery = useMemoFirebase(() => query(collection(firestore!, 'managementQuickLinks'), orderBy('name', 'asc')), []);
   const promotersQuery = useMemoFirebase(() => user ? query(collection(firestore!, 'managementPromoters'), where('ownerId', '==', user.uid), orderBy('name', 'asc')) : null, [user]);
@@ -90,8 +95,9 @@ export default function ManagementPage() {
   const [bankLogins, setBankLogins] = useState<any[]>([]);
   const [loadingLogins, setLoadingLogins] = useState(false);
 
+  // 🛡️ FIX HIDRATAÇÃO: Filtro de notícias só ocorre após montagem no cliente
   const news = React.useMemo(() => {
-    if (!rawNews) return [];
+    if (!rawNews || !isMounted) return [];
     const today = startOfDay(new Date());
     
     return rawNews.filter(item => {
@@ -103,7 +109,7 @@ export default function ManagementPage() {
             return true;
         }
     });
-  }, [rawNews]);
+  }, [rawNews, isMounted]);
 
   useEffect(() => {
     if (expandedPromoter && user) {

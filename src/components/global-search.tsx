@@ -133,7 +133,7 @@ export function GlobalSearch() {
             })}
             
             {proposals?.map((proposal) => {
-              const searchIndex = `PROP${proposal.proposalNumber} ${proposal.product} ${proposal.bank}`;
+              const searchIndex = `PROP${proposal.proposalNumber} ${proposal.product} ${proposal.bank} ${cleanBankName(proposal.bank)}`;
               return (
                 <CommandItem
                   key={proposal.id}
@@ -145,7 +145,7 @@ export function GlobalSearch() {
                           <FileText className="mr-2 h-4 w-4 text-muted-foreground" />
                           <div className="flex flex-col">
                               <span className="font-bold">Prop. {proposal.proposalNumber}</span>
-                              <span className="text-[10px] text-muted-foreground">{proposal.product} • {proposal.bank}</span>
+                              <span className="text-[10px] text-muted-foreground">{proposal.product} • {cleanBankName(proposal.bank)}</span>
                           </div>
                       </div>
                       <Zap className='h-3 w-3 text-orange-500 opacity-0 group-aria-selected:opacity-100 transition-opacity' />

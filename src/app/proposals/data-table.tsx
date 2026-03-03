@@ -113,7 +113,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>([...initialColumns]);
 
-  // 🛡️ PERSISTÊNCIA DE FILTROS (BUG #2)
   React.useEffect(() => {
     setIsClient(true);
     try {
@@ -254,6 +253,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         const searchDigits = searchTerm.replace(/\D/g, '');
         const cpfDigits = customer?.cpf?.replace(/\D/g, '') || '';
 
+        // 🛡️ BUSCA NUCLEAR V14: Reconhecimento de nomes limpos de bancos
         if (/^\d+$/.test(searchTerm)) {
             if (p.proposalNumber === searchTerm) return true;
             if (customer?.numericId?.toString() === searchTerm) return true;
@@ -266,12 +266,15 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         if (searchDigits.length > 3 && cpfDigits.includes(searchDigits)) return true;
 
         const normalizedSearch = normalizeString(searchTerm);
+        
+        // 💎 INCLUI NOME LIMPO DO BANCO NO ÍNDICE DE BUSCA
         const searchableFields = [
             customer?.name,
             customer?.cpf,
             p.proposalNumber,
             p.operator,
             p.bank,
+            cleanBankName(p.bank), // Reconhece "Itau" mesmo se salvo como "341 - Itau"
             p.promoter
         ];
 

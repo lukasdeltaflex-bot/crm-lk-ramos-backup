@@ -192,7 +192,9 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
   const customerAge = useMemo(() => {
     if (!isMounted || !watchBirthDate || watchBirthDate.length < 10) return null;
     try {
-        const parsed = parse(watchBirthDate, 'dd/MM/yyyy', new Date());
+        const parsed = watchBirthDate.includes('-')
+            ? parse(watchBirthDate, 'yyyy-MM-dd', new Date())
+            : parse(watchBirthDate, 'dd/MM/yyyy', new Date());
         if (isValid(parsed)) return differenceInYears(new Date(), parsed);
     } catch { return null; }
     return null;
@@ -237,6 +239,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
         
         if (!response.ok) {
             console.warn("CEP Proxy offline ou indisponível.");
+            setIsFetchingCep(false);
             return;
         }
 
@@ -248,6 +251,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                 title: 'CEP não localizado', 
                 description: 'Este código não existe na base oficial dos Correios.' 
             });
+            setIsFetchingCep(false);
             return;
         }
 
@@ -304,11 +308,32 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
         toast({ variant: 'destructive', title: 'Dados duplicados detectados', description: 'Verifique os campos marcados em vermelho.' });
         return;
     }
-    const parsedBirthDate = parse(data.birthDate, 'dd/MM/yyyy', new Date());
+    
+    // 🛡️ BLINDAGEM DE DATA: Trata ambos os formatos
+    let birthIso = '';
+    try {
+        if (data.birthDate.includes('-')) {
+            birthIso = data.birthDate;
+        } else {
+            const parsedBirthDate = parse(data.birthDate, 'dd/MM/yyyy', new Date());
+            if (isValid(parsedBirthDate)) {
+                birthIso = format(parsedBirthDate, 'yyyy-MM-dd');
+            }
+        }
+    } catch (e) {
+        toast({ variant: 'destructive', title: 'Data Inválida' });
+        return;
+    }
+
+    if (!birthIso) {
+        toast({ variant: 'destructive', title: 'Data de Nascimento Obrigatória' });
+        return;
+    }
+
     const newCustomerData: FormCustomer = {
       ...data,
       gender: data.gender as any,
-      birthDate: format(parsedBirthDate, 'yyyy-MM-dd'),
+      birthDate: birthIso,
       benefits: data.benefits || [],
       tags: data.tags || [],
       documents: data.documents || [],
@@ -550,7 +575,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                             ))
                         ) : (
                             <span className="text-[10px] font-black uppercase text-muted-foreground/40 italic flex items-center gap-2">
-                                <Info className="h-3.5 w-3.5" /> Nenhuma etiqueta atribuída
+                                <div className="flex items-center gap-2"><Info className="h-3.5 w-3.5" /> Nenhuma etiqueta atribuída</div>
                             </span>
                         )}
                     </div>
@@ -831,7 +856,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                 className="rounded-full px-12 h-12 font-bold text-white bg-[#00AEEF] hover:bg-[#0096D1] shadow-lg shadow-[#00AEEF]/20 transition-all border-none"
             >
                 {isSaving ? (
-                    <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Salvando...</>
+                    <div className="flex items-center"><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Salvando...</div>
                 ) : (
                     'Salvar Cadastro'
                 )}

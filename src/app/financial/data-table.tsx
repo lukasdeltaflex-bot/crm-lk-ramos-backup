@@ -273,6 +273,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         const searchDigits = searchTerm.replace(/\D/g, '');
         const cpfDigits = customer?.cpf?.replace(/\D/g, '') || '';
 
+        // 🛡️ BUSCA NUCLEAR V14: Reconhecimento de nomes limpos de bancos
         if (/^\d+$/.test(searchTerm)) {
             if (customer?.numericId?.toString() === searchTerm) return true;
             if (p.proposalNumber === searchTerm) return true;
@@ -291,6 +292,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             p.proposalNumber,
             p.operator,
             p.bank,
+            cleanBankName(p.bank), // Reconhece "Itau" mesmo se salvo como "341 - Itau"
             p.promoter
         ];
 
