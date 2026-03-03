@@ -102,6 +102,9 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         const savedPageSize = localStorage.getItem('lk-customers-pageSize');
         if (savedPageSize) setPagination(p => ({ ...p, pageSize: Number(savedPageSize) }));
 
+        const savedSearch = localStorage.getItem('lk-customers-filter-search');
+        if (savedSearch) setGlobalFilter(savedSearch);
+
         const savedVisibility = localStorage.getItem('lk-customers-visibility');
         if (savedVisibility) setColumnVisibility(JSON.parse(savedVisibility));
 
@@ -143,12 +146,13 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
   React.useEffect(() => {
     if (isClient && columnOrder.length > 0) {
       try {
+        localStorage.setItem('lk-customers-filter-search', globalFilter);
         localStorage.setItem('lk-customers-visibility', JSON.stringify(columnVisibility));
         localStorage.setItem('lk-customers-order', JSON.stringify(columnOrder));
         localStorage.setItem('lk-customers-sizing', JSON.stringify(columnSizing));
       } catch(e) {}
     }
-  }, [columnVisibility, columnOrder, columnSizing, isClient]);
+  }, [globalFilter, columnVisibility, columnOrder, columnSizing, isClient]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),

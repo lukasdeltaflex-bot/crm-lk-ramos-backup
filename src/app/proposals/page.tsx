@@ -337,11 +337,13 @@ function ProposalsPageContent() {
         statusUpdatedAt: now
     };
 
+    const isPortability = productType === 'Portabilidade' || proposal.product === 'Portabilidade';
+
     if (newStatus === 'Pago') {
         dataToUpdate.dateApproved = now;
         dataToUpdate.datePaidToClient = now;
         if (!proposal.commissionStatus) dataToUpdate.commissionStatus = 'Pendente';
-    } else if (newStatus === 'Saldo Pago' && (productType === 'Portabilidade' || proposal.product === 'Portabilidade')) {
+    } else if (newStatus === 'Saldo Pago' && isPortability) {
         dataToUpdate.debtBalanceArrivalDate = now;
     }
 
@@ -417,7 +419,7 @@ function ProposalsPageContent() {
   ), [firestore, handleEditProposal, handleViewProposal, handleStatusChange, handleDuplicateProposal, handleToggleChecklist]);
 
   return (
-    <>
+    <AppLayout>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <PageHeader title="Propostas" />
         <div className="flex items-center gap-3 flex-wrap">
@@ -541,16 +543,14 @@ function ProposalsPageContent() {
             userSettings={userSettings || null}
         />
       )}
-    </>
+    </AppLayout>
   );
 }
 
 export default function ProposalsPage() {
     return (
-        <AppLayout>
-            <Suspense fallback={<ProposalsPageSkeleton />}>
-                <ProposalsPageContent />
-            </Suspense>
-        </AppLayout>
+        <Suspense fallback={<ProposalsPageSkeleton />}>
+            <ProposalsPageContent />
+        </Suspense>
     )
 }

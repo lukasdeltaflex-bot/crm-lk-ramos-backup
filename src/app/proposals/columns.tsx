@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatCurrency, cleanBankName, cn, formatDateSafe, isWhatsApp, getWhatsAppUrl, calculateBusinessDays } from '@/lib/utils';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusCell } from './status-cell';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -384,57 +384,66 @@ export const getColumns = (
     header: 'Status',
     cell: ({ row }) => {
         const p = row.original;
-        const referenceDate = p.statusAwaitingBalanceAt || p.statusUpdatedAt || p.dateDigitized;
-        const bizDays = referenceDate ? calculateBusinessDays(referenceDate) : 0;
         
-        let isCritical = false;
-        let limit = 0;
+        // 🛡️ COMPONENTE DE CÉLULA COM PROTEÇÃO DE HIDRATAÇÃO
+        const StatusWrapper = () => {
+            const [hasMounted, setHasMounted] = useState(false);
+            useEffect(() => setHasMounted(true), []);
 
-        if (p.status === 'Pendente') {
-            limit = 2;
-            isCritical = bizDays >= limit;
-        } else if (p.status === 'Aguardando Saldo' && p.product === 'Portabilidade') {
-            limit = 5;
-            isCritical = bizDays >= limit;
-        } else if (p.status === 'Em Andamento') {
-            limit = 5;
-            isCritical = bizDays >= limit;
-        }
+            const referenceDate = p.statusAwaitingBalanceAt || p.statusUpdatedAt || p.dateDigitized;
+            const bizDays = hasMounted && referenceDate ? calculateBusinessDays(referenceDate) : 0;
+            
+            let isCritical = false;
+            let limit = 0;
 
-        return (
-            <div className="flex items-center gap-2 w-full">
-                <div className="flex-1">
-                    <StatusCell
-                        proposalId={p.id}
-                        currentStatus={p.status}
-                        product={p.product}
-                        onStatusChange={onStatusChange}
-                    />
+            if (p.status === 'Pendente') {
+                limit = 2;
+                isCritical = bizDays >= limit;
+            } else if (p.status === 'Aguardando Saldo' && p.product === 'Portabilidade') {
+                limit = 5;
+                isCritical = bizDays >= limit;
+            } else if (p.status === 'Em Andamento') {
+                limit = 5;
+                isCritical = bizDays >= limit;
+            }
+
+            return (
+                <div className="flex items-center gap-2 w-full">
+                    <div className="flex-1">
+                        <StatusCell
+                            proposalId={p.id}
+                            currentStatus={p.status}
+                            product={p.product}
+                            onStatusChange={onStatusChange}
+                        />
+                    </div>
+                    {hasMounted && isCritical && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="shrink-0 h-7 w-7 rounded-full bg-red-500/15 border-2 border-red-500/40 flex items-center justify-center text-red-600 shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-alert-pulse cursor-help">
+                                        <Timer className="h-4 w-4 fill-current" />
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="bg-white text-zinc-950 border-2 border-red-500 shadow-2xl p-4 rounded-2xl min-w-[240px] animate-in zoom-in-95 duration-200">
+                                    <div className="space-y-1.5 text-left">
+                                        <p className="font-black text-red-600 text-[11px] uppercase tracking-wider">Prazo Crítico Atingido</p>
+                                        <p className="text-xs text-muted-foreground font-medium leading-snug">
+                                            Contrato em <span className="font-bold text-zinc-900">{p.status}</span> há <span className="text-red-600 font-black text-sm">{bizDays} dia(s) úteis.</span>
+                                        </p>
+                                        <p className="text-[10px] italic text-muted-foreground mt-2 border-t pt-1.5 opacity-70">
+                                            Limite operacional sugerido: {limit} dias
+                                        </p>
+                                    </div>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
                 </div>
-                {isCritical && (
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <div className="shrink-0 h-7 w-7 rounded-full bg-red-500/15 border-2 border-red-500/40 flex items-center justify-center text-red-600 shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-alert-pulse cursor-help">
-                                    <Timer className="h-4 w-4 fill-current" />
-                                </div>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="bg-white text-zinc-950 border-2 border-red-500 shadow-2xl p-4 rounded-2xl min-w-[240px] animate-in zoom-in-95 duration-200">
-                                <div className="space-y-1.5 text-left">
-                                    <p className="font-black text-red-600 text-[11px] uppercase tracking-wider">Prazo Crítico Atingido</p>
-                                    <p className="text-xs text-muted-foreground font-medium leading-snug">
-                                        Contrato em <span className="font-bold text-zinc-900">{p.status}</span> há <span className="text-red-600 font-black text-sm">{bizDays} dia(s) úteis.</span>
-                                    </p>
-                                    <p className="text-[10px] italic text-muted-foreground mt-2 border-t pt-1.5 opacity-70">
-                                        Limite operacional sugerido: {limit} dias
-                                    </p>
-                                </div>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                )}
-            </div>
-        );
+            );
+        };
+
+        return <StatusWrapper />;
     },
     size: 160,
   },
