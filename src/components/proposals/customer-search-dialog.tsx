@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -29,20 +30,24 @@ export function CustomerSearchDialog({
 }: CustomerSearchDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl" onPointerDownOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Buscar Cliente</DialogTitle>
         </DialogHeader>
-        <Command>
-          <CommandInput placeholder="Pesquisar por nome ou CPF..." />
+        <Command filter={(value, search) => {
+            const normalizedSearch = normalizeString(search);
+            if (!normalizedSearch) return 1;
+            return value.includes(normalizedSearch) ? 1 : 0;
+        }}>
+          <CommandInput placeholder="Pesquisar por ID, Nome ou CPF..." autoFocus />
           <ScrollArea className="h-[50vh]">
             <CommandList>
               <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
               <CommandGroup>
                 {customers.map((customer) => {
-                  // 🛡️ BUSCA NUCLEAR V12: Inclui todas as variações de documento e ID no índice de busca
+                  // 🛡️ BUSCA NUCLEAR SINCRO: Inclui ID puro e variações de documento
                   const cpfNumeric = customer.cpf?.replace(/\D/g, '') || '';
-                  const searchIndex = normalizeString(`${customer.name} ${customer.cpf} ${cpfNumeric} ID${customer.numericId}`);
+                  const searchIndex = normalizeString(`${customer.name} ${customer.cpf} ${cpfNumeric} ID${customer.numericId} ${customer.numericId}`);
                   
                   return (
                     <CommandItem

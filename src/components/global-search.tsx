@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -73,7 +74,6 @@ export function GlobalSearch() {
         </kbd>
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen}>
-        {/* 🛡️ [UX]: autoFocus para garantir que o cursor já caia na busca ao usar o atalho */}
         <CommandInput placeholder="ID, Nome, CPF ou Smart Tag (ELITE, ATIVO...)" autoFocus />
         <CommandList>
           <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
@@ -103,12 +103,14 @@ export function GlobalSearch() {
               const cpfNumeric = customer.cpf?.replace(/\D/g, '') || '';
               const smartTags = getSmartTags(customer, proposals || []);
               const smartTagsLabels = smartTags.map(tag => tag.label).join(' ');
-              const searchIndex = `ID${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric} ${smartTagsLabels}`;
+              
+              // 🛡️ BUSCA NUCLEAR SINCRO: Permite busca por ID puro sem o prefixo ID
+              const searchIndex = normalizeString(`ID${customer.numericId} ${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric} ${smartTagsLabels}`);
               
               return (
                 <CommandItem
                   key={customer.id}
-                  value={normalizeString(searchIndex)}
+                  value={searchIndex}
                   onSelect={() => runCommand(() => router.push(`/customers/${customer.id}`))}
                 >
                   <div className="flex items-center justify-between w-full">
@@ -131,11 +133,11 @@ export function GlobalSearch() {
             })}
             
             {proposals?.map((proposal) => {
-              const searchIndex = `PROP${proposal.proposalNumber} ${proposal.product} ${proposal.bank} ${cleanBankName(proposal.bank)}`;
+              const searchIndex = normalizeString(`PROP${proposal.proposalNumber} ${proposal.proposalNumber} ${proposal.product} ${proposal.bank} ${cleanBankName(proposal.bank)}`);
               return (
                 <CommandItem
                   key={proposal.id}
-                  value={normalizeString(searchIndex)}
+                  value={searchIndex}
                   onSelect={() => runCommand(() => router.push(`/proposals?open=${proposal.id}`))}
                 >
                   <div className="flex items-center justify-between w-full">

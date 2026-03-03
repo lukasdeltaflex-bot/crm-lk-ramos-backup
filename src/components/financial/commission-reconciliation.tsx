@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useRef } from 'react';
@@ -80,7 +81,6 @@ export function CommissionReconciliation({ proposals, onFinished }: { proposals:
       extracted.commissions.forEach(item => {
         const cleanCpf = item.customerCpf.replace(/\D/g, '');
         
-        // 🛡️ MATCH MULTIVARIÁVEL: Tenta achar por Proposta primeiro, depois por CPF
         let match = proposals.find(p => p.proposalNumber === item.proposalIdentifier);
         if (!match) {
             match = proposals.find(p => p.customer?.cpf?.replace(/\D/g, '') === cleanCpf && p.commissionStatus !== 'Paga');
@@ -142,6 +142,12 @@ export function CommissionReconciliation({ proposals, onFinished }: { proposals:
 
         await Promise.all(promises);
         toast({ title: 'Baixa Concluída!', description: `${validItems.length} comissões atualizadas.` });
+        
+        // 🛡️ UX: Limpa dados e fecha após sucesso
+        setResults([]);
+        setText('');
+        setFileData(null);
+        setFileName(null);
         onFinished();
     } catch (e) {
         toast({ variant: 'destructive', title: 'Erro ao salvar' });
