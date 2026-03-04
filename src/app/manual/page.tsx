@@ -150,9 +150,9 @@ export default function ManualPage() {
                                 <div className="text-[11px]"><span className="font-bold uppercase">Averbação:</span> Confirmação no órgão.</div>
                             </div>
                         </div>
-                        <div className="mt-6 p-4 rounded-xl bg-red-50/5 border-2 border-dashed border-red-200">
-                            <h4 className="font-bold text-red-700 flex items-center gap-2 mb-2"><FilterX className="h-4 w-4" /> Limpeza Inteligente de Filtros</h4>
-                            <p className="text-xs text-muted-foreground">Nas telas de Clientes, Propostas e Financeiro, um botão **"Limpar Filtros"** aparecerá automaticamente sempre que houver buscas ativas. Use-o para resetar a visão e voltar à lista completa com um único clique.</p>
+                        <div className="mt-6 p-4 rounded-xl bg-blue-50/5 border border-blue-200">
+                            <h4 className="font-bold text-blue-700 flex items-center gap-2 mb-2"><Zap className="h-4 w-4" /> Trâmites Instantâneos</h4>
+                            <p className="text-xs text-muted-foreground">Agora você pode usar os **Tópicos Rápidos (Sub-status)** desde o cadastro da proposta. Clicar em um tópico reserva o trâmite para ser gravado assim que a proposta for salva.</p>
                         </div>
                     </AccordionContent>
                 </AccordionItem>

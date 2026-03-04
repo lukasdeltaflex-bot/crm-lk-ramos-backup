@@ -195,6 +195,7 @@ export function ProposalForm({
   const [isClient, setIsClient] = useState(false);
   const [newHistoryEntry, setNewHistoryEntry] = useState('');
   const [isAddingHistory, setIsAddingHistory] = useState(false);
+  const [stagedHistory, setStagedHistory] = useState<ProposalHistoryEntry[]>([]);
 
   const productTypes = userSettings?.productTypes || configData.productTypes;
   const proposalStatuses = userSettings?.proposalStatuses || configData.proposalStatuses;
@@ -358,7 +359,7 @@ export function ProposalForm({
   }, [commissionBase, commissionPercentage, grossAmount, netAmount, setValue, isReadOnly]);
 
   const handleAddHistory = async (customMessage: string) => {
-    if (!customMessage || !currentProposalId || !firestore || !user) return;
+    if (!customMessage || !user) return;
     
     setIsAddingHistory(true);
     const now = new Date().toISOString();
@@ -370,15 +371,27 @@ export function ProposalForm({
     };
 
     try {
-        const docRef = doc(firestore, 'loanProposals', currentProposalId);
-        await setDoc(docRef, { history: arrayUnion(entry), statusUpdatedAt: now }, { merge: true });
-        toast({ title: "Sub-status Registrado!" });
+        if (proposal?.id) {
+            const docRef = doc(firestore!, 'loanProposals', proposal.id);
+            await setDoc(docRef, { history: arrayUnion(entry), statusUpdatedAt: now }, { merge: true });
+            toast({ title: "Sub-status Registrado!" });
+        } else {
+            // New proposal: save to local staged list
+            setStagedHistory(prev => [entry, ...prev]);
+            toast({ title: "Sub-status Reservado!", description: "Será gravado ao salvar a proposta." });
+        }
     } catch (e) {
-        toast({ variant: 'destructive', title: "Erro ao salvar trâmite" });
+        toast({ variant: 'destructive', title: "Erro ao registrar trâmite" });
     } finally {
         setIsAddingHistory(false);
+        setNewHistoryEntry('');
     }
   };
+
+  const displayHistory = useMemo(() => {
+    const existing = Array.isArray(proposal?.history) ? proposal!.history : [];
+    return [...existing, ...stagedHistory].sort((a,b) => b.date.localeCompare(a.date));
+  }, [proposal?.history, stagedHistory]);
 
   function handleFormSubmit(data: ProposalFormValues) {
     if (isDuplicateProposal) {
@@ -439,7 +452,8 @@ export function ProposalForm({
     }
 
     const existingHistory = Array.isArray(proposal?.history) ? proposal!.history : [];
-    finalData.history = [...existingHistory, ...auditEntries];
+    // Inclui o histórico "staged" durante a criação
+    finalData.history = [...existingHistory, ...stagedHistory, ...auditEntries];
     
     if (proposal?.status !== finalData.status) {
         finalData.statusUpdatedAt = now;
@@ -531,8 +545,8 @@ export function ProposalForm({
                 />
               </div>
 
-              {/* 🚀 TÓPICOS RÁPIDOS (SUB-STATUS) PERTO DO STATUS */}
-              {proposal?.id && !isReadOnly && (
+              {/* 🚀 TÓPICOS RÁPIDOS DISPONÍVEIS SEMPRE (CRIAÇÃO OU EDIÇÃO) */}
+              {!isReadOnly && (
                   <div className="p-4 rounded-2xl border-2 border-dashed bg-primary/[0.02] space-y-3 animate-in fade-in duration-500">
                       <div className="flex items-center gap-2">
                           <Zap className="h-3.5 w-3.5 text-primary" />
@@ -714,7 +728,6 @@ export function ProposalForm({
                                             readOnly={isReadOnly || isSaving} 
                                             className={cn("font-bold border-primary/20 bg-primary/[0.02]", historicalRejection && "border-red-500 bg-red-50 ring-2 ring-red-200")}
                                         />
-                                        {historicalRejection && <AlertTriangle className="absolute right-3 top-2.5 h-5 w-5 text-red-500 animate-pulse" />}
                                     </div>
                                 </FormControl>
                                 <FormMessage />
@@ -739,7 +752,6 @@ export function ProposalForm({
                                 readOnly={isReadOnly || isSaving} 
                                 className={cn("font-bold", isDuplicateProposal && "border-red-500 bg-red-50")}
                             />
-                            {isDuplicateProposal && <AlertTriangle className="absolute right-3 top-2.5 h-5 w-5 text-red-500 animate-pulse" />}
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -919,7 +931,7 @@ export function ProposalForm({
                 <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
                     <History className="h-4 w-4" /> Histórico Completo
                 </h3>
-                {proposal?.id && (
+                {currentProposalId && (
                     <div className="space-y-6">
                         <div className="flex gap-2">
                             <Input 
@@ -935,8 +947,8 @@ export function ProposalForm({
                         </div>
 
                         <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
-                            {proposal.history && Array.isArray(proposal.history) && proposal.history.length > 0 ? (
-                                [...proposal.history].sort((a,b) => b.date.localeCompare(a.date)).map(entry => (
+                            {displayHistory.length > 0 ? (
+                                displayHistory.map(entry => (
                                     <div key={entry.id} className={cn(
                                         "p-3 rounded-xl border text-xs transition-colors hover:bg-muted/50",
                                         entry.message.startsWith("AUTOAUDIT") ? "bg-blue-50/30 border-blue-100" : "bg-muted/30 border-border"
