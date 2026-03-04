@@ -234,13 +234,9 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
     
     setIsFetchingCep(true);
     try {
-        console.log("🔍 Iniciando busca de CEP:", cleanCep);
         const response = await fetch(`/api/cep/${cleanCep}`);
         
-        if (!response.ok) {
-            console.error("❌ Erro na ponte da API de CEP.");
-            return;
-        }
+        if (!response.ok) return;
 
         const data = await response.json();
         
@@ -302,7 +298,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
 
   const handleFormSubmit = (data: CustomerFormValues) => {
     if (duplicity.phone || duplicity.cpf) {
-        toast({ variant: 'destructive', title: 'Dados duplicados detectados', description: 'Verifique os campos marcados em vermelho.' });
+        toast({ variant: 'destructive', title: 'Acesso Bloqueado', description: 'Você não pode salvar um CPF que já existe na base.' });
         return;
     }
     
@@ -853,7 +849,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                 {isSaving ? (
                     <div className="flex items-center"><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Salvando...</div>
                 ) : (
-                    'Salvar Cadastro'
+                    duplicity.cpf ? 'CPF Já Cadastrado' : 'Salvar Cadastro'
                 )}
             </Button>
         </div>

@@ -96,8 +96,11 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
         dataToUpdate.statusAwaitingBalanceAt = now;
     }
 
+    // 🛡️ LIMPEZA DE DADOS: Se não for reprovado, garante que o motivo antigo seja removido
     if (pendingStatus === 'Reprovado') {
         dataToUpdate.rejectionReason = rejectionReason;
+    } else {
+        dataToUpdate.rejectionReason = "";
     }
 
     const historyMessage = pendingStatus === 'Reprovado'

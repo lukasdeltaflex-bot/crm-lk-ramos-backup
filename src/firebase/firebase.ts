@@ -2,7 +2,7 @@
 
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
-import { initializeFirestore, Firestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
+import { initializeFirestore, Firestore, persistentLocalCache } from "firebase/firestore";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 import { firebaseConfig } from "./config";
 
@@ -24,13 +24,11 @@ if (typeof window !== "undefined") {
 
         const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
         
-        // 🛡️ CONFIGURAÇÃO DE REDE V17: Force Long Polling habilitado.
-        // Resolve o erro de "Backend didn't respond within 10 seconds" em redes com restrições.
+        // 🛡️ CONFIGURAÇÃO DE REDE V18: Force Long Polling habilitado e simplificação de cache.
+        // Removido o persistentMultipleTabManager para evitar erros de "Backend didn't respond" em algumas redes.
         db = initializeFirestore(app, {
             experimentalForceLongPolling: true,
-            localCache: persistentLocalCache({
-                tabManager: persistentMultipleTabManager()
-            })
+            localCache: persistentLocalCache({})
         });
 
         auth = getAuth(app);
