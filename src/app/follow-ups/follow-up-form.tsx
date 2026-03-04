@@ -17,8 +17,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
 import type { FollowUp, Customer } from '@/lib/types';
-import { useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Loader2, Sparkles } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -26,6 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { summarizeNotes } from '@/ai/flows/summarize-notes-flow';
+import { toast } from '@/hooks/use-toast';
 
 const schema = z.object({
   contactName: z.string().min(2, 'O nome é obrigatório.'),
@@ -46,6 +48,8 @@ interface Props {
 }
 
 export function FollowUpForm({ customers, initialData, onSubmit, isSaving = false }: Props) {
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -57,6 +61,8 @@ export function FollowUpForm({ customers, initialData, onSubmit, isSaving = fals
       dueDate: format(new Date(), 'yyyy-MM-dd'),
     },
   });
+
+  const watchDescription = form.watch('description');
 
   useEffect(() => {
     if (initialData) {
@@ -82,6 +88,23 @@ export function FollowUpForm({ customers, initialData, onSubmit, isSaving = fals
         }
     }
   }, [selectedCustomerId, customers, form]);
+
+  const handleSummarize = async () => {
+    if (!watchDescription || watchDescription.trim().length < 10) {
+        toast({ variant: 'destructive', title: 'Texto muito curto', description: 'Escreva um pouco mais para a IA resumir.' });
+        return;
+    }
+    setIsSummarizing(true);
+    try {
+        const summary = await summarizeNotes(watchDescription);
+        form.setValue('description', summary, { shouldValidate: true });
+        toast({ title: 'Motivo resumido com IA!' });
+    } catch (e) {
+        toast({ variant: 'destructive', title: 'Erro na IA' });
+    } finally {
+        setIsSummarizing(false);
+    }
+  };
 
   return (
     <Form {...form}>
@@ -174,19 +197,34 @@ export function FollowUpForm({ customers, initialData, onSubmit, isSaving = fals
             />
         </div>
 
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Motivo do Retorno / O que tratar</FormLabel>
-              <FormControl>
-                <Textarea placeholder="Descreva detalhadamente o que deve ser feito..." {...field} disabled={isSaving} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="space-y-2">
+            <div className="flex items-center justify-between">
+                <FormLabel>Motivo do Retorno / O que tratar</FormLabel>
+                <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-7 rounded-full text-[10px] font-bold px-3 border-primary/20 bg-primary/5 text-primary hover:bg-primary/10"
+                    onClick={handleSummarize}
+                    disabled={isSummarizing || !watchDescription}
+                >
+                    {isSummarizing ? <Loader2 className="h-3 w-3 animate-spin mr-1.5" /> : <Sparkles className="h-3 w-3 mr-1.5" />}
+                    Resumir com IA
+                </Button>
+            </div>
+            <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormControl>
+                        <Textarea placeholder="Descreva detalhadamente o que deve ser feito..." {...field} disabled={isSaving} className="min-h-[100px]" />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+        </div>
 
         <div className="flex justify-end pt-4">
           <Button type="submit" disabled={isSaving}>

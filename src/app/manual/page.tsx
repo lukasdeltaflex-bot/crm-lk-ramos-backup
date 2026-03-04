@@ -48,7 +48,9 @@ import {
     Send,
     FileCheck,
     PenTool,
-    FilterX
+    FilterX,
+    CalendarClock,
+    Bell
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -93,13 +95,36 @@ export default function ManualPage() {
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 2. OPERAÇÃO DE ESTEIRA & CHECKLIST */}
+                {/* 2. MECANISMO DE RETORNOS (CRM) */}
+                <AccordionItem value="crm-ai" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-purple-500/20">
+                    <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-xl bg-purple-100 text-purple-600"><CalendarClock className="h-5 w-5" /></div>
+                            <div className="text-left">
+                                <p className="font-bold text-sm">2. Mecanismo de Retornos (CRM)</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Organização e Resumos Inteligentes</p>
+                            </div>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
+                        <div className="p-4 rounded-xl bg-purple-50/5 border border-purple-500/20">
+                            <h4 className="font-bold text-purple-700 flex items-center gap-2 mb-2">
+                                <Sparkles className="h-4 w-4" /> Resumo de Motivo com IA
+                            </h4>
+                            <p className="text-xs text-muted-foreground">
+                                Ao agendar um novo retorno, você pode digitar os detalhes da conversa de forma bagunçada. O botão **"Resumir com IA"** acima do campo de motivo irá organizar os pontos principais em tópicos limpos, economizando tempo na leitura futura antes de ligar para o cliente.
+                            </p>
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
+
+                {/* 3. OPERAÇÃO DE ESTEIRA & CHECKLIST */}
                 <AccordionItem value="ops-pipeline" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-blue-500/20">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-blue-100 text-blue-600"><ListChecks className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">2. Esteira de Produção & Checklist</p>
+                                <p className="font-bold text-sm">3. Esteira de Produção & Checklist</p>
                                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Monitoramento Visual por Etapas</p>
                             </div>
                         </div>
@@ -131,13 +156,13 @@ export default function ManualPage() {
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 3. ALERTAS E CENTRAL DE NOTIFICAÇÕES */}
+                {/* 4. ALERTAS E CENTRAL DE NOTIFICAÇÕES */}
                 <AccordionItem value="notifications-manual" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-pink-500/20">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-pink-100 text-pink-600"><Bell className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">3. Central de Alertas Unificada</p>
+                                <p className="font-bold text-sm">4. Central de Alertas Unificada</p>
                                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Sincronização entre Sininho e Dashboard</p>
                             </div>
                         </div>
@@ -150,13 +175,13 @@ export default function ManualPage() {
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 4. REGRAS DE PORTABILIDADE E AUDITORIA */}
+                {/* 5. REGRAS DE PORTABILIDADE E AUDITORIA */}
                 <AccordionItem value="portability-rules" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-red-500/20">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-red-100 text-red-600"><SearchX className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">4. Auditoria de Portabilidade & Saneamento</p>
+                                <p className="font-bold text-sm">5. Auditoria de Portabilidade & Saneamento</p>
                                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Blindagem contra Retrabalho e Dados Sujos</p>
                             </div>
                         </div>
@@ -180,13 +205,13 @@ export default function ManualPage() {
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 5. GESTÃO DE PARCEIROS & SEGURANÇA */}
+                {/* 6. GESTÃO DE PARCEIROS & SEGURANÇA */}
                 <AccordionItem value="management-secure" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-blue-500/20">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-blue-100 text-blue-600"><Lock className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">5. Gestão de Parceiros & Portal de Leads</p>
+                                <p className="font-bold text-sm">6. Gestão de Parceiros & Portal de Leads</p>
                                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Criptografia Militar e Automação de Entrada</p>
                             </div>
                         </div>
