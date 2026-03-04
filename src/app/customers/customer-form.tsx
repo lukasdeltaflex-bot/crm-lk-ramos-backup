@@ -141,7 +141,6 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
     
     if (source?.birthDate) {
         try {
-            // Suporta formatos ISO (YYYY-MM-DD) ou BR (DD/MM/YYYY) vindos do banco
             if (source.birthDate.includes('-')) {
                 const parts = source.birthDate.split('-');
                 if (parts.length === 3) formattedBirthDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
@@ -209,7 +208,6 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
     
     const currentId = customer?.id || defaultValues?.id;
     
-    // Normalização nuclear para evitar duplicidade por formatação
     const cleanPhone = (watchPhone || '').replace(/\D/g, '');
     const cleanCpf = (watchCpf || '').replace(/\D/g, '');
 
@@ -265,10 +263,10 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
 
   useEffect(() => {
     const cleanCep = (watchCep || '').replace(/\D/g, '');
-    if (cleanCep.length === 8) {
+    if (cleanCep.length === 8 && form.formState.dirtyFields.cep) {
       handleCepLookup(cleanCep);
     }
-  }, [watchCep, handleCepLookup]);
+  }, [watchCep, handleCepLookup, form.formState.dirtyFields.cep]);
 
   const handleSummarize = async () => {
     if (!watchObservations || watchObservations.trim().length < 10) {
@@ -762,7 +760,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                                     {isFetchingCep && <Loader2 className="absolute right-4 top-3.5 h-4 w-4 animate-spin text-[#00AEEF]" />}
                                 </div>
                             </FormControl>
-                            </Item>
+                            </FormItem>
                         )}
                     />
                     <div className="md:col-span-2">
