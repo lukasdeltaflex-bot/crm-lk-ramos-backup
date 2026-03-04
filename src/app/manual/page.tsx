@@ -52,7 +52,8 @@ import {
     CalendarClock,
     Bell,
     Copy,
-    DollarSign
+    DollarSign,
+    CreditCard
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -177,30 +178,34 @@ export default function ManualPage() {
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 5. REGRAS DE PORTABILIDADE E AUDITORIA */}
+                {/* 5. REGRAS DE PORTABILIDADE E CARTÕES */}
                 <AccordionItem value="portability-rules" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-red-500/20">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-red-100 text-red-600"><SearchX className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">5. Auditoria de Portabilidade & Saneamento</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Blindagem contra Retrabalho e Fluxo Operacional</p>
+                                <p className="font-bold text-sm">5. Regras Específicas: Portabilidade & Cartões</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Simplificação e Fluxo Operacional</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
                                 <h4 className="font-bold text-blue-700 flex items-center gap-2 mb-2">
-                                    <Clock className="h-4 w-4" /> Fluxo de Datas Inteligente
+                                    <Clock className="h-4 w-4" /> Portabilidade Inteligente
                                 </h4>
-                                <p className="text-xs text-muted-foreground">O formulário de Portabilidade reorganiza as datas para o padrão lógico: **Digitação -> Retorno de Saldo -> Averbação**. Isso ajuda no acompanhamento visual do tempo de resposta dos bancos. Note que para Portabilidade pura, o campo de Pagamento ao Cliente é omitido.</p>
+                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                    Ao selecionar **Portabilidade**, o formulário oculta o campo de pagamento ao cliente e reorganiza as datas para o padrão lógico: **Digitação -> Retorno de Saldo -> Averbação**. O Nº de Contrato de Origem torna-se obrigatório.
+                                </p>
                             </div>
-                            <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/20">
-                                <h4 className="font-bold text-red-700 flex items-center gap-2 mb-2">
-                                    <Check className="h-4 w-4" /> Nº de Contrato Obrigatório
+                            <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/20">
+                                <h4 className="font-bold text-purple-700 flex items-center gap-2 mb-2">
+                                    <CreditCard className="h-4 w-4" /> Cartão - Plástico (Sem Parcelas)
                                 </h4>
-                                <p className="text-xs text-muted-foreground">Ao selecionar o produto **Portabilidade**, o campo "Nº Contrato Portado (Origem)" torna-se **obrigatório**. O sistema não permite salvar a proposta sem essa identificação única.</p>
+                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                    Para o produto **Cartão - Plástico**, o sistema entende que não existe uma data de pagamento ao cliente nem um prazo de parcelas fixas. Estes campos são **automaticamente ocultados** para simplificar sua digitação e manter o registro tecnicamente correto.
+                                </p>
                             </div>
                         </div>
                     </AccordionContent>

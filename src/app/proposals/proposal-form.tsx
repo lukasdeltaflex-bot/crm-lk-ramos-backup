@@ -336,6 +336,14 @@ export function ProposalForm({
     }
   }, [sheetMode, setValue, watchDateDigitized]);
 
+  // Regras de negócio dinâmicas para Cartão - Plástico
+  useEffect(() => {
+    if (productValue === 'Cartão - Plástico') {
+        setValue('term', 1, { shouldValidate: true });
+        setValue('datePaidToClient', '');
+    }
+  }, [productValue, setValue]);
+
   useEffect(() => {
     if (selectedCustomerFromSearch) {
         setValue('customerId', selectedCustomerFromSearch.id, { shouldValidate: true });
@@ -418,10 +426,18 @@ export function ProposalForm({
         commissionPaymentDate: convertToIso(data.commissionPaymentDate),
     };
 
+    if (data.product === 'Portabilidade' || data.product === 'Cartão - Plástico') {
+        finalData.datePaidToClient = null;
+    }
+
     if (data.product !== 'Portabilidade') {
         finalData.originalContractNumber = "";
         finalData.bankOrigin = "";
         finalData.debtBalanceArrivalDate = null;
+    }
+
+    if (data.product === 'Cartão - Plástico') {
+        finalData.term = 1;
     }
 
     const auditEntries: ProposalHistoryEntry[] = [];
@@ -672,7 +688,7 @@ export function ProposalForm({
                             <SelectContent>{banks.map(b => (
                                 <SelectItem key={b} value={b}>
                                     <div className="flex items-center gap-2">
-                                        <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={showLogos} className="h-4 w-4" />
+                                        <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogos={showLogos} className="h-4 w-4" />
                                         <span>{cleanBankName(b)}</span>
                                     </div>
                                 </SelectItem>
@@ -698,7 +714,7 @@ export function ProposalForm({
                                         <SelectContent>{banks.map(b => (
                                             <SelectItem key={b} value={b}>
                                                 <div className="flex items-center gap-2">
-                                                    <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={showLogos} className="h-4 w-4" />
+                                                    <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogos={showLogos} className="h-4 w-4" />
                                                     <span>{cleanBankName(b)}</span>
                                                 </div>
                                             </SelectItem>
@@ -829,16 +845,18 @@ export function ProposalForm({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="term"
-                  render={({ field }) => (
-                    <FormItem>
-                        <FormLabel className="flex items-center gap-2"><TimerIcon className="h-3.5 w-3.5" /> Prazo (Meses) *</FormLabel>
-                        <FormControl><Input type="number" {...field} readOnly={isReadOnly || isSaving} /></FormControl>
-                    </FormItem>
-                  )}
-                />
+                {productValue !== 'Cartão - Plástico' && (
+                    <FormField
+                        control={form.control}
+                        name="term"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="flex items-center gap-2"><TimerIcon className="h-3.5 w-3.5" /> Prazo (Meses) *</FormLabel>
+                                <FormControl><Input type="number" {...field} readOnly={isReadOnly || isSaving} /></FormControl>
+                            </FormItem>
+                        )}
+                    />
+                )}
                 <FormField
                   control={form.control}
                   name="interestRate"
@@ -901,17 +919,19 @@ export function ProposalForm({
                                 </FormItem>
                             )}
                         />
-                        <FormField
-                            control={form.control}
-                            name="datePaidToClient"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Pagamento Cliente</FormLabel>
-                                <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(applyDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        {productValue !== 'Cartão - Plástico' && (
+                            <FormField
+                                control={form.control}
+                                name="datePaidToClient"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Pagamento Cliente</FormLabel>
+                                    <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(applyDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
                     </>
                 )}
               </div>
