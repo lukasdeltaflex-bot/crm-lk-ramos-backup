@@ -190,11 +190,16 @@ export function FollowUpForm({ customers, initialData, onSubmit, isSaving = fals
                 name="dueDate"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel className="flex items-center gap-2 h-5">
+                    <FormLabel className="flex items-center gap-2 h-5 text-primary">
                         <CalendarIcon className="h-3.5 w-3.5" /> Data do Retorno
                     </FormLabel>
                     <FormControl>
-                        <Input type="date" {...field} disabled={isSaving} />
+                        <Input 
+                            type="date" 
+                            {...field} 
+                            disabled={isSaving} 
+                            className="bg-primary/5 border-primary/20 font-bold focus-visible:ring-primary/20"
+                        />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
@@ -205,11 +210,16 @@ export function FollowUpForm({ customers, initialData, onSubmit, isSaving = fals
                 name="dueTime"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel className="flex items-center gap-2 h-5">
+                    <FormLabel className="flex items-center gap-2 h-5 text-primary">
                         <Clock className="h-3.5 w-3.5" /> Horário (Opcional)
                     </FormLabel>
                     <FormControl>
-                        <Input type="time" {...field} disabled={isSaving} />
+                        <Input 
+                            type="time" 
+                            {...field} 
+                            disabled={isSaving} 
+                            className="bg-primary/5 border-primary/20 font-bold focus-visible:ring-primary/20"
+                        />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
