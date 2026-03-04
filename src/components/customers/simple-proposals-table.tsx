@@ -111,8 +111,31 @@ export function SimpleProposalsTable({ proposals, userSettings }: { proposals: P
   const [sorting, setSorting] = React.useState<SortingState>([
     { id: 'Data Digitação', desc: true }
   ]);
-  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(['Proposta nº', 'Produto', 'Banco', 'Valor Bruto', 'Status', 'Data Digitação']);
+  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(['Data Digitação', 'Proposta nº', 'Produto', 'Banco', 'Valor Bruto', 'Status']);
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
+  const [isClient, setIsClient] = React.useState(false);
+
+  // Carrega configurações salvas
+  React.useEffect(() => {
+    setIsClient(true);
+    try {
+        const savedOrder = localStorage.getItem('lk-customer-history-order');
+        if (savedOrder) setColumnOrder(JSON.parse(savedOrder));
+        
+        const savedSizing = localStorage.getItem('lk-customer-history-sizing');
+        if (savedSizing) setColumnSizing(JSON.parse(savedSizing));
+    } catch (e) {}
+  }, []);
+
+  // Salva configurações ao mudar
+  React.useEffect(() => {
+    if (isClient) {
+        try {
+            localStorage.setItem('lk-customer-history-order', JSON.stringify(columnOrder));
+            localStorage.setItem('lk-customer-history-sizing', JSON.stringify(columnSizing));
+        } catch (e) {}
+    }
+  }, [columnOrder, columnSizing, isClient]);
 
   const columns = React.useMemo<ColumnDef<Proposal>[]>(() => [
     {
