@@ -76,6 +76,14 @@ function CustomersPageContent() {
   const [rccFilter, setRccFilter] = React.useState('all');
   const [tagFilter, setTagFilter] = React.useState('all');
 
+  const hasActiveFilters = rmcFilter !== 'all' || rccFilter !== 'all' || tagFilter !== 'all';
+
+  const handleClearFilters = () => {
+      setRmcFilter('all');
+      setRccFilter('all');
+      setTagFilter('all');
+  };
+
   const customersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return query(collection(firestore, 'customers'), where('ownerId', '==', user.uid));
@@ -405,6 +413,17 @@ function CustomersPageContent() {
 
         {filter !== 'birthdays' && (
             <div className="flex items-center gap-3 flex-1 justify-end flex-wrap">
+                {hasActiveFilters && (
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={handleClearFilters}
+                        className="h-9 px-4 text-red-600 hover:text-red-700 hover:bg-red-50 font-black text-[10px] uppercase gap-1.5 rounded-full animate-in fade-in zoom-in-95"
+                    >
+                        <X className="h-3.5 w-3.5" /> Limpar Filtros
+                    </Button>
+                )}
+
                 <div className="flex items-center gap-2">
                     <Select value={tagFilter} onValueChange={setTagFilter}>
                         <SelectTrigger className="h-10 min-w-[160px] bg-background rounded-full text-[10px] font-black uppercase px-5 border-primary/20 text-primary shadow-sm hover:bg-primary/5 transition-colors">
@@ -420,7 +439,6 @@ function CustomersPageContent() {
                             ))}
                         </SelectContent>
                     </Select>
-                    {tagFilter !== 'all' && <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-primary" onClick={() => setTagFilter('all')}><X className="h-4 w-4" /></Button>}
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -443,7 +461,6 @@ function CustomersPageContent() {
                             ))}
                         </SelectContent>
                     </Select>
-                    {rmcFilter !== 'all' && <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-orange-600" onClick={() => setRmcFilter('all')}><X className="h-4 w-4" /></Button>}
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -466,7 +483,6 @@ function CustomersPageContent() {
                             ))}
                         </SelectContent>
                     </Select>
-                    {rccFilter !== 'all' && <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-blue-600" onClick={() => setRccFilter('all')}><X className="h-4 w-4" /></Button>}
                 </div>
             </div>
         )}

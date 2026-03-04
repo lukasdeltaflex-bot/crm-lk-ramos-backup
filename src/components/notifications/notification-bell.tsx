@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -88,13 +87,12 @@ export function NotificationBell() {
     const todayIso = format(now, 'yyyy-MM-dd');
     const threeDaysAgo = subDays(now, 3);
 
-    // 📰 NOTIFICAÇÕES DE NOTÍCIAS (Públicas para todos)
+    // 📰 NOTIFICAÇÕES DE NOTÍCIAS (IDs Sincronizados)
     news?.forEach(item => {
         const publishDate = parseISO(item.date);
-        // Só notifica se foi publicada nos últimos 3 dias
         if (isAfter(publishDate, threeDaysAgo)) {
             alerts.push({
-                id: `news-notif-${item.id}`,
+                id: `news-${item.id}`,
                 title: `Novidade: ${item.title}`,
                 type: 'news',
                 date: 'Publicado agora',
@@ -110,7 +108,7 @@ export function NotificationBell() {
       
       if (age === 74) {
         alerts.push({
-          id: `age-limit-${c.id}`,
+          id: `age-${c.id}`, // Unificado
           title: `Atenção Idade: ${c.name}`,
           type: 'age',
           date: 'Próximo aos 75 anos',
@@ -121,7 +119,7 @@ export function NotificationBell() {
 
       if (c.birthDate && c.birthDate.substring(5) === todayStr) {
         alerts.push({
-          id: `bday-${c.id}-${todayStr}`,
+          id: `bday-${c.id}-${todayStr}`, // Unificado
           title: `Aniversário: ${c.name}`,
           type: 'birthday',
           date: 'Hoje',
@@ -139,7 +137,7 @@ export function NotificationBell() {
 
       if (hasMatured) {
           alerts.push({
-              id: `radar-notif-${c.id}`,
+              id: `radar-${c.id}`, // Unificado
               title: `Radar: ${c.name}`,
               type: 'radar',
               date: 'Contrato Maduro',
@@ -151,7 +149,7 @@ export function NotificationBell() {
     followUps?.forEach(f => {
         if (f.dueDate <= todayIso) {
             alerts.push({
-                id: `fup-${f.id}`,
+                id: `fup-${f.id}`, // Unificado
                 title: `Retorno: ${f.contactName}`,
                 type: 'followup',
                 date: f.dueDate === todayIso ? 'Hoje' : 'Atrasado',
@@ -165,7 +163,7 @@ export function NotificationBell() {
         const days = differenceInDays(now, new Date(p.datePaidToClient));
         if (days > 7) {
           alerts.push({
-            id: `comm-${p.id}`,
+            id: `comm-${p.id}`, // Unificado
             title: `Comissão Pendente: ${p.proposalNumber}`,
             type: 'commission',
             date: `${days} dias`,
@@ -178,7 +176,7 @@ export function NotificationBell() {
           const bizDays = calculateBusinessDays(new Date(p.dateDigitized));
           if (bizDays >= 5) {
               alerts.push({
-                  id: `debt-notif-${p.id}`,
+                  id: `debt-${p.id}`, // Unificado
                   title: `Saldo Atrasado: ${p.proposalNumber}`,
                   type: 'debt',
                   date: `${bizDays} dias úteis`,
@@ -191,7 +189,7 @@ export function NotificationBell() {
           const daysSince = differenceInDays(now, new Date(p.commissionPaymentDate));
           if (daysSince > 15) {
               alerts.push({
-                  id: `partial-notif-${p.id}`,
+                  id: `part-${p.id}`, // Unificado
                   title: `Cobrar Saldo: ${p.proposalNumber}`,
                   type: 'partial',
                   date: `${daysSince} dias`,

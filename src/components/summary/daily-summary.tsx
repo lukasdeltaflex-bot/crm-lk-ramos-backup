@@ -112,7 +112,7 @@ export function DailySummary({ proposals, customers, userProfile, expenses = [] 
         await setDoc(doc(firestore, 'userSettings', user.uid), {
             dismissedAlerts: [...dismissedItems, itemId]
         }, { merge: true });
-        toast({ title: "Alerta removido do Dashboard" });
+        toast({ title: "Alerta removido globalmente" });
     } catch (e) {
         console.error("Failed to sync dismiss state:", e);
     }
@@ -123,12 +123,14 @@ export function DailySummary({ proposals, customers, userProfile, expenses = [] 
 
     const now = new Date();
     const todayIso = format(now, 'yyyy-MM-dd');
+    const todayStr = format(now, 'MM-dd');
     const customerMap = new Map(customers.map(c => [c.id, c]));
 
+    // 🛡️ UNIFICAÇÃO DE IDs: Sincronizado com NotificationBell
     const birthdayAlerts = customers
         .filter(c => c.status !== 'inactive' && getAge(c.birthDate) >= 74 && getAge(c.birthDate) < 75)
         .map(c => ({ 
-            id: `birthday-${c.id}`,
+            id: `age-${c.id}`, // Unificado
             customerId: c.id,
             customerName: c.name, 
             age: 75,
@@ -147,7 +149,7 @@ export function DailySummary({ proposals, customers, userProfile, expenses = [] 
             });
         })
         .map(c => ({
-            id: `radar-${c.id}`,
+            id: `radar-${c.id}`, // Unificado
             customerName: c.name,
             customerId: c.id,
             link: `/customers/${c.id}`
@@ -161,7 +163,7 @@ export function DailySummary({ proposals, customers, userProfile, expenses = [] 
       })
       .filter(p => p.digitDate && differenceInDays(now, p.digitDate) > 20)
       .map(p => ({
-        id: `proposal-fup-${p.id}`,
+        id: `fup-prop-${p.id}`, // Especial para propostas em andamento longa
         customerName: customerMap.get(p.customerId)?.name || 'Cliente Desconhecido',
         proposalNumber: p.proposalNumber,
         daysOpen: differenceInDays(now, p.digitDate!),
@@ -180,7 +182,7 @@ export function DailySummary({ proposals, customers, userProfile, expenses = [] 
       })
       .filter(p => p.paidDate && differenceInDays(now, p.paidDate) > 7)
       .map(p => ({
-        id: `commission-${p.id}`,
+        id: `comm-${p.id}`, // Unificado
         customerName: customerMap.get(p.customerId)?.name || 'Cliente Desconhecido',
         proposalNumber: p.proposalNumber,
         daysPending: differenceInDays(now, p.paidDate!),
@@ -195,7 +197,7 @@ export function DailySummary({ proposals, customers, userProfile, expenses = [] 
             calculateBusinessDays(p.dateDigitized) >= 5
         )
         .map(p => ({
-            id: `debt-${p.id}`,
+            id: `debt-${p.id}`, // Unificado
             customerName: customerMap.get(p.customerId)?.name || 'Cliente Desconhecido',
             proposalNumber: p.proposalNumber,
             daysWaiting: calculateBusinessDays(p.dateDigitized),
@@ -213,7 +215,7 @@ export function DailySummary({ proposals, customers, userProfile, expenses = [] 
         })
         .filter(p => p.lastPayDate && differenceInDays(now, p.lastPayDate) > 15)
         .map(p => ({
-            id: `partial-${p.id}`,
+            id: `part-${p.id}`, // Unificado
             customerName: customerMap.get(p.customerId)?.name || 'Cliente Desconhecido',
             proposalNumber: p.proposalNumber,
             amountPaid: p.amountPaid,
@@ -225,7 +227,7 @@ export function DailySummary({ proposals, customers, userProfile, expenses = [] 
     const manualFollowUps = (followUps || [])
         .filter(f => f.status === 'pending' && f.dueDate <= todayIso)
         .map(f => ({
-            id: `manual-fup-${f.id}`,
+            id: `fup-${f.id}`, // Unificado
             contactName: f.contactName,
             description: f.description,
             isToday: f.dueDate === todayIso,
@@ -238,7 +240,7 @@ export function DailySummary({ proposals, customers, userProfile, expenses = [] 
             const dueDate = parseDateSafe(e.date) || new Date();
             const isLate = isBefore(dueDate, startOfDay(now));
             return {
-                id: `expense-${e.id}`,
+                id: `exp-${e.id}`, // Unificado
                 title: e.description,
                 amount: e.amount,
                 date: format(dueDate, 'dd/MM/yyyy'),

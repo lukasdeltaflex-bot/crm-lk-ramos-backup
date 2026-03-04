@@ -161,6 +161,19 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     } catch (e) {}
   }, []);
 
+  const hasActiveFilters = statusFilter !== 'Todos' || bankFilter !== 'all' || promoterFilter !== 'all' || operatorFilter !== 'all' || !!globalFilter || !!appliedDateRange;
+
+  const handleClearAllFilters = () => {
+      setStatusFilter('Todos');
+      setGlobalFilter('');
+      setBankFilter('all');
+      setPromoterFilter('all');
+      setOperatorFilter('all');
+      setStartDateInput('');
+      setEndDateInput('');
+      setAppliedDateRange(undefined);
+  };
+
   React.useEffect(() => {
     if (isClient) {
         localStorage.setItem('lk-proposals-filter-status', statusFilter);
@@ -440,43 +453,56 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     />
                 </div>
 
-                <div className="flex items-center gap-3 bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full px-3 py-1 shadow-sm">
-                    <Select onValueChange={(val) => {
-                        const now = new Date();
-                        let from: Date;
-                        switch(val) {
-                            case 'today': from = startOfDay(now); break;
-                            case 'yesterday': from = startOfDay(subDays(now, 1)); break;
-                            case 'week': from = startOfDay(subDays(now, 7)); break;
-                            default: from = startOfMonth(now);
-                        }
-                        setStartDateInput(format(from, 'dd/MM/yyyy'));
-                        setEndDateInput(format(now, 'dd/MM/yyyy'));
-                        setAppliedDateRange({ from, to: now });
-                    }}>
-                        <SelectTrigger className="h-7 w-[120px] border-none bg-transparent focus:ring-0 text-xs font-black uppercase p-0">
-                            <CalendarIcon className="mr-2 h-3.5 w-3.5 text-primary" />
-                            <SelectValue placeholder="PERÍODO" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="today">Hoje</SelectItem>
-                            <SelectItem value="yesterday">Ontem</SelectItem>
-                            <SelectItem value="week">Últimos 7 dias</SelectItem>
-                            <SelectItem value="month">Mês Atual</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <Separator orientation="vertical" className="h-4 mx-1 bg-zinc-300" />
-                    <div className="flex items-center gap-1">
-                        <Input placeholder="De" value={startDateInput} onChange={(e) => setStartDateInput(handleDateMask(e))} className="h-7 w-28 border-none bg-muted/40 text-[11px] text-center font-black rounded-full" />
-                        <span className="text-muted-foreground font-black">-</span>
-                        <Input placeholder="Até" value={endDateInput} onChange={(e) => setEndDateInput(handleDateMask(e))} className="h-7 w-28 border-none bg-muted/40 text-[11px] text-center font-black rounded-full" />
+                <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3 bg-background border-2 border-zinc-300 dark:border-primary/20 rounded-full px-3 py-1 shadow-sm">
+                        <Select onValueChange={(val) => {
+                            const now = new Date();
+                            let from: Date;
+                            switch(val) {
+                                case 'today': from = startOfDay(now); break;
+                                case 'yesterday': from = startOfDay(subDays(now, 1)); break;
+                                case 'week': from = startOfDay(subDays(now, 7)); break;
+                                default: from = startOfMonth(now);
+                            }
+                            setStartDateInput(format(from, 'dd/MM/yyyy'));
+                            setEndDateInput(format(now, 'dd/MM/yyyy'));
+                            setAppliedDateRange({ from, to: now });
+                        }}>
+                            <SelectTrigger className="h-7 w-[120px] border-none bg-transparent focus:ring-0 text-xs font-black uppercase p-0">
+                                <CalendarIcon className="mr-2 h-3.5 w-3.5 text-primary" />
+                                <SelectValue placeholder="PERÍODO" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="today">Hoje</SelectItem>
+                                <SelectItem value="yesterday">Ontem</SelectItem>
+                                <SelectItem value="week">Últimos 7 dias</SelectItem>
+                                <SelectItem value="month">Mês Atual</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Separator orientation="vertical" className="h-4 mx-1 bg-zinc-300" />
+                        <div className="flex items-center gap-1">
+                            <Input placeholder="De" value={startDateInput} onChange={(e) => setStartDateInput(handleDateMask(e))} className="h-7 w-28 border-none bg-muted/40 text-[11px] text-center font-black rounded-full" />
+                            <span className="text-muted-foreground font-black">-</span>
+                            <Input placeholder="Até" value={endDateInput} onChange={(e) => setEndDateInput(handleDateMask(e))} className="h-7 w-28 border-none bg-muted/40 text-[11px] text-center font-black rounded-full" />
+                        </div>
+                        <Button size="sm" onClick={handleApplyFilter} className="h-7 bg-primary text-white hover:bg-primary/90 rounded-full px-4 text-[10px] font-black uppercase shadow-sm gap-1.5">
+                            <Filter className="h-3 w-3" /> Aplicar
+                        </Button>
+                        {appliedDateRange && (
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => { setStartDateInput(''); setEndDateInput(''); setAppliedDateRange(undefined); }}>
+                                <X className="h-3.5 w-3.5" />
+                            </Button>
+                        )}
                     </div>
-                    <Button size="sm" onClick={handleApplyFilter} className="h-7 bg-primary text-white hover:bg-primary/90 rounded-full px-4 text-[10px] font-black uppercase shadow-sm gap-1.5">
-                        <Filter className="h-3 w-3" /> Aplicar
-                    </Button>
-                    {appliedDateRange && (
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => { setStartDateInput(''); setEndDateInput(''); setAppliedDateRange(undefined); }}>
-                            <X className="h-3.5 w-3.5" />
+
+                    {hasActiveFilters && (
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={handleClearAllFilters}
+                            className="h-9 px-4 text-red-600 hover:text-red-700 hover:bg-red-50 font-black text-[10px] uppercase gap-1.5 rounded-full animate-in fade-in zoom-in-95"
+                        >
+                            <X className="h-3.5 w-3.5" /> Limpar Tudo
                         </Button>
                     )}
                 </div>

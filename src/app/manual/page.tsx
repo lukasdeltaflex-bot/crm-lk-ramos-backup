@@ -47,7 +47,8 @@ import {
     Timer,
     Send,
     FileCheck,
-    PenTool
+    PenTool,
+    FilterX
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -123,31 +124,28 @@ export default function ManualPage() {
                                 <div className="text-[11px]"><span className="font-bold uppercase">Averbação:</span> Confirmação no órgão.</div>
                             </div>
                         </div>
-                        <p className="text-[11px] text-muted-foreground mt-4 italic">Dica: Você pode marcar essas etapas diretamente na tabela clicando nos ícones ou dentro do formulário da proposta.</p>
+                        <div className="mt-6 p-4 rounded-xl bg-red-50/5 border-2 border-dashed border-red-200">
+                            <h4 className="font-bold text-red-700 flex items-center gap-2 mb-2"><FilterX className="h-4 w-4" /> Limpeza Inteligente de Filtros</h4>
+                            <p className="text-xs text-muted-foreground">Nas telas de Clientes, Propostas e Financeiro, um botão **"Limpar Filtros"** aparecerá automaticamente sempre que houver buscas ativas. Use-o para resetar a visão e voltar à lista completa com um único clique.</p>
+                        </div>
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 3. HISTÓRICO INTELIGENTE (TÓPICOS) */}
-                <AccordionItem value="history-topics" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-purple-500/20">
+                {/* 3. ALERTAS E CENTRAL DE NOTIFICAÇÕES */}
+                <AccordionItem value="notifications-manual" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-pink-500/20">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-purple-100 text-purple-600"><History className="h-5 w-5" /></div>
+                            <div className="p-2 rounded-xl bg-pink-100 text-pink-600"><Bell className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">3. Linha do Tempo & Tópicos Rápidos</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Agilidade no Registro de Trâmites</p>
+                                <p className="font-bold text-sm">3. Central de Alertas Unificada</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Sincronização entre Sininho e Dashboard</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
-                        <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-200">
-                            <h4 className="font-bold text-purple-700 flex items-center gap-2 mb-2"><Zap className="h-4 w-4" /> Registro com Um Clique</h4>
-                            <p className="text-xs text-muted-foreground mb-4">Dentro de cada proposta, você encontrará o painel de **Tópicos Rápidos**. Ao clicar em um botão (ex: "Aguardando Selfie"), o sistema registra automaticamente o trâmite com data, hora e o nome do operador.</p>
-                            <div className="bg-white p-3 rounded-lg border flex gap-2 overflow-x-auto">
-                                <Badge variant="outline" className="text-[9px] font-black uppercase">Link Enviado</Badge>
-                                <Badge variant="outline" className="text-[9px] font-black uppercase">Aguardando Selfie</Badge>
-                                <Badge variant="outline" className="text-[9px] font-black uppercase">Saldo via CIP</Badge>
-                            </div>
-                            <p className="text-[11px] text-muted-foreground mt-4">Você pode personalizar esses botões em **Configurações > Parâmetros > Tópicos de Trâmite**.</p>
+                        <div className="p-4 rounded-xl bg-pink-50/5 border border-pink-200">
+                            <h4 className="font-bold text-pink-700 flex items-center gap-2 mb-2"><Bot className="h-4 w-4" /> Inteligência de Sincronização</h4>
+                            <p className="text-xs text-muted-foreground">Os alertas de aniversários, comissões pendentes e retornos estão unificados. Ao clicar no **"X" (Dispensar)** de uma notificação no menu superior, ela será automaticamente removida também do card de **"Inteligência Diária"** no Dashboard. Isso evita avisos repetidos e mantém sua área de trabalho limpa.</p>
                         </div>
                     </AccordionContent>
                 </AccordionItem>

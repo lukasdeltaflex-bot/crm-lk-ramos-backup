@@ -170,6 +170,19 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     } catch (e) {}
   }, []);
 
+  const hasActiveFilters = statusFilter !== 'Todos' || bankFilter !== 'all' || promoterFilter !== 'all' || operatorFilter !== 'all' || !!globalFilter || !!appliedDateRange;
+
+  const handleClearAllFilters = () => {
+      setStatusFilter('Todos');
+      setGlobalFilter('');
+      setBankFilter('all');
+      setPromoterFilter('all');
+      setOperatorFilter('all');
+      setStartDateInput('');
+      setEndDateInput('');
+      setAppliedDateRange(undefined);
+  };
+
   React.useEffect(() => {
     if (isClient) {
         localStorage.setItem('lk-financial-filter-status', statusFilter);
@@ -466,6 +479,17 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                 </div>
                 <Button size="sm" onClick={() => { const s = parse(startDateInput, 'dd/MM/yyyy', new Date()); const e = parse(endDateInput, 'dd/MM/yyyy', new Date()); setAppliedDateRange(isValid(s) ? { from: startOfDay(s), to: isValid(e) ? endOfDay(e) : endOfDay(s) } : undefined); }} className="h-9 bg-primary text-white rounded-full px-6 text-xs font-black uppercase shadow-lg gap-2"><Filter className="h-3.5 w-3.5" /> Aplicar</Button>
                 {appliedDateRange && <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { setStartDateInput(''); setEndDateInput(''); setAppliedDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
+                
+                {hasActiveFilters && (
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={handleClearAllFilters}
+                        className="h-9 px-4 text-red-600 hover:text-red-700 hover:bg-red-50 font-black text-[10px] uppercase gap-1.5 rounded-full ml-auto animate-in fade-in zoom-in-95"
+                    >
+                        <X className="h-3.5 w-3.5" /> Limpar Filtros
+                    </Button>
+                )}
             </div>
 
             <Card ref={tableContainerRef} className="proposals-table rounded-[1.5rem] border-2 border-zinc-200 bg-card shadow-xl overflow-hidden p-1">
