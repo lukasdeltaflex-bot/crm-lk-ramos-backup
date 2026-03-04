@@ -46,7 +46,7 @@ import {
     Tag
 } from 'lucide-react';
 import { format, parse, isValid, differenceInYears } from 'date-fns';
-import { validateCPF, handlePhoneMask, cn, isWhatsApp, getWhatsAppUrl, cleanBankName, cleanFirestoreData } from '@/lib/utils';
+import { validateCPF, handlePhoneMask, cn, isWhatsApp, getWhatsAppUrl, cleanBankName, cleanFirestoreData, formatCurrencyInput } from '@/lib/utils';
 import type { Customer, UserSettings } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
@@ -643,12 +643,16 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                                                         <span className="absolute left-0 text-[10px] font-black text-green-600/40">R$</span>
                                                         <FormControl>
                                                             <Input 
-                                                                type="number" 
-                                                                step="0.01" 
+                                                                type="text" 
                                                                 className="h-9 border-none bg-transparent shadow-none p-0 pl-7 focus:ring-0 font-bold text-sm text-green-600" 
-                                                                {...field} 
-                                                                value={field.value ?? 0}
-                                                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                                                value={formatCurrencyInput(field.value)}
+                                                                onChange={(e) => {
+                                                                    const val = e.target.value.replace(/\D/g, "");
+                                                                    const num = val ? parseInt(val) / 100 : 0;
+                                                                    field.onChange(num);
+                                                                }}
+                                                                placeholder="0,00"
+                                                                disabled={isSaving}
                                                             />
                                                         </FormControl>
                                                     </div>
@@ -758,7 +762,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                                     {isFetchingCep && <Loader2 className="absolute right-4 top-3.5 h-4 w-4 animate-spin text-[#00AEEF]" />}
                                 </div>
                             </FormControl>
-                            </FormItem>
+                            </Item>
                         )}
                     />
                     <div className="md:col-span-2">
