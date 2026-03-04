@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { UserSettings } from '@/lib/types';
@@ -75,13 +75,37 @@ const LogoSvg = ({ className }: { className?: string }) => (
 export function Logo({ className, forPrinting = false }: { className?: string; forPrinting?: boolean }) {
   const { user } = useUser();
   const firestore = useFirestore();
-  const settingsRef = useMemoFirebase(() => user && firestore ? doc(firestore, 'userSettings', user.uid) : null, [user, firestore]);
-  const { data: settings } = useDoc<UserSettings>(settingsRef);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  const settingsRef = useMemoFirebase(() => 
+    user && firestore ? doc(firestore, 'userSettings', user.uid) : null, 
+    [user, firestore]
+  );
+  
+  const { data: settings, isLoading } = useDoc<UserSettings>(settingsRef);
+
+  // 🛡️ PREVENÇÃO DE FLICKER: Enquanto estiver carregando ou não montado, 
+  // exibe apenas um container vazio para segurar o layout sem mostrar a logo errada.
+  if (!hasMounted || isLoading) {
+    return (
+        <div className={cn(
+            'flex items-center justify-center',
+            forPrinting ? 'h-16 w-auto' : 'h-14 w-full p-2 group-data-[collapsible=icon]:p-1',
+            className
+        )}>
+            <div className="w-full h-full bg-transparent" />
+        </div>
+    );
+  }
 
   if (settings?.customLogoURL) {
     return (
         <div className={cn(
-            'flex items-center justify-center transition-all duration-500 overflow-hidden',
+            'flex items-center justify-center transition-all duration-500 overflow-hidden animate-in fade-in duration-300',
             forPrinting ? 'h-16 w-auto' : 'h-14 w-full p-2 group-data-[collapsible=icon]:p-1',
             className
         )}>
@@ -100,7 +124,7 @@ export function Logo({ className, forPrinting = false }: { className?: string; f
   return (
     <div
       className={cn(
-        'flex items-center group-data-[collapsible=icon]:gap-0',
+        'flex items-center group-data-[collapsible=icon]:gap-0 animate-in fade-in duration-300',
         className
       )}
     >
