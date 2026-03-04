@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { TrendingUp, Pencil, Check, X, Trophy, Zap } from 'lucide-react';
-import { formatCurrency, cn } from '@/lib/utils';
+import { formatCurrency, cn, formatCurrencyInput } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -32,18 +32,17 @@ export function GoalCard({
     topContributor
 }: GoalCardProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(String(monthlyGoal || 0));
+  const [editValue, setEditValue] = useState<number>(monthlyGoal || 0);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
-    setEditValue(String(monthlyGoal || 0));
+    setEditValue(monthlyGoal || 0);
   }, [monthlyGoal]);
 
   const handleSave = () => {
-    const parsed = parseFloat(editValue);
-    if (!isNaN(parsed) && parsed > 0) {
-      onGoalChange(parsed);
+    if (editValue > 0) {
+      onGoalChange(editValue);
       setIsEditing(false);
     }
   };
@@ -100,21 +99,28 @@ export function GoalCard({
           </div>
 
           {isEditing ? (
-            <div className="flex items-center gap-2 bg-white p-1.5 rounded-lg border shadow-sm scale-95 origin-right animate-in zoom-in-95">
-              <Input
-                type="number"
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
-                className="h-8 w-24 text-xs border-none font-bold"
-                autoFocus
-              />
-              <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600 hover:bg-green-50" onClick={handleSave}><Check className="h-4 w-4" /></Button>
-              <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:bg-red-50" onClick={() => setIsEditing(false)}><X className="h-4 w-4" /></Button>
+            <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 p-1.5 rounded-lg border shadow-sm scale-95 origin-right animate-in zoom-in-95">
+              <div className="relative flex items-center">
+                <span className="absolute left-3 text-[10px] font-black text-muted-foreground">R$</span>
+                <Input
+                  type="text"
+                  value={formatCurrencyInput(editValue)}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, "");
+                    const num = val ? parseInt(val) / 100 : 0;
+                    setEditValue(num);
+                  }}
+                  className="h-8 w-32 text-xs border-none font-bold pl-8 focus-visible:ring-0"
+                  autoFocus
+                />
+              </div>
+              <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" onClick={handleSave}><Check className="h-4 w-4" /></Button>
+              <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:bg-red-50 dark:hover:bg-red-900/20" onClick={() => setIsEditing(false)}><X className="h-4 w-4" /></Button>
             </div>
           ) : (
             <div className="flex items-center gap-3">
               <div className="hidden md:block">{renderSparkline()}</div>
-              <div className="text-[10px] font-black text-green-700 bg-white/90 px-3 py-1 rounded-full border border-green-100 shadow-sm animate-in fade-in">
+              <div className="text-[10px] font-black text-green-700 dark:text-green-400 bg-white/90 dark:bg-zinc-950/60 px-3 py-1 rounded-full border border-green-100 dark:border-green-900/50 shadow-sm animate-in fade-in">
                 META: {isPrivacyMode ? '•••••' : formatCurrency(monthlyGoal)}
               </div>
               <Button variant="ghost" size="icon" className="h-7 w-7 opacity-40 hover:opacity-100 transition-opacity" onClick={() => setIsEditing(true)}>
