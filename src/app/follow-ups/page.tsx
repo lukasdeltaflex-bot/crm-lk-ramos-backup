@@ -291,7 +291,7 @@ export default function FollowUpsPage() {
                                                 <h4 className="font-semibold truncate">{f.contactName}</h4>
                                                 {getStatusBadge(f)}
                                             </div>
-                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
                                                 <span className="flex items-center gap-1">
                                                     <CalendarIcon className="h-3 w-3" />
                                                     {format(new Date(f.dueDate.replace(/-/g, '/')), "dd 'de' MMMM", { locale: ptBR })}
@@ -309,12 +309,12 @@ export default function FollowUpsPage() {
                                                     </span>
                                                 )}
                                                 {f.referralInfo && (
-                                                    <span className="px-2 py-0.5 bg-secondary rounded text-[10px] truncate max-w-[200px]">
+                                                    <span className="px-2.5 py-0.5 bg-primary/5 text-primary border border-primary/20 rounded-md text-[10px] font-black uppercase tracking-tight truncate max-w-[250px] shadow-sm">
                                                         {f.referralInfo}
                                                     </span>
                                                 )}
                                             </div>
-                                            <p className="mt-2 text-sm line-clamp-1 opacity-80">{f.description}</p>
+                                            <p className="mt-2 text-sm line-clamp-1 opacity-80 italic">"{f.description}"</p>
                                         </div>
                                         <Button variant="ghost" size="icon" className="shrink-0 group-hover:bg-primary group-hover:text-white transition-colors" disabled={isSaving}>
                                             <CheckCircle2 className="h-5 w-5" />

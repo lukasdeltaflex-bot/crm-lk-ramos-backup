@@ -88,13 +88,16 @@ export function FollowUpsWidget() {
                                         </Badge>
                                     )}
                                 </div>
-                                <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                                    <span className="flex items-center gap-1">
-                                        <Phone className="h-2.5 w-2.5" />
-                                        {f.contactPhone || 'S/ Tel'}
-                                    </span>
-                                    {f.referralInfo && (
-                                        <span className="truncate opacity-70">• {f.referralInfo}</span>
+                                <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-1">
+                                    {f.referralInfo ? (
+                                        <span className="px-2 py-0.5 bg-primary/5 text-primary border border-primary/20 rounded text-[9px] font-black uppercase tracking-tight truncate max-w-[180px]">
+                                            {f.referralInfo}
+                                        </span>
+                                    ) : (
+                                        <span className="flex items-center gap-1">
+                                            <Phone className="h-2.5 w-2.5" />
+                                            {f.contactPhone || 'S/ Tel'}
+                                        </span>
                                     )}
                                 </div>
                             </div>
