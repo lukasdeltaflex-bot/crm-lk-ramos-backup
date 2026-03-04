@@ -176,6 +176,7 @@ export type FollowUp = {
   referralInfo?: string; // Ex: "Esposo da Ana Silva"
   description: string;
   dueDate: string; // YYYY-MM-DD
+  dueTime?: string; // HH:mm (Opcional)
   status: FollowUpStatus;
   createdAt: string;
   completedAt?: string;

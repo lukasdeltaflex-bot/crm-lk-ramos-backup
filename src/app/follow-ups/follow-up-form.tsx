@@ -18,7 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
 import type { FollowUp, Customer } from '@/lib/types';
 import { useEffect, useState } from 'react';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Sparkles, Clock } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -36,6 +36,7 @@ const schema = z.object({
   referralInfo: z.string().optional(),
   description: z.string().min(5, 'Descreva o motivo do retorno.'),
   dueDate: z.string().min(10, 'Data inválida.'),
+  dueTime: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -59,6 +60,7 @@ export function FollowUpForm({ customers, initialData, onSubmit, isSaving = fals
       referralInfo: '',
       description: '',
       dueDate: format(new Date(), 'yyyy-MM-dd'),
+      dueTime: '',
     },
   });
 
@@ -73,6 +75,7 @@ export function FollowUpForm({ customers, initialData, onSubmit, isSaving = fals
         referralInfo: initialData.referralInfo || '',
         description: initialData.description,
         dueDate: initialData.dueDate,
+        dueTime: initialData.dueTime || '',
       });
     }
   }, [initialData, form]);
@@ -190,6 +193,21 @@ export function FollowUpForm({ customers, initialData, onSubmit, isSaving = fals
                     <FormLabel>Data do Retorno</FormLabel>
                     <FormControl>
                         <Input type="date" {...field} disabled={isSaving} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+            <FormField
+                control={form.control}
+                name="dueTime"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                        <Clock className="h-3.5 w-3.5" /> Horário (Opcional)
+                    </FormLabel>
+                    <FormControl>
+                        <Input type="time" {...field} disabled={isSaving} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>

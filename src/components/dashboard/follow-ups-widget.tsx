@@ -1,10 +1,9 @@
-
 'use client';
 
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CalendarClock, Phone, CheckCircle2, ChevronRight } from 'lucide-react';
+import { CalendarClock, Phone, CheckCircle2, ChevronRight, Clock } from 'lucide-react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy, limit } from 'firebase/firestore';
 import type { FollowUp } from '@/lib/types';
@@ -81,7 +80,14 @@ export function FollowUpsWidget() {
                                 <span className="font-bold">{status.label}</span>
                             </Badge>
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold truncate group-hover:text-primary transition-colors">{f.contactName}</p>
+                                <div className="flex items-center gap-2">
+                                    <p className="text-sm font-semibold truncate group-hover:text-primary transition-colors">{f.contactName}</p>
+                                    {f.dueTime && (
+                                        <Badge variant="outline" className="h-4 px-1.5 text-[9px] font-black border-primary/30 text-primary gap-1">
+                                            <Clock className="h-2 w-2" /> {f.dueTime}
+                                        </Badge>
+                                    )}
+                                </div>
                                 <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                                     <span className="flex items-center gap-1">
                                         <Phone className="h-2.5 w-2.5" />

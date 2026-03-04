@@ -5,7 +5,7 @@ import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Calendar as CalendarIcon, History, Search, User, CheckCircle2, RefreshCw, XCircle, Loader2, FilterX } from 'lucide-react';
+import { PlusCircle, Calendar as CalendarIcon, History, Search, User, CheckCircle2, RefreshCw, XCircle, Loader2, FilterX, Clock } from 'lucide-react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, setDoc, orderBy } from 'firebase/firestore';
 import type { FollowUp, Customer } from '@/lib/types';
@@ -296,6 +296,12 @@ export default function FollowUpsPage() {
                                                     <CalendarIcon className="h-3 w-3" />
                                                     {format(new Date(f.dueDate.replace(/-/g, '/')), "dd 'de' MMMM", { locale: ptBR })}
                                                 </span>
+                                                {f.dueTime && (
+                                                    <span className="flex items-center gap-1 font-bold text-primary">
+                                                        <Clock className="h-3 w-3" />
+                                                        {f.dueTime}
+                                                    </span>
+                                                )}
                                                 {f.contactPhone && (
                                                     <span className="flex items-center gap-1">
                                                         <User className="h-3 w-3" />
@@ -369,7 +375,14 @@ export default function FollowUpsPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="p-3 bg-secondary/30 rounded-md text-sm border border-border/50">
-                <strong>Motivo agendado:</strong><br />
+                <div className="flex items-center justify-between mb-1">
+                    <strong>Motivo agendado:</strong>
+                    {selectedFollowUp?.dueTime && (
+                        <Badge variant="outline" className="h-5 gap-1 font-bold border-primary/20 text-primary">
+                            <Clock className="h-3 w-3" /> {selectedFollowUp.dueTime}
+                        </Badge>
+                    )}
+                </div>
                 {selectedFollowUp?.description}
             </div>
             <textarea 
