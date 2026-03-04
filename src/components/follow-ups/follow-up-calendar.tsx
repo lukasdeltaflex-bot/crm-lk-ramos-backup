@@ -122,7 +122,7 @@ export function FollowUpCalendar({ followUps, onSelectDate }: FollowUpCalendarPr
                 <div className="mt-2 space-y-1 overflow-hidden">
                     {dayFollowUps.slice(0, 2).map((f) => (
                         <div key={f.id} className="text-[9px] font-bold truncate bg-primary/5 text-primary p-1 rounded border border-primary/10 leading-none">
-                            • {f.contactName}
+                            • {f.dueTime ? `${f.dueTime} - ` : ''}{f.contactName}
                         </div>
                     ))}
                     {dayFollowUps.length > 2 && (
