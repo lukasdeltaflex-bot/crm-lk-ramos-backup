@@ -152,8 +152,8 @@ export default function ManualPage() {
                             </div>
                         </div>
                         <div className="mt-6 p-4 rounded-xl bg-blue-50/5 border border-blue-200">
-                            <h4 className="font-bold text-blue-700 flex items-center gap-2 mb-2"><Zap className="h-4 w-4" /> Trâmites Instantâneos</h4>
-                            <p className="text-xs text-muted-foreground">Agora você pode usar os **Tópicos Rápidos (Sub-status)** desde o cadastro da proposta. Clicar em um tópico reserva o trâmite para ser gravado assim que a proposta for salva. A validação visual de erros (borda vermelha) garante a segurança sem poluir a interface com ícones pulsantes.</p>
+                            <h4 className="font-bold text-blue-700 flex items-center gap-2 mb-2"><Zap className="h-4 w-4" /> Trâmites Instantâneos (Sub-status)</h4>
+                            <p className="text-xs text-muted-foreground">Utilize o menu de **Tópicos Rápidos** para registrar andamentos comuns (Link enviado, Aguardando Selfie, etc.) sem precisar digitar. Esta função está disponível tanto no cadastro inicial quanto na mudança de status na tabela.</p>
                         </div>
                     </AccordionContent>
                 </AccordionItem>

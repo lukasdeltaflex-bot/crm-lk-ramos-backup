@@ -545,28 +545,23 @@ export function ProposalForm({
                 />
               </div>
 
-              {/* 🚀 TÓPICOS RÁPIDOS DISPONÍVEIS SEMPRE (CRIAÇÃO OU EDIÇÃO) */}
+              {/* 🚀 TÓPICOS RÁPIDOS EM FORMATO DE SELEÇÃO */}
               {!isReadOnly && (
                   <div className="p-4 rounded-2xl border-2 border-dashed bg-primary/[0.02] space-y-3 animate-in fade-in duration-500">
                       <div className="flex items-center gap-2">
                           <Zap className="h-3.5 w-3.5 text-primary" />
-                          <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">Tópicos de Trâmite (Sub-status)</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">Registrar Trâmite Instantâneo (Sub-status)</span>
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                          {historyTopics.map((topic) => (
-                              <Button
-                                  key={topic}
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-8 rounded-full text-[10px] font-bold px-4 border-primary/20 hover:bg-primary/5 hover:border-primary transition-all"
-                                  onClick={() => handleAddHistory(topic)}
-                                  disabled={isAddingHistory}
-                              >
-                                  {topic}
-                              </Button>
-                          ))}
-                      </div>
+                      <Select onValueChange={(val) => handleAddHistory(val)}>
+                          <SelectTrigger className="rounded-xl border-2 bg-background font-bold text-xs h-11">
+                              <SelectValue placeholder="Selecione um tópico rápido para registrar..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                              {historyTopics.map((topic) => (
+                                  <SelectItem key={topic} value={topic} className="text-xs font-medium">{topic}</SelectItem>
+                              ))}
+                          </SelectContent>
+                      </Select>
                   </div>
               )}
 

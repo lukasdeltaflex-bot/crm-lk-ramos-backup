@@ -28,7 +28,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { MessageSquareText, Loader2, Zap, Timer } from 'lucide-react';
+import { MessageSquareText, Loader2, Zap, Timer, ChevronDown } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface StatusCellProps {
@@ -213,20 +213,16 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
                             <Zap className="h-3.5 w-3.5 text-primary" />
                             <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Tópicos Rápidos (Sub-status)</Label>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                            {historyTopics.map((topic) => (
-                                <Button
-                                    key={topic}
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-8 rounded-full text-[9px] font-bold px-3 border-primary/20 hover:bg-primary/5 hover:border-primary transition-all"
-                                    onClick={() => setQuickNote(topic)}
-                                >
-                                    {topic}
-                                </Button>
-                            ))}
-                        </div>
+                        <Select value={quickNote} onValueChange={setQuickNote}>
+                            <SelectTrigger className="rounded-xl border-2 bg-background font-bold text-xs">
+                                <SelectValue placeholder="Selecione um trâmite..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {historyTopics.map((topic) => (
+                                    <SelectItem key={topic} value={topic} className="text-xs font-medium">{topic}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     <div className="space-y-2">
