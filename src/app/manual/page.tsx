@@ -196,7 +196,7 @@ export default function ManualPage() {
                                     <Clock className="h-4 w-4" /> Portabilidade Inteligente
                                 </h4>
                                 <p className="text-xs text-muted-foreground leading-relaxed">
-                                    Ao selecionar **Portabilidade**, o formulário oculta o campo de pagamento ao cliente e reorganiza as datas para o padrão lógico: **Digitação -> Retorno de Saldo -> Averbação**. O Nº de Contrato de Origem torna-se obrigatório.
+                                    Ao selecionar **Portabilidade**, o formulário oculta o campo de pagamento ao cliente e reorganiza as datas para o padrão lógico: **Digitação {"->"} Retorno de Saldo {"->"} Averbação**. O Nº de Contrato de Origem torna-se obrigatório.
                                 </p>
                             </div>
                             <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/20">
