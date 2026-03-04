@@ -58,7 +58,7 @@ import * as configData from '@/lib/config-data';
 import type { Proposal, Customer, Attachment, UserSettings, ProposalHistoryEntry } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { ProposalAttachmentUploader } from '@/components/proposals/proposal-attachment-uploader';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, collection, updateDoc, arrayUnion, setDoc } from 'firebase/firestore';
@@ -293,6 +293,7 @@ export function ProposalForm({
   const watchDateDigitized = watch('dateDigitized');
   const watchProposalNumber = watch('proposalNumber');
   const watchOriginalContract = watch('originalContractNumber');
+  const watchSelectedBenefit = watch('selectedBenefitNumber');
   const checklist = watch('checklist') || {};
 
   const selectedCustomer = useMemo(() => {
@@ -320,13 +321,23 @@ export function ProposalForm({
     });
   }, [watchProposalNumber, allProposals, proposal?.id]);
 
+  /**
+   * 🛡️ MOTOR DE BENEFÍCIO INTELIGENTE V2
+   * Resolve o bug onde o NB sumia ao carregar a página ou salvar.
+   * Agora ele só altera o NB se o CLIENTE mudar na tela.
+   */
+  const prevCustomerIdRef = useRef(initialValues.customerId);
   useEffect(() => {
-    setValue('selectedBenefitNumber', '');
-    if (selectedCustomer) {
-        const benefits = selectedCustomer.benefits || [];
-        if (benefits.length === 1) {
-            setValue('selectedBenefitNumber', benefits[0].number, { shouldValidate: true });
+    if (selectedCustomerId && selectedCustomerId !== prevCustomerIdRef.current) {
+        // O cliente realmente mudou (ação do usuário)
+        setValue('selectedBenefitNumber', '');
+        if (selectedCustomer) {
+            const benefits = selectedCustomer.benefits || [];
+            if (benefits.length === 1) {
+                setValue('selectedBenefitNumber', benefits[0].number, { shouldValidate: true });
+            }
         }
+        prevCustomerIdRef.current = selectedCustomerId;
     }
   }, [selectedCustomerId, selectedCustomer, setValue]);
 
@@ -366,10 +377,13 @@ export function ProposalForm({
     }
   }, [commissionBase, commissionPercentage, grossAmount, netAmount, setValue, isReadOnly]);
 
-  const handleAddHistory = async (customMessage: string) => {
+  /**
+   * ✍️ GESTÃO DE HISTÓRICO UNIFICADA
+   * Evita perda de dados ao salvar o histórico apenas junto com a proposta.
+   */
+  const handleAddHistory = (customMessage: string) => {
     if (!customMessage || !user) return;
     
-    setIsAddingHistory(true);
     const now = new Date().toISOString();
     const entry: ProposalHistoryEntry = {
         id: crypto.randomUUID(),
@@ -378,22 +392,10 @@ export function ProposalForm({
         userName: user.displayName || user.email || 'Agente'
     };
 
-    try {
-        if (proposal?.id) {
-            const docRef = doc(firestore!, 'loanProposals', proposal.id);
-            await setDoc(docRef, { history: arrayUnion(entry), statusUpdatedAt: now }, { merge: true });
-            toast({ title: "Sub-status Registrado!" });
-        } else {
-            // New proposal: save to local staged list
-            setStagedHistory(prev => [entry, ...prev]);
-            toast({ title: "Sub-status Reservado!", description: "Será gravado ao salvar a proposta." });
-        }
-    } catch (e) {
-        toast({ variant: 'destructive', title: "Erro ao registrar trâmite" });
-    } finally {
-        setIsAddingHistory(false);
-        setNewHistoryEntry('');
-    }
+    // Adiciona à lista temporária (staged)
+    setStagedHistory(prev => [entry, ...prev]);
+    setNewHistoryEntry('');
+    toast({ title: "Atualização reservada!", description: "Será gravada ao clicar em Salvar Proposta." });
   };
 
   const displayHistory = useMemo(() => {
@@ -468,7 +470,8 @@ export function ProposalForm({
     }
 
     const existingHistory = Array.isArray(proposal?.history) ? proposal!.history : [];
-    // Inclui o histórico "staged" durante a criação
+    
+    // 🛡️ PERSISTÊNCIA TOTAL: Une histórico do banco + histórico digitado agora + auditorias do sistema
     finalData.history = [...existingHistory, ...stagedHistory, ...auditEntries];
     
     if (proposal?.status !== finalData.status) {
