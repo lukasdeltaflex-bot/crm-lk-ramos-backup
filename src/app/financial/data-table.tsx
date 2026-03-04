@@ -165,10 +165,25 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
 
         const savedOrder = localStorage.getItem('lk-financial-order');
         if (savedOrder) {
-            setColumnOrder(JSON.parse(savedOrder));
+            const parsedOrder = JSON.parse(savedOrder) as string[];
+            const missingColumns = initialColumns.filter(id => !parsedOrder.includes(id));
+            if (missingColumns.length > 0) {
+                const newOrder = [...parsedOrder];
+                const actionsIdx = newOrder.indexOf('Ações');
+                if (actionsIdx !== -1) {
+                    newOrder.splice(actionsIdx, 0, ...missingColumns);
+                } else {
+                    newOrder.push(...missingColumns);
+                }
+                setColumnOrder(newOrder);
+            } else {
+                setColumnOrder(parsedOrder);
+            }
+        } else {
+            setColumnOrder([...initialColumns]);
         }
     } catch (e) {}
-  }, []);
+  }, [initialColumns]);
 
   const hasActiveFilters = statusFilter !== 'Todos' || bankFilter !== 'all' || promoterFilter !== 'all' || operatorFilter !== 'all' || !!globalFilter || !!appliedDateRange;
 
@@ -185,20 +200,22 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
 
   React.useEffect(() => {
     if (isClient) {
-        localStorage.setItem('lk-financial-filter-status', statusFilter);
-        localStorage.setItem('lk-financial-filter-bank', bankFilter);
-        localStorage.setItem('lk-financial-filter-promoter', promoterFilter);
-        localStorage.setItem('lk-financial-filter-operator', operatorFilter);
-        localStorage.setItem('lk-financial-filter-search', globalFilter);
-        localStorage.setItem('lk-financial-filter-dates', JSON.stringify({
-            startStr: startDateInput,
-            endStr: endDateInput,
-            from: appliedDateRange?.from?.toISOString(),
-            to: appliedDateRange?.to?.toISOString()
-        }));
-        localStorage.setItem('lk-financial-visibility', JSON.stringify(columnVisibility));
-        localStorage.setItem('lk-financial-order', JSON.stringify(columnOrder));
-        localStorage.setItem('lk-financial-sizing', JSON.stringify(columnSizing));
+        try {
+            localStorage.setItem('lk-financial-filter-status', statusFilter);
+            localStorage.setItem('lk-financial-filter-bank', bankFilter);
+            localStorage.setItem('lk-financial-filter-promoter', promoterFilter);
+            localStorage.setItem('lk-financial-filter-operator', operatorFilter);
+            localStorage.setItem('lk-financial-filter-search', globalFilter);
+            localStorage.setItem('lk-financial-filter-dates', JSON.stringify({
+                startStr: startDateInput,
+                endStr: endDateInput,
+                from: appliedDateRange?.from?.toISOString(),
+                to: appliedDateRange?.to?.toISOString()
+            }));
+            localStorage.setItem('lk-financial-visibility', JSON.stringify(columnVisibility));
+            localStorage.setItem('lk-financial-order', JSON.stringify(columnOrder));
+            localStorage.setItem('lk-financial-sizing', JSON.stringify(columnSizing));
+        } catch(e) {}
     }
   }, [statusFilter, bankFilter, promoterFilter, operatorFilter, globalFilter, appliedDateRange, startDateInput, endDateInput, columnVisibility, columnOrder, columnSizing, isClient]);
 

@@ -111,6 +111,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     'Data Pgto. Cliente': false,
     'Chegada Saldo': false,
   });
+
   const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>([...initialColumns]);
 
@@ -156,10 +157,25 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 
         const savedOrder = localStorage.getItem('lk-proposals-order');
         if (savedOrder) {
-            setColumnOrder(JSON.parse(savedOrder));
+            const parsedOrder = JSON.parse(savedOrder) as string[];
+            const missingColumns = initialColumns.filter(id => !parsedOrder.includes(id));
+            if (missingColumns.length > 0) {
+                const newOrder = [...parsedOrder];
+                const actionsIdx = newOrder.indexOf('Actions');
+                if (actionsIdx !== -1) {
+                    newOrder.splice(actionsIdx, 0, ...missingColumns);
+                } else {
+                    newOrder.push(...missingColumns);
+                }
+                setColumnOrder(newOrder);
+            } else {
+                setColumnOrder(parsedOrder);
+            }
+        } else {
+            setColumnOrder([...initialColumns]);
         }
     } catch (e) {}
-  }, []);
+  }, [initialColumns]);
 
   const hasActiveFilters = statusFilter !== 'Todos' || bankFilter !== 'all' || promoterFilter !== 'all' || operatorFilter !== 'all' || !!globalFilter || !!appliedDateRange;
 
@@ -176,20 +192,22 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 
   React.useEffect(() => {
     if (isClient) {
-        localStorage.setItem('lk-proposals-filter-status', statusFilter);
-        localStorage.setItem('lk-proposals-filter-bank', bankFilter);
-        localStorage.setItem('lk-proposals-filter-promoter', promoterFilter);
-        localStorage.setItem('lk-proposals-filter-operator', operatorFilter);
-        localStorage.setItem('lk-proposals-filter-search', globalFilter);
-        localStorage.setItem('lk-proposals-filter-dates', JSON.stringify({
-            startStr: startDateInput,
-            endStr: endDateInput,
-            from: appliedDateRange?.from?.toISOString(),
-            to: appliedDateRange?.to?.toISOString()
-        }));
-        localStorage.setItem('lk-proposals-visibility', JSON.stringify(columnVisibility));
-        localStorage.setItem('lk-proposals-order', JSON.stringify(columnOrder));
-        localStorage.setItem('lk-proposals-sizing', JSON.stringify(columnSizing));
+        try {
+            localStorage.setItem('lk-proposals-filter-status', statusFilter);
+            localStorage.setItem('lk-proposals-filter-bank', bankFilter);
+            localStorage.setItem('lk-proposals-filter-promoter', promoterFilter);
+            localStorage.setItem('lk-proposals-filter-operator', operatorFilter);
+            localStorage.setItem('lk-proposals-filter-search', globalFilter);
+            localStorage.setItem('lk-proposals-filter-dates', JSON.stringify({
+                startStr: startDateInput,
+                endStr: endDateInput,
+                from: appliedDateRange?.from?.toISOString(),
+                to: appliedDateRange?.to?.toISOString()
+            }));
+            localStorage.setItem('lk-proposals-visibility', JSON.stringify(columnVisibility));
+            localStorage.setItem('lk-proposals-order', JSON.stringify(columnOrder));
+            localStorage.setItem('lk-proposals-sizing', JSON.stringify(columnSizing));
+        } catch(e) {}
     }
   }, [statusFilter, bankFilter, promoterFilter, operatorFilter, globalFilter, appliedDateRange, startDateInput, endDateInput, columnVisibility, columnOrder, columnSizing, isClient]);
 
@@ -203,7 +221,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     });
   };
 
-  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(KeyboardSensor));
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
