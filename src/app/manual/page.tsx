@@ -51,7 +51,8 @@ import {
     FilterX,
     CalendarClock,
     Bell,
-    Copy
+    Copy,
+    DollarSign
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -238,18 +239,28 @@ export default function ManualPage() {
                             <div className="p-2 rounded-xl bg-emerald-100 text-emerald-600"><Copy className="h-5 w-5" /></div>
                             <div className="text-left">
                                 <p className="font-bold text-sm">7. Produtividade & Atalhos Operacionais</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Cópia Rápida e Facilidades</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Cópia Rápida e Máscaras de Moeda</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
-                        <div className="p-4 rounded-xl bg-emerald-50/5 border border-emerald-500/20">
-                            <h4 className="font-bold text-emerald-700 flex items-center gap-2 mb-2">
-                                <Copy className="h-4 w-4" /> Botões de Cópia Rápida
-                            </h4>
-                            <p className="text-xs text-muted-foreground">
-                                Para evitar erros de digitação ao preencher propostas nos portais dos bancos, a ficha do cliente possui botões de cópia em campos estratégicos: **CPF**, **Número do Benefício (NB)**, **CEP** e **Salário**. Basta clicar no ícone ao lado do valor para copiá-lo instantaneamente para sua área de transferência.
-                            </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="p-4 rounded-xl bg-emerald-50/5 border border-emerald-500/20">
+                                <h4 className="font-bold text-emerald-700 flex items-center gap-2 mb-2">
+                                    <Copy className="h-4 w-4" /> Botões de Cópia Rápida
+                                </h4>
+                                <p className="text-xs text-muted-foreground">
+                                    Para evitar erros de digitação, a ficha do cliente possui botões de cópia em campos estratégicos: **CPF**, **Número do Benefício (NB)**, **CEP** e **Salário**.
+                                </p>
+                            </div>
+                            <div className="p-4 rounded-xl bg-blue-50/5 border border-blue-500/20">
+                                <h4 className="font-bold text-blue-700 flex items-center gap-2 mb-2">
+                                    <DollarSign className="h-4 w-4" /> Máscaras de Moeda Inteligentes
+                                </h4>
+                                <p className="text-xs text-muted-foreground">
+                                    Todos os campos de valor (**Bruto**, **Líquido**, **Parcela**, **Despesas**) agora possuem formatação em tempo real. Ao digitar, o sistema coloca automaticamente os pontos e a vírgula de centavos, garantindo que o seu financeiro esteja sempre 100% preciso.
+                                </p>
+                            </div>
                         </div>
                     </AccordionContent>
                 </AccordionItem>

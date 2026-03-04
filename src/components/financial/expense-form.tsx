@@ -26,6 +26,7 @@ import type { Expense } from '@/lib/types';
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { formatCurrencyInput } from '@/lib/utils';
 
 const expenseSchema = z.object({
   description: z.string().min(3, 'A descrição deve ter pelo menos 3 caracteres.'),
@@ -135,7 +136,18 @@ export function ExpenseForm({ expense, categories, onSubmit, isSaving = false }:
                     <FormControl>
                         <div className="relative">
                             <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
-                            <Input type="number" step="0.01" className="pl-9 font-bold text-red-600" placeholder="0.00" {...field} value={field.value ?? 0} disabled={isSaving} />
+                            <Input 
+                                type="text" 
+                                className="pl-9 font-bold text-red-600" 
+                                value={formatCurrencyInput(field.value)}
+                                onChange={(e) => {
+                                    const val = e.target.value.replace(/\D/g, "");
+                                    const num = val ? parseInt(val) / 100 : 0;
+                                    field.onChange(num);
+                                }}
+                                placeholder="0,00"
+                                disabled={isSaving} 
+                            />
                         </div>
                     </FormControl>
                     <FormMessage />

@@ -101,6 +101,18 @@ export function handlePhoneMask(value: string): string {
     return v;
 }
 
+/**
+ * 💰 MÁSCARA DE MOEDA EM TEMPO REAL
+ * Formata números para o padrão visual BR (1.500,00) mantendo o valor numérico.
+ */
+export function formatCurrencyInput(value: number | undefined): string {
+    if (value === undefined || isNaN(value)) return "";
+    return new Intl.NumberFormat('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(value);
+}
+
 export function formatDateSafe(dateString?: string, formatStr: string = "dd/MM/yyyy"): string {
     const date = parseDateSafe(dateString);
     return date ? format(date, formatStr, { locale: ptBR }) : '-';

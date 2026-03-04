@@ -53,7 +53,7 @@ import {
     Zap
 } from 'lucide-react';
 import { format, parse, parseISO, isValid } from 'date-fns';
-import { cn, formatCurrency, cleanBankName, cleanFirestoreData } from '@/lib/utils';
+import { cn, formatCurrency, cleanBankName, cleanFirestoreData, formatCurrencyInput } from '@/lib/utils';
 import * as configData from '@/lib/config-data';
 import type { Proposal, Customer, Attachment, UserSettings, ProposalHistoryEntry } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -774,7 +774,17 @@ export function ProposalForm({
                         <FormControl>
                             <div className="relative">
                                 <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
-                                <Input type="number" step="0.01" className="pl-9 font-bold rounded-full" {...field} value={field.value ?? 0} readOnly={isReadOnly || isSaving} />
+                                <Input 
+                                    type="text" 
+                                    className="pl-9 font-bold rounded-full" 
+                                    value={formatCurrencyInput(field.value)}
+                                    onChange={(e) => {
+                                        const val = e.target.value.replace(/\D/g, "");
+                                        const num = val ? parseInt(val) / 100 : 0;
+                                        field.onChange(num);
+                                    }}
+                                    readOnly={isReadOnly || isSaving} 
+                                />
                             </div>
                         </FormControl>
                     </FormItem>
@@ -785,7 +795,17 @@ export function ProposalForm({
                         <FormControl>
                             <div className="relative">
                                 <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
-                                <Input type="number" step="0.01" className="pl-9 font-bold rounded-full" {...field} value={field.value ?? 0} readOnly={isReadOnly || isSaving} />
+                                <Input 
+                                    type="text" 
+                                    className="pl-9 font-bold rounded-full" 
+                                    value={formatCurrencyInput(field.value)}
+                                    onChange={(e) => {
+                                        const val = e.target.value.replace(/\D/g, "");
+                                        const num = val ? parseInt(val) / 100 : 0;
+                                        field.onChange(num);
+                                    }}
+                                    readOnly={isReadOnly || isSaving} 
+                                />
                             </div>
                         </FormControl>
                     </FormItem>
@@ -796,7 +816,17 @@ export function ProposalForm({
                         <FormControl>
                             <div className="relative">
                                 <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
-                                <Input type="number" step="0.01" className="pl-9 font-bold rounded-full" {...field} value={field.value ?? 0} readOnly={isReadOnly || isSaving} />
+                                <Input 
+                                    type="text" 
+                                    className="pl-9 font-bold rounded-full" 
+                                    value={formatCurrencyInput(field.value)}
+                                    onChange={(e) => {
+                                        const val = e.target.value.replace(/\D/g, "");
+                                        const num = val ? parseInt(val) / 100 : 0;
+                                        field.onChange(num);
+                                    }}
+                                    readOnly={isReadOnly || isSaving} 
+                                />
                             </div>
                         </FormControl>
                     </FormItem>
@@ -917,7 +947,17 @@ export function ProposalForm({
                             <FormControl>
                                 <div className="relative">
                                     <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
-                                    <Input type="number" step="0.01" className="pl-9 font-black text-primary" {...field} value={field.value ?? 0} readOnly={isReadOnly || isSaving} />
+                                    <Input 
+                                        type="text" 
+                                        className="pl-9 font-black text-primary" 
+                                        value={formatCurrencyInput(field.value)}
+                                        onChange={(e) => {
+                                            const val = e.target.value.replace(/\D/g, "");
+                                            const num = val ? parseInt(val) / 100 : 0;
+                                            field.onChange(num);
+                                        }}
+                                        readOnly={isReadOnly || isSaving} 
+                                    />
                                 </div>
                             </FormControl>
                         </FormItem>
