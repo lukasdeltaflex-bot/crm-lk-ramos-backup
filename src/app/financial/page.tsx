@@ -4,7 +4,7 @@ import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
 import { FinancialDataTable, type FinancialDataTableHandle } from './data-table';
 import { getColumns } from './columns';
-import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { collection, query, where, doc, setDoc, deleteField, deleteDoc, writeBatch } from 'firebase/firestore';
 import type { Proposal, Customer, CommissionStatus, UserSettings, Expense } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,13 +18,14 @@ import {
     Users2, 
     CircleDollarSign, 
     PlusCircle, 
-    Wallet, 
+    Users, 
     CheckCircle2,
     ChevronDown,
     FileSpreadsheet,
     FileText as FilePdf,
     BarChart3,
-    Printer
+    Printer,
+    Wallet
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -57,8 +58,6 @@ import { StatsCard } from '@/components/dashboard/stats-card';
 import { ExpenseForm } from '@/components/financial/expense-form';
 import { ExpenseTable } from '@/components/financial/expense-table';
 import { expenseCategories as initialExpenseCategories } from '@/lib/config-data';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -98,7 +97,7 @@ export default function FinancialPage() {
 
   const expensesQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    return query(collection(firestore, 'users', user.uid, 'expenses'));
+    return collection(firestore, 'users', user.uid, 'expenses');
   }, [firestore, user]);
 
   const settingsDocRef = useMemoFirebase(() => {
@@ -325,7 +324,14 @@ export default function FinancialPage() {
     try {
         await setDoc(docRef, cleanFirestoreData(proposalToUpdate), { merge: true });
         toast({ title: 'Status Atualizado!' });
-    } catch (e) {
+    } catch (e: any) {
+        if (e.code === 'permission-denied') {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'update',
+                requestResourceData: proposalToUpdate
+            }));
+        }
         toast({ variant: 'destructive', title: 'Erro ao atualizar status' });
     } finally {
         setIsSaving(false);
@@ -352,10 +358,18 @@ export default function FinancialPage() {
     
     setIsSaving(true);
     try {
-        await setDoc(doc(firestore, 'loanProposals', selectedProposal.id), cleanFirestoreData(proposalToUpdate), { merge: true });
+        const docRef = doc(firestore, 'loanProposals', selectedProposal.id);
+        await setDoc(docRef, cleanFirestoreData(proposalToUpdate), { merge: true });
         setIsSheetOpen(false);
         toast({ title: 'Salvo!' });
-    } catch (e) {
+    } catch (e: any) {
+        if (e.code === 'permission-denied') {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: `loanProposals/${selectedProposal.id}`,
+                operation: 'update',
+                requestResourceData: proposalToUpdate
+            }));
+        }
         toast({ variant: 'destructive', title: 'Erro ao salvar comissão' });
     } finally {
         setIsSaving(false);
@@ -441,7 +455,7 @@ export default function FinancialPage() {
 
             <Dialog open={isOperatorsDialogOpen} onOpenChange={setIsOperatorsDialogOpen}>
                 <Button variant="outline" className="h-10 px-6 rounded-full font-bold text-xs" onClick={() => setIsOperatorsDialogOpen(true)}>
-                    <Users2 className="mr-2 h-4 w-4" /> Performance
+                    <Users className="mr-2 h-4 w-4" /> Performance
                 </Button>
                 <DialogContent className="max-w-3xl">
                     <DialogHeader><DialogTitle>Comissões por Operador</DialogTitle></DialogHeader>
@@ -511,9 +525,28 @@ export default function FinancialPage() {
                 <TabsContent value="expenses" className="space-y-6">
                     <div className="flex justify-between items-center bg-muted/10 p-4 rounded-2xl border">
                         <StatsCard title="Total Despesas (Mês)" value={isPrivacyMode ? '•••••' : formatCurrency(totalExpensesAmount)} icon={Wallet} className="bg-red-50/10 border-red-200" />
-                        <Button className="rounded-full font-bold bg-red-600 hover:bg-red-700" onClick={() => { setSelectedExpense(undefined); setIsExpenseFormOpen(true); }} disabled={isSaving}><PlusCircle className="mr-2 h-4 w-4" /> Lançar Despesa</Button>
+                        <Button className="rounded-full font-bold bg-primary hover:bg-primary/90" onClick={() => { setSelectedExpense(undefined); setIsExpenseFormOpen(true); }} disabled={isSaving}><PlusCircle className="mr-2 h-4 w-4" /> Lançar Despesa</Button>
                     </div>
-                    <ExpenseTable expenses={expenses || []} onEdit={(e) => { setSelectedExpense(e); setIsExpenseFormOpen(true); }} onDelete={(id) => deleteDoc(doc(firestore!, 'users', user!.uid, 'expenses', id))} />
+                    <ExpenseTable 
+                        expenses={expenses || []} 
+                        onEdit={(e) => { setSelectedExpense(e); setIsExpenseFormOpen(true); }} 
+                        onDelete={async (id) => {
+                            if (!firestore || !user) return;
+                            const docRef = doc(firestore, 'users', user.uid, 'expenses', id);
+                            try {
+                                await deleteDoc(docRef);
+                                toast({ title: 'Despesa Removida' });
+                            } catch (error: any) {
+                                if (error.code === 'permission-denied') {
+                                    errorEmitter.emit('permission-error', new FirestorePermissionError({
+                                        path: docRef.path,
+                                        operation: 'delete'
+                                    }));
+                                }
+                                toast({ variant: 'destructive', title: 'Erro ao remover despesa' });
+                            }
+                        }} 
+                    />
                 </TabsContent>
             </Tabs>
         </div>
@@ -530,7 +563,14 @@ export default function FinancialPage() {
                     await setDoc(doc(firestore!, 'users', user!.uid, 'expenses', id), finalData);
                     setIsExpenseFormOpen(false);
                     toast({ title: 'Gasto Salvo!' });
-                } catch (e) {
+                } catch (e: any) {
+                    if (e.code === 'permission-denied') {
+                        errorEmitter.emit('permission-error', new FirestorePermissionError({
+                            path: `users/${user!.uid}/expenses/${id}`,
+                            operation: 'write',
+                            requestResourceData: finalData
+                        }));
+                    }
                     toast({ variant: 'destructive', title: 'Erro ao salvar despesa' });
                 } finally {
                     setIsSaving(false);

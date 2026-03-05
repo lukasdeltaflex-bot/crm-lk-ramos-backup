@@ -16,12 +16,10 @@ import {
 import { ProposalForm } from './proposal-form';
 import type { Proposal, Customer, ProposalStatus, UserSettings, ProposalHistoryEntry } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { collection, doc, updateDoc, setDoc, query, where, writeBatch, arrayUnion, deleteDoc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CustomerSearchDialog } from '@/components/proposals/customer-search-dialog';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -209,7 +207,14 @@ function ProposalsPageContent() {
         await batch.commit();
         toast({ title: 'Status Atualizado em Massa', description: `${selectedCount} propostas alteradas para "${newStatus}".` });
         setRowSelection({});
-    } catch (e) {
+    } catch (e: any) {
+        if (e.code === 'permission-denied') {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: 'loanProposals',
+                operation: 'update',
+                requestResourceData: { status: newStatus }
+            }));
+        }
         toast({ variant: 'destructive', title: 'Erro na operação em massa' });
     } finally {
         setIsSaving(false);
@@ -383,7 +388,14 @@ function ProposalsPageContent() {
     try {
         await updateDoc(docRef, { [updatePath]: !currentValue });
         toast({ title: "Etapa atualizada!" });
-    } catch (e) {
+    } catch (e: any) {
+        if (e.code === 'permission-denied') {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'update',
+                requestResourceData: { [updatePath]: !currentValue }
+            }));
+        }
         toast({ variant: 'destructive', title: "Erro na atualização" });
     } finally {
         setIsSaving(false);
@@ -423,7 +435,21 @@ function ProposalsPageContent() {
   const columns = React.useMemo(() => getColumns(
     handleEditProposal, 
     handleViewProposal, 
-    (id: string) => deleteDoc(doc(firestore!, 'loanProposals', id)), 
+    async (id: string) => {
+        if (!firestore) return;
+        const docRef = doc(firestore, 'loanProposals', id);
+        try {
+            await deleteDoc(docRef);
+            toast({ title: 'Proposta Excluída' });
+        } catch (error: any) {
+            if (error.code === 'permission-denied') {
+                errorEmitter.emit('permission-error', new FirestorePermissionError({
+                    path: docRef.path,
+                    operation: 'delete'
+                }));
+            }
+        }
+    }, 
     handleStatusChange, 
     handleDuplicateProposal,
     handleToggleChecklist

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
-import { useDoc, useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import { useDoc, useCollection, useFirestore, useMemoFirebase, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, collection, query, where, updateDoc, setDoc } from 'firebase/firestore';
 import type { Customer, Proposal, UserSettings } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -500,6 +500,14 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     try {
         await updateDoc(doc(firestore, 'customers', customerId), { status: newStatus });
         toast({ title: `Cliente ${newStatus === 'active' ? 'Ativado' : 'Inativado'}` });
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: `customers/${customerId}`,
+                operation: 'update',
+                requestResourceData: { status: newStatus }
+            }));
+        }
     } finally {
         setIsSaving(false);
     }
@@ -533,7 +541,14 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         await setDoc(docRef, finalData, { merge: true });
         toast({ title: 'Cadastro Atualizado!' });
         setIsEditDialogOpen(false);
-    } catch (error) {
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: `customers/${customer.id}`,
+                operation: 'update',
+                requestResourceData: formData
+            }));
+        }
         toast({ variant: 'destructive', title: 'Erro ao salvar' });
     } finally {
         setIsSaving(false);
@@ -610,7 +625,37 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     </CardContent>
                 </Card>
             </div>
-            <div className="lg:col-span-1"><Card className="h-full border-border/50 shadow-lg rounded-2xl overflow-hidden sticky top-24"><CardHeader className="bg-muted/10"><CardTitle className="text-lg font-black uppercase flex items-center gap-3"><FolderLock className="h-5 w-5 text-primary opacity-60" />Arquivos</CardTitle></CardHeader><CardContent className="pt-6"><CustomerAttachmentUploader userId={user?.uid || ''} customerId={customer.id} initialAttachments={customer.documents || []} onAttachmentsChange={(docs) => updateDoc(doc(firestore!, 'customers', customer.id), cleanFirestoreData({ documents: docs }))} /></CardContent></Card></div>
+            <div className="lg:col-span-1">
+                <Card className="h-full border-border/50 shadow-lg rounded-2xl overflow-hidden sticky top-24">
+                    <CardHeader className="bg-muted/10">
+                        <CardTitle className="text-lg font-black uppercase flex items-center gap-3">
+                            <FolderLock className="h-5 w-5 text-primary opacity-60" />Arquivos
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                        <CustomerAttachmentUploader 
+                            userId={user?.uid || ''} 
+                            customerId={customer.id} 
+                            initialAttachments={customer.documents || []} 
+                            onAttachmentsChange={async (docs) => {
+                                const docRef = doc(firestore!, 'customers', customer.id);
+                                const data = cleanFirestoreData({ documents: docs });
+                                try {
+                                    await updateDoc(docRef, data);
+                                } catch (error: any) {
+                                    if (error.code === 'permission-denied') {
+                                        errorEmitter.emit('permission-error', new FirestorePermissionError({
+                                            path: docRef.path,
+                                            operation: 'update',
+                                            requestResourceData: data
+                                        }));
+                                    }
+                                }
+                            }} 
+                        />
+                    </CardContent>
+                </Card>
+            </div>
         </div>
       </div>
 
