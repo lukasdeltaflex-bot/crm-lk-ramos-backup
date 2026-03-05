@@ -2,13 +2,13 @@
 
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
-import { initializeFirestore, Firestore, persistentLocalCache } from "firebase/firestore";
+import { initializeFirestore, Firestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 import { firebaseConfig } from "./config";
 
 /**
  * 🛠️ INFRAESTRUTURA DE DADOS LK RAMOS
- * Inicialização robusta com modo de resiliência de rede ativado.
+ * Inicialização robusta com modo de resiliência de rede avançado.
  */
 
 let db: Firestore | null = null;
@@ -24,17 +24,19 @@ if (typeof window !== "undefined") {
 
         const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
         
-        // 🛡️ CONFIGURAÇÃO DE REDE V18: Force Long Polling habilitado e simplificação de cache.
-        // Removido o persistentMultipleTabManager para evitar erros de "Backend didn't respond" em algumas redes.
+        // 🛡️ CONFIGURAÇÃO DE REDE V20: Maximizando compatibilidade com proxies e múltiplas abas.
         db = initializeFirestore(app, {
             experimentalForceLongPolling: true,
-            localCache: persistentLocalCache({})
+            experimentalAutoDetectLongPolling: true,
+            localCache: persistentLocalCache({
+                tabManager: persistentMultipleTabManager()
+            })
         });
 
         auth = getAuth(app);
         storage = getStorage(app, firebaseConfig.storageBucket);
         
-        console.log("💎 LK RAMOS: Núcleo Firebase sincronizado com modo de alta resiliência (Long Polling).");
+        console.log("💎 LK RAMOS: Núcleo Firebase sincronizado com protocolo de alta resiliência e suporte multi-abas.");
     } catch (error) {
         console.error("❌ Erro crítico na inicialização do Firebase:", error);
     }
