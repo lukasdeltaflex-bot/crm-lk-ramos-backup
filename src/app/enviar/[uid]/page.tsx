@@ -54,6 +54,7 @@ export default function LeadCapturePage() {
     email: '',
     motherName: '',
     benefitNumber: '',
+    grossSalary: '',
     requestedAmount: '',
     maxInstallment: '',
     intentType: '',
@@ -268,6 +269,7 @@ export default function LeadCapturePage() {
             ownerId: uid,
             name: formData.name.toUpperCase(),
             birthDate: birthIso || formData.birthDate,
+            grossSalary: parseFloat(formData.grossSalary) || 0,
             requestedAmount: parseFloat(formData.requestedAmount) || 0,
             maxInstallment: parseFloat(formData.maxInstallment) || 0,
             status: 'pending',
@@ -390,16 +392,25 @@ export default function LeadCapturePage() {
                                     <Input name="phone" required placeholder="(00) 00000-0000" className="h-12 rounded-xl font-bold" value={formData.phone} onChange={handleInputChange} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase text-muted-foreground">E-mail</Label>
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground">E-mail (Opcional)</Label>
                                     <div className="relative">
                                         <Input name="email" type="email" placeholder="seu@email.com" className="h-12 rounded-xl font-bold pl-10" value={formData.email} onChange={handleInputChange} />
                                         <Mail className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground opacity-40" />
                                     </div>
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase text-muted-foreground">Nº Benefício INSS (Opcional)</Label>
-                                <Input name="benefitNumber" placeholder="000.000.000-0" className="h-12 rounded-xl font-bold" value={formData.benefitNumber} onChange={handleInputChange} />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground">Nº Benefício INSS (Opcional)</Label>
+                                    <Input name="benefitNumber" placeholder="000.000.000-0" className="h-12 rounded-xl font-bold" value={formData.benefitNumber} onChange={handleInputChange} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground">Salário Bruto (R$)</Label>
+                                    <div className="relative">
+                                        <span className="absolute left-3 top-3.5 text-[10px] font-black opacity-30">R$</span>
+                                        <Input name="grossSalary" type="number" placeholder="0,00" className="h-12 rounded-xl font-bold pl-10" value={formData.grossSalary} onChange={handleInputChange} />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
