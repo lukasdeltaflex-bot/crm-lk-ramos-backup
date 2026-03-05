@@ -778,10 +778,21 @@ export function ProposalForm({
                                 value={field.value ?? ''} 
                                 onChange={(e) => field.onChange(e.target.value.replace(/\s+/g, ''))}
                                 readOnly={isReadOnly || isSaving} 
-                                className="font-bold"
+                                className={cn(
+                                    "font-bold",
+                                    isDuplicateProposal && "border-red-500 bg-red-50 ring-2 ring-red-500/20"
+                                )}
                             />
+                            {isDuplicateProposal && (
+                                <AlertTriangle className="absolute right-4 top-3 h-4 w-4 text-red-500 animate-pulse" />
+                            )}
                         </div>
                       </FormControl>
+                      {isDuplicateProposal && (
+                          <p className="text-[10px] font-black text-red-600 uppercase mt-1 animate-in fade-in slide-in-from-top-1">
+                              ⚠️ ESTE NÚMERO JÁ CONSTA NO SISTEMA
+                          </p>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
