@@ -51,9 +51,9 @@ export function SidebarNav() {
                 tooltip={link.label}
                 onClick={handleNavClick}
             >
-                <Link href={link.href}>
-                <link.icon />
-                <span>{link.label}</span>
+                <Link href={link.href} className="flex items-center gap-2">
+                    <link.icon className="shrink-0" />
+                    <span>{link.label}</span>
                 </Link>
             </SidebarMenuButton>
             </SidebarMenuItem>
@@ -70,8 +70,8 @@ export function SidebarNav() {
                 tooltip={link.label}
                 onClick={handleNavClick}
                 >
-                <Link href={link.href}>
-                    <link.icon />
+                <Link href={link.href} className="flex items-center gap-2">
+                    <link.icon className="shrink-0" />
                     <span>{link.label}</span>
                 </Link>
                 </SidebarMenuButton>
