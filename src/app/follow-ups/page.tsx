@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -5,7 +6,7 @@ import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Calendar as CalendarIcon, History, Search, User, CheckCircle2, RefreshCw, XCircle, Loader2, FilterX, Clock } from 'lucide-react';
+import { PlusCircle, Calendar as CalendarIcon, History, Search, User, CheckCircle2, RefreshCw, XCircle, Loader2, FilterX, Clock, Sparkles } from 'lucide-react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, setDoc, orderBy } from 'firebase/firestore';
 import type { FollowUp, Customer } from '@/lib/types';
@@ -22,6 +23,7 @@ import { FollowUpsWidget } from '@/components/dashboard/follow-ups-widget';
 import { FollowUpCalendar } from '@/components/follow-ups/follow-up-calendar';
 import { useTheme } from '@/components/theme-provider';
 import { cn, cleanFirestoreData } from '@/lib/utils';
+import { summarizeNotes } from '@/ai/flows/summarize-notes-flow';
 
 export default function FollowUpsPage() {
   const { user } = useUser();
@@ -32,6 +34,7 @@ export default function FollowUpsPage() {
   const [isActionDialogOpen, setIsActionDialogOpen] = useState(false);
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
   const [actionNotes, setActionNotes] = useState('');
+  const [isSummarizingAction, setIsSummarizingAction] = useState(false);
   const [newDueDate, setNewDueDate] = useState(format(addDays(new Date(), 7), 'yyyy-MM-dd'));
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState<Date | null>(null);
@@ -82,6 +85,23 @@ export default function FollowUpsPage() {
     setSelectedFollowUp(followUp);
     setActionNotes('');
     setIsActionDialogOpen(true);
+  };
+
+  const handleSummarizeAction = async () => {
+    if (!actionNotes || actionNotes.trim().length < 10) {
+        toast({ variant: 'destructive', title: 'Texto muito curto', description: 'Digite mais detalhes para a IA resumir.' });
+        return;
+    }
+    setIsSummarizingAction(true);
+    try {
+        const summary = await summarizeNotes(actionNotes);
+        setActionNotes(summary);
+        toast({ title: 'Conversa resumida com IA!' });
+    } catch (e) {
+        toast({ variant: 'destructive', title: 'Erro na IA' });
+    } finally {
+        setIsSummarizingAction(false);
+    }
   };
 
   const handleUpdateStatus = async (status: FollowUp['status'], extraData: any = {}) => {
@@ -385,22 +405,38 @@ export default function FollowUpsPage() {
                 </div>
                 {selectedFollowUp?.description}
             </div>
-            <textarea 
-                className="w-full min-h-[100px] p-3 rounded-md border border-border/50 text-sm focus:ring-2 focus:ring-primary outline-none bg-background"
-                placeholder="Ex: Liguei e ele pediu para retornar semana que vem..."
-                value={actionNotes}
-                onChange={(e) => setActionNotes(e.target.value)}
-                disabled={isSaving}
-            />
+            <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Anotações da Conversa</span>
+                    <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-7 rounded-full text-[10px] font-bold px-3 border-primary/20 bg-primary/5 text-primary hover:bg-primary/10"
+                        onClick={handleSummarizeAction}
+                        disabled={isSummarizingAction || !actionNotes}
+                    >
+                        {isSummarizingAction ? <Loader2 className="h-3 w-3 animate-spin mr-1.5" /> : <Sparkles className="h-3 w-3 mr-1.5" />}
+                        Resumir com IA
+                    </Button>
+                </div>
+                <textarea 
+                    className="w-full min-h-[100px] p-3 rounded-md border border-border/50 text-sm focus:ring-2 focus:ring-primary outline-none bg-background"
+                    placeholder="Ex: Liguei e ele pediu para retornar semana que vem..."
+                    value={actionNotes}
+                    onChange={(e) => setActionNotes(e.target.value)}
+                    disabled={isSaving || isSummarizingAction}
+                />
+            </div>
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="ghost" className="text-destructive hover:bg-destructive/10" onClick={() => handleUpdateStatus('cancelled')} disabled={isSaving}>
+            <Button variant="ghost" className="text-destructive hover:bg-destructive/10" onClick={() => handleUpdateStatus('cancelled')} disabled={isSaving || isSummarizingAction}>
                 <XCircle className="mr-2 h-4 w-4" /> Cancelar
             </Button>
-            <Button variant="outline" onClick={() => setIsRescheduleOpen(true)} disabled={isSaving}>
+            <Button variant="outline" onClick={() => setIsRescheduleOpen(true)} disabled={isSaving || isSummarizingAction}>
                 <RefreshCw className="mr-2 h-4 w-4" /> Reagendar
             </Button>
-            <Button onClick={() => handleUpdateStatus('completed')} disabled={isSaving}>
+            <Button onClick={() => handleUpdateStatus('completed')} disabled={isSaving || isSummarizingAction}>
                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
                 Concluído
             </Button>
