@@ -67,8 +67,8 @@ export default function DashboardPage() {
   const firestore = useFirestore();
 
   const [dialogData, setDialogData] = useState<{ title: string; proposals: Proposal[] } | null>(null);
-  const [startDateInput, setStartDateInput] = setStartDateInput('');
-  const [endDateInput, setEndDateInput] = setEndDateInput('');
+  const [startDateInput, setStartDateInput] = useState('');
+  const [endDateInput, setEndDateInput] = useState('');
   const [appliedDateRange, setAppliedDateRange] = useState<DateRange | undefined>(undefined);
   const [isPrivacyMode, setIsPrivacyMode] = useState(false);
   const [isClient, setIsClient] = useState(false);
