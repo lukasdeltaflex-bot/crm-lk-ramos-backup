@@ -67,8 +67,8 @@ export default function DashboardPage() {
   const firestore = useFirestore();
 
   const [dialogData, setDialogData] = useState<{ title: string; proposals: Proposal[] } | null>(null);
-  const [startDateInput, setStartDateInput] = useState('');
-  const [endDateInput, setEndDateInput] = useState('');
+  const [startDateInput, setStartDateInput] = setStartDateInput('');
+  const [endDateInput, setEndDateInput] = setEndDateInput('');
   const [appliedDateRange, setAppliedDateRange] = useState<DateRange | undefined>(undefined);
   const [isPrivacyMode, setIsPrivacyMode] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -267,7 +267,7 @@ export default function DashboardPage() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
-                <p className="text-sm text-muted-foreground">Monitoramento inteligente LK RAMOS (UTC-3)</p>
+                <p className="text-sm text-muted-foreground">Monitoramento inteligente de propostas e esteira operacional</p>
             </div>
             
             <div className="flex items-center gap-3 flex-wrap">
