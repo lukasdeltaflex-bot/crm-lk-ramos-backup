@@ -73,11 +73,11 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
             <CardTitle className="font-bold text-xl text-primary">Últimas Propostas Digitadas</CardTitle>
             <p className="text-xs text-muted-foreground font-medium">Monitoramento em tempo real da esteira</p>
         </div>
-        <Link href="/proposals">
-            <Button variant="outline" size="sm" className="h-8 rounded-full px-4 text-xs font-bold shadow-sm text-primary border-primary/20 hover:bg-primary/10">
+        <Button asChild variant="outline" size="sm" className="h-8 rounded-full px-4 text-xs font-bold shadow-sm text-primary border-primary/20 hover:bg-primary/10">
+            <Link href="/proposals">
                 Explorar Tudo <ArrowRight className="ml-2 h-3 w-3" />
-            </Button>
-        </Link>
+            </Link>
+        </Button>
       </CardHeader>
       <CardContent className="p-0">
         <Table>

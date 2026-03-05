@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect } from 'react';
@@ -52,11 +51,11 @@ export function FollowUpsWidget() {
                 </CardTitle>
                 <CardDescription>Oportunidades e Follow-ups</CardDescription>
             </div>
-            <Link href="/follow-ups">
-                <Button variant="ghost" size="sm" className="text-xs">
+            <Button asChild variant="ghost" size="sm" className="text-xs">
+                <Link href="/follow-ups">
                     Ver Todos <ChevronRight className="ml-1 h-3 w-3" />
-                </Button>
-            </Link>
+                </Link>
+            </Button>
         </div>
       </CardHeader>
       <CardContent className="flex-1 space-y-3 pt-2">
