@@ -53,7 +53,8 @@ import {
     Bell,
     Copy,
     DollarSign,
-    CreditCard
+    CreditCard,
+    GripVertical
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -90,9 +91,9 @@ export default function ManualPage() {
                             <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Camera className="h-4 w-4 text-blue-600" />
-                                    <h4 className="font-bold">OCR Multimodal (Fotos e PDFs)</h4>
+                                    <h4 className="font-bold">OCR e Separação Inteligente</h4>
                                 </div>
-                                <p className="text-xs text-muted-foreground">O cadastro via IA suporta **PDFs Oficiais**. Você pode subir extratos bancários e a IA extrairá Nome, CPF e Benefícios instantaneamente.</p>
+                                <p className="text-xs text-muted-foreground">O cadastro via IA agora identifica e **separa automaticamente múltiplos telefones** encontrados no documento, preenchendo os campos "Principal" e "Telefone 2" de forma organizada.</p>
                             </div>
                         </div>
                     </AccordionContent>
@@ -105,17 +106,32 @@ export default function ManualPage() {
                             <div className="p-2 rounded-xl bg-purple-100 text-purple-600"><CalendarClock className="h-5 w-5" /></div>
                             <div className="text-left">
                                 <p className="font-bold text-sm">2. Mecanismo de Retornos (CRM)</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Organização e Resumos Inteligentes</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Agenda e Resumos de Conversa</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
-                        <div className="p-4 rounded-xl bg-purple-50/5 border border-purple-500/20">
-                            <h4 className="font-bold text-purple-700 flex items-center gap-2 mb-2">
-                                <Sparkles className="h-4 w-4" /> Resumo de Motivo com IA
-                            </h4>
-                            <p className="text-xs text-muted-foreground">
-                                Ao agendar um novo retorno, você pode digitar os detalhes da conversa de forma bagunçada. O botão **"Resumir com IA"** acima do campo de motivo irá organizar os pontos principais em tópicos limpos, economizando tempo na leitura futura antes de ligar para o cliente.
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div className="p-4 rounded-xl bg-purple-50/5 border border-purple-500/20">
+                                <h4 className="font-bold text-purple-700 flex items-center gap-2 mb-2">
+                                    <Sparkles className="h-4 w-4" /> Resumo de Fechamento
+                                </h4>
+                                <p className="text-xs text-muted-foreground">
+                                    Ao concluir um retorno, utilize o botão **"Resumir com IA"** para organizar suas anotações da conversa. A IA transformará seus rascunhos em um histórico profissional e limpo.
+                                </p>
+                            </div>
+                            <div className="p-4 rounded-xl bg-muted/20 border">
+                                <h4 className="font-bold text-foreground flex items-center gap-2 mb-2">
+                                    <Clock className="h-4 w-4 text-primary" /> Visibilidade de Horários
+                                </h4>
+                                <p className="text-xs text-muted-foreground">
+                                    A visão de **Calendário** agora exibe o horário agendado diretamente no quadrado do dia (ex: 14:00 - Cliente), permitindo gerir sua pauta sem precisar abrir cada registro.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 mt-4">
+                            <p className="text-xs text-muted-foreground font-medium">
+                                <span className="font-black text-primary uppercase">Dica:</span> O título do retorno (Vínculo/Origem) agora aparece em destaque como uma etiqueta de botão, facilitando a triagem visual rápida.
                             </p>
                         </div>
                     </AccordionContent>
@@ -152,10 +168,6 @@ export default function ManualPage() {
                                 <div className="text-[11px]"><span className="font-bold uppercase">Averbação:</span> Confirmação no órgão.</div>
                             </div>
                         </div>
-                        <div className="mt-6 p-4 rounded-xl bg-blue-50/5 border border-blue-200">
-                            <h4 className="font-bold text-blue-700 flex items-center gap-2 mb-2"><Zap className="h-4 w-4" /> Trâmites Instantâneos (Sub-status)</h4>
-                            <p className="text-xs text-muted-foreground">Utilize o menu de **Tópicos Rápidos** para registrar andamentos comuns (Link enviado, Aguardando Selfie, etc.) sem precisar digitar. Esta função está disponível tanto no cadastro inicial quanto na mudança de status na tabela.</p>
-                        </div>
                     </AccordionContent>
                 </AccordionItem>
 
@@ -173,52 +185,19 @@ export default function ManualPage() {
                     <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
                         <div className="p-4 rounded-xl bg-pink-50/5 border border-pink-200">
                             <h4 className="font-bold text-pink-700 flex items-center gap-2 mb-2"><Bot className="h-4 w-4" /> Inteligência de Sincronização</h4>
-                            <p className="text-xs text-muted-foreground">Os alertas de aniversários, comissões pendentes e retornos estão unificados. Ao clicar no **"X" (Dispensar)** de uma notificação no menu superior, ela será automaticamente removida também do card de **"Inteligência Diária"** no Dashboard. Isso evita avisos repetidos e mantém sua área de trabalho limpa.</p>
+                            <p className="text-xs text-muted-foreground">Os alertas de aniversários, comissões pendentes e retornos estão unificados. Ao clicar no **"X" (Dispensar)** de uma notificação no menu superior, ela será automaticamente removida também do card de **"Inteligência Diária"** no Dashboard.</p>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 5. REGRAS DE PORTABILIDADE E CARTÕES */}
-                <AccordionItem value="portability-rules" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-red-500/20">
-                    <AccordionTrigger className="hover:no-underline">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-red-100 text-red-600"><SearchX className="h-5 w-5" /></div>
-                            <div className="text-left">
-                                <p className="font-bold text-sm">5. Regras Específicas: Portabilidade & Cartões</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Simplificação e Fluxo Operacional</p>
-                            </div>
-                        </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
-                        <div className="space-y-6">
-                            <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
-                                <h4 className="font-bold text-blue-700 flex items-center gap-2 mb-2">
-                                    <Clock className="h-4 w-4" /> Portabilidade Inteligente
-                                </h4>
-                                <p className="text-xs text-muted-foreground leading-relaxed">
-                                    Ao selecionar **Portabilidade**, o formulário oculta o campo de pagamento ao cliente e reorganiza as datas para o padrão lógico: **Digitação {"->"} Retorno de Saldo {"->"} Averbação**. O Nº de Contrato de Origem torna-se obrigatório.
-                                </p>
-                            </div>
-                            <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/20">
-                                <h4 className="font-bold text-purple-700 flex items-center gap-2 mb-2">
-                                    <CreditCard className="h-4 w-4" /> Cartão - Plástico (Sem Parcelas)
-                                </h4>
-                                <p className="text-xs text-muted-foreground leading-relaxed">
-                                    Para o produto **Cartão - Plástico**, o sistema entende que não existe uma data de pagamento ao cliente nem um prazo de parcelas fixas. Estes campos são **automaticamente ocultados** para simplificar sua digitação e manter o registro tecnicamente correto.
-                                </p>
-                            </div>
-                        </div>
-                    </AccordionContent>
-                </AccordionItem>
-
-                {/* 6. GESTÃO DE PARCEIROS & SEGURANÇA */}
+                {/* 5. GESTÃO DE PARCEIROS & SEGURANÇA */}
                 <AccordionItem value="management-secure" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-blue-500/20">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-blue-100 text-blue-600"><Lock className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">6. Gestão de Parceiros & Portal de Leads</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Criptografia Militar e Automação de Entrada</p>
+                                <p className="font-bold text-sm">5. Gestão de Parceiros & Portal de Leads</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Criptografia e Automação de Entrada</p>
                             </div>
                         </div>
                     </AccordionTrigger>
@@ -226,45 +205,41 @@ export default function ManualPage() {
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="p-4 rounded-xl bg-blue-50/5 border border-blue-200">
                                 <h4 className="font-bold text-blue-700 flex items-center gap-2 mb-2"><LinkIcon className="h-4 w-4" /> Portal de Leads</h4>
-                                <p className="text-xs text-muted-foreground">Seu link exclusivo de auto-cadastro está disponível no **Dashboard** e também na sua página de **Meu Perfil**. Envie este link para os clientes para que eles mesmos preencham a ficha e anexem documentos.</p>
+                                <p className="text-xs text-muted-foreground">Seu link exclusivo de auto-cadastro permite que o cliente preencha a ficha e anexe documentos diretamente do celular dele para o seu sistema.</p>
                             </div>
                             <div className="p-4 rounded-xl bg-green-50/5 border border-green-200">
-                                <h4 className="font-bold text-green-700 flex items-center gap-2 mb-2"><NotebookTabs className="h-4 w-4" /> Mural Colaborativo</h4>
-                                <p className="text-xs text-muted-foreground">A aba de **Notícias** e **Links Úteis** é pública para sua equipe. Tudo o que você publicar aparecerá para seus sócios instantaneamente.</p>
+                                <h4 className="font-bold text-green-700 flex items-center gap-2 mb-2"><GripVertical className="h-4 w-4" /> Ordenação de Tópicos</h4>
+                                <p className="text-xs text-muted-foreground">Nas **Configurações**, você pode arrastar e soltar os Tópicos Rápidos e Status para a ordem que preferir, deixando os mais usados sempre no topo.</p>
                             </div>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
 
-                {/* 7. PRODUTIVIDADE & ATALHOS */}
+                {/* 6. PRODUTIVIDADE & ATALHOS */}
                 <AccordionItem value="ux-productivity" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-emerald-500/20">
                     <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-emerald-100 text-emerald-600"><Copy className="h-5 w-5" /></div>
                             <div className="text-left">
-                                <p className="font-bold text-sm">7. Produtividade & Atalhos Operacionais</p>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Cópia Rápida e Máscaras de Moeda</p>
+                                <p className="font-bold text-sm">6. Produtividade & Máscaras de Moeda</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Precisão Financeira Total</p>
                             </div>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="p-4 rounded-xl bg-emerald-50/5 border border-emerald-500/20">
-                                <h4 className="font-bold text-emerald-700 flex items-center gap-2 mb-2">
-                                    <Copy className="h-4 w-4" /> Botões de Cópia Rápida
-                                </h4>
-                                <p className="text-xs text-muted-foreground">
-                                    Para evitar erros de digitação, a ficha do cliente possui botões de cópia em campos estratégicos: **CPF**, **Número do Benefício (NB)**, **CEP** e **Salário**.
-                                </p>
-                            </div>
-                            <div className="p-4 rounded-xl bg-blue-50/5 border border-blue-500/20">
-                                <h4 className="font-bold text-blue-700 flex items-center gap-2 mb-2">
-                                    <DollarSign className="h-4 w-4" /> Máscaras de Moeda Inteligentes
-                                </h4>
-                                <p className="text-xs text-muted-foreground">
-                                    Todos os campos de valor (**Bruto**, **Líquido**, **Parcela**, **Despesas**) agora possuem formatação em tempo real. Ao digitar, o sistema coloca automaticamente os pontos e a vírgula de centavos, garantindo que o seu financeiro esteja sempre 100% preciso.
-                                </p>
-                            </div>
+                        <div className="p-4 rounded-xl bg-blue-50/5 border border-blue-500/20">
+                            <h4 className="font-bold text-blue-700 flex items-center gap-2 mb-2">
+                                <DollarSign className="h-4 w-4" /> Formatação em Tempo Real
+                            </h4>
+                            <p className="text-xs text-muted-foreground">
+                                Todos os campos de valor do sistema agora possuem **Máscara de Moeda Inteligente**. Isso inclui:
+                            </p>
+                            <ul className="mt-2 space-y-1 text-xs font-bold text-primary list-disc pl-4 uppercase">
+                                <li>Valor Bruto e Líquido nas Propostas</li>
+                                <li>Salário no Cadastro de Clientes</li>
+                                <li>Meta Mensal no Dashboard</li>
+                                <li>Lançamento de Despesas Operacionais</li>
+                            </ul>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
@@ -306,7 +281,7 @@ export default function ManualPage() {
                         <div className="h-2 w-2 rounded-full bg-current animate-pulse" />
                         <span className="text-[10px] font-black uppercase">5 GB Gratuitos</span>
                     </div>
-                    <p className="text-[9px] text-muted-foreground mt-2 leading-tight">
+                    <p className="text-[9px] text-muted-foreground mt-2 leading-tight font-medium">
                         Capacidade para milhares de dossiês. Excluir anexos libera espaço em tempo real.
                     </p>
                 </CardContent>
