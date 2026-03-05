@@ -668,7 +668,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                                                 render={({ field }) => (
                                                     <Select onValueChange={field.onChange} value={field.value ?? ''}>
                                                         <FormControl>
-                                                            <SelectTrigger className="h-9 border-none bg-transparent shadow-none p-0 focus:ring-0 font-bold text-sm">
+                                                            <SelectTrigger className="h-9 border-none bg-transparent shadow-none p-0 focus:ring-0 font-bold text-sm overflow-hidden">
                                                                 <SelectValue placeholder="Livre / Selecione" />
                                                             </SelectTrigger>
                                                         </FormControl>
@@ -676,9 +676,9 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                                                             <SelectItem value="none">Sem Reserva</SelectItem>
                                                             {banks.map(b => (
                                                                 <SelectItem key={b} value={b}>
-                                                                    <div className="flex items-center gap-2.5">
-                                                                        <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={showLogos} className="h-4 w-4" />
-                                                                        <span className="text-xs uppercase font-bold">{cleanBankName(b)}</span>
+                                                                    <div className="flex items-center gap-2.5 w-full overflow-hidden">
+                                                                        <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={showLogos} className="h-4 w-4 shrink-0" />
+                                                                        <span className="text-xs uppercase font-bold truncate">{cleanBankName(b)}</span>
                                                                     </div>
                                                                 </SelectItem>
                                                             ))}
@@ -695,7 +695,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                                                 render={({ field }) => (
                                                     <Select onValueChange={field.onChange} value={field.value ?? ''}>
                                                         <FormControl>
-                                                            <SelectTrigger className="h-9 border-none bg-transparent shadow-none p-0 focus:ring-0 font-bold text-sm">
+                                                            <SelectTrigger className="h-9 border-none bg-transparent shadow-none p-0 focus:ring-0 font-bold text-sm overflow-hidden">
                                                                 <SelectValue placeholder="Livre / Selecione" />
                                                             </SelectTrigger>
                                                         </FormControl>
@@ -703,9 +703,9 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                                                             <SelectItem value="none">Sem Reserva</SelectItem>
                                                             {banks.map(b => (
                                                                 <SelectItem key={b} value={b}>
-                                                                    <div className="flex items-center gap-2.5">
-                                                                        <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={showLogos} className="h-4 w-4" />
-                                                                        <span className="text-xs uppercase font-bold">{cleanBankName(b)}</span>
+                                                                    <div className="flex items-center gap-2.5 w-full overflow-hidden">
+                                                                        <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogo={showLogos} className="h-4 w-4 shrink-0" />
+                                                                        <span className="text-xs uppercase font-bold truncate">{cleanBankName(b)}</span>
                                                                     </div>
                                                                 </SelectItem>
                                                             ))}

@@ -687,15 +687,21 @@ export function ProposalForm({
                     <FormItem>
                         <FormLabel>Banco Digitado *</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isReadOnly || isSaving}>
-                            <FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Banco" /></SelectTrigger></FormControl>
-                            <SelectContent>{banks.map(b => (
-                                <SelectItem key={b} value={b}>
-                                    <div className="flex items-center gap-2">
-                                        <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogos={showLogos} className="h-4 w-4" />
-                                        <span>{cleanBankName(b)}</span>
-                                    </div>
-                                </SelectItem>
-                            ))}</SelectContent>
+                            <FormControl>
+                                <SelectTrigger className="font-bold w-full overflow-hidden">
+                                    <SelectValue placeholder="Banco" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {banks.map(b => (
+                                    <SelectItem key={b} value={b}>
+                                        <div className="flex items-center gap-2 w-full overflow-hidden">
+                                            <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogos={showLogos} className="h-4 w-4 shrink-0" />
+                                            <span className="truncate flex-1">{cleanBankName(b)}</span>
+                                        </div>
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
                         </Select>
                         <FormMessage />
                     </FormItem>
@@ -713,15 +719,21 @@ export function ProposalForm({
                                 <FormItem>
                                     <FormLabel>Banco Portado (Origem)</FormLabel>
                                     <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isReadOnly || isSaving}>
-                                        <FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Origem" /></SelectTrigger></FormControl>
-                                        <SelectContent>{banks.map(b => (
-                                            <SelectItem key={b} value={b}>
-                                                <div className="flex items-center gap-2">
-                                                    <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogos={showLogos} className="h-4 w-4" />
-                                                    <span>{cleanBankName(b)}</span>
-                                                </div>
-                                            </SelectItem>
-                                        ))}</SelectContent>
+                                        <FormControl>
+                                            <SelectTrigger className="font-bold w-full overflow-hidden">
+                                                <SelectValue placeholder="Origem" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {banks.map(b => (
+                                                <SelectItem key={b} value={b}>
+                                                    <div className="flex items-center gap-2 w-full overflow-hidden">
+                                                        <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogos={showLogos} className="h-4 w-4 shrink-0" />
+                                                        <span className="truncate flex-1">{cleanBankName(b)}</span>
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
                                     </Select>
                                     <FormMessage />
                                 </FormItem>
