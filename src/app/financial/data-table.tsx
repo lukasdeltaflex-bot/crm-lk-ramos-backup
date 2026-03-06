@@ -351,8 +351,11 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     selectedRows.reduce((acc, row) => acc + (row.original.grossAmount || 0), 0),
   [selectedRows]);
 
+  // 🛡️ SINCRONIZAÇÃO DE CÁLCULO V3
+  // Agora subtrai o 'amountPaid' da 'commissionValue' para refletir o saldo real pendente,
+  // exatamente como faz o card de "Saldo a Receber".
   const totalCommission = React.useMemo(() => 
-    selectedRows.reduce((acc, row) => acc + (row.original.commissionValue || 0), 0),
+    selectedRows.reduce((acc, row) => acc + ((row.original.commissionValue || 0) - (row.original.amountPaid || 0)), 0),
   [selectedRows]);
 
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
