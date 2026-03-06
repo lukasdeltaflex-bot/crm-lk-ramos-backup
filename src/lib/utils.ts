@@ -166,14 +166,20 @@ export function cleanBankName(name?: string): string {
   return cleaned || name;
 }
 
+/**
+ * 🧹 LIMPEZA DE DADOS FIREBASE V2
+ * Remove campos 'undefined' e garante que apenas objetos planos sejam enviados.
+ * Refinado para ser compatível com Safari iOS e minificação.
+ */
 export function cleanFirestoreData(data: any): any {
     if (data === null) return null;
     if (data === undefined) return undefined;
     if (data instanceof Date) return data.toISOString();
     
-    if (typeof data === 'object' && data.constructor.name !== 'Object' && !Array.isArray(data)) {
-        return data;
-    }
+    // Verificação de objeto plano segura para Safari
+    const isPlainObject = (obj: any) => {
+        return typeof obj === 'object' && obj !== null && Object.getPrototypeOf(obj) === Object.prototype;
+    };
 
     if (typeof data === 'string') return data.trim();
     
@@ -181,7 +187,7 @@ export function cleanFirestoreData(data: any): any {
         return data.map(item => cleanFirestoreData(item)).filter(i => i !== undefined);
     }
     
-    if (typeof data === 'object') {
+    if (isPlainObject(data)) {
         const cleaned: any = {};
         Object.keys(data).forEach(key => {
             const val = data[key];
@@ -189,6 +195,7 @@ export function cleanFirestoreData(data: any): any {
         });
         return cleaned;
     }
+    
     return data;
 }
 

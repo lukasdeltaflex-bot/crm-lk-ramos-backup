@@ -35,14 +35,17 @@ import {
     Zap
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { validateCPF, handlePhoneMask, cleanFirestoreData, cn, formatCurrencyInput } from '@/lib/utils';
+import { validateCPF, handlePhoneMask, cleanFirestoreData, cn, formatCurrencyInput, parseDateSafe } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { parse, isValid as isValidDate, isBefore, startOfToday, differenceInYears } from 'date-fns';
+import { format, isValid as isValidDate, isBefore, startOfToday, differenceInYears } from 'date-fns';
 
 export default function LeadCapturePage() {
   const params = useParams();
-  const uid = params?.uid as string;
+  const rawUid = params?.uid;
+  // 🛡️ TRATAMENTO DE PARAMS: Garante que o UID seja uma string única (Safari safe)
+  const uid = Array.isArray(rawUid) ? rawUid[0] : rawUid as string;
+  
   const firestore = useFirestore();
   const { storage } = useFirebase();
   
@@ -135,23 +138,23 @@ export default function LeadCapturePage() {
   const isBirthDateValid = useMemo(() => {
     if (formData.birthDate.length < 10) return null;
     try {
-        const parsed = parse(formData.birthDate, 'dd/MM/yyyy', new Date());
-        return isValidDate(parsed) && isBefore(parsed, startOfToday());
+        const parsed = parseDateSafe(formData.birthDate);
+        return !!(parsed && isValidDate(parsed) && isBefore(parsed, startOfToday()));
     } catch { return false; }
   }, [formData.birthDate]);
 
   const calculatedAge = useMemo(() => {
     if (formData.birthDate.length < 10) return null;
     try {
-        const parsed = parse(formData.birthDate, 'dd/MM/yyyy', new Date());
-        if (isValidDate(parsed) && isBefore(parsed, startOfToday())) {
+        const parsed = parseDateSafe(formData.birthDate);
+        if (parsed && isValidDate(parsed) && isBefore(parsed, startOfToday())) {
             return differenceInYears(new Date(), parsed);
         }
     } catch { return null; }
     return null;
   }, [formData.birthDate]);
 
-  const isFormValid = formData.name.split(' ').length >= 2 && 
+  const isFormValid = formData.name.trim().split(' ').length >= 2 && 
                       isCpfValid === true && 
                       isBirthDateValid === true && 
                       formData.phone.length >= 14;
@@ -254,29 +257,28 @@ export default function LeadCapturePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firestore || !uid) return;
+    if (!firestore || !uid) {
+        toast({ variant: 'destructive', title: 'Conexão Perdida', description: 'O serviço não está pronto. Recarregue a página.' });
+        return;
+    }
 
     if (!isFormValid) {
-        toast({ variant: 'destructive', title: 'Dados Inválidos', description: 'Por favor, revise os campos marcados em vermelho.' });
+        toast({ variant: 'destructive', title: 'Dados Inválidos', description: 'Por favor, preencha todos os campos obrigatórios corretamente.' });
         return;
     }
 
     setIsSubmitting(true);
     try {
         const leadId = doc(collection(firestore, 'leads')).id;
-        
-        let birthIso = '';
-        try {
-            const parts = formData.birthDate.split('/');
-            if (parts.length === 3) birthIso = `${parts[2]}-${parts[1]}-${parts[0]}`;
-        } catch (e) {}
+        const parsedDate = parseDateSafe(formData.birthDate);
+        const birthIso = parsedDate ? format(parsedDate, 'yyyy-MM-dd') : formData.birthDate;
 
         const leadData: any = {
             ...formData,
             id: leadId,
             ownerId: uid,
-            name: formData.name.toUpperCase(),
-            birthDate: birthIso || formData.birthDate,
+            name: formData.name.toUpperCase().trim(),
+            birthDate: birthIso,
             grossSalary: Number(formData.grossSalary) || 0,
             requestedAmount: Number(formData.requestedAmount) || 0,
             maxInstallment: Number(formData.maxInstallment) || 0,
@@ -285,11 +287,18 @@ export default function LeadCapturePage() {
             documents: attachments
         };
 
-        await setDoc(doc(firestore, 'leads', leadId), cleanFirestoreData(leadData));
+        const cleaned = cleanFirestoreData(leadData);
+        await setDoc(doc(firestore, 'leads', leadId), cleaned);
+        
         setIsSuccess(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (e) {
-        toast({ variant: 'destructive', title: 'Erro ao enviar', description: 'Tente novamente em instantes.' });
+    } catch (err: any) {
+        console.error("❌ Submission error:", err);
+        toast({ 
+            variant: 'destructive', 
+            title: 'Erro ao enviar', 
+            description: 'Não foi possível salvar seus dados. Tente novamente ou mude de navegador.' 
+        });
     } finally {
         setIsSubmitting(false);
     }
@@ -500,9 +509,9 @@ export default function LeadCapturePage() {
                                         <SelectItem value="Antecipação FGTS">Antecipação FGTS</SelectItem>
                                         <SelectItem value="Refinanciamento">Refinanciamento</SelectItem>
                                         <SelectItem value="Portabilidade">Portabilidade</SelectItem>
-                                        <SelectItem value="Margem Livre">Margem Livre (Novo)</SelectItem>
-                                        <SelectItem value="Redução de Parcela">Reduzir Parcelas</SelectItem>
+                                        <SelectItem value="Saque Complementar">Saque Complementar</SelectItem>
                                         <SelectItem value="Cartão">Cartão de Crédito</SelectItem>
+                                        <SelectItem value="Margem Livre">Margem Livre (Novo)</SelectItem>
                                         <SelectItem value="Outro">Apenas Simulação</SelectItem>
                                     </SelectContent>
                                 </Select>
