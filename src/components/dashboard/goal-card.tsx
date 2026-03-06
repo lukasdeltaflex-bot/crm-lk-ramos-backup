@@ -51,18 +51,22 @@ export function GoalCard({
   const conversionRate = totalDigitized > 0 ? (currentProduction / totalDigitized) * 100 : 0;
 
   const renderSparkline = () => {
+    // 🛡️ BLINDAGEM MATEMÁTICA: Evita erros em séries históricas curtas ou zeradas
     if (!sparklineData || sparklineData.length < 2) return null;
-    const max = Math.max(...sparklineData, 1);
+    
+    const validData = sparklineData.map(v => Number(v) || 0);
+    const max = Math.max(...validData, 1);
     const width = 100;
     const height = 22;
-    const points = sparklineData.map((v, i) => {
-        const x = (i / (sparklineData.length - 1)) * width;
+    
+    const points = validData.map((v, i) => {
+        const x = (i / (validData.length - 1)) * width;
         const y = height - (v / max) * height;
         return `${x},${y}`;
     }).join(' ');
 
     return (
-        <svg width={width} height={height} className="opacity-50">
+        <svg width={width} height={height} className="opacity-50" preserveAspectRatio="none">
             <polyline
                 fill="none"
                 stroke="#16a34a"

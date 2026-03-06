@@ -88,18 +88,22 @@ export function StatsCard({
   };
 
   const renderSparkline = () => {
+    // 🛡️ BLINDAGEM MATEMÁTICA: Evita divisão por zero e erros de NaN
     if (!sparklineData || sparklineData.length < 2) return null;
-    const max = Math.max(...sparklineData, 1);
+    
+    const validData = sparklineData.map(v => Number(v) || 0);
+    const max = Math.max(...validData, 1);
     const width = 60;
     const height = 20;
-    const points = sparklineData.map((v, i) => {
-        const x = (i / (sparklineData.length - 1)) * width;
+    
+    const points = validData.map((v, i) => {
+        const x = (i / (validData.length - 1)) * width;
         const y = height - (v / max) * height;
         return `${x},${y}`;
     }).join(' ');
 
     return (
-        <svg width={width} height={height} className="opacity-40">
+        <svg width={width} height={height} className="opacity-40" preserveAspectRatio="none">
             <polyline
                 fill="none"
                 stroke="currentColor"
