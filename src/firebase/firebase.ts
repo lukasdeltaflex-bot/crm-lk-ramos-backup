@@ -9,7 +9,7 @@ import { firebaseConfig } from "./config";
 /**
  * 🛠️ INFRAESTRUTURA DE DADOS LK RAMOS
  * Inicialização robusta com modo de resiliência de rede avançado.
- * Otimizado para Safari iOS e navegação privada.
+ * Otimizado para Safari iOS, navegação privada e redes com restrição de WebSocket.
  */
 
 let db: Firestore | null = null;
@@ -20,22 +20,27 @@ if (typeof window !== "undefined") {
     try {
         const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
         
-        // 🛡️ INICIALIZAÇÃO RESILIENTE V24
+        // 🛡️ PROTOCOLO DE CONEXÃO HARDENED V25
+        // Forçamos o Long Polling e definimos o host explicitamente para evitar timeouts de 10s.
+        const firestoreSettings = {
+            experimentalForceLongPolling: true,
+            experimentalAutoDetectLongPolling: false,
+            host: "firestore.googleapis.com",
+            ssl: true,
+        };
+
         // Tenta configurar o cache local de forma compatível com mobile e desktop.
-        // Se falhar (comum no Safari iOS Private), ele ignora o erro e inicializa o Firestore sem cache.
         try {
             db = initializeFirestore(app, {
-                experimentalForceLongPolling: true,
-                experimentalAutoDetectLongPolling: false,
+                ...firestoreSettings,
                 localCache: persistentLocalCache({
                     tabManager: persistentMultipleTabManager()
                 })
             });
         } catch (cacheError) {
-            console.warn("⚠️ LK RAMOS: Cache persistente não disponível neste navegador. Usando modo online direto.");
+            console.warn("⚠️ LK RAMOS: Cache persistente não disponível. Usando modo de memória.");
             db = initializeFirestore(app, {
-                experimentalForceLongPolling: true,
-                experimentalAutoDetectLongPolling: false,
+                ...firestoreSettings,
                 localCache: memoryLocalCache()
             });
         }
@@ -43,7 +48,7 @@ if (typeof window !== "undefined") {
         auth = getAuth(app);
         storage = getStorage(app, firebaseConfig.storageBucket);
         
-        console.log("💎 LK RAMOS: Núcleo Firebase sincronizado com protocolo de alta compatibilidade.");
+        console.log("💎 LK RAMOS: Núcleo Firebase sincronizado via Long Polling (Modo Estável).");
     } catch (error) {
         console.error("❌ Erro crítico na inicialização do Firebase:", error);
     }
