@@ -49,7 +49,6 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
 
     const safeValue = (val: any) => (val === null || val === undefined || isNaN(val)) ? 0 : Number(val);
 
-    // 🛡️ OTIMIZAÇÃO V14: Filtro de passagem única (Single Pass)
     const digitizedInPeriod: ProposalWithCustomer[] = [];
     const receivedInPeriod: ProposalWithCustomer[] = [];
     const averbados: ProposalWithCustomer[] = [];
@@ -62,20 +61,21 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
         const d = p.dateDigitized ? new Date(p.dateDigitized) : null;
         const pd = p.commissionPaymentDate ? new Date(p.commissionPaymentDate) : null;
 
-        // Produção Digitada
+        // Produção Digitada (Filtrada por Período)
         if (d && isValid(d)) {
             if (d >= fromDate && d <= effectiveToDate) digitizedInPeriod.push(p);
             if (d >= prevMonthStart && d <= prevMonthEnd) digitizedPrevSum += safeValue(p.commissionValue);
         }
 
-        // Comissão Recebida
+        // Comissão Recebida (Filtrada por Período)
         if (pd && isValid(pd) && (p.commissionStatus === 'Paga' || p.commissionStatus === 'Parcial')) {
             if (pd >= fromDate && pd <= effectiveToDate) receivedInPeriod.push(p);
             if (pd >= prevMonthStart && pd <= prevMonthEnd) receivedPrevSum += safeValue(p.amountPaid);
         }
 
-        // Saldo a Receber (Averbados)
-        if (p.dateApproved && p.commissionStatus !== 'Paga' && p.status !== 'Reprovado') {
+        // 🛡️ SALDO A RECEBER (AVERBADOS)
+        // Regra: Independente do mês, deve ter data de averbação preenchida e não estar paga.
+        if (p.dateApproved && p.dateApproved.trim() !== '' && p.commissionStatus !== 'Paga' && p.status !== 'Reprovado') {
             averbados.push(p);
         }
 
@@ -184,7 +184,6 @@ export function FinancialSummary({ rows, currentMonthRange, isPrivacyMode, onSho
   );
 }
 
-// Icon definition fix
 function Activity(props: any) {
   return (
     <svg
