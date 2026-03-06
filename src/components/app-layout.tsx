@@ -38,7 +38,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </SidebarContent>
             </Sidebar>
             <SidebarInset className={cn(
-                "print:m-0 print:p-0 flex flex-col relative transition-all duration-1000 min-w-0 min-h-screen",
+                "print:m-0 print:p-0 flex flex-col relative transition-all duration-200 min-w-0 min-h-screen",
                 isAtmosphericActive && `aura-${auraStyle} aura-active`,
                 isAtmosphericActive && "bg-transparent/0 backdrop-blur-none"
             )}>
