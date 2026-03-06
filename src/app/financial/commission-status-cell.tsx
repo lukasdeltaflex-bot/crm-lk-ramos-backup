@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -23,14 +24,18 @@ interface CommissionStatusCellProps {
 
 export function CommissionStatusCell({ proposal, onStatusUpdate, onEdit }: CommissionStatusCellProps) {
     const { statusColors } = useTheme();
-    const { commissionStatus, status } = proposal;
+    const { commissionStatus, status, dateApproved } = proposal;
 
     // 🔓 AUTONOMIA TOTAL: Removida a trava de averbação.
     // O usuário agora tem liberdade para definir a comissão em qualquer fase.
     const isReprovado = status === 'Reprovado';
     const canInteract = !isReprovado;
 
-    const colorValue = commissionStatus ? (statusColors[commissionStatus.toUpperCase()] || statusColors[commissionStatus]) : undefined;
+    // 🎯 LÓGICA DE PADRÃO SOLICITADA: 
+    // Se tiver data de averbação preenchida e nenhum status definido no banco, assume visualmente "Pendente"
+    const effectiveStatus = commissionStatus || (dateApproved ? 'Pendente' : null);
+    
+    const colorValue = effectiveStatus ? (statusColors[effectiveStatus.toUpperCase()] || statusColors[effectiveStatus]) : undefined;
     
     return (
         <DropdownMenu>
@@ -46,11 +51,11 @@ export function CommissionStatusCell({ proposal, onStatusUpdate, onEdit }: Commi
                         variant="outline" 
                         className={cn(
                             "min-w-[80px] h-6 justify-center transition-all text-[10px] font-black uppercase tracking-tighter border-2 rounded-full", 
-                            !commissionStatus ? 'border-dashed border-muted-foreground/40 text-muted-foreground/60 bg-transparent' : 'status-custom'
+                            !effectiveStatus ? 'border-dashed border-muted-foreground/40 text-muted-foreground/60 bg-transparent' : 'status-custom'
                         )}
                         style={colorValue ? { '--status-color': colorValue } as any : {}}
                     >
-                        {commissionStatus || 'Definir'}
+                        {effectiveStatus || 'Definir'}
                     </Badge>
                     {canInteract && (
                         <ChevronsUpDown className="h-3 w-3 ml-1 opacity-0 group-hover:opacity-40 transition-opacity print:hidden" />
