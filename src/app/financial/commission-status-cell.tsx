@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -31,9 +30,13 @@ export function CommissionStatusCell({ proposal, onStatusUpdate, onEdit }: Commi
     const isReprovado = status === 'Reprovado';
     const canInteract = !isReprovado;
 
-    // 🎯 LÓGICA DE PADRÃO SOLICITADA: 
-    // Se tiver data de averbação preenchida e nenhum status definido no banco, assume visualmente "Pendente"
-    const effectiveStatus = commissionStatus || (dateApproved ? 'Pendente' : null);
+    // 🎯 LÓGICA DE PADRÃO REFINADA (CONFORME SOLICITADO): 
+    // "Pendente" só deve aparecer visualmente se houver data de averbação preenchida.
+    // Se não tiver data de averbação, tratamos o "Pendente" como nulo (exibindo "Definir").
+    // Status manuais e definitivos como "Paga" ou "Parcial" são mantidos sempre, independente da data.
+    const effectiveStatus = (commissionStatus === 'Paga' || commissionStatus === 'Parcial')
+        ? commissionStatus
+        : (dateApproved ? 'Pendente' : null);
     
     const colorValue = effectiveStatus ? (statusColors[effectiveStatus.toUpperCase()] || statusColors[effectiveStatus]) : undefined;
     

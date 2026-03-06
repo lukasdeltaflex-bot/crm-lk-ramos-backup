@@ -147,11 +147,12 @@ function ProposalsPageContent() {
   const handleDuplicateProposal = React.useCallback((proposal: Proposal) => {
     const { id, proposalNumber, status, history, commissionStatus, amountPaid, commissionPaymentDate, ...rest } = proposal;
     
+    // 🛡️ DUPLICAÇÃO LIMPA: Removemos status de comissão e histórico para não poluir o novo contrato
     const duplicatedData: ProposalFormData = {
         ...rest,
         proposalNumber: '',
         status: 'Em Andamento',
-        commissionStatus: 'Pendente',
+        commissionStatus: '',
         amountPaid: 0,
         commissionPaymentDate: undefined,
         dateDigitized: new Date().toISOString(),
@@ -368,7 +369,7 @@ function ProposalsPageContent() {
     } catch (error: any) {
         if (error.code === 'permission-denied') {
             errorEmitter.emit('permission-error', new FirestorePermissionError({
-                path: docRef.path,
+                path: `loanProposals/${proposalId}`,
                 operation: 'update',
                 requestResourceData: dataToUpdate
             }));
