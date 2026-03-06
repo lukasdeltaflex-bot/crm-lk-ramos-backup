@@ -7,9 +7,8 @@ import { getStorage, FirebaseStorage } from "firebase/storage";
 import { firebaseConfig } from "./config";
 
 /**
- * 🛠️ INFRAESTRUTURA DE DADOS LK RAMOS
- * Inicialização robusta com modo de resiliência de rede avançado.
- * Otimizado para Safari iOS, navegação privada e redes com restrição de WebSocket.
+ * 🛠️ INFRAESTRUTURA DE DADOS LK RAMOS - ULTRA RESILIENTE
+ * Otimizado para ambientes com restrição de rede, proxies corporativos e Safari iOS.
  */
 
 let db: Firestore | null = null;
@@ -20,37 +19,40 @@ if (typeof window !== "undefined") {
     try {
         const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
         
-        // 🛡️ PROTOCOLO DE CONEXÃO HARDENED V25
-        // Forçamos o Long Polling e definimos o host explicitamente para evitar timeouts de 10s.
+        // 🛡️ PROTOCOLO DE CONEXÃO BLINDADO V26
+        // Forçamos Long Polling e desativamos Fetch Streams para máxima compatibilidade.
+        // Isso resolve erros de "Could not reach Cloud Firestore backend" em redes instáveis.
         const firestoreSettings = {
             experimentalForceLongPolling: true,
             experimentalAutoDetectLongPolling: false,
+            useFetchStreams: false, // Crucial: Evita problemas com proxies que não suportam streams
             host: "firestore.googleapis.com",
             ssl: true,
         };
 
-        // Tenta configurar o cache local de forma compatível com mobile e desktop.
-        try {
-            db = initializeFirestore(app, {
-                ...firestoreSettings,
-                localCache: persistentLocalCache({
+        // Gerenciamento de cache resiliente (Safe para Safari Mobile e Modo Privado)
+        const localCache = (() => {
+            try {
+                return persistentLocalCache({
                     tabManager: persistentMultipleTabManager()
-                })
-            });
-        } catch (cacheError) {
-            console.warn("⚠️ LK RAMOS: Cache persistente não disponível. Usando modo de memória.");
-            db = initializeFirestore(app, {
-                ...firestoreSettings,
-                localCache: memoryLocalCache()
-            });
-        }
+                });
+            } catch (e) {
+                console.warn("⚠️ LK RAMOS: Cache persistente não suportado. Usando modo memória.");
+                return memoryLocalCache();
+            }
+        })();
+
+        db = initializeFirestore(app, {
+            ...firestoreSettings,
+            localCache
+        });
 
         auth = getAuth(app);
         storage = getStorage(app, firebaseConfig.storageBucket);
         
-        console.log("💎 LK RAMOS: Núcleo Firebase sincronizado via Long Polling (Modo Estável).");
+        console.log("💎 LK RAMOS: Conectividade Firestore estabilizada via Long Polling + No-Streams.");
     } catch (error) {
-        console.error("❌ Erro crítico na inicialização do Firebase:", error);
+        console.error("❌ Falha crítica na inicialização Firebase:", error);
     }
 }
 
