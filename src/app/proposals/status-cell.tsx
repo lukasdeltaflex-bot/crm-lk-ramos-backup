@@ -28,8 +28,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { MessageSquareText, Loader2, Zap, Timer, ChevronDown } from 'lucide-react';
+import { MessageSquareText, Loader2, Zap, Timer, ChevronDown, Sparkles } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { summarizeNotes } from '@/ai/flows/summarize-notes-flow';
 
 interface StatusCellProps {
   proposalId: string;
@@ -48,6 +49,7 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
   const [quickNote, setQuickNote] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isSummarizing, setIsSummarizing] = useState(false);
 
   const settingsDocRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -65,6 +67,23 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
     setQuickNote('');
     setRejectionReason('');
     setIsNoteModalOpen(true);
+  };
+
+  const handleSummarize = async () => {
+    if (!quickNote || quickNote.trim().length < 10) {
+        toast({ variant: 'destructive', title: 'Texto muito curto', description: 'Escreva um pouco mais para a IA resumir.' });
+        return;
+    }
+    setIsSummarizing(true);
+    try {
+        const summary = await summarizeNotes(quickNote);
+        setQuickNote(summary);
+        toast({ title: 'Nota resumida com IA!' });
+    } catch (e) {
+        toast({ variant: 'destructive', title: 'Erro na IA' });
+    } finally {
+        setIsSummarizing(false);
+    }
   };
 
   const handleUpdateConfirm = async () => {
@@ -226,7 +245,20 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Comentário Adicional</Label>
+                        <div className="flex items-center justify-between">
+                            <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Comentário Adicional</Label>
+                            <Button 
+                                type="button" 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-7 rounded-full text-[10px] font-bold px-3 border-primary/20 bg-primary/5 text-primary hover:bg-primary/10"
+                                onClick={handleSummarize}
+                                disabled={isSummarizing || !quickNote}
+                            >
+                                {isSummarizing ? <Loader2 className="h-3 w-3 animate-spin mr-1.5" /> : <Sparkles className="h-3 w-3 mr-1.5" />}
+                                Resumir com IA
+                            </Button>
+                        </div>
                         <Textarea 
                             placeholder={pendingStatus === 'Reprovado' ? "Detalhes da negativa do banco..." : "Algo importante a registrar?"}
                             value={quickNote}
@@ -241,7 +273,7 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
                     <Button variant="ghost" onClick={() => setIsNoteModalOpen(false)} className="rounded-full font-bold text-[10px] uppercase flex-1 h-11">Cancelar</Button>
                     <Button 
                         onClick={handleUpdateConfirm} 
-                        disabled={isUpdating || (pendingStatus === 'Reprovado' && !rejectionReason)}
+                        disabled={isUpdating || (pendingStatus === 'Reprovado' && !rejectionReason) || isSummarizing}
                         className={cn(
                             "flex-[2] rounded-full font-black uppercase text-[10px] tracking-widest h-11 shadow-lg transition-all",
                             pendingStatus === 'Reprovado' ? "bg-red-600 hover:bg-red-700 text-white" : "bg-primary text-white"
