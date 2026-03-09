@@ -60,6 +60,20 @@ import { DraggableHeader } from './columns';
 import type { Customer } from '@/lib/types';
 import { normalizeString, cn } from '@/lib/utils';
 
+const COLUMN_LABELS: Record<string, string> = {
+    col_select: "Seleção",
+    col_id: "ID",
+    col_name: "Nome",
+    col_cpf: "CPF",
+    col_phone: "Telefone",
+    col_phone2: "Telefone 2",
+    col_tags: "Etiquetas",
+    col_city: "Cidade",
+    col_state: "Estado",
+    col_obs: "Observações",
+    col_actions: "Ações"
+};
+
 interface DataTableProps {
   columns: ColumnDef<Customer, unknown>[];
   data: Customer[];
@@ -101,6 +115,16 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
     'col_obs': false,
   });
 
+  const handlePaginationChange = (updater: any) => {
+    setPagination((old) => {
+      const next = typeof updater === 'function' ? updater(old) : updater;
+      if (typeof window !== 'undefined') {
+        try { localStorage.setItem('lk-customers-pageSize', String(next.pageSize)); } catch(e) {}
+      }
+      return next;
+    });
+  };
+
   React.useEffect(() => {
     setIsClient(true);
     try {
@@ -124,16 +148,6 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
     } catch (e) {}
   }, [initialIds]);
 
-  const handlePaginationChange = (updater: any) => {
-    setPagination((old) => {
-      const next = typeof updater === 'function' ? updater(old) : updater;
-      if (typeof window !== 'undefined') {
-        try { localStorage.setItem('lk-customers-pageSize', String(next.pageSize)); } catch(e) {}
-      }
-      return next;
-    });
-  };
-
   React.useEffect(() => {
     if (isClient) {
       try {
@@ -145,19 +159,13 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
     }
   }, [globalFilter, columnVisibility, columnOrder, frozenCount, isClient]);
 
-  // 🛡️ MOTOR DE SINCRONIZAÇÃO V12 (TRAVA MECÂNICA)
   const syncScroll = (source: HTMLDivElement, target: HTMLDivElement) => {
     if (isScrollingRef.current) return;
-    
     const diff = Math.abs(source.scrollLeft - target.scrollLeft);
     if (diff < 1) return;
-
     isScrollingRef.current = true;
     target.scrollLeft = source.scrollLeft;
-    
-    setTimeout(() => {
-        isScrollingRef.current = false;
-    }, 10);
+    setTimeout(() => { isScrollingRef.current = false; }, 10);
   };
 
   const sensors = useSensors(
@@ -197,32 +205,17 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
     globalFilterFn: (row, columnId, filterValue) => {
         const searchTerm = String(filterValue ?? '').trim();
         if (!searchTerm) return true;
-        
         const customer = row.original;
         const normalizedSearch = normalizeString(searchTerm);
         const isPureNumber = /^\d+$/.test(searchTerm);
-        
         if (isPureNumber) {
-            const numericIdStr = String(customer.numericId || '');
-            if (numericIdStr === searchTerm) return true;
+            if (String(customer.numericId) === searchTerm) return true;
             const cpfNumeric = (customer.cpf || '').replace(/\D/g, '');
             if (cpfNumeric.startsWith(searchTerm)) return true;
             return false;
         }
-
-        const searchableFields = [
-            customer.name, 
-            customer.city, 
-            customer.email, 
-            customer.observations, 
-            ...(customer.tags || []), 
-            ...((customer as any).smartTags || [])
-        ];
-
-        return searchableFields.some(field => {
-            if (!field) return false;
-            return normalizeString(String(field)).includes(normalizedSearch);
-        });
+        const searchableFields = [customer.name, customer.city, customer.email, customer.observations, ...(customer.tags || []), ...((customer as any).smartTags || [])];
+        return searchableFields.some(field => field && normalizeString(String(field)).includes(normalizedSearch));
     },
   });
 
@@ -239,7 +232,6 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
                 <Search className='absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80' />
                 <Input placeholder="Busca por ID exato, Nome, CPF..." value={globalFilter ?? ''} onChange={(e) => setGlobalFilter(e.target.value)} className="pl-11 w-full bg-background border-2 border-zinc-300 h-11 rounded-full shadow-md font-bold text-sm" />
             </div>
-            
             <div className="flex items-center gap-3">
                 <Select value={String(frozenCount)} onValueChange={(val) => setFrozenCount(Number(val))}>
                     <SelectTrigger className="h-10 min-w-[140px] rounded-full text-[10px] font-black uppercase border-2 border-zinc-300 bg-background shadow-sm">
@@ -252,7 +244,6 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
                         <SelectItem value="3" className="text-[10px] font-bold uppercase">Fixar 3 Colunas</SelectItem>
                     </SelectContent>
                 </Select>
-
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="rounded-full font-black h-11 border-2 border-zinc-300 bg-background px-6 shadow-md text-xs uppercase tracking-widest">
@@ -264,31 +255,24 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
                         <DropdownMenuSeparator />
                         {table.getAllColumns().filter(c => c.getCanHide()).map(column => (
                             <DropdownMenuCheckboxItem key={column.id} checked={column.getIsVisible()} onCheckedChange={v => column.toggleVisibility(!!v)} className="capitalize text-xs font-bold">
-                                {column.columnDef.header as string}
+                                {COLUMN_LABELS[column.id] || column.id}
                             </DropdownMenuCheckboxItem>
                         ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
           </div>
-          
-          {/* 🛡️ BARRA DE ROLAGEM SUPERIOR V12 (INTERAÇÃO PRIORITÁRIA) */}
           <div 
             ref={topScrollRef}
-            className="overflow-x-auto h-5 bg-muted/30 border-b cursor-pointer relative z-[100] pointer-events-auto"
-            onScroll={(e) => {
-                if (tableContainerRef.current) syncScroll(e.currentTarget as HTMLDivElement, tableContainerRef.current);
-            }}
+            className="overflow-x-auto h-5 bg-muted/30 border-b cursor-pointer relative z-[60] pointer-events-auto"
+            onScroll={(e) => { if (tableContainerRef.current) syncScroll(e.currentTarget as HTMLDivElement, tableContainerRef.current); }}
           >
             <div style={{ width: totalTableWidth, height: '1px' }} />
           </div>
-
           <div 
             ref={tableContainerRef}
             className="overflow-x-auto relative z-10"
-            onScroll={(e) => {
-                if (topScrollRef.current) syncScroll(e.currentTarget as HTMLDivElement, topScrollRef.current);
-            }}
+            onScroll={(e) => { if (topScrollRef.current) syncScroll(e.currentTarget as HTMLDivElement, topScrollRef.current); }}
           >
             <Table style={{ width: totalTableWidth, tableLayout: 'fixed' }}>
                 <TableHeader className="bg-background border-b-2">
@@ -344,7 +328,6 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
                 </TableBody>
             </Table>
           </div>
-
           <div className="flex items-center justify-between px-6 py-4 border-t-2 bg-muted/10 font-black text-[11px] uppercase tracking-[0.1em] text-foreground/60 min-h-[64px]">
             <div className="flex items-center gap-4">
                 <div>{table.getFilteredSelectedRowModel().rows.length} SELECIONADOS.</div>
@@ -352,13 +335,8 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             <div className="flex items-center gap-6 lg:gap-8">
                 <div className="flex items-center gap-2">
                     <span>LINHAS:</span>
-                    <Select
-                        value={String(table.getState().pagination.pageSize)}
-                        onValueChange={(val) => table.setPageSize(Number(val))}
-                    >
-                        <SelectTrigger className="h-8 w-16 border-2 font-black text-[10px]">
-                            <SelectValue />
-                        </SelectTrigger>
+                    <Select value={String(table.getState().pagination.pageSize)} onValueChange={(val) => table.setPageSize(Number(val))}>
+                        <SelectTrigger className="h-8 w-16 border-2 font-black text-[10px]"><SelectValue /></SelectTrigger>
                         <SelectContent>
                             {[10, 20, 30, 50, 100].map(size => (
                                 <SelectItem key={size} value={String(size)} className="text-[10px] font-bold">{size}</SelectItem>
@@ -370,42 +348,10 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
                     PÁG {table.getState().pagination.pageIndex + 1} DE {table.getPageCount()}
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button 
-                        variant="outline" 
-                        size="icon" 
-                        className="h-9 w-9 rounded-full border-2 bg-background shadow-sm transition-all hover:bg-primary/5 active:scale-95" 
-                        onClick={() => table.setPageIndex(0)} 
-                        disabled={!table.getCanPreviousPage()}
-                    >
-                        <ChevronsLeft className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                        variant="outline" 
-                        size="icon" 
-                        className="h-9 w-9 rounded-full border-2 bg-background shadow-sm transition-all hover:bg-primary/5 active:scale-95" 
-                        onClick={() => table.previousPage()} 
-                        disabled={!table.getCanPreviousPage()}
-                    >
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                        variant="outline" 
-                        size="icon" 
-                        className="h-9 w-9 rounded-full border-2 bg-background shadow-sm transition-all hover:bg-primary/5 active:scale-95" 
-                        onClick={() => table.nextPage()} 
-                        disabled={!table.getCanNextPage()}
-                    >
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                        variant="outline" 
-                        size="icon" 
-                        className="h-9 w-9 rounded-full border-2 bg-background shadow-sm transition-all hover:bg-primary/5 active:scale-95" 
-                        onClick={() => table.setPageIndex(table.getPageCount() - 1)} 
-                        disabled={!table.getCanNextPage()}
-                    >
-                        <ChevronsRight className="h-4 w-4" />
-                    </Button>
+                    <Button variant="outline" size="icon" className="h-9 w-9 rounded-full border-2 bg-background shadow-sm transition-all hover:bg-primary/5 active:scale-95" onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()}><ChevronsLeft className="h-4 w-4" /></Button>
+                    <Button variant="outline" size="icon" className="h-9 w-9 rounded-full border-2 bg-background shadow-sm transition-all hover:bg-primary/5 active:scale-95" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}><ChevronLeft className="h-4 w-4" /></Button>
+                    <Button variant="outline" size="icon" className="h-9 w-9 rounded-full border-2 bg-background shadow-sm transition-all hover:bg-primary/5 active:scale-95" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}><ChevronRight className="h-4 w-4" /></Button>
+                    <Button variant="outline" size="icon" className="h-9 w-9 rounded-full border-2 bg-background shadow-sm transition-all hover:bg-primary/5 active:scale-95" onClick={() => table.setPageIndex(table.getPageCount() - 1)} disabled={!table.getCanNextPage()}><ChevronsRight className="h-4 w-4" /></Button>
                 </div>
             </div>
           </div>
