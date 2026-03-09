@@ -359,6 +359,55 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
+                {/* 🛡️ NOVO LUGAR DO FILTRO DE DATA (MAIS LIMPO) */}
+                <div className="flex items-center gap-3 bg-background border-2 border-zinc-300 rounded-full px-3 py-1 shadow-sm">
+                    <Select onValueChange={applyRangeShortcut}>
+                        <SelectTrigger className="h-7 w-[120px] border-none bg-transparent focus:ring-0 text-xs font-black uppercase p-0">
+                            <CalendarIcon className="mr-2 h-3.5 w-3.5 text-primary" />
+                            <SelectValue placeholder="PERÍODO" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="today">Hoje</SelectItem>
+                            <SelectItem value="yesterday">Ontem</SelectItem>
+                            <SelectItem value="week">Últimos 7 dias</SelectItem>
+                            <SelectItem value="month">Mês Atual</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Separator orientation="vertical" className="h-4 mx-1 bg-zinc-300" />
+                    <div className="flex items-center gap-1">
+                        <Input 
+                            placeholder="De" 
+                            value={startDateInput} 
+                            onChange={(e) => setStartDateInput(handleDateMask(e))} 
+                            className="h-7 w-28 border-none bg-muted/40 text-[11px] text-center font-black rounded-full focus-visible:ring-primary/20" 
+                        />
+                        <span className="text-muted-foreground font-black opacity-40">-</span>
+                        <Input 
+                            placeholder="Até" 
+                            value={endDateInput} 
+                            onChange={(e) => setEndDateInput(handleDateMask(e))} 
+                            className="h-7 w-28 border-none bg-muted/40 text-[11px] text-center font-black rounded-full focus-visible:ring-primary/20" 
+                        />
+                    </div>
+                    <Button 
+                        size="sm" 
+                        onClick={handleApplyFilter} 
+                        className="h-7 bg-primary text-white hover:bg-primary/90 rounded-full px-4 text-[10px] font-black uppercase shadow-sm gap-1.5 transition-all"
+                    >
+                        <Filter className="h-3 w-3" /> APLICAR
+                    </Button>
+                    {appliedDateRange && (
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-7 w-7 text-destructive" 
+                            onClick={() => { setStartDateInput(''); setEndDateInput(''); setAppliedDateRange(undefined); }}
+                        >
+                            <X className="h-3.5 w-3.5" />
+                        </Button>
+                    )}
+                </div>
+
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="h-10 rounded-full font-bold px-6 border-2 border-zinc-300 bg-background shadow-sm text-xs gap-2">
@@ -410,59 +459,9 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                 )}
             </div>
 
-            <div className="flex items-center justify-between flex-wrap gap-4">
-                <div className='relative w-full max-md group'>
-                    <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80' />
-                    <Input placeholder="Busca por ID, CPF, Nome ou Proposta..." value={globalFilter ?? ''} onChange={(e) => setGlobalFilter(e.target.value)} className="pl-10 h-11 bg-background border-2 border-zinc-300 rounded-full text-base font-bold shadow-md" />
-                </div>
-                
-                <div className="flex items-center gap-3 bg-background border-2 border-zinc-300 rounded-full px-3 py-1 shadow-sm">
-                    <Select onValueChange={applyRangeShortcut}>
-                        <SelectTrigger className="h-7 w-[120px] border-none bg-transparent focus:ring-0 text-xs font-black uppercase p-0">
-                            <CalendarIcon className="mr-2 h-3.5 w-3.5 text-primary" />
-                            <SelectValue placeholder="PERÍODO" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="today">Hoje</SelectItem>
-                            <SelectItem value="yesterday">Ontem</SelectItem>
-                            <SelectItem value="week">Últimos 7 dias</SelectItem>
-                            <SelectItem value="month">Mês Atual</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <Separator orientation="vertical" className="h-4 mx-1 bg-zinc-300" />
-                    <div className="flex items-center gap-1">
-                        <Input 
-                            placeholder="De" 
-                            value={startDateInput} 
-                            onChange={(e) => setStartDateInput(handleDateMask(e))} 
-                            className="h-7 w-28 border-none bg-muted/40 text-[11px] text-center font-black rounded-full focus-visible:ring-primary/20" 
-                        />
-                        <span className="text-muted-foreground font-black opacity-40">-</span>
-                        <Input 
-                            placeholder="Até" 
-                            value={endDateInput} 
-                            onChange={(e) => setEndDateInput(handleDateMask(e))} 
-                            className="h-7 w-28 border-none bg-muted/40 text-[11px] text-center font-black rounded-full focus-visible:ring-primary/20" 
-                        />
-                    </div>
-                    <Button 
-                        size="sm" 
-                        onClick={handleApplyFilter} 
-                        className="h-7 bg-primary text-white hover:bg-primary/90 rounded-full px-4 text-[10px] font-black uppercase shadow-sm gap-1.5 transition-all"
-                    >
-                        <Filter className="h-3 w-3" /> APLICAR
-                    </Button>
-                    {appliedDateRange && (
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-7 w-7 text-destructive" 
-                            onClick={() => { setStartDateInput(''); setEndDateInput(''); setAppliedDateRange(undefined); }}
-                        >
-                            <X className="h-3.5 w-3.5" />
-                        </Button>
-                    )}
-                </div>
+            <div className='relative w-full group'>
+                <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80' />
+                <Input placeholder="Busca por ID, CPF, Nome ou Proposta..." value={globalFilter ?? ''} onChange={(e) => setGlobalFilter(e.target.value)} className="pl-10 h-11 bg-background border-2 border-zinc-300 rounded-full text-base font-bold shadow-md" />
             </div>
 
             <Card className="border-2 border-zinc-300 shadow-xl rounded-xl overflow-hidden bg-card p-1">
