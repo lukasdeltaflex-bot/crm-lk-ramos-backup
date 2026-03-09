@@ -156,7 +156,14 @@ export const getColumns = ({ onEdit, onDelete }: any): ColumnDef<Customer>[] => 
               </Link>
               <div className="flex flex-wrap gap-1">
                   {smartTags.map((tag: any) => (
-                      <Badge key={tag.label} className={cn("text-[7.5px] font-black uppercase px-1.5 py-0 rounded-full border-none text-white shadow-sm flex items-center gap-0.5", tag.color)}>
+                      <Badge 
+                        key={tag.label} 
+                        className={cn(
+                            "text-[7.5px] font-black uppercase px-1.5 py-0 rounded-full border-none text-white shadow-sm flex items-center gap-0.5 transition-all", 
+                            tag.color,
+                            tag.label === 'ALERTA 75 ANOS' && "animate-pulse ring-1 ring-white/50"
+                        )}
+                      >
                           {tag.label === 'ATIVO' && <span className="text-[8px]">🔥</span>}
                           {tag.label}
                       </Badge>

@@ -126,8 +126,9 @@ const CustomerInfoCard = ({ customer, proposals, onExportDossier, onToggleStatus
                                         <Badge 
                                             key={tag.label} 
                                             className={cn(
-                                                "rounded-full px-2.5 py-0.5 font-black uppercase text-[9px] tracking-widest border-none text-white shadow-sm animate-in zoom-in-95", 
-                                                tag.color
+                                                "rounded-full px-2.5 py-0.5 font-black uppercase text-[9px] tracking-widest border-none text-white shadow-sm animate-in zoom-in-95 transition-all", 
+                                                tag.color,
+                                                tag.label === 'ALERTA 75 ANOS' && "animate-pulse ring-2 ring-white/30"
                                             )}
                                         >
                                             {tag.label}
