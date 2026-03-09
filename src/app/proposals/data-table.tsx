@@ -359,7 +359,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-                {/* 🛡️ NOVO LUGAR DO FILTRO DE DATA (MAIS LIMPO) */}
                 <div className="flex items-center gap-3 bg-background border-2 border-zinc-300 rounded-full px-3 py-1 shadow-sm">
                     <Select onValueChange={applyRangeShortcut}>
                         <SelectTrigger className="h-7 w-[120px] border-none bg-transparent focus:ring-0 text-xs font-black uppercase p-0">

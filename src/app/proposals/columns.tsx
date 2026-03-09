@@ -98,10 +98,9 @@ const ActionsCell = ({ row, onEdit, onView, onDelete, onDuplicate }: any) => {
 };
 
 export const DraggableHeader = ({ header, className }: { header: Header<any, unknown>; className?: string }) => {
-    const isDraggable = header.column.getCanSort();
+    // 🛡️ CORREÇÃO: Permitir arraste de todas as colunas, mesmo as sem ordenação
     const { attributes, listeners, setNodeRef, transform, isDragging } = useSortable({ 
         id: header.column.id,
-        disabled: !isDraggable,
     });
     
     const style = {
@@ -109,6 +108,8 @@ export const DraggableHeader = ({ header, className }: { header: Header<any, unk
         transform: CSS.Transform.toString(transform),
         opacity: isDragging ? 0.5 : 1,
     };
+
+    const isSortable = header.column.getCanSort();
 
     return (
         <TableHead
@@ -121,17 +122,24 @@ export const DraggableHeader = ({ header, className }: { header: Header<any, unk
                 <div
                     className={cn(
                         'flex items-center gap-1 h-full px-2',
-                        isDraggable && 'cursor-pointer select-none',
+                        'select-none',
                         header.column.id === 'Actions' && 'justify-end'
                     )}
-                    onClick={header.column.getToggleSortingHandler()}
                 >
-                    {isDraggable && header.column.id !== 'Selecionar' && header.column.id !== 'Actions' && (
+                    {header.column.id !== 'Selecionar' && header.column.id !== 'Actions' && (
                         <div {...attributes} {...listeners} className="p-1 hover:bg-primary/10 rounded cursor-grab text-muted-foreground/40" onClick={(e) => e.stopPropagation()}>
                             <GripVertical className="h-3.5 w-3.5" />
                         </div>
                     )}
-                    <div className={cn("overflow-hidden font-black text-[12px] uppercase tracking-wider text-foreground leading-tight flex items-center gap-1", header.column.id === 'Actions' && "text-right pr-2", header.column.id === 'Selecionar' && "justify-center w-full pr-0")}>
+                    <div 
+                        className={cn(
+                            "overflow-hidden font-black text-[12px] uppercase tracking-wider text-foreground leading-tight flex items-center gap-1", 
+                            isSortable && "cursor-pointer",
+                            header.column.id === 'Actions' && "text-right pr-2", 
+                            header.column.id === 'Selecionar' && "justify-center w-full pr-0"
+                        )}
+                        onClick={isSortable ? header.column.getToggleSortingHandler() : undefined}
+                    >
                         {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                         {header.column.getIsSorted() && (
                             <div className="text-primary shrink-0 ml-1">
@@ -179,7 +187,20 @@ export const getColumns = (
         return (<div className="flex items-center gap-2"><BankIcon bankName={prom} domain={sett?.promoterDomains?.[prom]} showLogo={sett?.showPromoterLogos ?? true} className="h-4 w-4" /><span className="truncate text-sm font-bold">{prom}</span></div>)
     }, size: 150 },
   { id: 'Nº Proposta', accessorKey: 'proposalNumber', header: 'Nº Proposta', cell: ({ row }) => (<div className="flex items-center gap-1 text-sm font-black"><span>{row.original.proposalNumber}</span><CopyButton text={row.original.proposalNumber} label="Proposta" /></div>), size: 150 },
-  { id: 'Cliente', accessorFn: (row) => row.customer?.name, header: 'Cliente', cell: ({ row }) => (<div className="flex items-center gap-2 font-black text-primary uppercase text-sm truncate"><span>{row.original.customer?.name || '---'}</span></div>), size: 220 },
+  { id: 'Cliente', accessorFn: (row) => row.customer?.name, header: 'Cliente', cell: ({ row }) => {
+        const customer = row.original.customer;
+        const phone = customer?.phone;
+        return (
+            <div className="flex items-center gap-2 font-black text-primary uppercase text-sm truncate">
+                {phone && isWhatsApp(phone) && (
+                    <a href={getWhatsAppUrl(phone)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:scale-110 transition-transform">
+                        <WhatsAppIcon className="h-4 w-4" />
+                    </a>
+                )}
+                <span>{customer?.name || '---'}</span>
+            </div>
+        );
+    }, size: 220 },
   { id: 'CPF', accessorFn: (row) => row.customer?.cpf, header: 'CPF', cell: ({ row }) => (<div className="flex items-center gap-1 text-sm font-black text-foreground/80"><span>{row.original.customer?.cpf || '-'}</span><CopyButton text={row.original.customer?.cpf} label="CPF" /></div>), size: 160 },
   { id: 'Produto', accessorKey: 'product', header: 'Produto', cell: ({ row }) => <span className="text-sm font-bold text-foreground/80">{row.original.product}</span>, size: 120 },
   { id: 'Valor Bruto', accessorKey: 'grossAmount', header: () => <div className="text-right">Valor Bruto</div>, cell: ({ row }) => <div className="text-right font-black text-sm">{formatCurrency(row.original.grossAmount)}</div>, size: 120 },
