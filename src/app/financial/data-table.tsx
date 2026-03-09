@@ -79,6 +79,7 @@ const COLUMN_LABELS: Record<string, string> = {
     col_product: "Produto",
     col_gross: "Valor Bruto",
     col_comm: "Comissão (%)",
+    col_comm_val: "Valor Comissão",
     col_proposal_status: "Status Proposta",
     col_comm_status: "Status Comissão",
     col_payment_date: "Data Pagamento",
@@ -275,7 +276,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     onPaginationChange: handlePaginationChange,
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
-    state: { sorting, rowSelection, columnVisibility, columnSizing, columnOrder, pagination, globalFilter },
+    state: { sorting, globalFilter, rowSelection, columnVisibility, columnSizing, columnOrder, pagination },
     globalFilterFn: (row, columnId, filterValue) => {
         const searchTerm = String(filterValue ?? '').trim();
         if (!searchTerm) return true;
@@ -346,7 +347,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                     </Select>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="h-11 rounded-full px-6 font-black border-2 border-zinc-300 bg-background shadow-md gap-2 text-xs uppercase tracking-widest">Colunas <ChevronDown className="h-4 w-4 opacity-50" /></Button>
+                            <Button variant="outline" className="h-11 rounded-full px-6 font-black border-2 border-zinc-300 bg-background shadow-md gap-2 text-xs uppercase tracking-widest">Colunas <ChevronDown className="ml-2 h-4 w-4 opacity-50" /></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56 shadow-2xl border-2">
                             <DropdownMenuLabel>Personalizar Visão</DropdownMenuLabel>
