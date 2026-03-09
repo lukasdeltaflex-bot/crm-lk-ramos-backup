@@ -21,6 +21,7 @@ import { CommissionStatusCell } from './commission-status-cell';
 import Link from 'next/link';
 import { toast } from '@/hooks/use-toast';
 import { BankIcon } from '@/components/bank-icon';
+import { Badge } from '@/components/ui/badge';
 
 type ProposalWithCustomer = Proposal & { customer: Customer };
 
@@ -122,6 +123,27 @@ export const getColumns = ({ onEdit, onStatusUpdate }: any): ColumnDef<ProposalW
   { id: 'col_pnum', accessorKey: 'proposalNumber', header: 'Nº Proposta', cell: ({ row }) => (<div className="flex items-center gap-1 text-sm font-black"><Link href={`/proposals?open=${row.original.id}`} className="text-primary hover:underline font-black" onClick={(e) => e.stopPropagation()}>{row.original.proposalNumber}</Link><CopyButton text={row.original.proposalNumber} label="Proposta" /></div>), size: 150 },
   { id: 'col_gross', accessorKey: 'grossAmount', header: () => <div className="text-right">Valor Bruto</div>, cell: ({ row, table }) => { const isPriv = (table.options.meta as any)?.isPrivacyMode; return (<div className="text-right font-black text-sm">{isPriv ? '•••••' : formatCurrency(row.original.grossAmount)}</div>) }, size: 120 },
   { id: 'col_comm', accessorKey: 'commissionValue', header: () => <div className="text-right">Comissão (%)</div>, cell: ({ row, table }) => { const isPriv = (table.options.meta as any)?.isPrivacyMode; return (<div className="text-right font-black text-sm text-emerald-600">{isPriv ? '•••••' : formatCurrency(row.original.commissionValue)}</div>) }, size: 120 },
+  { 
+    id: 'col_proposal_status', 
+    accessorKey: 'status', 
+    header: 'Status Proposta', 
+    cell: ({ row, table }) => {
+        const status = row.original.status;
+        const sett = (table.options.meta as any)?.userSettings;
+        const statusColors = (table.options.meta as any)?.statusColors || {};
+        const colorValue = statusColors[status.toUpperCase()] || statusColors[status];
+        return (
+            <Badge 
+                variant="outline" 
+                className="text-[10px] font-black uppercase border-2 rounded-full px-3 py-0.5 status-custom"
+                style={colorValue ? { '--status-color': colorValue } as any : {}}
+            >
+                {status}
+            </Badge>
+        );
+    }, 
+    size: 140 
+  },
   { id: 'col_comm_status', accessorKey: 'commissionStatus', header: 'Status Comissão', cell: ({ row }) => <CommissionStatusCell proposal={row.original} onStatusUpdate={onStatusUpdate} onEdit={onEdit} />, size: 140 },
   { id: 'col_payment_date', accessorKey: 'commissionPaymentDate', header: 'Data Pagamento', cell: ({ row }) => <span className="text-sm font-bold text-muted-foreground">{formatDateSafe(row.original.commissionPaymentDate)}</span>, size: 130 },
   { id: 'col_promoter', accessorKey: 'promoter', header: 'Promotora', cell: ({ row, table }) => {

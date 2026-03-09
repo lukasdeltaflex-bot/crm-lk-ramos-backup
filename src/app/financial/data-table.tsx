@@ -78,6 +78,7 @@ const COLUMN_LABELS: Record<string, string> = {
     col_pnum: "Nº Proposta",
     col_gross: "Valor Bruto",
     col_comm: "Comissão (%)",
+    col_proposal_status: "Status Proposta",
     col_comm_status: "Status Comissão",
     col_payment_date: "Data Pagamento",
     col_promoter: "Promotora",
@@ -212,10 +213,10 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     if (diff < 1) return;
     isScrollingRef.current = true;
     target.scrollLeft = source.scrollLeft;
-    setTimeout(() => { isScrollingRef.current = false; }, 10);
+    setTimeout(() => { isScrollingRef.current = false; }, 50);
   };
 
-  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(KeyboardSensor));
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -294,7 +295,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         const searchableFields = [customer?.name, customer?.cpf, p.proposalNumber, p.operator, p.bank, cleanBankName(p.bank), p.promoter];
         return searchableFields.some(field => field && normalizeString(String(field)).includes(normalizedSearch));
     },
-    meta: { isPrivacyMode, userSettings }
+    meta: { isPrivacyMode, userSettings, statusColors }
   });
 
   React.useImperativeHandle(ref, () => ({ table }));
@@ -410,7 +411,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             <Card className="border-2 border-zinc-300 shadow-xl rounded-xl overflow-hidden bg-card p-1">
                 <div 
                     ref={topScrollRef}
-                    className="overflow-x-auto h-5 bg-muted/30 border-b cursor-pointer relative z-[60] pointer-events-auto"
+                    className="overflow-x-auto h-5 bg-muted/30 border-b cursor-pointer relative z-[100] pointer-events-auto"
                     onScroll={(e) => { if (tableContainerRef.current) syncScroll(e.currentTarget as HTMLDivElement, tableContainerRef.current); }}
                 >
                     <div style={{ width: totalTableWidth, height: '1px' }} />
