@@ -73,7 +73,7 @@ export function GlobalSearch() {
         </kbd>
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="ID, Nome, CPF ou Smart Tag (ELITE, ATIVO...)" autoFocus />
+        <CommandInput placeholder="Digite ID exato, Nome, CPF..." autoFocus />
         <CommandList>
           <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
           
@@ -103,8 +103,8 @@ export function GlobalSearch() {
               const smartTags = getSmartTags(customer, proposals || []);
               const smartTagsLabels = smartTags.map(tag => tag.label).join(' ');
               
-              // 🛡️ BUSCA NUCLEAR SINCRO: Indexa CPF limpo e ID puro para busca exata
-              const searchIndex = normalizeString(`${customer.numericId} ID${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric} ${smartTagsLabels}`);
+              // 🛡️ BUSCA NUCLEAR SINCRO V2: Prefixamos o ID para evitar confusão com CPFs
+              const searchIndex = normalizeString(`ID_${customer.numericId} ${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric} ${smartTagsLabels}`);
               
               return (
                 <CommandItem

@@ -179,20 +179,22 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
     globalFilterFn: (row, columnId, filterValue) => {
         const searchTerm = String(filterValue ?? '').trim();
         if (!searchTerm) return true;
-        const customer = row.original;
         
-        // 🛡️ BUSCA NUCLEAR: Normaliza busca e dados para cobrir CPF numérico e ID
-        const normalizedSearch = normalizeString(searchTerm);
+        const customer = row.original;
         const searchOnlyNumbers = searchTerm.replace(/\D/g, '');
+        const normalizedSearch = normalizeString(searchTerm);
         
         const cpfNumeric = customer.cpf?.replace(/\D/g, '') || '';
         const numericIdStr = String(customer.numericId || '');
         
+        // 🛡️ BUSCA NUCLEAR V3: Prioridade para ID Exato
+        if (searchOnlyNumbers !== '') {
+            if (numericIdStr === searchOnlyNumbers) return true;
+            if (cpfNumeric.includes(searchOnlyNumbers)) return true;
+        }
+
         const searchableFields = [
             customer.name, 
-            customer.cpf, 
-            cpfNumeric, // Busca por CPF sem pontos
-            numericIdStr, // Busca por ID exato
             customer.city, 
             customer.email, 
             customer.observations, 
@@ -202,14 +204,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
 
         return searchableFields.some(field => {
             if (!field) return false;
-            const normalizedField = normalizeString(String(field));
-            
-            // Se o usuário digitou apenas números, priorizamos match no CPF ou ID
-            if (searchOnlyNumbers !== '' && (normalizedField === cpfNumeric || normalizedField === numericIdStr)) {
-                return normalizedField.includes(searchOnlyNumbers);
-            }
-            
-            return normalizedField.includes(normalizedSearch);
+            return normalizeString(String(field)).includes(normalizedSearch);
         });
     },
   });
@@ -241,7 +236,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
           <div className="flex items-center justify-between px-4 py-2 gap-4">
             <div className='relative w-full max-w-md group'>
                 <Search className='absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80' />
-                <Input placeholder="Busca por ID, Nome, CPF ou Smart Tag..." value={globalFilter ?? ''} onChange={(e) => setGlobalFilter(e.target.value)} className="pl-11 w-full bg-background border-2 border-zinc-300 h-11 rounded-full shadow-md font-bold text-sm" />
+                <Input placeholder="Busca por ID exato, Nome, CPF..." value={globalFilter ?? ''} onChange={(e) => setGlobalFilter(e.target.value)} className="pl-11 w-full bg-background border-2 border-zinc-300 h-11 rounded-full shadow-md font-bold text-sm" />
             </div>
             
             <div className="flex items-center gap-3">

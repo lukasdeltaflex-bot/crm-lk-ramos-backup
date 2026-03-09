@@ -38,19 +38,25 @@ export function CustomerSearchDialog({
             const searchOnlyNumbers = search.replace(/\D/g, '');
             if (!normalizedSearch) return 1;
             
-            // 🛡️ LÓGICA DE FILTRO AVANÇADA: Permite busca por número puro
-            if (searchOnlyNumbers !== '' && value.includes(searchOnlyNumbers)) return 1;
+            // 🛡️ LÓGICA DE FILTRO AVANÇADA V2: Prioriza ID exato isolando o termo
+            if (searchOnlyNumbers !== '') {
+                // Se o termo de busca for exatamente o ID prefixado no value
+                if (value.includes(`id_${searchOnlyNumbers} `)) return 1;
+                // Se o valor contiver os números digitados (para CPF)
+                if (value.includes(searchOnlyNumbers)) return 1;
+            }
+            
             return value.includes(normalizedSearch) ? 1 : 0;
         }}>
-          <CommandInput placeholder="Pesquisar por ID, Nome ou CPF..." autoFocus />
+          <CommandInput placeholder="Digite ID exato, Nome ou CPF..." autoFocus />
           <ScrollArea className="h-[50vh]">
             <CommandList>
               <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
               <CommandGroup>
                 {customers.map((customer) => {
-                  // 🛡️ BUSCA NUCLEAR SINCRO: Indexa ID puro e CPF sem pontuação
                   const cpfNumeric = customer.cpf?.replace(/\D/g, '') || '';
-                  const searchIndex = normalizeString(`${customer.numericId} ID${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric}`);
+                  // 🛡️ INDEXAÇÃO DE ALTA PRECISÃO: Prefixamos o ID para busca estrita
+                  const searchIndex = normalizeString(`id_${customer.numericId} ${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric}`);
                   
                   return (
                     <CommandItem
