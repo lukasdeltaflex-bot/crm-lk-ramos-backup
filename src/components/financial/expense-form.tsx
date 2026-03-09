@@ -24,7 +24,7 @@ import {
 import { format, parse, isValid } from 'date-fns';
 import type { Expense } from '@/lib/types';
 import { useEffect, useMemo } from 'react';
-import { Loader2, CalendarRange, ListNumbered } from 'lucide-react';
+import { Loader2, CalendarRange, ListOrdered } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { formatCurrencyInput, formatDateSafe } from '@/lib/utils';
 
@@ -252,7 +252,7 @@ export function ExpenseForm({ expense, categories, onSubmit, isSaving = false }:
                             render={({ field }) => (
                                 <FormItem className="animate-in zoom-in-95">
                                     <FormLabel className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-orange-600">
-                                        <ListNumbered className="h-3 w-3" /> Qtd. de Vezes
+                                        <ListOrdered className="h-3 w-3" /> Qtd. de Vezes
                                     </FormLabel>
                                     <FormControl>
                                         <Input type="number" {...field} min={1} max={120} className="h-9 font-bold" />

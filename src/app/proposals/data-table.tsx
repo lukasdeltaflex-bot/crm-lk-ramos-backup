@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -449,7 +448,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     <Table style={{ width: totalTableWidth, tableLayout: 'fixed' }}>
                         <TableHeader className="bg-background border-b-2">
                             {table.getHeaderGroups().map(hg => (
-                                <TableRow key={hg.id} className="hover:bg-transparent">
+                                <TableRow key={hg.id} className="hover:bg-transparent border-b-2">
                                     <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
                                         {hg.headers.map((h, i) => (
                                             <DraggableHeader 
