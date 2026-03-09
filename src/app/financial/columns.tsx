@@ -94,7 +94,16 @@ export const DraggableHeader = ({ header, className }: { header: Header<any, unk
 export const getColumns = ({ onEdit, onStatusUpdate }: any): ColumnDef<ProposalWithCustomer>[] => [
   { 
     id: 'col_select', 
-    header: 'Seleção', 
+    header: ({ table }) => (
+        <div className="flex justify-center w-full" onClick={(e) => e.stopPropagation()}>
+            <Checkbox
+                checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+                onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                aria-label="Selecionar todos"
+                className="rounded-full h-5 w-5 border-2"
+            />
+        </div>
+    ),
     cell: ({ row }) => (
         <div className="flex justify-center w-full">
             <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} className="rounded-full h-5 w-5" onClick={(e) => e.stopPropagation()} />

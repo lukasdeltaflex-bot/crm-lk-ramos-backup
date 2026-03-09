@@ -24,7 +24,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import Link from 'next/link';
-import { isWhatsApp, getWhatsAppUrl, cn, getAge } from '@/lib/utils';
+import { isWhatsApp, getWhatsAppUrl, cn } from '@/lib/utils';
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -132,7 +132,16 @@ const ActionsCell = ({ row, onEdit, onDelete }: any) => {
 export const getColumns = ({ onEdit, onDelete }: any): ColumnDef<Customer>[] => [
   { 
     id: 'col_select', 
-    header: 'Seleção', 
+    header: ({ table }) => (
+        <div className="flex justify-center w-full" onClick={(e) => e.stopPropagation()}>
+            <Checkbox
+                checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+                onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                aria-label="Selecionar todos"
+                className="rounded-full h-5 w-5 border-2"
+            />
+        </div>
+    ),
     cell: ({ row }) => (
         <div className="flex justify-center w-full">
             <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} className="rounded-full h-5 w-5" onClick={(e) => e.stopPropagation()} />
