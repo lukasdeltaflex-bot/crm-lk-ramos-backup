@@ -139,16 +139,22 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
     }
   }, [globalFilter, columnVisibility, columnOrder, frozenCount, isClient]);
 
-  // 🛡️ MOTOR DE SINCRONIZAÇÃO V2
-  const syncScrollTopToTable = () => {
-    if (topScrollRef.current && tableContainerRef.current) {
-        tableContainerRef.current.scrollLeft = topScrollRef.current.scrollLeft;
+  // 🛡️ MOTOR DE SINCRONIZAÇÃO V3 (BI-DIRECIONAL ROBUSTO)
+  const syncScroll = (source: HTMLDivElement, target: HTMLDivElement) => {
+    if (target.scrollLeft !== source.scrollLeft) {
+      target.scrollLeft = source.scrollLeft;
     }
   };
 
-  const syncScrollTableToTop = () => {
-    if (tableContainerRef.current && topScrollRef.current) {
-        topScrollRef.current.scrollLeft = tableContainerRef.current.scrollLeft;
+  const handleTopScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (tableContainerRef.current) {
+      syncScroll(e.currentTarget, tableContainerRef.current);
+    }
+  };
+
+  const handleTableScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (topScrollRef.current) {
+      syncScroll(e.currentTarget, topScrollRef.current);
     }
   };
 
@@ -263,8 +269,8 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
           
           <div 
             ref={topScrollRef}
-            className="overflow-x-auto h-2 mb-1 bg-muted/20"
-            onScroll={syncScrollTopToTable}
+            className="overflow-x-auto h-5 bg-muted/20 border-b cursor-pointer"
+            onScroll={handleTopScroll}
           >
             <div style={{ width: table.getTotalSize(), height: '1px' }} />
           </div>
@@ -272,7 +278,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
           <div 
             ref={tableContainerRef}
             className="overflow-x-auto relative"
-            onScroll={syncScrollTableToTop}
+            onScroll={handleTableScroll}
           >
             <Table style={{ width: table.getTotalSize(), tableLayout: 'fixed' }}>
                 <TableHeader className="bg-background border-b-2">

@@ -107,16 +107,16 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const [endDateInput, setEndDateInput] = React.useState('');
   const [appliedDateRange, setAppliedDateRange] = React.useState<DateRange | undefined>(undefined);
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
-  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'Data Digitação', desc: true }]);
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'DataDigitação', desc: true }]);
   const [isClient, setIsClient] = React.useState(false);
 
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
     'Operador': false,
-    'Data Averbação': true,
-    'Data Pgto. Cliente': true,
-    'Chegada Saldo': true,
-    'Comissão': true,
+    'DataAverbação': true,
+    'DataPgtoCliente': true,
+    'ChegadaSaldo': true,
+    'CommissionValue': true,
   });
 
   const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
@@ -177,16 +177,22 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     }
   }, [statusFilter, globalFilter, columnVisibility, columnOrder, frozenCount, isClient]);
 
-  // 🛡️ MOTOR DE SINCRONIZAÇÃO V2 (MAIS ROBUSTO)
-  const syncScrollTopToTable = () => {
-    if (topScrollRef.current && tableContainerRef.current) {
-        tableContainerRef.current.scrollLeft = topScrollRef.current.scrollLeft;
+  // 🛡️ MOTOR DE SINCRONIZAÇÃO V3 (BI-DIRECIONAL ROBUSTO)
+  const syncScroll = (source: HTMLDivElement, target: HTMLDivElement) => {
+    if (target.scrollLeft !== source.scrollLeft) {
+      target.scrollLeft = source.scrollLeft;
     }
   };
 
-  const syncScrollTableToTop = () => {
-    if (tableContainerRef.current && topScrollRef.current) {
-        topScrollRef.current.scrollLeft = tableContainerRef.current.scrollLeft;
+  const handleTopScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (tableContainerRef.current) {
+      syncScroll(e.currentTarget, tableContainerRef.current);
+    }
+  };
+
+  const handleTableScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (topScrollRef.current) {
+      syncScroll(e.currentTarget, topScrollRef.current);
     }
   };
 
@@ -483,11 +489,11 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
             </div>
 
             <Card className="border-2 border-zinc-300 shadow-xl rounded-xl overflow-hidden bg-card p-1">
-                {/* BARRA DE ROLAGEM SUPERIOR (SINCRONIZADA) */}
+                {/* 🚀 BARRA DE ROLAGEM SUPERIOR RECALIBRADA */}
                 <div 
                     ref={topScrollRef}
-                    className="overflow-x-auto h-2 mb-1 bg-muted/20"
-                    onScroll={syncScrollTopToTable}
+                    className="overflow-x-auto h-5 bg-muted/20 border-b cursor-pointer"
+                    onScroll={handleTopScroll}
                 >
                     <div style={{ width: table.getTotalSize(), height: '1px' }} />
                 </div>
@@ -495,7 +501,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                 <div 
                     ref={tableContainerRef}
                     className="overflow-x-auto relative"
-                    onScroll={syncScrollTableToTop}
+                    onScroll={handleTableScroll}
                 >
                     <Table style={{ width: table.getTotalSize(), tableLayout: 'fixed' }}>
                         <TableHeader className="bg-background border-b-2">
