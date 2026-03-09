@@ -36,22 +36,17 @@ export function CustomerSearchDialog({
         </DialogHeader>
         <Command filter={(value, search) => {
             const normalizedSearch = normalizeString(search);
-            const searchOnlyNumbers = search.replace(/\D/g, '');
+            const isPureNumber = /^\d+$/.test(search);
             if (!normalizedSearch) return 1;
             
-            // 🛡️ LÓGICA DE FILTRO AVANÇADA V8: Prioridade absoluta para ID Exato
-            if (searchOnlyNumbers !== '') {
-                // 1. Se o ID for exatamente o que foi digitado (âncora id_)
-                if (value.includes(`id_${searchOnlyNumbers} `)) return 1;
+            // 🛡️ FILTRO V10: Prioridade absoluta para ID Exato e CPF inicial
+            if (isPureNumber) {
+                // 1. ID exato (âncora id_)
+                if (value.includes(`id_${search} `)) return 1;
+                // 2. CPF começando com (âncora cpf_)
+                if (value.includes(`cpf_${search}`)) return 1;
                 
-                // 2. Se o CPF contiver os números digitados
-                // O searchIndex termina com o CPF numérico puro
-                const parts = value.split(' ');
-                const cpfPart = parts[parts.length - 1];
-                if (cpfPart.includes(searchOnlyNumbers)) return 1;
-                
-                // Se é busca puramente numérica e não bateu ID exato nem CPF, esconde
-                if (/^\d+$/.test(search)) return 0;
+                return 0;
             }
             
             return value.includes(normalizedSearch) ? 1 : 0;
@@ -63,8 +58,8 @@ export function CustomerSearchDialog({
               <CommandGroup>
                 {customers.map((customer) => {
                   const cpfNumeric = (customer.cpf || '').replace(/\D/g, '');
-                  // 🛡️ INDEXAÇÃO DE ALTA PRECISÃO V8: Espaço após id_ para ancoragem exata
-                  const searchIndex = normalizeString(`id_${customer.numericId} ${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric}`);
+                  // 🛡️ INDEXAÇÃO V10: Âncoras estritas id_ e cpf_
+                  const searchIndex = normalizeString(`id_${customer.numericId} cpf_${cpfNumeric} ${customer.name} ${customer.cpf}`);
                   
                   return (
                     <CommandItem

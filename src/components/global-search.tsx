@@ -77,19 +77,19 @@ export function GlobalSearch() {
         onOpenChange={setOpen}
         filter={(value, search) => {
             const normalizedSearch = normalizeString(search);
-            const searchOnlyNumbers = search.replace(/\D/g, '');
+            const isPureNumber = /^\d+$/.test(search);
             if (!normalizedSearch) return 1;
             
-            // 🛡️ LÓGICA DE FILTRO AVANÇADA V8: Prioridade absoluta para ID Exato
-            if (searchOnlyNumbers !== '') {
+            // 🛡️ FILTRO GLOBAL V10: Prioridade absoluta para ID Exato e CPF/Contrato inicial
+            if (isPureNumber) {
                 // 1. ID exato (âncora id_)
-                if (value.includes(`id_${searchOnlyNumbers} `)) return 1;
+                if (value.includes(`id_${search} `)) return 1;
+                // 2. CPF começando com
+                if (value.includes(`cpf_${search}`)) return 1;
+                // 3. Proposta começando com
+                if (value.includes(`pnum_${search}`)) return 1;
                 
-                // 2. CPF parcial ou Proposta parcial
-                if (value.includes(searchOnlyNumbers)) return 1;
-                
-                // Se é busca puramente numérica e não bateu nada relevante, esconde
-                if (/^\d+$/.test(search)) return 0;
+                return 0;
             }
             
             return value.includes(normalizedSearch) ? 1 : 0;
@@ -125,8 +125,8 @@ export function GlobalSearch() {
               const smartTags = getSmartTags(customer, proposals || []);
               const smartTagsLabels = smartTags.map(tag => tag.label).join(' ');
               
-              // 🛡️ INDEXAÇÃO DE ALTA PRECISÃO V8: ID como âncora isolada
-              const searchIndex = normalizeString(`id_${customer.numericId} ${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric} ${smartTagsLabels}`);
+              // 🛡️ INDEXAÇÃO V10: Âncoras estritas para busca nuclear
+              const searchIndex = normalizeString(`id_${customer.numericId} cpf_${cpfNumeric} ${customer.name} ${customer.cpf} ${smartTagsLabels}`);
               
               return (
                 <CommandItem
@@ -154,13 +154,13 @@ export function GlobalSearch() {
             })}
             
             {proposals?.map((proposal) => {
-              const searchIndex = normalizeString(`prop_${proposal.proposalNumber} ${proposal.proposalNumber} ${proposal.product} ${proposal.bank} ${cleanBankName(proposal.bank)}`);
+              const pNum = (proposal.proposalNumber || '').replace(/\D/g, '');
+              const searchIndex = normalizeString(`prop_${proposal.proposalNumber} pnum_${pNum} ${proposal.product} ${proposal.bank} ${cleanBankName(proposal.bank)}`);
               return (
                 <CommandItem
                   key={proposal.id}
                   value={searchIndex}
-                  onSelect={() => runCommand(() => router.push(`/proposals?open=${proposal.id}`))}
-                >
+                  onSelect={() => runCommand(() => router.push(`/proposals?open=${proposal.id}`))}>
                   <div className="flex items-center justify-between w-full">
                       <div className='flex items-center'>
                           <FileText className="mr-2 h-4 w-4 text-muted-foreground" />

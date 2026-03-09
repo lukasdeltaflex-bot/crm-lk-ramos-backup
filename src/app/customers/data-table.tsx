@@ -139,7 +139,6 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
     }
   }, [globalFilter, columnVisibility, columnOrder, frozenCount, isClient]);
 
-  // Sincronização de Scroll Duplo
   const syncScroll = (source: React.RefObject<HTMLDivElement>, target: React.RefObject<HTMLDivElement>) => {
     if (source.current && target.current) {
       target.current.scrollLeft = source.current.scrollLeft;
@@ -185,24 +184,20 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         if (!searchTerm) return true;
         
         const customer = row.original;
-        const searchOnlyNumbers = searchTerm.replace(/\D/g, '');
         const normalizedSearch = normalizeString(searchTerm);
+        const isPureNumber = /^\d+$/.test(searchTerm);
         
         const numericIdStr = String(customer.numericId || '');
         const cpfNumeric = (customer.cpf || '').replace(/\D/g, '');
 
-        // 🛡️ BUSCA NUCLEAR V9: Prioridade absoluta para ID Exato
-        if (searchOnlyNumbers !== '') {
-            // Se o usuário digitou exatamente o ID, priorizamos ele e limpamos o resto
-            if (numericIdStr === searchOnlyNumbers) return true;
-            
-            // Se for busca puramente numérica e NÃO bateu ID exato, mas bateu CPF
-            if (cpfNumeric.includes(searchOnlyNumbers)) return true;
-            
-            // Se for puramente numérica e não bateu ID exato nem CPF, esconde
-            if (/^\d+$/.test(searchTerm)) {
-                return false;
-            }
+        // 🛡️ BUSCA NUCLEAR V10: Prioridade absoluta para ID Exato e CPF inicial
+        if (isPureNumber) {
+            // 1. ID Exato
+            if (numericIdStr === searchTerm) return true;
+            // 2. CPF Começando com (para busca parcial de documento)
+            if (cpfNumeric.startsWith(searchTerm)) return true;
+            // Se for puramente número e não bateu ID exato nem Início de CPF, filtra fora
+            return false;
         }
 
         const searchableFields = [
@@ -263,7 +258,6 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             </div>
           </div>
           
-          {/* BARRA DE ROLAGEM SUPERIOR */}
           <div 
             ref={topScrollRef}
             className="overflow-x-auto h-3 scrollbar-hide mb-1"

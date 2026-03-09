@@ -177,7 +177,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     }
   }, [statusFilter, globalFilter, columnVisibility, columnOrder, frozenCount, isClient]);
 
-  // Sincronização de Scroll Duplo
   const syncScroll = (source: React.RefObject<HTMLDivElement>, target: React.RefObject<HTMLDivElement>) => {
     if (source.current && target.current) {
       target.current.scrollLeft = source.current.scrollLeft;
@@ -265,21 +264,23 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         
         const customer = row.original.customer;
         const p = row.original;
-        const searchOnlyNumbers = searchTerm.replace(/\D/g, '');
         const normalizedSearch = normalizeString(searchTerm);
+        const isPureNumber = /^\d+$/.test(searchTerm);
         
-        if (searchOnlyNumbers !== '') {
-            const numericIdStr = String(customer?.numericId || '');
-            const cpfNumeric = (customer?.cpf || '').replace(/\D/g, '');
-            
-            // 🛡️ BUSCA NUCLEAR V9: Prioridade absoluta para ID Exato
-            if (numericIdStr === searchOnlyNumbers) return true;
-            if (cpfNumeric.includes(searchOnlyNumbers)) return true;
-            if (p.proposalNumber.replace(/\D/g, '') === searchOnlyNumbers) return true;
+        const numericIdStr = String(customer?.numericId || '');
+        const cpfNumeric = (customer?.cpf || '').replace(/\D/g, '');
+        const pNum = (p.proposalNumber || '').replace(/\D/g, '');
 
-            if (/^\d+$/.test(searchTerm)) {
-                return false;
-            }
+        // 🛡️ BUSCA NUCLEAR V10: Prioridade absoluta para ID Exato e CPF/Contrato inicial
+        if (isPureNumber) {
+            // 1. ID Exato
+            if (numericIdStr === searchTerm) return true;
+            // 2. CPF começando com
+            if (cpfNumeric.startsWith(searchTerm)) return true;
+            // 3. Proposta começando com
+            if (pNum.startsWith(searchTerm)) return true;
+            
+            return false;
         }
 
         const searchableFields = [customer?.name, customer?.cpf, p.proposalNumber, p.operator, p.bank, cleanBankName(p.bank), p.promoter];
@@ -437,7 +438,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="h-10 rounded-full font-bold px-6 border-2 border-zinc-300 bg-background shadow-sm text-xs gap-2">
+                        <Button variant="outline" className="h-10 rounded-full px-6 border-2 border-zinc-300 bg-background shadow-sm text-xs gap-2">
                             <Landmark className="h-4 w-4" /> Bancos <ChevronDown className="h-3 w-3 opacity-50" />
                         </Button>
                     </DropdownMenuTrigger>
@@ -455,7 +456,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="h-10 rounded-full font-bold px-6 border-2 border-zinc-300 bg-background shadow-sm text-xs gap-2">
+                        <Button variant="outline" className="h-10 rounded-full px-6 border-2 border-zinc-300 bg-background shadow-sm text-xs gap-2">
                             <Building2 className="h-4 w-4" /> Promotoras <ChevronDown className="h-3 w-3 opacity-50" />
                         </Button>
                     </DropdownMenuTrigger>
@@ -484,7 +485,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
             </div>
 
             <Card className="border-2 border-zinc-300 shadow-xl rounded-xl overflow-hidden bg-card p-1">
-                {/* BARRA DE ROLAGEM SUPERIOR */}
                 <div 
                     ref={topScrollRef}
                     className="overflow-x-auto h-3 scrollbar-hide mb-1"
