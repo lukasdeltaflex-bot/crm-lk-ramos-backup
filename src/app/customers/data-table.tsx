@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -54,6 +53,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, Snowflake } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -94,10 +94,6 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
   rowSelection,
   setRowSelection,
 }, ref) => {
-  const tableContainerRef = React.useRef<HTMLDivElement>(null);
-  const topScrollRef = React.useRef<HTMLDivElement>(null);
-  const isScrollingRef = React.useRef(false);
-
   const [sorting, setSorting] = React.useState<SortingState>([{ id: 'col_id', desc: true }]);
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
   const [globalFilter, setGlobalFilter] = React.useState('');
@@ -159,13 +155,6 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
       } catch(e) {}
     }
   }, [globalFilter, columnVisibility, columnOrder, frozenCount, isClient]);
-
-  const syncScroll = (source: HTMLDivElement, target: HTMLDivElement) => {
-    if (isScrollingRef.current) return;
-    isScrollingRef.current = true;
-    target.scrollLeft = source.scrollLeft;
-    setTimeout(() => { isScrollingRef.current = false; }, 50);
-  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -261,20 +250,10 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
                 </DropdownMenu>
             </div>
           </div>
-          <div 
-            ref={topScrollRef}
-            className="overflow-x-auto h-5 bg-muted/30 border-b cursor-pointer relative z-[60] pointer-events-auto"
-            onScroll={(e) => { if (tableContainerRef.current) syncScroll(e.currentTarget as HTMLDivElement, tableContainerRef.current); }}
-          >
-            <div style={{ width: totalTableWidth, height: '1px' }} />
-          </div>
-          <div 
-            ref={tableContainerRef}
-            className="overflow-x-auto relative z-10"
-            onScroll={(e) => { if (topScrollRef.current) syncScroll(e.currentTarget as HTMLDivElement, topScrollRef.current); }}
-          >
+          
+          <ScrollArea className="h-[calc(100vh-400px)] w-full relative">
             <Table style={{ width: totalTableWidth, tableLayout: 'fixed' }}>
-                <TableHeader className="bg-background border-b-2">
+                <TableHeader className="bg-background border-b-2 sticky top-0 z-50 shadow-sm">
                     {table.getHeaderGroups().map(headerGroup => (
                     <TableRow key={headerGroup.id} className="hover:bg-transparent border-b-2">
                         <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
@@ -326,7 +305,9 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
                     )}
                 </TableBody>
             </Table>
-          </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+
           <div className="flex items-center justify-between px-6 py-4 border-t-2 bg-muted/10 font-black text-[11px] uppercase tracking-[0.1em] text-foreground/60 min-h-[64px]">
             <div className="flex items-center gap-4">
                 <div>{table.getFilteredSelectedRowModel().rows.length} SELECIONADOS.</div>

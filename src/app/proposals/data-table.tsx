@@ -60,6 +60,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Card } from '@/components/ui/card';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Filter, X, Search, Calendar as CalendarIcon, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Snowflake, User, Landmark, Building2 } from 'lucide-react';
 import type { ProposalStatus, UserSettings } from '@/lib/types';
 import { DraggableHeader } from './columns';
@@ -110,10 +111,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   onBulkStatusChange,
   userSettings,
 }, ref) => {
-  const tableContainerRef = React.useRef<HTMLDivElement>(null);
-  const topScrollRef = React.useRef<HTMLDivElement>(null);
-  const isScrollingRef = React.useRef(false);
-
   const { statusColors } = useTheme();
   const [statusFilter, setStatusFilter] = React.useState('Todos');
   const [globalFilter, setGlobalFilter] = React.useState('');
@@ -212,13 +209,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         } catch(e) {}
     }
   }, [globalFilter, columnVisibility, columnOrder, frozenCount, isClient]);
-
-  const syncScroll = (source: HTMLDivElement, target: HTMLDivElement) => {
-    if (isScrollingRef.current) return;
-    isScrollingRef.current = true;
-    target.scrollLeft = source.scrollLeft;
-    setTimeout(() => { isScrollingRef.current = false; }, 50);
-  };
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(KeyboardSensor));
 
@@ -433,20 +423,9 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                 <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80' /><Input placeholder="Busca por ID exato, CPF, Nome ou Proposta..." value={globalFilter ?? ''} onChange={(e) => setGlobalFilter(e.target.value)} className="pl-10 h-11 bg-background border-2 border-zinc-300 rounded-full text-base font-bold shadow-md" />
             </div>
             <Card className="border-2 border-zinc-300 shadow-xl rounded-xl overflow-hidden bg-card p-1">
-                <div 
-                    ref={topScrollRef}
-                    className="overflow-x-auto h-5 bg-muted/30 border-b cursor-pointer relative z-[100] pointer-events-auto"
-                    onScroll={(e) => { if (tableContainerRef.current) syncScroll(e.currentTarget as HTMLDivElement, tableContainerRef.current); }}
-                >
-                    <div style={{ width: totalTableWidth, height: '1px' }} />
-                </div>
-                <div 
-                    ref={tableContainerRef}
-                    className="overflow-x-auto relative z-10"
-                    onScroll={(e) => { if (topScrollRef.current) syncScroll(e.currentTarget as HTMLDivElement, topScrollRef.current); }}
-                >
+                <ScrollArea className="h-[calc(100vh-400px)] w-full">
                     <Table style={{ width: totalTableWidth, tableLayout: 'fixed' }}>
-                        <TableHeader className="bg-background border-b-2">
+                        <TableHeader className="bg-background border-b-2 sticky top-0 z-50 shadow-sm">
                             {table.getHeaderGroups().map(hg => (
                                 <TableRow key={hg.id} className="hover:bg-transparent border-b-2">
                                     <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
@@ -493,7 +472,8 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                             )}
                         </TableBody>
                     </Table>
-                </div>
+                    <ScrollBar orientation="horizontal" />
+                </ScrollArea>
                 <div className="flex items-center justify-between px-6 py-4 border-t-2 bg-muted/10 font-black text-[11px] uppercase tracking-[0.1em] text-foreground/60 min-h-[64px]">
                     <div className="flex items-center gap-4">
                         <div>{numSelected} SELECIONADOS.</div>
