@@ -114,9 +114,10 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
     'Operador': false,
-    'Data Averbação': false,
-    'Data Pgto. Cliente': false,
-    'Chegada Saldo': false,
+    'Data Averbação': true,
+    'Data Pgto. Cliente': true,
+    'Chegada Saldo': true,
+    'Comissão (R$)': true,
   });
 
   const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
@@ -415,7 +416,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     <Input placeholder="Busca por ID, CPF, Nome ou Proposta..." value={globalFilter ?? ''} onChange={(e) => setGlobalFilter(e.target.value)} className="pl-10 h-11 bg-background border-2 border-zinc-300 rounded-full text-base font-bold shadow-md" />
                 </div>
                 
-                {/* 🛡️ RESTAURO DE FILTRO DE DATAS - PADRÃO ELITE */}
                 <div className="flex items-center gap-3 bg-background border-2 border-zinc-300 rounded-full px-3 py-1 shadow-sm">
                     <Select onValueChange={applyRangeShortcut}>
                         <SelectTrigger className="h-7 w-[120px] border-none bg-transparent focus:ring-0 text-xs font-black uppercase p-0">

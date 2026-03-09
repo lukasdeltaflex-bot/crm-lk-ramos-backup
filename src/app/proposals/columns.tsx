@@ -183,12 +183,16 @@ export const getColumns = (
   { id: 'CPF', accessorFn: (row) => row.customer?.cpf, header: 'CPF', cell: ({ row }) => (<div className="flex items-center gap-1 text-sm font-black text-foreground/80"><span>{row.original.customer?.cpf || '-'}</span><CopyButton text={row.original.customer?.cpf} label="CPF" /></div>), size: 160 },
   { id: 'Produto', accessorKey: 'product', header: 'Produto', cell: ({ row }) => <span className="text-sm font-bold text-foreground/80">{row.original.product}</span>, size: 120 },
   { id: 'Valor Bruto', accessorKey: 'grossAmount', header: () => <div className="text-right">Valor Bruto</div>, cell: ({ row }) => <div className="text-right font-black text-sm">{formatCurrency(row.original.grossAmount)}</div>, size: 120 },
+  { id: 'Comissão (R$)', accessorKey: 'commissionValue', header: () => <div className="text-right">Comissão</div>, cell: ({ row }) => <div className="text-right font-bold text-emerald-600">{formatCurrency(row.original.commissionValue)}</div>, size: 120 },
   { id: 'Banco Digitado', accessorKey: 'bank', header: 'Banco Digitado', cell: ({ row, table }) => {
         const bank = row.original.bank;
         const sett = (table.options.meta as any)?.userSettings;
         return (<div className="flex items-center gap-2"><BankIcon bankName={bank} domain={sett?.bankDomains?.[bank]} showLogo={sett?.showBankLogos ?? true} /><span className="truncate text-sm font-bold">{cleanBankName(bank)}</span></div>)
     }, size: 150 },
   { id: 'Status', accessorKey: 'status', header: 'Status', cell: ({ row }) => <ProposalStatusCell p={row.original} onStatusChange={onStatusChange} />, size: 160 },
+  { id: 'Data Averbação', accessorKey: 'dateApproved', header: 'Data Averbação', cell: ({ row }) => <span className="text-sm font-medium">{formatDateSafe(row.original.dateApproved)}</span>, size: 130 },
+  { id: 'Data Pgto. Cliente', accessorKey: 'datePaidToClient', header: 'Data Pgto. Cliente', cell: ({ row }) => <span className="text-sm font-medium">{formatDateSafe(row.original.datePaidToClient)}</span>, size: 130 },
+  { id: 'Chegada Saldo', accessorKey: 'debtBalanceArrivalDate', header: 'Chegada Saldo', cell: ({ row }) => <span className="text-sm font-medium">{formatDateSafe(row.original.debtBalanceArrivalDate)}</span>, size: 130 },
   { id: 'Operador', accessorKey: 'operator', header: 'Operador', cell: ({ row }) => <span className="text-xs font-bold">{row.original.operator || '-'}</span>, size: 120 },
   { id: 'Actions', header: '', cell: (cp) => (<ActionsCell row={cp.row} onEdit={onEdit} onView={onView} onDelete={onDelete} onDuplicate={onDuplicate} />), enableHiding: false, size: 80 },
 ];
