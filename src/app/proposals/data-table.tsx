@@ -255,9 +255,16 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         const searchOnlyNumbers = searchTerm.replace(/\D/g, '');
         const normalizedSearch = normalizeString(searchTerm);
         
-        // 🛡️ BUSCA NUCLEAR V4: Prioridade Absoluta para ID Exato
-        if (searchOnlyNumbers !== '' && String(customer?.numericId) === searchOnlyNumbers) {
-            return true;
+        // 🛡️ BUSCA NUCLEAR V5: Prioridade Absoluta para ID Exato
+        if (searchOnlyNumbers !== '') {
+            const numericIdStr = String(customer?.numericId || '');
+            if (numericIdStr === searchOnlyNumbers) return true;
+            
+            const cpfNumeric = customer?.cpf?.replace(/\D/g, '') || '';
+            if (cpfNumeric.includes(searchOnlyNumbers)) return true;
+            
+            // Se for apenas número e não bateu ID nem CPF, evitamos poluição
+            if (/^\d+$/.test(searchTerm)) return false;
         }
 
         const searchableFields = [customer?.name, customer?.cpf, p.proposalNumber, p.operator, p.bank, cleanBankName(p.bank), p.promoter];
@@ -267,7 +274,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   });
 
   const onMouseDown = (e: React.MouseEvent) => {
-    // Ignora arrasto se clicar em botões, inputs ou links
     const target = e.target as HTMLElement;
     if (target.closest('button') || target.closest('input') || target.closest('a') || target.closest('[role="checkbox"]')) {
       return;
@@ -286,7 +292,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     if (!isDraggingScroll || !tableContainerRef.current) return;
     e.preventDefault();
     const x = e.pageX - tableContainerRef.current.offsetLeft;
-    const walk = (x - startX) * 2; // Aumentada a sensibilidade
+    const walk = (x - startX) * 2; 
     tableContainerRef.current.scrollLeft = scrollLeft - walk;
   };
 
@@ -474,7 +480,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 
             <div className='relative w-full group'>
                 <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80' />
-                <Input placeholder="Busca por ID, CPF, Nome ou Proposta..." value={globalFilter ?? ''} onChange={(e) => setGlobalFilter(e.target.value)} className="pl-10 h-11 bg-background border-2 border-zinc-300 rounded-full text-base font-bold shadow-md" />
+                <Input placeholder="Busca por ID exato, CPF, Nome ou Proposta..." value={globalFilter ?? ''} onChange={(e) => setGlobalFilter(e.target.value)} className="pl-10 h-11 bg-background border-2 border-zinc-300 rounded-full text-base font-bold shadow-md" />
             </div>
 
             <Card className="border-2 border-zinc-300 shadow-xl rounded-xl overflow-hidden bg-card p-1">

@@ -8,7 +8,6 @@ import {
   CommandEmpty,
   CommandGroup,
   CommandInput,
-  CommandItem,
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command';
@@ -103,8 +102,8 @@ export function GlobalSearch() {
               const smartTags = getSmartTags(customer, proposals || []);
               const smartTagsLabels = smartTags.map(tag => tag.label).join(' ');
               
-              // 🛡️ BUSCA NUCLEAR SINCRO V3: Prefixamos o ID para evitar confusão com CPFs e garantir busca estrita
-              const searchIndex = normalizeString(`ID_${customer.numericId} ${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric} ${smartTagsLabels}`);
+              // 🛡️ BUSCA NUCLEAR V5: Prefixação estrita com espaços para garantir ID exato no cmdk
+              const searchIndex = normalizeString(`ID_${customer.numericId} [ID:${customer.numericId}] ${customer.name} ${customer.cpf} ${cpfNumeric} ${smartTagsLabels}`);
               
               return (
                 <CommandItem
@@ -132,7 +131,7 @@ export function GlobalSearch() {
             })}
             
             {proposals?.map((proposal) => {
-              const searchIndex = normalizeString(`PROP${proposal.proposalNumber} ${proposal.proposalNumber} ${proposal.product} ${proposal.bank} ${cleanBankName(proposal.bank)}`);
+              const searchIndex = normalizeString(`PROP_${proposal.proposalNumber} ${proposal.proposalNumber} ${proposal.product} ${proposal.bank} ${cleanBankName(proposal.bank)}`);
               return (
                 <CommandItem
                   key={proposal.id}

@@ -12,7 +12,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatCurrency, cn, calculateBusinessDays, cleanBankName } from '@/lib/utils';
+import { formatCurrency, cn, calculateBusinessDays, cleanBankName, getWhatsAppUrl, isWhatsApp } from '@/lib/utils';
 import type { Proposal, Customer, UserSettings } from '@/lib/types';
 import { useMemo, useState, useEffect } from 'react';
 import { ArrowRight, Zap, Clock } from 'lucide-react';
@@ -28,6 +28,7 @@ import { BankIcon } from '@/components/bank-icon';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { useTheme } from '@/components/theme-provider';
+import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
 
 interface RecentProposalsProps {
     proposals: Proposal[];
@@ -115,6 +116,7 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
                     const cleanBank = cleanBankName(proposal.bank);
                     const customDomain = userSettings?.bankDomains?.[proposal.bank];
                     const isBigWin = proposal.commissionValue >= 3000;
+                    const phone = proposal.customer?.phone;
 
                     return (
                         <TableRow 
@@ -134,6 +136,11 @@ export function RecentProposals({ proposals, customers, isLoading }: RecentPropo
                                     </Avatar>
                                     <div className="overflow-hidden">
                                         <div className="flex items-center gap-2">
+                                            {phone && isWhatsApp(phone) && (
+                                                <a href={getWhatsAppUrl(phone)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:scale-125 transition-transform shrink-0">
+                                                    <WhatsAppIcon className="h-3.5 w-3.5" />
+                                                </a>
+                                            )}
                                             <div className="font-bold text-primary/90 group-hover:text-primary transition-colors truncate max-w-[180px]">{proposal.customer?.name || 'Cliente não encontrado'}</div>
                                             {isBigWin && <Zap className="h-3 w-3 text-orange-500 fill-orange-500" title="Contrato de Alta Performance" />}
                                         </div>

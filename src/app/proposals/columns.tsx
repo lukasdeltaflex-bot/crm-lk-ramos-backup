@@ -125,11 +125,9 @@ export const DraggableHeader = ({ header, className }: { header: Header<any, unk
                         header.column.id === 'Actions' && 'justify-end'
                     )}
                 >
-                    {header.column.id !== 'Selecionar' && (
-                        <div {...attributes} {...listeners} className="p-1 hover:bg-primary/10 rounded cursor-grab text-muted-foreground/40" onClick={(e) => e.stopPropagation()}>
-                            <GripVertical className="h-3.5 w-3.5" />
-                        </div>
-                    )}
+                    <div {...attributes} {...listeners} className="p-1 hover:bg-primary/10 rounded cursor-grab text-muted-foreground/40" onClick={(e) => e.stopPropagation()}>
+                        <GripVertical className="h-3.5 w-3.5" />
+                    </div>
                     <div 
                         className={cn(
                             "overflow-hidden font-black text-[12px] uppercase tracking-wider text-foreground leading-tight flex items-center gap-1", 
@@ -192,11 +190,11 @@ export const getColumns = (
         return (
             <div className="flex items-center gap-2 font-black text-primary uppercase text-sm truncate">
                 {phone && isWhatsApp(phone) && (
-                    <a href={getWhatsAppUrl(phone)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:scale-110 transition-transform">
+                    <a href={getWhatsAppUrl(phone)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:scale-125 transition-transform shrink-0">
                         <WhatsAppIcon className="h-4 w-4" />
                     </a>
                 )}
-                <span>{customer?.name || '---'}</span>
+                <span className="truncate">{customer?.name || '---'}</span>
             </div>
         );
     }, size: 220 },
