@@ -96,8 +96,10 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
 }, ref) => {
   const tableContainerRef = React.useRef<HTMLDivElement>(null);
   const topScrollRef = React.useRef<HTMLDivElement>(null);
+  const isScrollingRef = React.useRef(false);
+
   const { statusColors } = useTheme();
-  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'DataDigitacao', desc: true }]);
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'Data Digitação', desc: true }]);
   const [statusFilter, setStatusFilter] = React.useState('Todos');
   const [globalFilter, setGlobalFilter] = React.useState('');
   const [frozenCount, setFrozenCount] = React.useState(2);
@@ -113,8 +115,8 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
     'Promotora': false,
     'CPF': false,
-    'Comissao': true,
-    'StatusComissao': true,
+    'Comissão': true,
+    'Status Comissão': true,
     'Operador': true
   });
   
@@ -170,15 +172,11 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   }, [globalFilter, columnVisibility, columnOrder, frozenCount, isClient]);
 
   // 🛡️ MOTOR DE SINCRONIZAÇÃO V10 (ULTRARRESILIENTE)
-  const handleTopScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (tableContainerRef.current && Math.abs(tableContainerRef.current.scrollLeft - e.currentTarget.scrollLeft) > 1) {
-      tableContainerRef.current.scrollLeft = e.currentTarget.scrollLeft;
-    }
-  };
-
-  const handleTableScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (topScrollRef.current && Math.abs(topScrollRef.current.scrollLeft - e.currentTarget.scrollLeft) > 1) {
-      topScrollRef.current.scrollLeft = e.currentTarget.scrollLeft;
+  const syncScroll = (source: HTMLDivElement, target: HTMLDivElement) => {
+    if (!isScrollingRef.current) {
+        isScrollingRef.current = true;
+        target.scrollLeft = source.scrollLeft;
+        setTimeout(() => { isScrollingRef.current = false; }, 50);
     }
   };
 
@@ -333,6 +331,18 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     } else {
         setAppliedDateRange(undefined);
     }
+  };
+
+  const toggleBankFilter = (bank: string) => {
+    setBankFilters(prev => prev.includes(bank) ? prev.filter(b => b !== bank) : [...prev, bank]);
+  };
+
+  const togglePromoterFilter = (promoter: string) => {
+    setPromoterFilters(prev => prev.includes(promoter) ? prev.filter(p => p !== promoter) : [...prev, promoter]);
+  };
+
+  const toggleOperatorFilter = (op: string) => {
+    setOperatorFilters(prev => prev.includes(op) ? prev.filter(o => o !== op) : [...prev, op]);
   };
 
   const uniqueOperators = React.useMemo(() => Array.from(new Set(data.map(p => p.operator || 'Sem Operador'))).sort(), [data]);
@@ -499,7 +509,9 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                 <div 
                     ref={topScrollRef}
                     className="overflow-x-auto h-5 bg-muted/30 border-b cursor-pointer relative z-[60] pointer-events-auto"
-                    onScroll={handleTopScroll}
+                    onScroll={(e) => {
+                        if (tableContainerRef.current) syncScroll(e.currentTarget, tableContainerRef.current);
+                    }}
                 >
                     <div style={{ width: totalTableWidth, height: '1px' }} />
                 </div>
@@ -507,7 +519,9 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                 <div 
                     ref={tableContainerRef}
                     className="overflow-x-auto relative z-10"
-                    onScroll={handleTableScroll}
+                    onScroll={(e) => {
+                        if (topScrollRef.current) syncScroll(e.currentTarget, topScrollRef.current);
+                    }}
                 >
                     <Table style={{ width: totalTableWidth, tableLayout: 'fixed' }}>
                         <TableHeader className="bg-background border-b-2">

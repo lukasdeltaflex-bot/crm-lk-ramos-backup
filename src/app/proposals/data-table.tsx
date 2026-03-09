@@ -93,6 +93,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 }, ref) => {
   const tableContainerRef = React.useRef<HTMLDivElement>(null);
   const topScrollRef = React.useRef<HTMLDivElement>(null);
+  const isScrollingRef = React.useRef(false);
 
   const { statusColors } = useTheme();
   const searchParams = useSearchParams();
@@ -108,16 +109,16 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const [endDateInput, setEndDateInput] = React.useState('');
   const [appliedDateRange, setAppliedDateRange] = React.useState<DateRange | undefined>(undefined);
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
-  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'DataDigitacao', desc: true }]);
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'Data de Digitação', desc: true }]);
   const [isClient, setIsClient] = React.useState(false);
 
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
     'Operador': false,
-    'DataAverbacao': true,
-    'DataPgtoCliente': true,
-    'ChegadaSaldo': true,
-    'Comissao': true,
+    'Data Averbação': true,
+    'Data Pgto. Cliente': true,
+    'Chegada Saldo': true,
+    'Comissão (R$)': true,
   });
 
   const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
@@ -179,26 +180,12 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   }, [statusFilter, globalFilter, columnVisibility, columnOrder, frozenCount, isClient]);
 
   // 🛡️ MOTOR DE SINCRONIZAÇÃO V10 (ULTRARRESILIENTE)
-  const handleTopScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (tableContainerRef.current && Math.abs(tableContainerRef.current.scrollLeft - e.currentTarget.scrollLeft) > 1) {
-      tableContainerRef.current.scrollLeft = e.currentTarget.scrollLeft;
+  const syncScroll = (source: HTMLDivElement, target: HTMLDivElement) => {
+    if (!isScrollingRef.current) {
+        isScrollingRef.current = true;
+        target.scrollLeft = source.scrollLeft;
+        setTimeout(() => { isScrollingRef.current = false; }, 50);
     }
-  };
-
-  const handleTableScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (topScrollRef.current && Math.abs(topScrollRef.current.scrollLeft - e.currentTarget.scrollLeft) > 1) {
-      topScrollRef.current.scrollLeft = e.currentTarget.scrollLeft;
-    }
-  };
-
-  const handlePaginationChange = (updater: any) => {
-    setPagination((old) => {
-      const next = typeof updater === 'function' ? updater(old) : updater;
-      if (typeof window !== 'undefined') {
-        try { localStorage.setItem('lk-proposals-pageSize', String(next.pageSize)); } catch(e) {}
-      }
-      return next;
-    });
   };
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(KeyboardSensor));
@@ -313,6 +300,18 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     } else {
         setAppliedDateRange(undefined);
     }
+  };
+
+  const toggleBankFilter = (bank: string) => {
+    setBankFilters(prev => prev.includes(bank) ? prev.filter(b => b !== bank) : [...prev, bank]);
+  };
+
+  const togglePromoterFilter = (promoter: string) => {
+    setPromoterFilters(prev => prev.includes(promoter) ? prev.filter(p => p !== promoter) : [...prev, promoter]);
+  };
+
+  const toggleOperatorFilter = (op: string) => {
+    setOperatorFilters(prev => prev.includes(op) ? prev.filter(o => o !== op) : [...prev, op]);
   };
 
   const uniqueOperators = React.useMemo(() => Array.from(new Set(data.map(p => p.operator || 'Sem Operador'))).sort(), [data]);
@@ -489,7 +488,9 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                 <div 
                     ref={topScrollRef}
                     className="overflow-x-auto h-5 bg-muted/30 border-b cursor-pointer relative z-[60] pointer-events-auto"
-                    onScroll={handleTopScroll}
+                    onScroll={(e) => {
+                        if (tableContainerRef.current) syncScroll(e.currentTarget, tableContainerRef.current);
+                    }}
                 >
                     <div style={{ width: totalTableWidth, height: '1px' }} />
                 </div>
@@ -497,7 +498,9 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                 <div 
                     ref={tableContainerRef}
                     className="overflow-x-auto relative z-10"
-                    onScroll={handleTableScroll}
+                    onScroll={(e) => {
+                        if (topScrollRef.current) syncScroll(e.currentTarget, topScrollRef.current);
+                    }}
                 >
                     <Table style={{ width: totalTableWidth, tableLayout: 'fixed' }}>
                         <TableHeader className="bg-background border-b-2">
