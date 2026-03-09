@@ -81,7 +81,7 @@ const COLUMN_LABELS: Record<string, string> = {
     col_gross: "Valor Bruto",
     col_comm: "Comissão",
     col_bank: "Banco Digitado",
-    col_status: "Situação",
+    col_status: "Status",
     col_date_appr: "Data Averbação",
     col_date_paid: "Data Pgto. Cliente",
     col_date_debt: "Chegada Saldo",

@@ -54,7 +54,7 @@ export function ExpenseTable({ expenses, onEdit, onDelete }: ExpenseTableProps) 
             <TableHead className="text-[10px] font-black uppercase tracking-widest">Descrição</TableHead>
             <TableHead className="text-[10px] font-black uppercase tracking-widest">Categoria</TableHead>
             <TableHead className="text-[10px] font-black uppercase tracking-widest">Tipo</TableHead>
-            <TableHead className="text-[10px] font-black uppercase tracking-widest">Situação</TableHead>
+            <TableHead className="text-[10px] font-black uppercase tracking-widest">Status</TableHead>
             <TableHead className="text-[10px] font-black uppercase tracking-widest text-right">Valor</TableHead>
             <TableHead className="text-[10px] font-black uppercase tracking-widest text-right">Ações</TableHead>
           </TableRow>

@@ -171,7 +171,7 @@ export function NewsForm({ initialData, onSubmit, isSaving = false }: NewsFormPr
                         name="status"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-primary/60">Situação</FormLabel>
+                            <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-primary/60">Status</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                                 <SelectTrigger className="font-bold h-11 rounded-xl">

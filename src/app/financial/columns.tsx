@@ -127,7 +127,7 @@ export const getColumns = ({ onEdit, onStatusUpdate }: any): ColumnDef<ProposalW
   { 
     id: 'col_proposal_status', 
     accessorKey: 'status', 
-    header: 'Situação Proposta', 
+    header: 'Status Proposta', 
     cell: ({ row, table }) => {
         const status = row.original.status;
         const statusColors = (table.options.meta as any)?.statusColors || {};

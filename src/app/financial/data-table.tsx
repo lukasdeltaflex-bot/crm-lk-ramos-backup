@@ -79,7 +79,7 @@ const COLUMN_LABELS: Record<string, string> = {
     col_product: "Produto",
     col_gross: "Valor Bruto",
     col_comm: "Comissão (%)",
-    col_proposal_status: "Situação Proposta",
+    col_proposal_status: "Status Proposta",
     col_comm_status: "Status Comissão",
     col_payment_date: "Data Pagamento",
     col_promoter: "Promotora",
