@@ -30,7 +30,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TableHead } from '@/components/ui/table';
 import { toast } from '@/hooks/use-toast';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 
 const CopyButton = ({ text, label }: { text: string | undefined; label: string }) => {
@@ -73,16 +73,14 @@ export const DraggableHeader = ({ header, className }: { header: Header<Customer
                     className={cn(
                         'flex items-center gap-1 h-full px-2',
                         'select-none',
-                        header.column.id === 'Ações' && 'justify-end',
+                        header.column.id === 'Acoes' && 'justify-end',
                         isSelect && 'justify-center'
                     )}
                 >
-                    {!isSelect && (
-                        <div {...attributes} {...listeners} className="p-1 hover:bg-primary/10 rounded cursor-grab text-primary opacity-40" onClick={(e) => e.stopPropagation()}>
-                            <GripVertical className="h-3.5 w-3.5" />
-                        </div>
-                    )}
-                    <div className={cn("overflow-hidden font-black text-[12px] uppercase tracking-widest text-foreground leading-tight flex items-center gap-1", isSortable && "cursor-pointer", header.column.id === 'Ações' && "text-right pr-2", isSelect && "justify-center w-full pr-0")} onClick={isSortable ? header.column.getToggleSortingHandler() : undefined}>
+                    <div {...attributes} {...listeners} className="p-1 hover:bg-primary/10 rounded cursor-grab text-primary opacity-40" onClick={(e) => e.stopPropagation()}>
+                        <GripVertical className="h-3.5 w-3.5" />
+                    </div>
+                    <div className={cn("overflow-hidden font-black text-[12px] uppercase tracking-widest text-foreground leading-tight flex items-center gap-1", isSortable && "cursor-pointer", header.column.id === 'Acoes' && "text-right pr-2", isSelect && "justify-center w-full pr-0")} onClick={isSortable ? header.column.getToggleSortingHandler() : undefined}>
                         {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                         {header.column.getIsSorted() && (
                             <div className="text-primary shrink-0 ml-1">
@@ -173,7 +171,7 @@ export const getColumns = ({ onEdit, onDelete }: any): ColumnDef<Customer>[] => 
   }, size: 250 },
   { id: 'CPF', accessorFn: (row) => row.cpf, header: 'CPF', cell: ({ row }) => (<div className="flex items-center gap-1 font-bold text-sm"><span>{row.original.cpf}</span><CopyButton text={row.original.cpf} label="CPF" /></div>), size: 150 },
   { id: 'Telefone', accessorFn: (row) => row.phone, header: 'Telefone', cell: ({ row }) => { const phone = row.original.phone; return (<div className="flex items-center gap-2 font-bold text-sm"><span>{phone}</span>{isWhatsApp(phone) && <a href={getWhatsAppUrl(phone)} target="_blank" rel="noopener noreferrer" className="text-green-600"><WhatsAppIcon className="h-4 w-4" /></a>}</div>) }, size: 150 },
-  { id: 'Telefone 2', accessorFn: (row) => row.phone2, header: 'Telefone 2', cell: ({ row }) => { const phone = row.original.phone2; if (!phone) return '-'; return (<div className="flex items-center gap-2 font-bold text-sm"><span>{phone}</span>{isWhatsApp(phone) && <a href={getWhatsAppUrl(phone)} target="_blank" rel="noopener noreferrer" className="text-green-600"><WhatsAppIcon className="h-4 w-4" /></a>}</div>) }, size: 150 },
+  { id: 'Telefone2', accessorFn: (row) => row.phone2, header: 'Telefone 2', cell: ({ row }) => { const phone = row.original.phone2; if (!phone) return '-'; return (<div className="flex items-center gap-2 font-bold text-sm"><span>{phone}</span>{isWhatsApp(phone) && <a href={getWhatsAppUrl(phone)} target="_blank" rel="noopener noreferrer" className="text-green-600"><WhatsAppIcon className="h-4 w-4" /></a>}</div>) }, size: 150 },
   { id: 'Etiquetas', header: 'Etiquetas', cell: ({ row }) => {
       const customer = row.original;
       const manualTags = customer.tags || [];
@@ -188,6 +186,6 @@ export const getColumns = ({ onEdit, onDelete }: any): ColumnDef<Customer>[] => 
   }, size: 200 },
   { id: 'Cidade', accessorFn: (row) => row.city, header: 'Cidade', cell: ({ row }) => <span className="text-sm font-medium truncate block">{row.original.city || '-'}</span>, size: 150 },
   { id: 'Estado', accessorFn: (row) => row.state, header: 'Estado', cell: ({ row }) => <span className="text-sm font-black uppercase">{row.original.state || '-'}</span>, size: 80 },
-  { id: 'Observações', accessorKey: 'observations', header: 'Observações', cell: ({ row }) => <span className="text-xs text-muted-foreground truncate block max-w-[200px] italic">{row.original.observations || '-'}</span>, size: 200 },
-  { id: 'Ações', header: '', cell: (props) => <ActionsCell {...props} onEdit={onEdit} onDelete={onDelete} />, enableHiding: false, size: 80 },
+  { id: 'Observacoes', accessorKey: 'observations', header: 'Observações', cell: ({ row }) => <span className="text-xs text-muted-foreground truncate block max-w-[200px] italic">{row.original.observations || '-'}</span>, size: 200 },
+  { id: 'Acoes', header: '', cell: (props) => <ActionsCell {...props} onEdit={onEdit} onDelete={onDelete} />, enableHiding: false, size: 80 },
 ];

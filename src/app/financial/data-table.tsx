@@ -99,7 +99,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   const isScrollingRef = React.useRef(false);
 
   const { statusColors } = useTheme();
-  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'Data Digitação', desc: true }]);
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'DataDigitacao', desc: true }]);
   const [statusFilter, setStatusFilter] = React.useState('Todos');
   const [globalFilter, setGlobalFilter] = React.useState('');
   const [frozenCount, setFrozenCount] = React.useState(2);
@@ -115,8 +115,8 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
     'Promotora': false,
     'CPF': false,
-    'Comissão': true,
-    'Status Comissão': true,
+    'Comissao': true,
+    'StatusComissao': true,
     'Operador': true
   });
   
@@ -126,6 +126,16 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   const [startDateInput, setStartDateInput] = React.useState('');
   const [endDateInput, setEndDateInput] = React.useState('');
   const [appliedDateRange, setAppliedDateRange] = React.useState<DateRange | undefined>(undefined);
+
+  const handlePaginationChange = (updater: any) => {
+    setPagination((old) => {
+      const next = typeof updater === 'function' ? updater(old) : updater;
+      if (typeof window !== 'undefined') {
+        try { localStorage.setItem('lk-financial-pageSize', String(next.pageSize)); } catch(e) {}
+      }
+      return next;
+    });
+  };
 
   React.useEffect(() => {
     setIsClient(true);
@@ -146,16 +156,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         if (savedOrder) setColumnOrder(JSON.parse(savedOrder));
     } catch (e) {}
   }, []);
-
-  const handlePaginationChange = (updater: any) => {
-    setPagination((old) => {
-      const next = typeof updater === 'function' ? updater(old) : updater;
-      if (typeof window !== 'undefined') {
-        try { localStorage.setItem('lk-financial-pageSize', String(next.pageSize)); } catch(e) {}
-      }
-      return next;
-    });
-  };
 
   const hasActiveFilters = statusFilter !== 'Todos' || bankFilters.length > 0 || promoterFilters.length > 0 || operatorFilters.length > 0 || !!globalFilter || !!appliedDateRange;
 
@@ -181,13 +181,14 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     }
   }, [globalFilter, columnVisibility, columnOrder, frozenCount, isClient]);
 
-  // 🛡️ MOTOR DE SINCRONIZAÇÃO V10 (ULTRARRESILIENTE)
+  // 🛡️ MOTOR DE SINCRONIZAÇÃO V11
   const syncScroll = (source: HTMLDivElement, target: HTMLDivElement) => {
-    if (!isScrollingRef.current) {
-        isScrollingRef.current = true;
-        target.scrollLeft = source.scrollLeft;
-        setTimeout(() => { isScrollingRef.current = false; }, 50);
-    }
+    if (isScrollingRef.current) return;
+    isScrollingRef.current = true;
+    target.scrollLeft = source.scrollLeft;
+    requestAnimationFrame(() => {
+        isScrollingRef.current = false;
+    });
   };
 
   const applyRangeShortcut = (range: string) => {
@@ -290,18 +291,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     },
     meta: { isPrivacyMode, userSettings }
   });
-
-  const selectedRows = table.getFilteredSelectedRowModel().rows;
-  const numSelected = selectedRows.length;
-  const totalGross = React.useMemo(() => selectedRows.reduce((acc, row) => acc + (row.original.grossAmount || 0), 0), [selectedRows]);
-  
-  const totalCommission = React.useMemo(() => 
-    selectedRows.reduce((acc, row) => {
-        const p = row.original;
-        const remaining = (p.commissionValue || 0) - (p.amountPaid || 0);
-        return acc + Math.max(remaining, 0);
-    }, 0), 
-  [selectedRows]);
 
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
 
@@ -505,12 +494,12 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             </div>
 
             <Card className="rounded-[1.5rem] border-2 border-zinc-200 bg-card shadow-xl overflow-hidden p-1">
-                {/* BARRA DE ROLAGEM SUPERIOR (V10) */}
+                {/* 🛡️ BARRA DE ROLAGEM SUPERIOR V11 */}
                 <div 
                     ref={topScrollRef}
-                    className="overflow-x-auto h-5 bg-muted/30 border-b cursor-pointer relative z-[60] pointer-events-auto"
+                    className="overflow-x-auto h-5 bg-muted/30 border-b cursor-pointer relative z-[70] pointer-events-auto"
                     onScroll={(e) => {
-                        if (tableContainerRef.current) syncScroll(e.currentTarget, tableContainerRef.current);
+                        if (tableContainerRef.current) syncScroll(e.currentTarget as HTMLDivElement, tableContainerRef.current);
                     }}
                 >
                     <div style={{ width: totalTableWidth, height: '1px' }} />
@@ -520,7 +509,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                     ref={tableContainerRef}
                     className="overflow-x-auto relative z-10"
                     onScroll={(e) => {
-                        if (topScrollRef.current) syncScroll(e.currentTarget, topScrollRef.current);
+                        if (topScrollRef.current) syncScroll(e.currentTarget as HTMLDivElement, topScrollRef.current);
                     }}
                 >
                     <Table style={{ width: totalTableWidth, tableLayout: 'fixed' }}>

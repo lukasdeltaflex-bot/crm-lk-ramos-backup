@@ -91,10 +91,10 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
 
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
-    'Telefone 2': true,
+    'Telefone2': true,
     'Cidade': true,
     'Estado': true,
-    'Observações': false,
+    'Observacoes': false,
   });
 
   const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
@@ -141,13 +141,14 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
     }
   }, [globalFilter, columnVisibility, columnOrder, frozenCount, isClient]);
 
-  // 🛡️ MOTOR DE SINCRONIZAÇÃO V10 (ULTRARRESILIENTE)
+  // 🛡️ MOTOR DE SINCRONIZAÇÃO V11
   const syncScroll = (source: HTMLDivElement, target: HTMLDivElement) => {
-    if (!isScrollingRef.current) {
-        isScrollingRef.current = true;
-        target.scrollLeft = source.scrollLeft;
-        setTimeout(() => { isScrollingRef.current = false; }, 50);
-    }
+    if (isScrollingRef.current) return;
+    isScrollingRef.current = true;
+    target.scrollLeft = source.scrollLeft;
+    requestAnimationFrame(() => {
+        isScrollingRef.current = false;
+    });
   };
 
   const sensors = useSensors(
@@ -260,12 +261,12 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             </div>
           </div>
           
-          {/* BARRA DE ROLAGEM SUPERIOR (V10) */}
+          {/* 🛡️ BARRA DE ROLAGEM SUPERIOR V11 */}
           <div 
             ref={topScrollRef}
-            className="overflow-x-auto h-5 bg-muted/30 border-b cursor-pointer relative z-[60] pointer-events-auto"
+            className="overflow-x-auto h-5 bg-muted/30 border-b cursor-pointer relative z-[70] pointer-events-auto"
             onScroll={(e) => {
-                if (tableContainerRef.current) syncScroll(e.currentTarget, tableContainerRef.current);
+                if (tableContainerRef.current) syncScroll(e.currentTarget as HTMLDivElement, tableContainerRef.current);
             }}
           >
             <div style={{ width: totalTableWidth, height: '1px' }} />
@@ -275,7 +276,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             ref={tableContainerRef}
             className="overflow-x-auto relative z-10"
             onScroll={(e) => {
-                if (topScrollRef.current) syncScroll(e.currentTarget, topScrollRef.current);
+                if (topScrollRef.current) syncScroll(e.currentTarget as HTMLDivElement, topScrollRef.current);
             }}
           >
             <Table style={{ width: totalTableWidth, tableLayout: 'fixed' }}>

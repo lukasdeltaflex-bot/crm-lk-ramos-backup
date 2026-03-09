@@ -109,16 +109,16 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const [endDateInput, setEndDateInput] = React.useState('');
   const [appliedDateRange, setAppliedDateRange] = React.useState<DateRange | undefined>(undefined);
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
-  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'Data de Digitação', desc: true }]);
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'DataDigitacao', desc: true }]);
   const [isClient, setIsClient] = React.useState(false);
 
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
     'Operador': false,
-    'Data Averbação': true,
-    'Data Pgto. Cliente': true,
-    'Chegada Saldo': true,
-    'Comissão': true,
+    'DataAverbacao': true,
+    'DataPgtoCliente': true,
+    'ChegadaSaldo': true,
+    'Comissao': true,
   });
 
   const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
@@ -189,14 +189,13 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     }
   }, [statusFilter, globalFilter, columnVisibility, columnOrder, frozenCount, isClient]);
 
-  // 🛡️ MOTOR DE SINCRONIZAÇÃO V10 (ULTRARRESILIENTE)
+  // 🛡️ MOTOR DE SINCRONIZAÇÃO V11 (ULTRA FIDELIDADE)
   const syncScroll = (source: HTMLDivElement, target: HTMLDivElement) => {
     if (isScrollingRef.current) return;
     
     isScrollingRef.current = true;
     target.scrollLeft = source.scrollLeft;
     
-    // Pequeno delay para liberar a trava e evitar loop infinito de eventos
     requestAnimationFrame(() => {
         isScrollingRef.current = false;
     });
@@ -498,10 +497,10 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
             </div>
 
             <Card className="border-2 border-zinc-300 shadow-xl rounded-xl overflow-hidden bg-card p-1">
-                {/* BARRA DE ROLAGEM SUPERIOR (V10 - SINCRONIZAÇÃO MECÂNICA) */}
+                {/* 🛡️ BARRA DE ROLAGEM SUPERIOR V11 (ULTRA FIDELIDADE) */}
                 <div 
                     ref={topScrollRef}
-                    className="overflow-x-auto h-5 bg-muted/30 border-b cursor-pointer relative z-[60] pointer-events-auto"
+                    className="overflow-x-auto h-5 bg-muted/30 border-b cursor-pointer relative z-[70] pointer-events-auto"
                     onScroll={(e) => {
                         if (tableContainerRef.current) syncScroll(e.currentTarget as HTMLDivElement, tableContainerRef.current);
                     }}
