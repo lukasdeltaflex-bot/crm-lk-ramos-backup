@@ -64,7 +64,7 @@ export const DraggableHeader = ({ header, className }: { header: Header<any, unk
                     className={cn(
                         'flex items-center gap-1 h-full px-2',
                         'select-none',
-                        header.column.id === 'Ações' && 'justify-end',
+                        header.column.id === 'Actions' && 'justify-end',
                         isSelect && 'justify-center'
                     )}
                 >
@@ -73,7 +73,7 @@ export const DraggableHeader = ({ header, className }: { header: Header<any, unk
                             <GripVertical className="h-3.5 w-3.5" />
                         </div>
                     )}
-                    <div className={cn("overflow-hidden font-black text-[12px] uppercase tracking-wider text-foreground leading-tight flex items-center gap-1", header.column.id === 'Ações' && "text-right pr-2", isSelect && "justify-center w-full pr-0")}>
+                    <div className={cn("overflow-hidden font-black text-[12px] uppercase tracking-wider text-foreground leading-tight flex items-center gap-1", header.column.id === 'Actions' && "text-right pr-2", isSelect && "justify-center w-full pr-0")}>
                         {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                         {header.column.getIsSorted() && (
                             <div className="text-primary shrink-0 ml-1">
@@ -106,7 +106,7 @@ export const getColumns = ({ onEdit, onStatusUpdate }: any): ColumnDef<ProposalW
     enableSorting: false, 
     size: 50 
   },
-  { id: 'Data Digitação', accessorKey: 'dateDigitized', header: 'Data Digitação', cell: ({ row }) => <span className="text-sm font-bold text-muted-foreground">{formatDateSafe(row.original.dateDigitized)}</span>, size: 130 },
+  { id: 'DataDigitacao', accessorKey: 'dateDigitized', header: 'Data Digitação', cell: ({ row }) => <span className="text-sm font-bold text-muted-foreground">{formatDateSafe(row.original.dateDigitized)}</span>, size: 130 },
   { id: 'Promotora', accessorKey: 'promoter', header: 'Promotora', cell: ({ row, table }) => {
         const prom = row.original.promoter;
         const sett = (table.options.meta as any)?.userSettings;
@@ -114,11 +114,11 @@ export const getColumns = ({ onEdit, onStatusUpdate }: any): ColumnDef<ProposalW
     }, size: 150 },
   { id: 'Cliente', accessorFn: (row) => row.customer?.name, header: 'Cliente', cell: ({ row }) => <span className="font-black text-primary uppercase text-sm truncate">{row.original.customer?.name}</span>, size: 200 },
   { id: 'CPF', accessorFn: (row) => row.customer?.cpf, header: 'CPF', cell: ({ row }) => (<div className="flex items-center gap-1 text-sm font-black text-foreground/80"><span>{row.original.customer?.cpf || '-'}</span><CopyButton text={row.original.customer?.cpf} label="CPF" /></div>), size: 150 },
-  { id: 'Nº Proposta', accessorKey: 'proposalNumber', header: 'Nº Proposta', cell: ({ row }) => (<div className="flex items-center gap-1 text-sm font-black"><Link href={`/proposals?open=${row.original.id}`} className="text-primary hover:underline font-black" onClick={(e) => e.stopPropagation()}>{row.original.proposalNumber}</Link><CopyButton text={row.original.proposalNumber} label="Proposta" /></div>), size: 150 },
+  { id: 'ProposalNumber', accessorKey: 'proposalNumber', header: 'Nº Proposta', cell: ({ row }) => (<div className="flex items-center gap-1 text-sm font-black"><Link href={`/proposals?open=${row.original.id}`} className="text-primary hover:underline font-black" onClick={(e) => e.stopPropagation()}>{row.original.proposalNumber}</Link><CopyButton text={row.original.proposalNumber} label="Proposta" /></div>), size: 150 },
   { id: 'Produto', accessorKey: 'product', header: 'Produto', cell: ({ row }) => <span className="text-sm font-bold text-foreground/80">{row.original.product}</span>, size: 120 },
-  { id: 'Valor Bruto', accessorKey: 'grossAmount', header: () => <div className="text-right">Valor Bruto</div>, cell: ({ row, table }) => { const isPriv = (table.options.meta as any)?.isPrivacyMode; return (<div className="text-right font-black text-sm">{isPriv ? '•••••' : formatCurrency(row.original.grossAmount)}</div>) }, size: 120 },
-  { id: 'Valor Comissão', accessorKey: 'commissionValue', header: 'Comissão', cell: ({ row, table }) => { const isPriv = (table.options.meta as any)?.isPrivacyMode; return (<div className="text-right font-black text-sm">{isPriv ? '•••••' : formatCurrency(row.original.commissionValue)}</div>) }, size: 120 },
-  { id: 'Status Comissão', accessorKey: 'commissionStatus', header: 'Status Comissão', cell: ({ row }) => <CommissionStatusCell proposal={row.original} onStatusUpdate={onStatusUpdate} onEdit={onEdit} />, size: 140 },
+  { id: 'ValorBruto', accessorKey: 'grossAmount', header: () => <div className="text-right">Valor Bruto</div>, cell: ({ row, table }) => { const isPriv = (table.options.meta as any)?.isPrivacyMode; return (<div className="text-right font-black text-sm">{isPriv ? '•••••' : formatCurrency(row.original.grossAmount)}</div>) }, size: 120 },
+  { id: 'Comissao', accessorKey: 'commissionValue', header: 'Comissão', cell: ({ row, table }) => { const isPriv = (table.options.meta as any)?.isPrivacyMode; return (<div className="text-right font-black text-sm">{isPriv ? '•••••' : formatCurrency(row.original.commissionValue)}</div>) }, size: 120 },
+  { id: 'StatusComissao', accessorKey: 'commissionStatus', header: 'Status Comissão', cell: ({ row }) => <CommissionStatusCell proposal={row.original} onStatusUpdate={onStatusUpdate} onEdit={onEdit} />, size: 140 },
   { id: 'Operador', accessorKey: 'operator', header: 'Operador', cell: ({ row }) => <span className="text-xs font-bold">{row.original.operator || '-'}</span>, size: 120 },
-  { id: 'Ações', header: '', cell: ({ row }) => (<div className="text-right" onClick={(e) => e.stopPropagation()}><Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={() => onEdit(row.original)}><MoreHorizontal className="h-4 w-4" /></Button></div>), enableHiding: false, size: 80 },
+  { id: 'Actions', header: '', cell: ({ row }) => (<div className="text-right" onClick={(e) => e.stopPropagation()}><Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={() => onEdit(row.original)}><MoreHorizontal className="h-4 w-4" /></Button></div>), enableHiding: false, size: 80 },
 ];

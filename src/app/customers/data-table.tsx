@@ -90,10 +90,10 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
 
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
-    'Telefone 2': true,
+    'Telefone2': true,
     'Cidade': true,
     'Estado': true,
-    'Observações': false,
+    'Observacoes': false,
   });
 
   const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
@@ -142,13 +142,13 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
 
   // 🛡️ MOTOR DE SINCRONIZAÇÃO V10 (ULTRARRESILIENTE)
   const handleTopScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (tableContainerRef.current && tableContainerRef.current.scrollLeft !== e.currentTarget.scrollLeft) {
+    if (tableContainerRef.current && Math.abs(tableContainerRef.current.scrollLeft - e.currentTarget.scrollLeft) > 1) {
       tableContainerRef.current.scrollLeft = e.currentTarget.scrollLeft;
     }
   };
 
   const handleTableScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (topScrollRef.current && topScrollRef.current.scrollLeft !== e.currentTarget.scrollLeft) {
+    if (topScrollRef.current && Math.abs(topScrollRef.current.scrollLeft - e.currentTarget.scrollLeft) > 1) {
       topScrollRef.current.scrollLeft = e.currentTarget.scrollLeft;
     }
   };

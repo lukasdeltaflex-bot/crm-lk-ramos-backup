@@ -97,7 +97,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   const tableContainerRef = React.useRef<HTMLDivElement>(null);
   const topScrollRef = React.useRef<HTMLDivElement>(null);
   const { statusColors } = useTheme();
-  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'Data Digitação', desc: true }]);
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'DataDigitacao', desc: true }]);
   const [statusFilter, setStatusFilter] = React.useState('Todos');
   const [globalFilter, setGlobalFilter] = React.useState('');
   const [frozenCount, setFrozenCount] = React.useState(2);
@@ -113,8 +113,8 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
     'Promotora': false,
     'CPF': false,
-    'Comissão (%)': false,
-    'Status Proposta': false,
+    'Comissao': true,
+    'StatusComissao': true,
     'Operador': true
   });
   
@@ -171,13 +171,13 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
 
   // 🛡️ MOTOR DE SINCRONIZAÇÃO V10 (ULTRARRESILIENTE)
   const handleTopScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (tableContainerRef.current && tableContainerRef.current.scrollLeft !== e.currentTarget.scrollLeft) {
+    if (tableContainerRef.current && Math.abs(tableContainerRef.current.scrollLeft - e.currentTarget.scrollLeft) > 1) {
       tableContainerRef.current.scrollLeft = e.currentTarget.scrollLeft;
     }
   };
 
   const handleTableScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (topScrollRef.current && topScrollRef.current.scrollLeft !== e.currentTarget.scrollLeft) {
+    if (topScrollRef.current && Math.abs(topScrollRef.current.scrollLeft - e.currentTarget.scrollLeft) > 1) {
       topScrollRef.current.scrollLeft = e.currentTarget.scrollLeft;
     }
   };
@@ -338,10 +338,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   const uniqueOperators = React.useMemo(() => Array.from(new Set(data.map(p => p.operator || 'Sem Operador'))).sort(), [data]);
   const uniqueBanks = React.useMemo(() => Array.from(new Set(data.map(p => p.bank))).sort(), [data]);
   const uniquePromoters = React.useMemo(() => Array.from(new Set(data.map(p => p.promoter))).sort(), [data]);
-
-  const toggleOperatorFilter = (op: string) => setOperatorFilters(prev => prev.includes(op) ? prev.filter(o => o !== op) : [...prev, op]);
-  const toggleBankFilter = (bank: string) => setBankFilters(prev => prev.includes(bank) ? prev.filter(b => b !== bank) : [...prev, bank]);
-  const togglePromoterFilter = (prom: string) => setPromoterFilters(prev => prev.includes(prom) ? prev.filter(p => p !== prom) : [...prev, prom]);
 
   const totalTableWidth = table.getTotalSize();
 

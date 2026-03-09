@@ -108,13 +108,13 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const [endDateInput, setEndDateInput] = React.useState('');
   const [appliedDateRange, setAppliedDateRange] = React.useState<DateRange | undefined>(undefined);
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
-  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'DataDigitação', desc: true }]);
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'DataDigitacao', desc: true }]);
   const [isClient, setIsClient] = React.useState(false);
 
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
     'Operador': false,
-    'DataAverbação': true,
+    'DataAverbacao': true,
     'DataPgtoCliente': true,
     'ChegadaSaldo': true,
     'Comissao': true,
@@ -180,13 +180,13 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 
   // 🛡️ MOTOR DE SINCRONIZAÇÃO V10 (ULTRARRESILIENTE)
   const handleTopScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (tableContainerRef.current && tableContainerRef.current.scrollLeft !== e.currentTarget.scrollLeft) {
+    if (tableContainerRef.current && Math.abs(tableContainerRef.current.scrollLeft - e.currentTarget.scrollLeft) > 1) {
       tableContainerRef.current.scrollLeft = e.currentTarget.scrollLeft;
     }
   };
 
   const handleTableScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (topScrollRef.current && topScrollRef.current.scrollLeft !== e.currentTarget.scrollLeft) {
+    if (topScrollRef.current && Math.abs(topScrollRef.current.scrollLeft - e.currentTarget.scrollLeft) > 1) {
       topScrollRef.current.scrollLeft = e.currentTarget.scrollLeft;
     }
   };
