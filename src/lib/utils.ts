@@ -202,6 +202,13 @@ export function cleanFirestoreData(data: any): any {
 export function getSmartTags(customer: Customer, proposals: Proposal[] = []): { label: string; color: string }[] {
     const tags: { label: string; color: string }[] = [];
     const now = new Date();
+
+    // 🛡️ ALERTA 75 ANOS: Identifica clientes se aproximando do limite de idade
+    const age = getAge(customer.birthDate);
+    if (age >= 74 && age < 75) {
+        tags.push({ label: 'ALERTA 75 ANOS', color: 'bg-[#F87171]' }); // Cor coral/salmon conforme imagem
+    }
+
     const customerProposals = proposals.filter(p => p.customerId === customer.id);
     const totalComm = customerProposals.reduce((s, p) => s + (p.amountPaid || 0), 0);
     
@@ -211,7 +218,7 @@ export function getSmartTags(customer: Customer, proposals: Proposal[] = []): { 
         const d = parseDateSafe(p.dateDigitized);
         return d && differenceInDays(now, d) <= 30;
     });
-    if (hasRecent) tags.push({ label: '🔥 ATIVO', color: 'bg-orange-600' });
+    if (hasRecent) tags.push({ label: 'ATIVO', color: 'bg-orange-600' });
     
     const hasAnyInLast6Months = customerProposals.some(p => {
         const d = parseDateSafe(p.dateDigitized);
