@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -15,7 +14,7 @@ import { formatCurrency } from '@/lib/utils';
 import type { Expense } from '@/lib/types';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Edit, Trash2, Receipt, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Edit, Trash2, Receipt, CheckCircle2, AlertCircle, CalendarRange } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -36,6 +35,16 @@ export function ExpenseTable({ expenses, onEdit, onDelete }: ExpenseTableProps) 
     );
   }
 
+  const getRecurrenceLabel = (expense: Expense) => {
+    if (expense.recurrence === 'installments' && expense.installmentNumber && expense.installmentsCount) {
+        return <Badge variant="secondary" className="bg-orange-100 text-orange-700 border-orange-200 text-[9px] font-black">{expense.installmentNumber}/{expense.installmentsCount} Parc.</Badge>;
+    }
+    if (expense.recurrence === 'monthly') return <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200 text-[9px] font-black">FIXA MENSAL</Badge>;
+    if (expense.recurrence === 'annually') return <Badge variant="secondary" className="bg-purple-100 text-purple-700 border-purple-200 text-[9px] font-black">ANUAL</Badge>;
+    if (expense.recurrence === 'semi-annually') return <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 border-indigo-200 text-[9px] font-black">SEMESTRAL</Badge>;
+    return null;
+  };
+
   return (
     <div className="rounded-xl border shadow-sm overflow-hidden">
       <Table>
@@ -44,6 +53,7 @@ export function ExpenseTable({ expenses, onEdit, onDelete }: ExpenseTableProps) 
             <TableHead className="text-[10px] font-black uppercase tracking-widest">Data</TableHead>
             <TableHead className="text-[10px] font-black uppercase tracking-widest">Descrição</TableHead>
             <TableHead className="text-[10px] font-black uppercase tracking-widest">Categoria</TableHead>
+            <TableHead className="text-[10px] font-black uppercase tracking-widest">Tipo</TableHead>
             <TableHead className="text-[10px] font-black uppercase tracking-widest">Situação</TableHead>
             <TableHead className="text-[10px] font-black uppercase tracking-widest text-right">Valor</TableHead>
             <TableHead className="text-[10px] font-black uppercase tracking-widest text-right">Ações</TableHead>
@@ -55,11 +65,19 @@ export function ExpenseTable({ expenses, onEdit, onDelete }: ExpenseTableProps) 
               <TableCell className="text-xs font-medium">
                 {format(parseISO(expense.date), 'dd/MM/yyyy', { locale: ptBR })}
               </TableCell>
-              <TableCell className="font-bold text-sm">{expense.description}</TableCell>
+              <TableCell className="font-bold text-sm">
+                <div className="flex flex-col gap-0.5">
+                    {expense.description}
+                    {expense.category && <span className="text-[9px] text-muted-foreground uppercase">{expense.category}</span>}
+                </div>
+              </TableCell>
               <TableCell>
                 <Badge variant="outline" className="bg-background text-[10px] font-black uppercase border-zinc-300">
                     {expense.category}
                 </Badge>
+              </TableCell>
+              <TableCell>
+                {getRecurrenceLabel(expense) || <span className="text-[9px] text-muted-foreground/40 uppercase font-black">Único</span>}
               </TableCell>
               <TableCell>
                 <Badge 
@@ -80,10 +98,10 @@ export function ExpenseTable({ expenses, onEdit, onDelete }: ExpenseTableProps) 
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(expense)}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(expense)} title="Editar Pagamento">
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => onDelete(expense.id)}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => onDelete(expense.id)} title="Excluir Lançamento">
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>

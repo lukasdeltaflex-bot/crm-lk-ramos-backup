@@ -49,7 +49,7 @@ import {
   } from '@/components/ui/dialog';
 import { CommissionForm, type CommissionFormValues } from './commission-form';
 import { toast } from '@/hooks/use-toast';
-import { format, startOfMonth, endOfMonth, parse, getYear, getMonth, isSameMonth, isValid } from 'date-fns';
+import { format, startOfMonth, endOfMonth, parse, getYear, getMonth, isSameMonth, isValid, addMonths } from 'date-fns';
 import { CommissionReconciliation } from '@/components/financial/commission-reconciliation';
 import { formatCurrency, cleanBankName, cleanFirestoreData } from '@/lib/utils';
 import { ProposalsStatusTable } from '@/components/dashboard/proposals-status-table';
@@ -395,6 +395,66 @@ export default function FinancialPage() {
     }
   };
 
+  const handleExpenseSubmit = async (data: any) => {
+    if (!firestore || !user) return;
+    setIsSaving(true);
+
+    try {
+        const batch = writeBatch(firestore);
+        const parsedDate = parse(data.date, 'dd/MM/yyyy', new Date());
+        const groupId = data.groupId || (data.recurrence !== 'none' ? crypto.randomUUID() : undefined);
+        
+        let count = 1;
+        if (data.recurrence === 'monthly') count = 12;
+        else if (data.recurrence === 'installments') count = data.installmentsCount || 1;
+        else if (data.recurrence === 'semi-annually') count = 2; // Ex: Próximos 2 semestres
+        else if (data.recurrence === 'annually') count = 2; // Ex: Próximos 2 anos
+
+        for (let i = 0; i < count; i++) {
+            let nextDate: Date;
+            if (data.recurrence === 'monthly' || data.recurrence === 'installments') {
+                nextDate = addMonths(parsedDate, i);
+            } else if (data.recurrence === 'semi-annually') {
+                nextDate = addMonths(parsedDate, i * 6);
+            } else if (data.recurrence === 'annually') {
+                nextDate = addMonths(parsedDate, i * 12);
+            } else {
+                nextDate = parsedDate;
+            }
+
+            const expenseId = (i === 0 && selectedExpense?.id) ? selectedExpense.id : doc(collection(firestore, 'users', user.uid, 'expenses')).id;
+            const expenseData: any = {
+                ...data,
+                id: expenseId,
+                ownerId: user.uid,
+                date: format(nextDate, 'yyyy-MM-dd'),
+                groupId: groupId,
+                // Apenas a primeira parcela/mês pode herdar o status de "pago" se marcado no form
+                paid: i === 0 ? data.paid : false,
+                installmentNumber: data.recurrence === 'installments' ? i + 1 : undefined,
+                description: data.recurrence === 'installments' 
+                    ? `${data.description} (${i + 1}/${count})` 
+                    : data.description
+            };
+
+            const docRef = doc(firestore, 'users', user.uid, 'expenses', expenseId);
+            batch.set(docRef, cleanFirestoreData(expenseData), { merge: true });
+            
+            // Se for lançamento único, encerra o loop
+            if (data.recurrence === 'none') break;
+        }
+
+        await batch.commit();
+        setIsExpenseFormOpen(false);
+        toast({ title: 'Despesas Lançadas!', description: count > 1 ? `${count} parcelas/recorrências geradas no fluxo.` : 'Gasto registrado com sucesso.' });
+    } catch (e: any) {
+        console.error("Expense Batch Error:", e);
+        toast({ variant: 'destructive', title: 'Erro ao processar lançamentos' });
+    } finally {
+        setIsSaving(false);
+    }
+  };
+
   const totalExpensesAmount = React.useMemo(() => {
     if (!expenses) return 0;
     const now = new Date();
@@ -573,28 +633,8 @@ export default function FinancialPage() {
 
       <Dialog open={isExpenseFormOpen} onOpenChange={setIsExpenseFormOpen}>
         <DialogContent className="max-w-md" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
-            <DialogHeader><DialogTitle>Gasto Operacional</DialogTitle></DialogHeader>
-            <ExpenseForm expense={selectedExpense} categories={userSettings?.expenseCategories || initialExpenseCategories} onSubmit={async (data) => {
-                const id = selectedExpense?.id || doc(collection(firestore!, 'users', user!.uid, 'expenses')).id;
-                const finalData = cleanFirestoreData({ ...data, id, ownerId: user!.uid });
-                setIsSaving(true);
-                try {
-                    await setDoc(doc(firestore!, 'users', user!.uid, 'expenses', id), finalData);
-                    setIsExpenseFormOpen(false);
-                    toast({ title: 'Gasto Salvo!' });
-                } catch (e: any) {
-                    if (e.code === 'permission-denied') {
-                        errorEmitter.emit('permission-error', new FirestorePermissionError({
-                            path: `users/${user!.uid}/expenses/${id}`,
-                            operation: 'write',
-                            requestResourceData: finalData
-                        }));
-                    }
-                    toast({ variant: 'destructive', title: 'Erro ao salvar despesa' });
-                } finally {
-                    setIsSaving(false);
-                }
-            }} isSaving={isSaving} />
+            <DialogHeader><DialogTitle>{selectedExpense ? 'Editar Pagamento' : 'Novo Gasto Operacional'}</DialogTitle></DialogHeader>
+            <ExpenseForm expense={selectedExpense} categories={userSettings?.expenseCategories || initialExpenseCategories} onSubmit={handleExpenseSubmit} isSaving={isSaving} />
         </DialogContent>
       </Dialog>
 

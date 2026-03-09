@@ -183,6 +183,8 @@ export type FollowUp = {
   notes?: string;
 };
 
+export type ExpenseRecurrence = 'none' | 'monthly' | 'annually' | 'semi-annually' | 'installments';
+
 export type Expense = {
   id: string;
   ownerId: string;
@@ -191,6 +193,10 @@ export type Expense = {
   date: string; // YYYY-MM-DD
   category: string;
   paid: boolean;
+  recurrence?: ExpenseRecurrence;
+  installmentsCount?: number;
+  installmentNumber?: number;
+  groupId?: string; // Para identificar despesas do mesmo grupo/parcelamento
 };
 
 export type Lead = {

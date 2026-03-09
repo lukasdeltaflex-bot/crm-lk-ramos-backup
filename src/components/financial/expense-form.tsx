@@ -23,7 +23,7 @@ import {
 import { format, parse, isValid } from 'date-fns';
 import type { Expense } from '@/lib/types';
 import { useEffect, useMemo } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CalendarRange, ListNumbered } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { formatCurrencyInput, formatDateSafe } from '@/lib/utils';
 
@@ -38,14 +38,16 @@ const expenseSchema = z.object({
   }),
   category: z.string({ required_error: 'Selecione uma categoria.' }),
   paid: z.boolean().default(false),
+  recurrence: z.enum(['none', 'monthly', 'annually', 'semi-annually', 'installments']).default('none'),
+  installmentsCount: z.coerce.number().min(1).max(120).optional().default(1),
 });
 
-type ExpenseFormValues = z.infer<typeof expenseSchema>;
+export type ExpenseFormValues = z.infer<typeof expenseSchema>;
 
 interface ExpenseFormProps {
   expense?: Expense;
   categories: string[];
-  onSubmit: (data: any) => void;
+  onSubmit: (data: ExpenseFormValues) => void;
   isSaving?: boolean;
 }
 
@@ -57,8 +59,6 @@ const applyDateMask = (value: string) => {
 };
 
 export function ExpenseForm({ expense, categories, onSubmit, isSaving = false }: ExpenseFormProps) {
-  // 🛡️ GARANTIA DE CATEGORIA: Se a categoria salva não estiver na lista atual, adicionamos ela 
-  // para evitar que o campo apareça vazio/resetado.
   const finalCategories = useMemo(() => {
     const list = [...categories];
     if (expense?.category && !list.includes(expense.category)) {
@@ -75,10 +75,11 @@ export function ExpenseForm({ expense, categories, onSubmit, isSaving = false }:
       date: expense?.date ? formatDateSafe(expense.date) : format(new Date(), 'dd/MM/yyyy'),
       category: expense?.category || categories[0] || '',
       paid: expense?.paid ?? false,
+      recurrence: expense?.recurrence || 'none',
+      installmentsCount: expense?.installmentsCount || 1,
     },
   });
 
-  // Atualiza o formulário se a despesa selecionada mudar (ex: trocar de uma edição para outra)
   useEffect(() => {
     if (expense) {
       form.reset({
@@ -87,18 +88,16 @@ export function ExpenseForm({ expense, categories, onSubmit, isSaving = false }:
         date: formatDateSafe(expense.date),
         category: expense.category || categories[0] || '',
         paid: expense.paid ?? false,
+        recurrence: expense.recurrence || 'none',
+        installmentsCount: expense.installmentsCount || 1,
       });
     }
   }, [expense, form, categories]);
 
+  const watchRecurrence = form.watch('recurrence');
+
   const handleFormSubmit = (data: ExpenseFormValues) => {
-    const parsedDate = parse(data.date, 'dd/MM/yyyy', new Date());
-    const isoDate = format(parsedDate, 'yyyy-MM-dd');
-    
-    onSubmit({
-        ...data,
-        date: isoDate
-    });
+    onSubmit(data);
   };
 
   return (
@@ -111,7 +110,7 @@ export function ExpenseForm({ expense, categories, onSubmit, isSaving = false }:
             <FormItem>
               <FormLabel>Descrição da Despesa</FormLabel>
               <FormControl>
-                <Input placeholder="Ex: Pagamento Aluguel Junho" {...field} value={field.value ?? ''} disabled={isSaving} />
+                <Input placeholder="Ex: Aluguel, Internet, etc." {...field} value={field.value ?? ''} disabled={isSaving || !!expense} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -138,7 +137,7 @@ export function ExpenseForm({ expense, categories, onSubmit, isSaving = false }:
                                     field.onChange(num);
                                 }}
                                 placeholder="0,00"
-                                disabled={isSaving} 
+                                disabled={isSaving || !!expense} 
                             />
                         </div>
                     </FormControl>
@@ -151,7 +150,7 @@ export function ExpenseForm({ expense, categories, onSubmit, isSaving = false }:
                 name="date"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Data de Vencimento/Pago</FormLabel>
+                    <FormLabel>Vencimento / Data</FormLabel>
                     <FormControl>
                         <Input 
                             placeholder="dd/mm/aaaa" 
@@ -159,7 +158,7 @@ export function ExpenseForm({ expense, categories, onSubmit, isSaving = false }:
                             value={field.value ?? ''} 
                             onChange={(e) => field.onChange(applyDateMask(e.target.value))}
                             maxLength={10}
-                            disabled={isSaving} 
+                            disabled={isSaving || !!expense} 
                         />
                     </FormControl>
                     <FormMessage />
@@ -178,11 +177,11 @@ export function ExpenseForm({ expense, categories, onSubmit, isSaving = false }:
                 <Select 
                     onValueChange={field.onChange} 
                     value={field.value} 
-                    disabled={isSaving}
+                    disabled={isSaving || !!expense}
                 >
                     <FormControl>
                     <SelectTrigger>
-                        <SelectValue placeholder="Selecione a categoria" />
+                        <SelectValue placeholder="Selecione..." />
                     </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -209,22 +208,74 @@ export function ExpenseForm({ expense, categories, onSubmit, isSaving = false }:
                                     disabled={isSaving}
                                 />
                             </FormControl>
-                            <FormLabel className="cursor-pointer">Despesa Paga</FormLabel>
+                            <FormLabel className="cursor-pointer">Já está paga</FormLabel>
                         </div>
                     </FormItem>
                 )}
             />
         </div>
 
+        {!expense && (
+            <div className="p-4 rounded-xl border-2 border-dashed bg-muted/5 space-y-4 animate-in fade-in duration-500">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="recurrence"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary/60">
+                                    <CalendarRange className="h-3 w-3" /> Tipo de Despesa
+                                </FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger className="h-9 font-bold text-xs">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="none">Lançamento Único</SelectItem>
+                                        <SelectItem value="monthly">Fixa Mensal (12 meses)</SelectItem>
+                                        <SelectItem value="semi-annually">Semestral</SelectItem>
+                                        <SelectItem value="annually">Anual</SelectItem>
+                                        <SelectItem value="installments">Parcelada (Fixa)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </FormItem>
+                        )}
+                    />
+
+                    {watchRecurrence === 'installments' && (
+                        <FormField
+                            control={form.control}
+                            name="installmentsCount"
+                            render={({ field }) => (
+                                <FormItem className="animate-in zoom-in-95">
+                                    <FormLabel className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-orange-600">
+                                        <ListNumbered className="h-3 w-3" /> Qtd. Parcelas
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input type="number" {...field} min={1} max={120} className="h-9 font-bold" />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                    )}
+                </div>
+                <p className="text-[9px] text-muted-foreground leading-tight uppercase font-bold text-center opacity-60">
+                    O sistema criará automaticamente as entradas futuras no fluxo de caixa.
+                </p>
+            </div>
+        )}
+
         <div className="flex justify-end pt-4">
-          <Button type="submit" disabled={isSaving}>
+          <Button type="submit" disabled={isSaving} className="rounded-full px-8 font-bold">
             {isSaving ? (
                 <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Salvando...
+                    Processando...
                 </>
             ) : (
-                'Salvar Despesa'
+                expense ? 'Atualizar Pagamento' : 'Lançar no Financeiro'
             )}
           </Button>
         </div>
