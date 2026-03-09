@@ -360,7 +360,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" className="h-11 rounded-full px-6 font-black border-2 border-zinc-300 bg-background shadow-md gap-2 text-xs uppercase tracking-widest">
-                                Colunas <ChevronDown className="h-4 w-4 opacity-50" />
+                                Colunas <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56 shadow-2xl border-2">
