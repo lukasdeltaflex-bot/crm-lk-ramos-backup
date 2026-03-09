@@ -93,7 +93,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 }, ref) => {
   const tableContainerRef = React.useRef<HTMLDivElement>(null);
   const topScrollRef = React.useRef<HTMLDivElement>(null);
-  const isScrolling = React.useRef(false);
 
   const { statusColors } = useTheme();
   const searchParams = useSearchParams();
@@ -118,7 +117,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     'DataAverbação': true,
     'DataPgtoCliente': true,
     'ChegadaSaldo': true,
-    'CommissionValue': true,
+    'Comissao': true,
   });
 
   const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
@@ -179,25 +178,16 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     }
   }, [statusFilter, globalFilter, columnVisibility, columnOrder, frozenCount, isClient]);
 
-  // 🛡️ MOTOR DE SINCRONIZAÇÃO V4
-  const syncScroll = (source: HTMLDivElement, target: HTMLDivElement) => {
-    if (isScrolling.current) return;
-    isScrolling.current = true;
-    target.scrollLeft = source.scrollLeft;
-    requestAnimationFrame(() => {
-        isScrolling.current = false;
-    });
-  };
-
+  // 🛡️ MOTOR DE SINCRONIZAÇÃO V5 (ESTABILIZADO)
   const handleTopScroll = (e: React.UIEvent<HTMLDivElement>) => {
     if (tableContainerRef.current) {
-      syncScroll(e.currentTarget, tableContainerRef.current);
+      tableContainerRef.current.scrollLeft = e.currentTarget.scrollLeft;
     }
   };
 
   const handleTableScroll = (e: React.UIEvent<HTMLDivElement>) => {
     if (topScrollRef.current) {
-      syncScroll(e.currentTarget, topScrollRef.current);
+      topScrollRef.current.scrollLeft = e.currentTarget.scrollLeft;
     }
   };
 
@@ -285,13 +275,12 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         const normalizedSearch = normalizeString(searchTerm);
         const isPureNumber = /^\d+$/.test(searchTerm);
         
-        const numericIdStr = String(customer?.numericId || '');
-        const cpfNumeric = (customer?.cpf || '').replace(/\D/g, '');
-        const pNum = (p.proposalNumber || '').replace(/\D/g, '');
-
         if (isPureNumber) {
+            const numericIdStr = String(customer?.numericId || '');
             if (numericIdStr === searchTerm) return true;
+            const cpfNumeric = (customer?.cpf || '').replace(/\D/g, '');
             if (cpfNumeric.startsWith(searchTerm)) return true;
+            const pNum = (p.proposalNumber || '').replace(/\D/g, '');
             if (pNum.startsWith(searchTerm)) return true;
             return false;
         }
@@ -332,6 +321,8 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 
   const showLogos = userSettings?.showBankLogos ?? true;
   const showPromoterLogos = userSettings?.showPromoterLogos ?? true;
+
+  const totalTableWidth = table.getTotalSize();
 
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
@@ -494,13 +485,12 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
             </div>
 
             <Card className="border-2 border-zinc-300 shadow-xl rounded-xl overflow-hidden bg-card p-1">
-                {/* 🚀 BARRA DE ROLAGEM SUPERIOR V4 */}
                 <div 
                     ref={topScrollRef}
-                    className="overflow-x-auto h-3 bg-muted/30 border-b cursor-pointer relative z-50"
+                    className="overflow-x-auto h-5 bg-muted/20 border-b cursor-pointer relative z-50 pointer-events-auto"
                     onScroll={handleTopScroll}
                 >
-                    <div style={{ width: table.getTotalSize(), height: '1px' }} />
+                    <div style={{ width: totalTableWidth, height: '1px' }} />
                 </div>
 
                 <div 
@@ -508,7 +498,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     className="overflow-x-auto relative"
                     onScroll={handleTableScroll}
                 >
-                    <Table style={{ width: table.getTotalSize(), tableLayout: 'fixed' }}>
+                    <Table style={{ width: totalTableWidth, tableLayout: 'fixed' }}>
                         <TableHeader className="bg-background border-b-2">
                             {table.getHeaderGroups().map(hg => (
                                 <TableRow key={hg.id} className="hover:bg-transparent">

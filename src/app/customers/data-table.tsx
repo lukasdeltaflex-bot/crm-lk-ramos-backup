@@ -81,7 +81,6 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
 }, ref) => {
   const tableContainerRef = React.useRef<HTMLDivElement>(null);
   const topScrollRef = React.useRef<HTMLDivElement>(null);
-  const isScrolling = React.useRef(false);
 
   const [sorting, setSorting] = React.useState<SortingState>([{ id: 'ID', desc: true }]);
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
@@ -141,26 +140,16 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
     }
   }, [globalFilter, columnVisibility, columnOrder, frozenCount, isClient]);
 
-  // 🛡️ MOTOR DE SINCRONIZAÇÃO V4 (BLOQUEIO DE RECURSIVIDADE VIA REFS)
-  const syncScroll = (source: HTMLDivElement, target: HTMLDivElement) => {
-    if (isScrolling.current) return;
-    isScrolling.current = true;
-    target.scrollLeft = source.scrollLeft;
-    // Liberar após o frame de renderização
-    requestAnimationFrame(() => {
-        isScrolling.current = false;
-    });
-  };
-
+  // 🛡️ MOTOR DE SINCRONIZAÇÃO V5 (ESTABILIZADO)
   const handleTopScroll = (e: React.UIEvent<HTMLDivElement>) => {
     if (tableContainerRef.current) {
-      syncScroll(e.currentTarget, tableContainerRef.current);
+      tableContainerRef.current.scrollLeft = e.currentTarget.scrollLeft;
     }
   };
 
   const handleTableScroll = (e: React.UIEvent<HTMLDivElement>) => {
     if (topScrollRef.current) {
-      syncScroll(e.currentTarget, topScrollRef.current);
+      topScrollRef.current.scrollLeft = e.currentTarget.scrollLeft;
     }
   };
 
@@ -206,11 +195,10 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         const normalizedSearch = normalizeString(searchTerm);
         const isPureNumber = /^\d+$/.test(searchTerm);
         
-        const numericIdStr = String(customer.numericId || '');
-        const cpfNumeric = (customer.cpf || '').replace(/\D/g, '');
-
         if (isPureNumber) {
+            const numericIdStr = String(customer.numericId || '');
             if (numericIdStr === searchTerm) return true;
+            const cpfNumeric = (customer.cpf || '').replace(/\D/g, '');
             if (cpfNumeric.startsWith(searchTerm)) return true;
             return false;
         }
@@ -232,6 +220,8 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
   });
 
   React.useImperativeHandle(ref, () => ({ table }));
+
+  const totalTableWidth = table.getTotalSize();
 
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
@@ -275,10 +265,10 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
           
           <div 
             ref={topScrollRef}
-            className="overflow-x-auto h-3 bg-muted/30 border-b cursor-pointer relative z-50"
+            className="overflow-x-auto h-5 bg-muted/20 border-b cursor-pointer relative z-50 pointer-events-auto"
             onScroll={handleTopScroll}
           >
-            <div style={{ width: table.getTotalSize(), height: '1px' }} />
+            <div style={{ width: totalTableWidth, height: '1px' }} />
           </div>
 
           <div 
@@ -286,7 +276,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             className="overflow-x-auto relative"
             onScroll={handleTableScroll}
           >
-            <Table style={{ width: table.getTotalSize(), tableLayout: 'fixed' }}>
+            <Table style={{ width: totalTableWidth, tableLayout: 'fixed' }}>
                 <TableHeader className="bg-background border-b-2">
                     {table.getHeaderGroups().map(headerGroup => (
                     <TableRow key={headerGroup.id} className="hover:bg-transparent border-b-2">

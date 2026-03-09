@@ -159,9 +159,9 @@ export const getColumns = ({ onEdit, onDelete }: any): ColumnDef<Customer>[] => 
                       <Badge 
                         key={tag.label} 
                         className={cn(
-                            "text-[7.5px] font-black uppercase px-1.5 py-0 rounded-full border-none text-white shadow-sm flex items-center gap-0.5 transition-all", 
-                            tag.color,
-                            tag.label === 'ALERTA 75 ANOS' && "animate-pulse ring-1 ring-white/50"
+                            "text-[7.5px] font-black uppercase px-1.5 py-0.5 rounded-full border-none text-white shadow-sm flex items-center gap-0.5 transition-all", 
+                            tag.color === 'bg-red-500' ? "bg-red-600 opacity-100 visible" : tag.color,
+                            tag.label === 'ALERTA 75 ANOS' && "animate-pulse ring-2 ring-red-500/30"
                         )}
                       >
                           {tag.label === 'ATIVO' && <span className="text-[8px]">🔥</span>}

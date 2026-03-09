@@ -169,22 +169,16 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     }
   }, [globalFilter, columnVisibility, columnOrder, frozenCount, isClient]);
 
-  // 🛡️ MOTOR DE SINCRONIZAÇÃO V3 (BI-DIRECIONAL ROBUSTO)
-  const syncScroll = (source: HTMLDivElement, target: HTMLDivElement) => {
-    if (target.scrollLeft !== source.scrollLeft) {
-      target.scrollLeft = source.scrollLeft;
-    }
-  };
-
+  // 🛡️ MOTOR DE SINCRONIZAÇÃO V5 (ESTABILIZADO)
   const handleTopScroll = (e: React.UIEvent<HTMLDivElement>) => {
     if (tableContainerRef.current) {
-      syncScroll(e.currentTarget, tableContainerRef.current);
+      tableContainerRef.current.scrollLeft = e.currentTarget.scrollLeft;
     }
   };
 
   const handleTableScroll = (e: React.UIEvent<HTMLDivElement>) => {
     if (topScrollRef.current) {
-      syncScroll(e.currentTarget, topScrollRef.current);
+      topScrollRef.current.scrollLeft = e.currentTarget.scrollLeft;
     }
   };
 
@@ -282,16 +276,16 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         const p = row.original;
         const searchOnlyNumbers = searchTerm.replace(/\D/g, '');
         const normalizedSearch = normalizeString(searchTerm);
+        const isPureNumber = /^\d+$/.test(searchTerm);
         
-        if (searchOnlyNumbers !== '') {
+        if (isPureNumber) {
             const numericIdStr = String(customer?.numericId || '');
+            if (numericIdStr === searchTerm) return true;
             const cpfNumeric = (customer?.cpf || '').replace(/\D/g, '');
-            if (numericIdStr === searchOnlyNumbers) return true;
-            if (cpfNumeric.includes(searchOnlyNumbers)) return true;
-            if (p.proposalNumber.replace(/\D/g, '') === searchOnlyNumbers) return true;
-            if (/^\d+$/.test(searchTerm)) {
-                return false;
-            }
+            if (cpfNumeric.startsWith(searchTerm)) return true;
+            const pNum = (p.proposalNumber || '').replace(/\D/g, '');
+            if (pNum.startsWith(searchTerm)) return true;
+            return false;
         }
 
         const searchableFields = [customer?.name, customer?.cpf, p.proposalNumber, p.operator, p.bank, cleanBankName(p.bank), p.promoter];
@@ -349,6 +343,8 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   const toggleOperatorFilter = (op: string) => setOperatorFilters(prev => prev.includes(op) ? prev.filter(o => o !== op) : [...prev, op]);
   const toggleBankFilter = (bank: string) => setBankFilters(prev => prev.includes(bank) ? prev.filter(b => b !== bank) : [...prev, bank]);
   const togglePromoterFilter = (prom: string) => setPromoterFilters(prev => prev.includes(prom) ? prev.filter(p => p !== prom) : [...prev, prom]);
+
+  const totalTableWidth = table.getTotalSize();
 
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
@@ -504,13 +500,12 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             </div>
 
             <Card className="rounded-[1.5rem] border-2 border-zinc-200 bg-card shadow-xl overflow-hidden p-1">
-                {/* 🚀 BARRA DE ROLAGEM SUPERIOR RECALIBRADA */}
                 <div 
                     ref={topScrollRef}
-                    className="overflow-x-auto h-5 bg-muted/20 border-b cursor-pointer"
+                    className="overflow-x-auto h-5 bg-muted/20 border-b cursor-pointer relative z-50 pointer-events-auto"
                     onScroll={handleTopScroll}
                 >
-                    <div style={{ width: table.getTotalSize(), height: '1px' }} />
+                    <div style={{ width: totalTableWidth, height: '1px' }} />
                 </div>
 
                 <div 
@@ -518,7 +513,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                     className="overflow-x-auto relative"
                     onScroll={handleTableScroll}
                 >
-                    <Table style={{ width: table.getTotalSize(), tableLayout: 'fixed' }}>
+                    <Table style={{ width: totalTableWidth, tableLayout: 'fixed' }}>
                         <TableHeader className="bg-background border-b-2">
                             {table.getHeaderGroups().map(hg => (
                                 <TableRow key={hg.id} className="border-b hover:bg-transparent">
