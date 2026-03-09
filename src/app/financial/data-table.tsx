@@ -60,16 +60,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { X, Filter, Search, Calendar as CalendarIcon, ChevronDown, Snowflake, User, Landmark, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Filter, Search, Calendar as CalendarIcon, ChevronDown, ChevronsLeft, ChevronsRight, Snowflake, User, Landmark, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn, cleanBankName, normalizeString, formatCurrency } from '@/lib/utils';
-import type { Proposal, Customer, UserSettings } from '@/lib/types';
+import type { Proposal, Customer, ProposalWithCustomer, UserSettings } from '@/lib/types';
 import { FinancialSummary } from '@/components/financial/financial-summary';
 import { DraggableHeader } from './columns';
 import { Separator } from '@/components/ui/separator';
 import { useTheme } from '@/components/theme-provider';
 import { BankIcon } from '@/components/bank-icon';
-
-type ProposalWithCustomer = Proposal & { customer: Customer };
 
 interface DataTableProps {
   columns: ColumnDef<ProposalWithCustomer, unknown>[];
@@ -618,10 +616,44 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="text-primary font-black">PÁG {table.getState().pagination.pageIndex + 1} DE {table.getPageCount()}</div>
-                        <div className="flex items-center gap-1">
-                            <Button variant="outline" size="icon" className="h-8 w-8 rounded-full border-2" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}><ChevronLeft className="h-4 w-4" /></Button>
-                            <Button variant="outline" size="icon" className="h-8 w-8 rounded-full border-2" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}><ChevronRight className="h-4 w-4" /></Button>
+                        <div className="text-primary font-black uppercase text-[11px] tracking-widest">PÁG {table.getState().pagination.pageIndex + 1} DE {table.getPageCount()}</div>
+                        <div className="flex items-center gap-2">
+                            <Button 
+                                variant="outline" 
+                                size="icon" 
+                                className="h-9 w-9 rounded-full border-2 bg-background shadow-sm transition-all hover:bg-primary/5 active:scale-95" 
+                                onClick={() => table.setPageIndex(0)} 
+                                disabled={!table.getCanPreviousPage()}
+                            >
+                                <ChevronsLeft className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                                variant="outline" 
+                                size="icon" 
+                                className="h-9 w-9 rounded-full border-2 bg-background shadow-sm transition-all hover:bg-primary/5 active:scale-95" 
+                                onClick={() => table.previousPage()} 
+                                disabled={!table.getCanPreviousPage()}
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                                variant="outline" 
+                                size="icon" 
+                                className="h-9 w-9 rounded-full border-2 bg-background shadow-sm transition-all hover:bg-primary/5 active:scale-95" 
+                                onClick={() => table.nextPage()} 
+                                disabled={!table.getCanNextPage()}
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                                variant="outline" 
+                                size="icon" 
+                                className="h-9 w-9 rounded-full border-2 bg-background shadow-sm transition-all hover:bg-primary/5 active:scale-95" 
+                                onClick={() => table.setPageIndex(table.getPageCount() - 1)} 
+                                disabled={!table.getCanNextPage()}
+                            >
+                                <ChevronsRight className="h-4 w-4" />
+                            </Button>
                         </div>
                     </div>
                 </div>
