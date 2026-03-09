@@ -118,7 +118,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     'Data Averbação': true,
     'Data Pgto. Cliente': true,
     'Chegada Saldo': true,
-    'Comissão (R$)': true,
+    'Comissão': true,
   });
 
   const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
@@ -146,6 +146,16 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         if (savedOrder) setColumnOrder(JSON.parse(savedOrder));
     } catch (e) {}
   }, []);
+
+  const handlePaginationChange = (updater: any) => {
+    setPagination((old) => {
+      const next = typeof updater === 'function' ? updater(old) : updater;
+      if (typeof window !== 'undefined') {
+        try { localStorage.setItem('lk-proposals-pageSize', String(next.pageSize)); } catch(e) {}
+      }
+      return next;
+    });
+  };
 
   React.useEffect(() => {
     const search = searchParams.get('search');

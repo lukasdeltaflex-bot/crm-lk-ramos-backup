@@ -147,6 +147,16 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     } catch (e) {}
   }, []);
 
+  const handlePaginationChange = (updater: any) => {
+    setPagination((old) => {
+      const next = typeof updater === 'function' ? updater(old) : updater;
+      if (typeof window !== 'undefined') {
+        try { localStorage.setItem('lk-financial-pageSize', String(next.pageSize)); } catch(e) {}
+      }
+      return next;
+    });
+  };
+
   const hasActiveFilters = statusFilter !== 'Todos' || bankFilters.length > 0 || promoterFilters.length > 0 || operatorFilters.length > 0 || !!globalFilter || !!appliedDateRange;
 
   const handleClearAllFilters = () => {
@@ -178,16 +188,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         target.scrollLeft = source.scrollLeft;
         setTimeout(() => { isScrollingRef.current = false; }, 50);
     }
-  };
-
-  const handlePaginationChange = (updater: any) => {
-    setPagination((old) => {
-      const next = typeof updater === 'function' ? updater(old) : updater;
-      if (typeof window !== 'undefined') {
-        try { localStorage.setItem('lk-financial-pageSize', String(next.pageSize)); } catch(e) {}
-      }
-      return next;
-    });
   };
 
   const applyRangeShortcut = (range: string) => {

@@ -219,8 +219,8 @@ export const getColumns = (
   { id: 'CPF', accessorFn: (row) => row.customer?.cpf, header: 'CPF', cell: ({ row }) => (<div className="flex items-center gap-1 text-sm font-black text-foreground/80"><span>{row.original.customer?.cpf || '-'}</span><CopyButton text={row.original.customer?.cpf} label="CPF" /></div>), size: 160 },
   { id: 'Produto', accessorKey: 'product', header: 'Produto', cell: ({ row }) => <span className="text-sm font-bold text-foreground/80">{row.original.product}</span>, size: 120 },
   { id: 'Valor Bruto', accessorKey: 'grossAmount', header: () => <div className="text-right">Valor Bruto</div>, cell: ({ row }) => <div className="text-right font-black text-sm">{formatCurrency(row.original.grossAmount)}</div>, size: 120 },
-  { id: 'Comissão (R$)', accessorKey: 'commissionValue', header: () => <div className="text-right">Comissão</div>, cell: ({ row }) => <div className="text-right font-bold text-emerald-600">{formatCurrency(row.original.commissionValue)}</div>, size: 120 },
-  { id: 'Banco Digitado', accessorKey: 'bank', header: 'Banco Digitado', cell: ({ row, table }) => {
+  { id: 'Comissão', accessorKey: 'commissionValue', header: () => <div className="text-right">Comissão</div>, cell: ({ row }) => <div className="text-right font-bold text-emerald-600">{formatCurrency(row.original.commissionValue)}</div>, size: 120 },
+  { id: 'Banco', accessorKey: 'bank', header: 'Banco Digitado', cell: ({ row, table }) => {
         const bank = row.original.bank;
         const sett = (table.options.meta as any)?.userSettings;
         return (<div className="flex items-center gap-2"><BankIcon bankName={bank} domain={sett?.bankDomains?.[bank]} showLogo={sett?.showBankLogos ?? true} /><span className="truncate text-sm font-bold">{cleanBankName(bank)}</span></div>)
