@@ -46,6 +46,7 @@ import { toast } from '@/hooks/use-toast';
 import { BankIcon } from '@/components/bank-icon';
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import Link from 'next/link';
 
 const CopyButton = ({ text, label }: { text: string | undefined; label: string }) => {
     if (!text) return null;
@@ -213,9 +214,9 @@ export const getColumns = (
         return (
             <div className="flex items-center gap-2 font-black text-primary uppercase text-sm truncate">
                 {phone && isWhatsApp(phone) && (
-                    <a href={getWhatsAppUrl(phone)} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:scale-125 transition-transform shrink-0">
+                    <span onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.open(getWhatsAppUrl(phone), '_blank'); }} className="text-green-500 hover:scale-125 transition-transform shrink-0">
                         <WhatsAppIcon className="h-4 w-4" />
-                    </a>
+                    </span>
                 )}
                 <span className="truncate">{customer?.name || '---'}</span>
             </div>

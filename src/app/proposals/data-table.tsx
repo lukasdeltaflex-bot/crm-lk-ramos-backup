@@ -29,7 +29,6 @@ import {
 import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { parse, isValid, startOfDay, endOfDay, subDays, startOfMonth, format } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
-import { useSearchParams } from 'next/navigation';
 
 import {
   Table,
@@ -116,7 +115,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const isScrollingRef = React.useRef(false);
 
   const { statusColors } = useTheme();
-  const searchParams = useSearchParams();
   const [statusFilter, setStatusFilter] = React.useState('Todos');
   const [globalFilter, setGlobalFilter] = React.useState('');
   const [frozenCount, setFrozenCount] = React.useState(2);
@@ -180,6 +178,30 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         }
     } catch (e) {}
   }, [initialIds]);
+
+  const hasActiveFilters = statusFilter !== 'Todos' || bankFilters.length > 0 || promoterFilters.length > 0 || operatorFilters.length > 0 || !!globalFilter || !!appliedDateRange;
+
+  const handleClearAllFilters = () => {
+      setStatusFilter('Todos');
+      setGlobalFilter('');
+      setBankFilters([]);
+      setPromoterFilters([]);
+      setOperatorFilters([]);
+      setStartDateInput('');
+      setEndDateInput('');
+      setAppliedDateRange(undefined);
+  };
+
+  React.useEffect(() => {
+    if (isClient) {
+        try {
+            localStorage.setItem('lk-proposals-frozen-count', String(frozenCount));
+            localStorage.setItem('lk-proposals-filter-search', globalFilter);
+            localStorage.setItem('lk-proposals-visibility', JSON.stringify(columnVisibility));
+            localStorage.setItem('lk-proposals-order', JSON.stringify(columnOrder));
+        } catch(e) {}
+    }
+  }, [globalFilter, columnVisibility, columnOrder, frozenCount, isClient]);
 
   const syncScroll = (source: HTMLDivElement, target: HTMLDivElement) => {
     if (isScrollingRef.current) return;
@@ -285,24 +307,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     e.target.value = value;
     return value;
   };
-
-  const handleApplyFilter = () => {
-    const s = parse(startDateInput, 'dd/MM/yyyy', new Date());
-    const e = parse(endDateInput, 'dd/MM/yyyy', new Date());
-    if (isValid(s)) {
-        setAppliedDateRange({ from: startOfDay(s), to: isValid(e) ? endOfDay(e) : endOfDay(s) });
-    } else {
-        setAppliedDateRange(undefined);
-    }
-  };
-
-  const toggleBankFilter = (bank: string) => { setBankFilters(prev => prev.includes(bank) ? prev.filter(b => b !== bank) : [...prev, bank]); };
-  const togglePromoterFilter = (promoter: string) => { setPromoterFilters(prev => prev.includes(promoter) ? prev.filter(p => p !== promoter) : [...prev, promoter]); };
-  const toggleOperatorFilter = (op: string) => { setOperatorFilters(prev => prev.includes(op) ? prev.filter(o => o !== op) : [...prev, op]); };
-
-  const uniqueOperators = React.useMemo(() => Array.from(new Set(data.map(p => p.operator || 'Sem Operador'))).sort(), [data]);
-  const uniqueBanks = React.useMemo(() => Array.from(new Set(data.map(p => p.bank))).sort(), [data]);
-  const uniquePromoters = React.useMemo(() => Array.from(new Set(data.map(p => p.promoter))).sort(), [data]);
 
   const totalTableWidth = table.getTotalSize();
 
