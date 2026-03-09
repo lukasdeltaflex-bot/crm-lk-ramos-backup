@@ -239,14 +239,6 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
 
   React.useImperativeHandle(ref, () => ({ table }));
 
-  const getStickyClass = (columnId: string) => {
-    if (columnId === 'Selecionar') return 'sticky left-0 z-30 bg-background shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]';
-    if (columnId === 'ID') return 'sticky left-[50px] z-30 bg-background shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]';
-    if (columnId === 'Nome') return 'sticky left-[130px] z-30 bg-background shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]';
-    if (columnId === 'Ações') return 'sticky right-0 z-30 bg-background shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)]';
-    return '';
-  };
-
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
       <Card ref={tableContainerRef} className="rounded-[1.5rem] border-2 border-zinc-200 dark:border-primary/30 bg-card shadow-xl overflow-hidden p-1">
@@ -300,7 +292,6 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
                                 <DraggableHeader 
                                     key={header.id} 
                                     header={header as Header<Customer, unknown>} 
-                                    className={getStickyClass(header.column.id)}
                                 />
                             ))}
                             </SortableContext>
@@ -327,10 +318,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
                                 <TableCell 
                                     key={cell.id} 
                                     style={{ width: cell.column.getSize() }}
-                                    className={cn(
-                                        "p-2 text-sm border-none",
-                                        getStickyClass(cell.column.id)
-                                    )}
+                                    className="p-2 text-sm border-none"
                                 >
                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                 </TableCell>

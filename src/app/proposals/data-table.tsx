@@ -369,14 +369,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
       else setter([...current, val]);
   };
 
-  const getStickyClass = (columnId: string) => {
-    if (columnId === 'Selecionar') return 'sticky left-0 z-30 bg-background shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]';
-    if (columnId === 'Etapas') return 'sticky left-[50px] z-30 bg-background shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]';
-    if (columnId === 'Promotora') return 'sticky left-[150px] z-30 bg-background shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]';
-    if (columnId === 'Actions') return 'sticky right-0 z-30 bg-background shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)]';
-    return '';
-  };
-
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
         <div className="space-y-4">
@@ -598,7 +590,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                                 <DraggableHeader 
                                                     key={h.id} 
                                                     header={h as any} 
-                                                    className={getStickyClass(h.column.id)}
                                                 />
                                             ))}
                                         </SortableContext>
@@ -624,10 +615,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                                     <TableCell 
                                                         key={cell.id} 
                                                         style={{ width: cell.column.getSize() }} 
-                                                        className={cn(
-                                                            "p-3 text-sm border-none",
-                                                            getStickyClass(cell.column.id)
-                                                        )}
+                                                        className="p-3 text-sm border-none"
                                                     >
                                                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                                     </TableCell>

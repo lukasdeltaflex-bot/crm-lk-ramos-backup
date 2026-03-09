@@ -52,7 +52,7 @@ const CopyButton = ({ text, label }: { text: string | undefined; label: string }
     );
 };
 
-export const DraggableHeader = ({ header, className }: { header: Header<Customer, unknown>, className?: string }) => {
+export const DraggableHeader = ({ header }: { header: Header<Customer, unknown> }) => {
     const isDraggable = header.column.getCanSort();
     const { attributes, listeners, setNodeRef, transform, isDragging } = useSortable({
         id: header.column.id,
@@ -65,30 +65,23 @@ export const DraggableHeader = ({ header, className }: { header: Header<Customer
         opacity: isDragging ? 0.5 : 1,
     };
 
-    const isActions = header.column.id === 'Ações';
-    const isSelect = header.column.id === 'Selecionar';
-
     return (
         <TableHead
             ref={setNodeRef}
             colSpan={header.colSpan}
             style={style}
-            className={cn(
-                'relative p-0 h-14 transition-colors hover:bg-muted/50 border-b-2 border-zinc-200 dark:border-zinc-800',
-                isSelect && 'w-[50px] min-w-[50px]',
-                className
-            )}
+            className="relative p-0 h-14 transition-colors hover:bg-muted/50 border-b-2 border-zinc-200 dark:border-zinc-800"
         >
             <div className="flex flex-col h-full justify-center">
                 <div
                     className={cn(
                         'flex items-center gap-1 h-full px-2',
-                        isDraggable && !isSelect && 'cursor-pointer select-none',
-                        isActions && 'justify-end'
+                        isDraggable && 'cursor-pointer select-none',
+                        header.column.id === 'Ações' && 'justify-end'
                     )}
-                    onClick={isSelect ? undefined : header.column.getToggleSortingHandler()}
+                    onClick={header.column.getToggleSortingHandler()}
                 >
-                    {isDraggable && !isActions && !isSelect && (
+                    {isDraggable && header.column.id !== 'Selecionar' && header.column.id !== 'Ações' && (
                         <div
                             {...attributes}
                             {...listeners}
@@ -101,8 +94,8 @@ export const DraggableHeader = ({ header, className }: { header: Header<Customer
 
                     <div className={cn(
                         "overflow-hidden font-black text-[12px] uppercase tracking-widest text-foreground leading-tight flex items-center gap-1",
-                        isActions && "text-right pr-2",
-                        isSelect && "justify-center w-full pr-0"
+                        header.column.id === 'Ações' && "text-right pr-2",
+                        header.column.id === 'Selecionar' && "justify-center w-full pr-0"
                     )}>
                         {header.isPlaceholder
                             ? null
