@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -77,6 +76,7 @@ const COLUMN_LABELS: Record<string, string> = {
     col_customer: "Cliente",
     col_cpf: "CPF",
     col_pnum: "Nº Proposta",
+    col_product: "Produto",
     col_gross: "Valor Bruto",
     col_comm: "Comissão (%)",
     col_proposal_status: "Situação Proposta",
