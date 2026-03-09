@@ -98,7 +98,6 @@ const ActionsCell = ({ row, onEdit, onView, onDelete, onDuplicate }: any) => {
 };
 
 export const DraggableHeader = ({ header, className }: { header: Header<any, unknown>; className?: string }) => {
-    // 🛡️ CORREÇÃO: Permitir arraste de todas as colunas, mesmo as sem ordenação
     const { attributes, listeners, setNodeRef, transform, isDragging } = useSortable({ 
         id: header.column.id,
     });
@@ -116,7 +115,7 @@ export const DraggableHeader = ({ header, className }: { header: Header<any, unk
             ref={setNodeRef}
             colSpan={header.colSpan}
             style={style}
-            className={cn("relative p-0 h-14 transition-colors hover:bg-muted/50 border-b-2", className)}
+            className={cn("relative p-0 h-14 transition-colors hover:bg-muted/50 border-b-2 bg-background z-10", className)}
         >
             <div className="flex flex-col h-full justify-center">
                 <div
@@ -126,7 +125,7 @@ export const DraggableHeader = ({ header, className }: { header: Header<any, unk
                         header.column.id === 'Actions' && 'justify-end'
                     )}
                 >
-                    {header.column.id !== 'Selecionar' && header.column.id !== 'Actions' && (
+                    {header.column.id !== 'Selecionar' && (
                         <div {...attributes} {...listeners} className="p-1 hover:bg-primary/10 rounded cursor-grab text-muted-foreground/40" onClick={(e) => e.stopPropagation()}>
                             <GripVertical className="h-3.5 w-3.5" />
                         </div>

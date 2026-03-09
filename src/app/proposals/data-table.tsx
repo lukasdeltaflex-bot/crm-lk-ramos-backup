@@ -259,6 +259,11 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   });
 
   const onMouseDown = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('input') || target.closest('a') || target.closest('[role="checkbox"]')) {
+      return;
+    }
+    
     if (!tableContainerRef.current) return;
     setIsDraggingScroll(true);
     setStartX(e.pageX - tableContainerRef.current.offsetLeft);
@@ -272,7 +277,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     if (!isDraggingScroll || !tableContainerRef.current) return;
     e.preventDefault();
     const x = e.pageX - tableContainerRef.current.offsetLeft;
-    const walk = (x - startX) * 1.5; 
+    const walk = (x - startX) * 2; 
     tableContainerRef.current.scrollLeft = scrollLeft - walk;
   };
 

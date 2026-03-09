@@ -40,10 +40,8 @@ const CopyButton = ({ text, label }: { text: string | undefined; label: string }
 };
 
 export const DraggableHeader = ({ header, className }: { header: Header<any, unknown>; className?: string }) => {
-    const isDraggable = header.column.getCanSort();
     const { attributes, listeners, setNodeRef, transform, isDragging } = useSortable({ 
         id: header.column.id,
-        disabled: !isDraggable,
     });
     
     const style = {
@@ -57,18 +55,17 @@ export const DraggableHeader = ({ header, className }: { header: Header<any, unk
             ref={setNodeRef}
             colSpan={header.colSpan}
             style={style}
-            className={cn("relative p-0 h-14 transition-colors hover:bg-muted/50 border-b-2", className)}
+            className={cn("relative p-0 h-14 transition-colors hover:bg-muted/50 border-b-2 bg-background z-10", className)}
         >
             <div className="flex flex-col h-full justify-center">
                 <div
                     className={cn(
                         'flex items-center gap-1 h-full px-2',
-                        isDraggable && 'cursor-pointer select-none',
+                        'select-none',
                         header.column.id === 'Ações' && 'justify-end'
                     )}
-                    onClick={header.column.getToggleSortingHandler()}
                 >
-                    {isDraggable && header.column.id !== 'Selecionar' && header.column.id !== 'Ações' && (
+                    {header.column.id !== 'Selecionar' && (
                         <div {...attributes} {...listeners} className="p-1 hover:bg-primary/10 rounded cursor-grab text-muted-foreground/40" onClick={(e) => e.stopPropagation()}>
                             <GripVertical className="h-3.5 w-3.5" />
                         </div>

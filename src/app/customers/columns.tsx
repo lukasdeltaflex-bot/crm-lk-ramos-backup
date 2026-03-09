@@ -48,10 +48,8 @@ const CopyButton = ({ text, label }: { text: string | undefined; label: string }
 };
 
 export const DraggableHeader = ({ header, className }: { header: Header<Customer, unknown>; className?: string }) => {
-    const isDraggable = header.column.getCanSort();
     const { attributes, listeners, setNodeRef, transform, isDragging } = useSortable({
         id: header.column.id,
-        disabled: !isDraggable,
     });
 
     const style = {
@@ -60,28 +58,29 @@ export const DraggableHeader = ({ header, className }: { header: Header<Customer
         opacity: isDragging ? 0.5 : 1,
     };
 
+    const isSortable = header.column.getCanSort();
+
     return (
         <TableHead
             ref={setNodeRef}
             colSpan={header.colSpan}
             style={style}
-            className={cn("relative p-0 h-14 transition-colors hover:bg-muted/50 border-b-2", className)}
+            className={cn("relative p-0 h-14 transition-colors hover:bg-muted/50 border-b-2 bg-background z-10", className)}
         >
             <div className="flex flex-col h-full justify-center">
                 <div
                     className={cn(
                         'flex items-center gap-1 h-full px-2',
-                        isDraggable && 'cursor-pointer select-none',
+                        'select-none',
                         header.column.id === 'Ações' && 'justify-end'
                     )}
-                    onClick={header.column.getToggleSortingHandler()}
                 >
-                    {isDraggable && header.column.id !== 'Selecionar' && header.column.id !== 'Ações' && (
+                    {header.column.id !== 'Selecionar' && (
                         <div {...attributes} {...listeners} className="p-1 hover:bg-primary/10 rounded cursor-grab text-primary opacity-40" onClick={(e) => e.stopPropagation()}>
                             <GripVertical className="h-3.5 w-3.5" />
                         </div>
                     )}
-                    <div className={cn("overflow-hidden font-black text-[12px] uppercase tracking-widest text-foreground leading-tight flex items-center gap-1", header.column.id === 'Ações' && "text-right pr-2", header.column.id === 'Selecionar' && "justify-center w-full pr-0")}>
+                    <div className={cn("overflow-hidden font-black text-[12px] uppercase tracking-widest text-foreground leading-tight flex items-center gap-1", isSortable && "cursor-pointer", header.column.id === 'Ações' && "text-right pr-2", header.column.id === 'Selecionar' && "justify-center w-full pr-0")} onClick={isSortable ? header.column.getToggleSortingHandler() : undefined}>
                         {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                         {header.column.getIsSorted() && (
                             <div className="text-primary shrink-0 ml-1">
