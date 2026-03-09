@@ -1,3 +1,4 @@
+
 'use client';
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -6,7 +7,7 @@ import { PageHeader } from '@/components/page-header';
 import { ProposalsDataTable, type ProposalsDataTableHandle } from './data-table';
 import { getColumns } from './columns';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, FileDown, Trash2, Printer, CheckCircle2, ChevronDown, FileSpreadsheet, FileText as FilePdf } from 'lucide-react';
+import { PlusCircle, FileDown, Trash2, Printer, CheckCircle2, ChevronDown, FileSpreadsheet, FileText as FilePdf, FileBadge } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -146,8 +147,6 @@ function ProposalsPageContent() {
   
   const handleDuplicateProposal = React.useCallback((proposal: Proposal) => {
     const { id, proposalNumber, status, history, commissionStatus, amountPaid, commissionPaymentDate, ...rest } = proposal;
-    
-    // 🛡️ DUPLICAÇÃO LIMPA: Removemos status de comissão e histórico para não poluir o novo contrato
     const duplicatedData: ProposalFormData = {
         ...rest,
         proposalNumber: '',
@@ -222,16 +221,115 @@ function ProposalsPageContent() {
     }
   };
 
-  const handlePrint = (onlySelected = false) => {
-    if (onlySelected) {
-        document.body.classList.add('print-selection');
+  /**
+   * 📄 SISTEMA DE CAPA DE PROPOSTA
+   * Gera um PDF formatado para impressão com os dados do cliente e contrato.
+   */
+  const handlePrintCovers = async () => {
+    const selectedProposals = proposalsWithCustomerData.filter(p => rowSelection[p.id]);
+    if (selectedProposals.length === 0) {
+        toast({ variant: 'destructive', title: 'Nenhuma seleção', description: 'Selecione ao menos uma proposta para imprimir a capa.' });
+        return;
     }
-    window.print();
-    if (onlySelected) {
-        window.addEventListener('afterprint', () => {
-            document.body.classList.remove('print-selection');
-        }, { once: true });
-    }
+
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+    const doc = new jsPDF();
+    const primaryColor = [40, 74, 127];
+
+    selectedProposals.forEach((p, index) => {
+        if (index > 0) doc.addPage();
+
+        // Logo Personalizada
+        if (userSettings?.customLogoURL) {
+            try {
+                doc.addImage(userSettings.customLogoURL, 'PNG', 14, 10, 40, 20, undefined, 'FAST');
+            } catch (e) { console.warn("Failed to add logo to Cover PDF"); }
+        }
+
+        doc.setFontSize(22); doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]); doc.setFont("helvetica", "bold"); 
+        doc.text("CAPA DE PROPOSTA BANCÁRIA", 60, 20);
+        
+        doc.setFontSize(10); doc.setTextColor(100); doc.setFont("helvetica", "normal");
+        doc.text(`Responsável: ${user?.displayName || user?.email}`, 60, 28);
+        doc.text(`Data de Emissão: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 60, 33);
+        
+        doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]); doc.setLineWidth(0.5); doc.line(14, 38, 196, 38);
+
+        // Seção Cliente
+        doc.setFontSize(14); doc.setTextColor(0); doc.setFont("helvetica", "bold");
+        doc.text("DADOS DO CLIENTE", 14, 50);
+        autoTable(doc, {
+            startY: 55,
+            body: [
+                ['Nome do Cliente', p.customer?.name || '---'],
+                ['CPF', p.customer?.cpf || '---'],
+                ['Telefone', p.customer?.phone || '---'],
+                ['Data de Nascimento', p.customer?.birthDate ? format(new Date(p.customer.birthDate), 'dd/MM/yyyy') : '---'],
+            ],
+            theme: 'plain',
+            styles: { fontSize: 11 },
+            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
+        });
+
+        const finalY1 = (doc as any).lastAutoTable.finalY;
+
+        // Seção Proposta
+        doc.setFontSize(14); doc.setTextColor(0); doc.setFont("helvetica", "bold");
+        doc.text("DETALHES DA OPERAÇÃO", 14, finalY1 + 15);
+        autoTable(doc, {
+            startY: finalY1 + 20,
+            body: [
+                ['Nº da Proposta', p.proposalNumber],
+                ['Produto', p.product],
+                ['Banco', cleanBankName(p.bank)],
+                ['Tabela', p.table || '---'],
+                ['Prazo', `${p.term} meses`],
+                ['Promotora', p.promoter],
+            ],
+            theme: 'plain',
+            styles: { fontSize: 11 },
+            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
+        });
+
+        const finalY2 = (doc as any).lastAutoTable.finalY;
+
+        // Seção Financeira
+        doc.setFontSize(14); doc.setTextColor(0); doc.setFont("helvetica", "bold");
+        doc.text("RESUMO FINANCEIRO", 14, finalY2 + 15);
+        autoTable(doc, {
+            startY: finalY2 + 20,
+            body: [
+                ['Valor Bruto', formatCurrency(p.grossAmount)],
+                ['Valor Líquido', formatCurrency(p.netAmount)],
+                ['Valor da Parcela', formatCurrency(p.installmentAmount)],
+            ],
+            theme: 'grid',
+            styles: { fontSize: 12, cellPadding: 5 },
+            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50, fillColor: [245, 245, 245] } }
+        });
+
+        const finalY3 = (doc as any).lastAutoTable.finalY;
+
+        // Rodapé / Assinaturas
+        const footerY = 250;
+        doc.setDrawColor(150);
+        doc.line(14, footerY, 90, footerY);
+        doc.line(110, footerY, 186, footerY);
+        doc.setFontSize(8); doc.setTextColor(100);
+        doc.text("ASSINATURA DO CLIENTE", 52, footerY + 5, { align: 'center' });
+        doc.text("AGENTE RESPONSÁVEL", 148, footerY + 5, { align: 'center' });
+        
+        doc.setFontSize(7);
+        doc.text("Este documento é um resumo interno da proposta e não substitui o contrato bancário oficial.", 105, 285, { align: 'center' });
+    });
+
+    const fileName = selectedProposals.length === 1 
+        ? `Capa_Proposta_${selectedProposals[0].proposalNumber}.pdf`
+        : `Capas_Propostas_${format(new Date(), 'dd_MM_yyyy')}.pdf`;
+        
+    doc.save(fileName);
+    toast({ title: 'Capa(s) Gerada(s)!', description: 'O arquivo PDF foi baixado.' });
   };
 
   const handleExportToExcel = async (onlySelected = false) => {
@@ -488,12 +586,11 @@ function ProposalsPageContent() {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => handlePrint(false)}>Imprimir Tudo</DropdownMenuItem>
-                    {selectedCount > 0 && (
-                        <DropdownMenuItem onSelect={() => handlePrint(true)} className="font-bold text-primary">
-                            Imprimir Seleção ({selectedCount})
-                        </DropdownMenuItem>
-                    )}
+                    <DropdownMenuItem onSelect={handlePrintCovers} className="font-bold text-primary gap-2">
+                        <FileBadge className="h-4 w-4" /> Imprimir Capa {selectedCount > 0 ? `(${selectedCount})` : ''}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onSelect={() => handlePrint(false)}>Imprimir Listagem</DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
 

@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -136,7 +137,8 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     'col_promoter': false,
     'col_operator': true,
     'col_payment_date': true,
-    'col_bank': true
+    'col_bank': true,
+    'col_product': true
   });
   
   const [startDateInput, setStartDateInput] = React.useState('');
@@ -282,7 +284,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             if (pNum.startsWith(searchTerm)) return true;
             return false;
         }
-        const searchableFields = [customer?.name, customer?.cpf, p.proposalNumber, p.operator, p.bank, cleanBankName(p.bank), p.promoter];
+        const searchableFields = [customer?.name, customer?.cpf, p.proposalNumber, p.operator, p.bank, cleanBankName(p.bank), p.promoter, p.product];
         return searchableFields.some(field => field && normalizeString(String(field)).includes(normalizedSearch));
     },
     meta: { isPrivacyMode, userSettings, statusColors }
