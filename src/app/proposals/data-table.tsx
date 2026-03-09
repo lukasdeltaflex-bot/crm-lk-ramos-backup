@@ -124,6 +124,16 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const initialColumns = React.useMemo(() => columns.map(c => c.id!).filter(Boolean), [columns]);
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>([...initialColumns]);
 
+  const handlePaginationChange = (updater: any) => {
+    setPagination((old) => {
+      const next = typeof updater === 'function' ? updater(old) : updater;
+      if (typeof window !== 'undefined') {
+        try { localStorage.setItem('lk-proposals-pageSize', String(next.pageSize)); } catch(e) {}
+      }
+      return next;
+    });
+  };
+
   React.useEffect(() => {
     setIsClient(true);
     try {
@@ -146,16 +156,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         if (savedOrder) setColumnOrder(JSON.parse(savedOrder));
     } catch (e) {}
   }, []);
-
-  const handlePaginationChange = (updater: any) => {
-    setPagination((old) => {
-      const next = typeof updater === 'function' ? updater(old) : updater;
-      if (typeof window !== 'undefined') {
-        try { localStorage.setItem('lk-proposals-pageSize', String(next.pageSize)); } catch(e) {}
-      }
-      return next;
-    });
-  };
 
   React.useEffect(() => {
     const search = searchParams.get('search');
@@ -191,11 +191,15 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
 
   // 🛡️ MOTOR DE SINCRONIZAÇÃO V10 (ULTRARRESILIENTE)
   const syncScroll = (source: HTMLDivElement, target: HTMLDivElement) => {
-    if (!isScrollingRef.current) {
-        isScrollingRef.current = true;
-        target.scrollLeft = source.scrollLeft;
-        setTimeout(() => { isScrollingRef.current = false; }, 50);
-    }
+    if (isScrollingRef.current) return;
+    
+    isScrollingRef.current = true;
+    target.scrollLeft = source.scrollLeft;
+    
+    // Pequeno delay para liberar a trava e evitar loop infinito de eventos
+    requestAnimationFrame(() => {
+        isScrollingRef.current = false;
+    });
   };
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(KeyboardSensor));
@@ -494,12 +498,12 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
             </div>
 
             <Card className="border-2 border-zinc-300 shadow-xl rounded-xl overflow-hidden bg-card p-1">
-                {/* BARRA DE ROLAGEM SUPERIOR (V10) */}
+                {/* BARRA DE ROLAGEM SUPERIOR (V10 - SINCRONIZAÇÃO MECÂNICA) */}
                 <div 
                     ref={topScrollRef}
                     className="overflow-x-auto h-5 bg-muted/30 border-b cursor-pointer relative z-[60] pointer-events-auto"
                     onScroll={(e) => {
-                        if (tableContainerRef.current) syncScroll(e.currentTarget, tableContainerRef.current);
+                        if (tableContainerRef.current) syncScroll(e.currentTarget as HTMLDivElement, tableContainerRef.current);
                     }}
                 >
                     <div style={{ width: totalTableWidth, height: '1px' }} />
@@ -509,7 +513,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     ref={tableContainerRef}
                     className="overflow-x-auto relative z-10"
                     onScroll={(e) => {
-                        if (topScrollRef.current) syncScroll(e.currentTarget, topScrollRef.current);
+                        if (topScrollRef.current) syncScroll(e.currentTarget as HTMLDivElement, topScrollRef.current);
                     }}
                 >
                     <Table style={{ width: totalTableWidth, tableLayout: 'fixed' }}>
