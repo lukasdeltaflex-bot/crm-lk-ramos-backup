@@ -72,7 +72,29 @@ export function GlobalSearch() {
           <span className="text-xs">⌘</span>K
         </kbd>
       </Button>
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog 
+        open={open} 
+        onOpenChange={setOpen}
+        filter={(value, search) => {
+            const normalizedSearch = normalizeString(search);
+            const searchOnlyNumbers = search.replace(/\D/g, '');
+            if (!normalizedSearch) return 1;
+            
+            // 🛡️ LÓGICA DE FILTRO AVANÇADA V8: Prioridade absoluta para ID Exato
+            if (searchOnlyNumbers !== '') {
+                // 1. ID exato (âncora id_)
+                if (value.includes(`id_${searchOnlyNumbers} `)) return 1;
+                
+                // 2. CPF parcial ou Proposta parcial
+                if (value.includes(searchOnlyNumbers)) return 1;
+                
+                // Se é busca puramente numérica e não bateu nada relevante, esconde
+                if (/^\d+$/.test(search)) return 0;
+            }
+            
+            return value.includes(normalizedSearch) ? 1 : 0;
+        }}
+      >
         <CommandInput placeholder="Digite ID exato, Nome, CPF..." autoFocus />
         <CommandList>
           <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
@@ -103,8 +125,8 @@ export function GlobalSearch() {
               const smartTags = getSmartTags(customer, proposals || []);
               const smartTagsLabels = smartTags.map(tag => tag.label).join(' ');
               
-              // 🛡️ INDEXAÇÃO DE ALTA PRECISÃO V7: ID como âncora isolada
-              const searchIndex = normalizeString(`ID_${customer.numericId} ${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric} ${smartTagsLabels}`);
+              // 🛡️ INDEXAÇÃO DE ALTA PRECISÃO V8: ID como âncora isolada
+              const searchIndex = normalizeString(`id_${customer.numericId} ${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric} ${smartTagsLabels}`);
               
               return (
                 <CommandItem
@@ -132,7 +154,7 @@ export function GlobalSearch() {
             })}
             
             {proposals?.map((proposal) => {
-              const searchIndex = normalizeString(`PROP_${proposal.proposalNumber} ${proposal.proposalNumber} ${proposal.product} ${proposal.bank} ${cleanBankName(proposal.bank)}`);
+              const searchIndex = normalizeString(`prop_${proposal.proposalNumber} ${proposal.proposalNumber} ${proposal.product} ${proposal.bank} ${cleanBankName(proposal.bank)}`);
               return (
                 <CommandItem
                   key={proposal.id}

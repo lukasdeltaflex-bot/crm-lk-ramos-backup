@@ -13,6 +13,7 @@ import {
 import type { Customer } from '@/lib/types';
 import { ScrollArea } from '../ui/scroll-area';
 import { normalizeString } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 interface CustomerSearchDialogProps {
   open: boolean;
@@ -38,13 +39,16 @@ export function CustomerSearchDialog({
             const searchOnlyNumbers = search.replace(/\D/g, '');
             if (!normalizedSearch) return 1;
             
-            // 🛡️ LÓGICA DE FILTRO AVANÇADA V7: Isola o ID para busca exata
+            // 🛡️ LÓGICA DE FILTRO AVANÇADA V8: Prioridade absoluta para ID Exato
             if (searchOnlyNumbers !== '') {
-                // Prioridade 1: ID exato (âncora id_)
+                // 1. Se o ID for exatamente o que foi digitado (âncora id_)
                 if (value.includes(`id_${searchOnlyNumbers} `)) return 1;
                 
-                // Prioridade 2: CPF parcial (números contidos)
-                if (value.includes(searchOnlyNumbers)) return 1;
+                // 2. Se o CPF contiver os números digitados
+                // O searchIndex termina com o CPF numérico puro
+                const parts = value.split(' ');
+                const cpfPart = parts[parts.length - 1];
+                if (cpfPart.includes(searchOnlyNumbers)) return 1;
                 
                 // Se é busca puramente numérica e não bateu ID exato nem CPF, esconde
                 if (/^\d+$/.test(search)) return 0;
@@ -59,7 +63,7 @@ export function CustomerSearchDialog({
               <CommandGroup>
                 {customers.map((customer) => {
                   const cpfNumeric = (customer.cpf || '').replace(/\D/g, '');
-                  // 🛡️ INDEXAÇÃO DE ALTA PRECISÃO V7: Espaço após id_ para ancoragem exata
+                  // 🛡️ INDEXAÇÃO DE ALTA PRECISÃO V8: Espaço após id_ para ancoragem exata
                   const searchIndex = normalizeString(`id_${customer.numericId} ${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric}`);
                   
                   return (
