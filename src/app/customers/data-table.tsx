@@ -180,9 +180,37 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         const searchTerm = String(filterValue ?? '').trim();
         if (!searchTerm) return true;
         const customer = row.original;
+        
+        // 🛡️ BUSCA NUCLEAR: Normaliza busca e dados para cobrir CPF numérico e ID
         const normalizedSearch = normalizeString(searchTerm);
-        const searchableFields = [customer.name, customer.cpf, customer.city, customer.email, customer.observations, ...(customer.tags || []), ...((customer as any).smartTags || [])];
-        return searchableFields.some(field => field && normalizeString(String(field)).includes(normalizedSearch));
+        const searchOnlyNumbers = searchTerm.replace(/\D/g, '');
+        
+        const cpfNumeric = customer.cpf?.replace(/\D/g, '') || '';
+        const numericIdStr = String(customer.numericId || '');
+        
+        const searchableFields = [
+            customer.name, 
+            customer.cpf, 
+            cpfNumeric, // Busca por CPF sem pontos
+            numericIdStr, // Busca por ID exato
+            customer.city, 
+            customer.email, 
+            customer.observations, 
+            ...(customer.tags || []), 
+            ...((customer as any).smartTags || [])
+        ];
+
+        return searchableFields.some(field => {
+            if (!field) return false;
+            const normalizedField = normalizeString(String(field));
+            
+            // Se o usuário digitou apenas números, priorizamos match no CPF ou ID
+            if (searchOnlyNumbers !== '' && (normalizedField === cpfNumeric || normalizedField === numericIdStr)) {
+                return normalizedField.includes(searchOnlyNumbers);
+            }
+            
+            return normalizedField.includes(normalizedSearch);
+        });
     },
   });
 

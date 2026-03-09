@@ -35,7 +35,11 @@ export function CustomerSearchDialog({
         </DialogHeader>
         <Command filter={(value, search) => {
             const normalizedSearch = normalizeString(search);
+            const searchOnlyNumbers = search.replace(/\D/g, '');
             if (!normalizedSearch) return 1;
+            
+            // 🛡️ LÓGICA DE FILTRO AVANÇADA: Permite busca por número puro
+            if (searchOnlyNumbers !== '' && value.includes(searchOnlyNumbers)) return 1;
             return value.includes(normalizedSearch) ? 1 : 0;
         }}>
           <CommandInput placeholder="Pesquisar por ID, Nome ou CPF..." autoFocus />
@@ -44,9 +48,9 @@ export function CustomerSearchDialog({
               <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
               <CommandGroup>
                 {customers.map((customer) => {
-                  // 🛡️ BUSCA NUCLEAR SINCRO: Inclui ID puro e variações de documento
+                  // 🛡️ BUSCA NUCLEAR SINCRO: Indexa ID puro e CPF sem pontuação
                   const cpfNumeric = customer.cpf?.replace(/\D/g, '') || '';
-                  const searchIndex = normalizeString(`${customer.name} ${customer.cpf} ${cpfNumeric} ID${customer.numericId} ${customer.numericId}`);
+                  const searchIndex = normalizeString(`${customer.numericId} ID${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric}`);
                   
                   return (
                     <CommandItem

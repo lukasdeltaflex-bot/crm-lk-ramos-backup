@@ -103,8 +103,8 @@ export function GlobalSearch() {
               const smartTags = getSmartTags(customer, proposals || []);
               const smartTagsLabels = smartTags.map(tag => tag.label).join(' ');
               
-              // 🛡️ BUSCA NUCLEAR SINCRO: Permite busca por ID puro sem o prefixo ID
-              const searchIndex = normalizeString(`ID${customer.numericId} ${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric} ${smartTagsLabels}`);
+              // 🛡️ BUSCA NUCLEAR SINCRO: Indexa CPF limpo e ID puro para busca exata
+              const searchIndex = normalizeString(`${customer.numericId} ID${customer.numericId} ${customer.name} ${customer.cpf} ${cpfNumeric} ${smartTagsLabels}`);
               
               return (
                 <CommandItem
