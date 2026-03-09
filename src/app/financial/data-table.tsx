@@ -76,7 +76,7 @@ const COLUMN_LABELS: Record<string, string> = {
     col_customer: "Cliente",
     col_pnum: "Nº Proposta",
     col_gross: "Valor Bruto",
-    col_comm: "Vlr. Comissão",
+    col_comm: "Comissão (%)",
     col_comm_status: "Status Comissão",
     col_payment_date: "Data Pagamento",
     col_promoter: "Promotora",
