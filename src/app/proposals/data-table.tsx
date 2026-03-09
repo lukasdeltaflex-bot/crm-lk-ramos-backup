@@ -188,9 +188,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         const savedPageSize = localStorage.getItem('lk-proposals-pageSize');
         if (savedPageSize) setPagination(p => ({ ...p, pageSize: Number(savedPageSize) }));
 
-        const savedStatus = localStorage.getItem('lk-proposals-filter-status');
-        if (savedStatus) setStatusFilter(savedStatus);
-
         const savedSearch = localStorage.getItem('lk-proposals-filter-search');
         if (savedSearch) setGlobalFilter(savedSearch);
 
