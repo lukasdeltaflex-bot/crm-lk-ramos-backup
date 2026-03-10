@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Landmark, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Landmark } from 'lucide-react';
 import { cn, cleanBankName } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+
+// 🛡️ CACHE DE PERFORMANCE: Mantém o estado de sucesso dos logos para evitar flickering ao rolar tabelas
+const iconCache = new Map<string, boolean>();
 
 // Mapeamento padrão para os nomes LIMPOS dos bancos
 const domainMap: Record<string, string> = {
@@ -54,14 +57,17 @@ export function BankIcon({ bankName, domain, className, showLogo = true }: BankI
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
-  if (!showLogo || !bankName) {
-    return <Landmark className={cn("h-4 w-4 text-muted-foreground/40", className)} />;
-  }
-  
-  const cleanedName = cleanBankName(bankName);
-  const finalDomain = domain || domainMap[cleanedName] || domainMap[bankName] || null;
+  const cleanedName = bankName ? cleanBankName(bankName) : '';
+  const finalDomain = domain || domainMap[cleanedName] || (bankName ? domainMap[bankName] : null);
 
-  if (!finalDomain || hasError) {
+  useEffect(() => {
+    if (finalDomain && iconCache.has(finalDomain)) {
+        setIsLoading(false);
+        setHasError(!iconCache.get(finalDomain));
+    }
+  }, [finalDomain]);
+
+  if (!showLogo || !bankName || !finalDomain || hasError) {
     return <Landmark className={cn("h-4 w-4 text-muted-foreground/40", className)} />;
   }
 
@@ -75,10 +81,14 @@ export function BankIcon({ bankName, domain, className, showLogo = true }: BankI
         alt={bankName}
         className={cn("h-full w-full object-contain p-0.5 transition-opacity duration-300", isLoading ? "opacity-0" : "opacity-100")}
         loading="lazy"
-        onLoad={() => setIsLoading(false)}
+        onLoad={() => {
+            setIsLoading(false);
+            iconCache.set(finalDomain, true);
+        }}
         onError={() => {
-          setHasError(true);
-          setIsLoading(false);
+            setHasError(true);
+            setIsLoading(false);
+            iconCache.set(finalDomain, false);
         }}
       />
     </div>

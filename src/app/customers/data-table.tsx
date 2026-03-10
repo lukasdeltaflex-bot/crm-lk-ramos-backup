@@ -81,6 +81,8 @@ interface DataTableProps {
   isLoading: boolean;
   rowSelection: RowSelectionState;
   setRowSelection: React.Dispatch<React.SetStateAction<RowSelectionState>>;
+  globalFilter: string;
+  setGlobalFilter: (val: string) => void;
 }
 
 export interface CustomerDataTableHandle {
@@ -93,10 +95,11 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
   isLoading,
   rowSelection,
   setRowSelection,
+  globalFilter,
+  setGlobalFilter,
 }, ref) => {
   const [sorting, setSorting] = React.useState<SortingState>([{ id: 'col_id', desc: true }]);
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
-  const [globalFilter, setGlobalFilter] = React.useState('');
   const [frozenCount, setFrozenCount] = React.useState(2);
   const [isClient, setIsClient] = React.useState(false);
 
@@ -146,7 +149,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         const savedSizing = localStorage.getItem('lk-customers-sizing');
         if (savedSizing) setColumnSizing(JSON.parse(savedSizing));
     } catch (e) {}
-  }, [initialIds]);
+  }, [initialIds, setGlobalFilter]);
 
   React.useEffect(() => {
     if (isClient) {

@@ -67,6 +67,7 @@ function CustomersPageContent() {
   const [rowSelection, setRowSelection] = React.useState<Record<string, boolean>>({});
   const [isSaving, setIsSaving] = React.useState(false);
   const [formKey, setFormKey] = React.useState('initial');
+  const [globalFilter, setGlobalFilter] = React.useState('');
   const tableRef = React.useRef<CustomerDataTableHandle>(null);
   
   const initialTab = searchParams.get('tab') || 'active';
@@ -76,12 +77,13 @@ function CustomersPageContent() {
   const [rccFilter, setRccFilter] = React.useState('all');
   const [tagFilter, setTagFilter] = React.useState('all');
 
-  const hasActiveFilters = rmcFilter !== 'all' || rccFilter !== 'all' || tagFilter !== 'all';
+  const hasActiveFilters = rmcFilter !== 'all' || rccFilter !== 'all' || tagFilter !== 'all' || !!globalFilter;
 
   const handleClearFilters = () => {
       setRmcFilter('all');
       setRccFilter('all');
       setTagFilter('all');
+      setGlobalFilter(''); // 🛡️ LIMPEZA TOTAL: Agora apaga também o texto da busca
   };
 
   const customersQuery = useMemoFirebase(() => {
@@ -339,9 +341,11 @@ function CustomersPageContent() {
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Inativar {selectedCount} Clientes?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Esta ação irá anonimizar os dados dos registros selecionados para conformidade com a LGPD. Nomes, CPFs, Telefones, E-mails e Benefícios serão eliminados definitivamente.
-                                </AlertDialogDescription>
+                                <AlertDialogHeader>
+                                    <AlertDialogDescription>
+                                        Esta ação irá anonimizar os dados dos registros selecionados para conformidade com a LGPD. Nomes, CPFs, Telefones, E-mails e Benefícios serão eliminados definitivamente.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Voltar</AlertDialogCancel>
@@ -525,11 +529,14 @@ function CustomersPageContent() {
           )
       ) : (
           <CustomerDataTable 
+            ref={tableRef}
             columns={columns} 
             data={filteredCustomers} 
             isLoading={isCustomersLoading}
             rowSelection={rowSelection}
             setRowSelection={setRowSelection}
+            globalFilter={globalFilter}
+            setGlobalFilter={setGlobalFilter}
           />
       )}
     </>
