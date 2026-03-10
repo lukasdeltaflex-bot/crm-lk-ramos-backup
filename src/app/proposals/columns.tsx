@@ -222,7 +222,7 @@ export const getColumns = (
                             onClick={(e) => { e.stopPropagation(); onToggleChecklist(p.id, s.id, !!act); }} 
                             className="hover:scale-125 transition-transform p-1 rounded-md hover:bg-muted"
                         >
-                            <s.icon className={cn("h-4.5 w-4.5", act ? s.color : "text-muted-foreground/30")} />
+                            <s.icon className={cn("h-3.5 w-3.5", act ? s.color : "text-muted-foreground/30")} />
                         </button>
                     ) 
                 })}

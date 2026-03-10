@@ -76,7 +76,7 @@ const COLUMN_LABELS: Record<string, string> = {
     col_bank: "Banco",
     col_customer: "Cliente",
     col_cpf: "CPF",
-    col_pnum: "Nº Proposta",
+    col_pnum: "N° Proposta",
     col_product: "Produto",
     col_gross: "Valor Bruto",
     col_comm: "Comissão (%)",
@@ -296,6 +296,17 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   const totalGross = table.getFilteredSelectedRowModel().rows.reduce((acc, r) => acc + (r.original.grossAmount || 0), 0);
   const totalCommission = table.getFilteredSelectedRowModel().rows.reduce((acc, r) => acc + (r.original.commissionValue || 0), 0);
 
+  const columnOffsets = React.useMemo(() => {
+    const visibleColumns = table.getVisibleLeafColumns();
+    const offsets: Record<string, number> = {};
+    let currentOffset = 0;
+    visibleColumns.forEach(col => {
+        offsets[col.id] = currentOffset;
+        currentOffset += col.getSize();
+    });
+    return offsets;
+  }, [table.getVisibleLeafColumns()]);
+
   const handleDateMask = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "").substring(0, 8);
     value = value.replace(/(\d{2})(\d)/, '$1/$2').replace(/(\d{2})(\d)/, '$1/$2');
@@ -331,9 +342,9 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="0" className="text-[10px] font-bold uppercase">Nenhuma fixa</SelectItem>
-                            <SelectItem value="1" className="text-[10px] font-bold uppercase">Fixar 1ª Coluna</SelectItem>
-                            <SelectItem value="2" className="text-[10px] font-bold uppercase">Fixar 2 Colunas</SelectItem>
-                            <SelectItem value="3" className="text-[10px] font-bold uppercase">Fixar 3 Colunas</SelectItem>
+                            <SelectItem value="1" className="text-[10px] font-bold uppercase">Fixar 1° Coluna</SelectItem>
+                            <SelectItem value="2" className="text-[10px] font-bold uppercase">Fixar 2° Colunas</SelectItem>
+                            <SelectItem value="3" className="text-[10px] font-bold uppercase">Fixar 3° Colunas</SelectItem>
                         </SelectContent>
                     </Select>
                     <DropdownMenu>
@@ -411,10 +422,9 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                                                 key={h.id} 
                                                 header={h as any} 
                                                 className={cn(
-                                                    i === 0 && frozenCount >= 1 && "sticky left-0 z-40 bg-background shadow-[4px_0_10px_rgba(0,0,0,0.12)] border-r-2",
-                                                    i === 1 && frozenCount >= 2 && "sticky left-[50px] z-40 bg-background shadow-[4px_0_10px_rgba(0,0,0,0.12)] border-r-2",
-                                                    i === 2 && frozenCount >= 3 && "sticky left-[180px] z-40 bg-background shadow-[4px_0_10px_rgba(0,0,0,0.12)] border-r-2"
+                                                    i < frozenCount && "sticky z-40 bg-background shadow-[4px_0_10px_rgba(0,0,0,0.12)] border-r-2"
                                                 )}
+                                                style={i < frozenCount ? { left: `${columnOffsets[h.id]}px` } : {}}
                                             />
                                         ))}
                                     </SortableContext>
@@ -442,7 +452,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
                                             style={colorValue ? { '--status-color': colorValue } as any : {}}
                                         >
                                             {row.getVisibleCells().map((cell, i) => (
-                                                <TableCell key={cell.id} style={{ width: cell.column.getSize() }} className={cn("p-3 text-sm border-none bg-background", i === 0 && frozenCount >= 1 && "sticky left-0 z-30 shadow-[4px_0_10px_rgba(0,0,0,0.08)] border-r-2", i === 1 && frozenCount >= 2 && "sticky left-[50px] z-30 shadow-[4px_0_10px_rgba(0,0,0,0.08)] border-r-2", i === 2 && frozenCount >= 3 && "sticky left-[180px] z-30 shadow-[4px_0_10px_rgba(0,0,0,0.08)] border-r-2")}> {flexRender(cell.column.columnDef.cell, cell.getContext())} </TableCell>
+                                                <TableCell key={cell.id} style={i < frozenCount ? { width: cell.column.getSize(), left: `${columnOffsets[cell.column.id]}px` } : { width: cell.column.getSize() }} className={cn("p-3 text-sm border-none bg-background", i < frozenCount && "sticky z-30 shadow-[4px_0_10px_rgba(0,0,0,0.08)] border-r-2")}> {flexRender(cell.column.columnDef.cell, cell.getContext())} </TableCell>
                                             ))}
                                         </TableRow>
                                     )

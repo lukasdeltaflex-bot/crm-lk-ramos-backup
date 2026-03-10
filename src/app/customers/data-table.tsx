@@ -211,6 +211,17 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
 
   const totalTableWidth = table.getTotalSize();
 
+  const columnOffsets = React.useMemo(() => {
+    const visibleColumns = table.getVisibleLeafColumns();
+    const offsets: Record<string, number> = {};
+    let currentOffset = 0;
+    visibleColumns.forEach(col => {
+        offsets[col.id] = currentOffset;
+        currentOffset += col.getSize();
+    });
+    return offsets;
+  }, [table.getVisibleLeafColumns()]);
+
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
       <Card className="rounded-[1.5rem] border-2 border-zinc-200 bg-card shadow-xl overflow-hidden p-1">
@@ -227,9 +238,9 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="0" className="text-[10px] font-bold uppercase">Nenhuma fixa</SelectItem>
-                        <SelectItem value="1" className="text-[10px] font-bold uppercase">Fixar 1ª Coluna</SelectItem>
-                        <SelectItem value="2" className="text-[10px] font-bold uppercase">Fixar 2 Colunas</SelectItem>
-                        <SelectItem value="3" className="text-[10px] font-bold uppercase">Fixar 3 Colunas</SelectItem>
+                        <SelectItem value="1" className="text-[10px] font-bold uppercase">Fixar 1° Coluna</SelectItem>
+                        <SelectItem value="2" className="text-[10px] font-bold uppercase">Fixar 2° Colunas</SelectItem>
+                        <SelectItem value="3" className="text-[10px] font-bold uppercase">Fixar 3° Colunas</SelectItem>
                     </SelectContent>
                 </Select>
                 <DropdownMenu>
@@ -262,10 +273,9 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
                                 key={header.id} 
                                 header={header as Header<Customer, unknown>} 
                                 className={cn(
-                                    i === 0 && frozenCount >= 1 && "sticky left-0 z-40 bg-background shadow-[4px_0_10px_rgba(0,0,0,0.12)] border-r-2",
-                                    i === 1 && frozenCount >= 2 && "sticky left-[50px] z-40 bg-background shadow-[4px_0_10px_rgba(0,0,0,0.12)] border-r-2",
-                                    i === 2 && frozenCount >= 3 && "sticky left-[130px] z-40 bg-background shadow-[4px_0_10px_rgba(0,0,0,0.12)] border-r-2"
+                                    i < frozenCount && "sticky z-40 bg-background shadow-[4px_0_10px_rgba(0,0,0,0.12)] border-r-2"
                                 )}
+                                style={i < frozenCount ? { left: `${columnOffsets[header.id]}px` } : {}}
                             />
                         ))}
                         </SortableContext>
@@ -287,12 +297,10 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
                         {row.getVisibleCells().map((cell, i) => (
                             <TableCell 
                                 key={cell.id} 
-                                style={{ width: cell.column.getSize() }}
+                                style={i < frozenCount ? { width: cell.column.getSize(), left: `${columnOffsets[cell.column.id]}px` } : { width: cell.column.getSize() }}
                                 className={cn(
                                     "p-2 text-sm border-none bg-background",
-                                    i === 0 && frozenCount >= 1 && "sticky left-0 z-30 shadow-[4px_0_10px_rgba(0,0,0,0.08)] border-r-2",
-                                    i === 1 && frozenCount >= 2 && "sticky left-[50px] z-30 shadow-[4px_0_10px_rgba(0,0,0,0.08)] border-r-2",
-                                    i === 2 && frozenCount >= 3 && "sticky left-[130px] z-30 shadow-[4px_0_10px_rgba(0,0,0,0.08)] border-r-2"
+                                    i < frozenCount && "sticky z-30 shadow-[4px_0_10px_rgba(0,0,0,0.08)] border-r-2"
                                 )}
                             >
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}

@@ -316,6 +316,17 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const uniqueBanks = React.useMemo(() => Array.from(new Set(data.map(p => p.bank))).sort(), [data]);
   const uniquePromoters = React.useMemo(() => Array.from(new Set(data.map(p => p.promoter))).sort(), [data]);
 
+  const columnOffsets = React.useMemo(() => {
+    const visibleColumns = table.getVisibleLeafColumns();
+    const offsets: Record<string, number> = {};
+    let currentOffset = 0;
+    visibleColumns.forEach(col => {
+        offsets[col.id] = currentOffset;
+        currentOffset += col.getSize();
+    });
+    return offsets;
+  }, [table.getVisibleLeafColumns()]);
+
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
         <div className="space-y-4">
@@ -434,10 +445,9 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                                 key={h.id} 
                                                 header={h as any} 
                                                 className={cn(
-                                                    i === 0 && frozenCount >= 1 && "sticky left-0 z-40 bg-background shadow-[4px_0_10px_rgba(0,0,0,0.12)] border-r-2",
-                                                    i === 1 && frozenCount >= 2 && "sticky left-[60px] z-40 bg-background shadow-[4px_0_10px_rgba(0,0,0,0.12)] border-r-2",
-                                                    i === 2 && frozenCount >= 3 && "sticky left-[190px] z-40 bg-background shadow-[4px_0_10px_rgba(0,0,0,0.12)] border-r-2"
+                                                    i < frozenCount && "sticky z-40 bg-background shadow-[4px_0_10px_rgba(0,0,0,0.12)] border-r-2"
                                                 )}
+                                                style={i < frozenCount ? { left: `${columnOffsets[h.id]}px` } : {}}
                                             />
                                         ))}
                                     </SortableContext>
@@ -464,12 +474,10 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                             {row.getVisibleCells().map((cell, i) => (
                                                 <TableCell 
                                                     key={cell.id} 
-                                                    style={{ width: cell.column.getSize() }} 
+                                                    style={i < frozenCount ? { width: cell.column.getSize(), left: `${columnOffsets[cell.column.id]}px` } : { width: cell.column.getSize() }} 
                                                     className={cn(
                                                         "p-3 text-sm border-none bg-background",
-                                                        i === 0 && frozenCount >= 1 && "sticky left-0 z-30 shadow-[4px_0_10px_rgba(0,0,0,0.08)] border-r-2",
-                                                        i === 1 && frozenCount >= 2 && "sticky left-[60px] z-30 shadow-[4px_0_10px_rgba(0,0,0,0.08)] border-r-2",
-                                                        i === 2 && frozenCount >= 3 && "sticky left-[190px] z-30 shadow-[4px_0_10px_rgba(0,0,0,0.08)] border-r-2"
+                                                        i < frozenCount && "sticky z-30 shadow-[4px_0_10px_rgba(0,0,0,0.08)] border-r-2"
                                                     )}
                                                 >
                                                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
