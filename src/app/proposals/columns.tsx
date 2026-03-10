@@ -234,7 +234,7 @@ export const getColumns = (
         const sett = (table.options.meta as any)?.userSettings;
         return (<div className="flex items-center gap-2"><BankIcon bankName={prom} domain={sett?.promoterDomains?.[prom]} showLogo={sett?.showPromoterLogos ?? true} className="h-4 w-4" /><span className="truncate text-sm font-bold">{prom}</span></div>)
     }, size: 150 },
-  { id: 'col_pnum', accessorKey: 'proposalNumber', header: 'Nº Proposta', cell: ({ row }) => (<div className="flex items-center gap-1 text-sm font-bold"><span>{row.original.proposalNumber}</span><CopyButton text={row.original.proposalNumber} label="Proposta" /></div>), size: 150 },
+  { id: 'col_pnum', accessorKey: 'proposalNumber', header: 'N° Proposta', cell: ({ row }) => (<div className="flex items-center gap-1 text-sm font-bold"><span>{row.original.proposalNumber}</span><CopyButton text={row.original.proposalNumber} label="Proposta" /></div>), size: 150 },
   { id: 'col_customer', accessorFn: (row) => row.customer?.name, header: 'Cliente', cell: ({ row }) => {
         const customer = row.original.customer;
         const phone = customer?.phone;

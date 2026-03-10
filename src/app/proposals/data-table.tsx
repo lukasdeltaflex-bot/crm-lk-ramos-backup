@@ -75,7 +75,7 @@ const COLUMN_LABELS: Record<string, string> = {
     col_date: "Data Digitação",
     col_steps: "Etapas",
     col_promoter: "Promotora",
-    col_pnum: "Nº Proposta",
+    col_pnum: "N° Proposta",
     col_customer: "Cliente",
     col_cpf: "CPF",
     col_product: "Produto",
@@ -342,9 +342,9 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="0" className="text-[10px] font-bold uppercase">Nenhuma fixa</SelectItem>
-                            <SelectItem value="1" className="text-[10px] font-bold uppercase">Fixar 1ª Coluna</SelectItem>
-                            <SelectItem value="2" className="text-[10px] font-bold uppercase">Fixar 2 Colunas</SelectItem>
-                            <SelectItem value="3" className="text-[10px] font-bold uppercase">Fixar 3 Colunas</SelectItem>
+                            <SelectItem value="1" className="text-[10px] font-bold uppercase">Fixar 1° Coluna</SelectItem>
+                            <SelectItem value="2" className="text-[10px] font-bold uppercase">Fixar 2° Colunas</SelectItem>
+                            <SelectItem value="3" className="text-[10px] font-bold uppercase">Fixar 3° Colunas</SelectItem>
                         </SelectContent>
                     </Select>
                     <DropdownMenu>
