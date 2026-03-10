@@ -410,22 +410,25 @@ function ProposalsPageContent() {
   };
 
   React.useEffect(() => {
+    if (isLoading || proposalsWithCustomerData.length === 0) return;
+
     const action = searchParams.get('action');
     const openId = searchParams.get('open');
 
-    if (!isLoading && !hasOpenedFromParam) {
+    if (!hasOpenedFromParam) {
         if (action === 'new') {
             handleNewProposal();
             setHasOpenedFromParam(true);
             router.replace('/proposals', { scroll: false });
-        } else if (openId && proposalsWithCustomerData.length > 0) {
+        } else if (openId) {
             const proposalToOpen = proposalsWithCustomerData.find(p => p.id === openId);
             if (proposalToOpen) {
                 handleEditProposal(proposalToOpen);
                 setHasOpenedFromParam(true);
+                // Pequeno delay para garantir que o router limpou os params sem fechar o modal
                 setTimeout(() => {
                     router.replace('/proposals', { scroll: false });
-                }, 100);
+                }, 300);
             }
         }
     }
