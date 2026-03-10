@@ -425,7 +425,6 @@ function ProposalsPageContent() {
             if (proposalToOpen) {
                 handleEditProposal(proposalToOpen);
                 setHasOpenedFromParam(true);
-                // Pequeno delay para garantir que o router limpou os params sem fechar o modal
                 setTimeout(() => {
                     router.replace('/proposals', { scroll: false });
                 }, 300);
@@ -576,7 +575,7 @@ function ProposalsPageContent() {
                                 className="h-10 px-6 rounded-full font-bold text-xs gap-2 text-primary border-primary/20 bg-primary/5"
                                 disabled={isSaving}
                             >
-                                <FileBadge className="h-4 w-4" /> Capas ({selectedCount}) <ChevronDown className="h-3 w-3" />
+                                <FileBadge className="h-4 w-4" /> Imprimir Capas ({selectedCount}) <ChevronDown className="h-3 w-3" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">

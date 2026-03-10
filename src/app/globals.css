@@ -137,34 +137,34 @@ html, body, *, [data-sidebar="inset"] {
 .aura-desert { background: linear-gradient(45deg, hsla(40, 80%, 50%, 0.1) 0%, hsla(20, 80%, 50%, 0.1) 100%) !important; }
 .aura-velvet { background: radial-gradient(circle at top left, hsla(45, 100%, 50%, 0.08), transparent 40%), radial-gradient(circle at bottom right, hsla(45, 100%, 50%, 0.05), transparent 40%), #000 !important; }
 
-/* 🛡️ VISIBILIDADE DAS BARRAS DE ROLAGEM INDUSTRIAL V14 */
-.scroll-area-priority [data-radix-scroll-area-thumb] {
-  background-color: hsl(var(--primary) / 0.6) !important;
-  border: 2px solid transparent;
+/* 🛡️ VISIBILIDADE DAS BARRAS DE ROLAGEM INDUSTRIAL V15 */
+::-webkit-scrollbar {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted) / 0.5) !important;
+  border-radius: 8px !important;
+  border: 1px solid hsl(var(--border));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary)) !important;
+  border-radius: 8px !important;
+  border: 3px solid transparent;
   background-clip: padding-box;
-  min-width: 60px;
-  min-height: 60px;
-  border-radius: 9999px;
-  box-shadow: inset 0 0 0 2px hsla(0, 0%, 100%, 0.1);
+  box-shadow: inset 0 0 0 1px hsla(0, 0%, 100%, 0.2);
 }
 
-.scroll-area-priority [data-radix-scroll-area-thumb]:hover {
-  background-color: hsl(var(--primary)) !important;
-  cursor: grabbing;
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.8) !important;
 }
 
-.scroll-area-priority [data-radix-scroll-area-scrollbar][data-orientation="vertical"] {
-  width: 14px !important;
-  background: hsla(var(--muted) / 0.8);
-  border-left: 1px solid hsl(var(--border));
-  padding: 2px;
-}
-
-.scroll-area-priority [data-radix-scroll-area-scrollbar][data-orientation="horizontal"] {
-  height: 14px !important;
-  background: hsla(var(--muted) / 0.8);
-  border-top: 1px solid hsl(var(--border));
-  padding: 2px;
+/* Suporte para Firefox */
+* {
+  scrollbar-width: auto;
+  scrollbar-color: hsl(var(--primary)) hsl(var(--muted) / 0.5);
 }
 
 /* 🛡️ FIX SIDEBAR (CONTRASTE) */

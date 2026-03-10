@@ -10,7 +10,7 @@ const LogoSvg = ({ className }: { className?: string }) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 160 80"
-      className={cn("h-12 w-auto", className)}
+      className={cn("h-16 w-auto", className)}
       aria-label="LK Ramos Logo"
     >
         <defs>
@@ -27,7 +27,7 @@ const LogoSvg = ({ className }: { className?: string }) => (
                 {`
                     .logo-text {
                         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-                        font-size: 18px;
+                        font-size: 20px;
                         font-weight: 900;
                         letter-spacing: -0.02em;
                         fill: hsl(var(--sidebar-foreground));
@@ -38,34 +38,23 @@ const LogoSvg = ({ className }: { className?: string }) => (
 
         {/* L Shape */}
         <path
-            d="M30 10 L 30 50 L 55 50 L 55 42 L 38 42 L 38 10 Z"
+            d="M30 5 L 30 45 L 55 45 L 55 37 L 38 37 L 38 5 Z"
             fill="url(#blue-gradient)"
         />
-        <path
-            d="M30 10 L 32 8 L 38 14 L 38 10 Z"
-            fill="#6b8ac0"
-        />
-        <path
-            d="M30 50 L 38 42 L 40 44 L 32 52 Z"
-            fill="#2a4a7f"
-        />
-
         {/* K Shape */}
         <path
-            d="M65 10 L 65 50 L 73 50 L 73 33 L 90 50 L 98 45 L 80 30 L 98 15 L 90 10 L 73 27 L 73 10 Z"
+            d="M65 5 L 65 45 L 73 45 L 73 28 L 90 45 L 98 40 L 80 25 L 98 10 L 90 5 L 73 22 L 73 5 Z"
             fill="url(#gold-gradient)"
         />
 
         {/* Swoosh */}
         <path
-            d="M20,60 C40,50 80,50 100,60 C95,65 45,65 25,60 Z"
+            d="M20,55 C40,45 80,45 100,55 C95,60 45,60 25,55 Z"
             fill="url(#blue-gradient)"
-            transform="translate(0, -2)"
         />
         <path
-            d="M25,62 C45,52 85,52 105,62 C100,67 50,67 30,62 Z"
+            d="M25,57 C45,47 85,47 105,57 C100,62 50,62 30,57 Z"
             fill="url(#gold-gradient)"
-            transform="translate(0, -2)"
         />
 
         {/* Text */}
@@ -93,7 +82,7 @@ export function Logo({ className, forPrinting = false }: { className?: string; f
     return (
         <div className={cn(
             'flex items-center justify-center',
-            forPrinting ? 'h-16 w-auto' : 'h-20 w-full p-1 group-data-[collapsible=icon]:p-1',
+            forPrinting ? 'h-20 w-auto' : 'h-24 w-full p-1 group-data-[collapsible=icon]:p-1',
             className
         )}>
             <div className="w-full h-full bg-transparent" />
@@ -105,7 +94,7 @@ export function Logo({ className, forPrinting = false }: { className?: string; f
     return (
         <div className={cn(
             'flex items-center justify-center transition-all duration-500 overflow-hidden animate-in fade-in duration-300',
-            forPrinting ? 'h-16 w-auto' : 'h-20 w-full p-1 group-data-[collapsible=icon]:p-1',
+            forPrinting ? 'h-20 w-auto' : 'h-24 w-full p-1 group-data-[collapsible=icon]:p-1',
             className
         )}>
             <img 
@@ -123,11 +112,11 @@ export function Logo({ className, forPrinting = false }: { className?: string; f
   return (
     <div
       className={cn(
-        'flex items-center group-data-[collapsible=icon]:gap-0 animate-in fade-in duration-300 h-20',
+        'flex items-center group-data-[collapsible=icon]:gap-0 animate-in fade-in duration-300 h-24',
         className
       )}
     >
-      <LogoSvg className="h-16 w-full group-data-[collapsible=icon]:h-12 group-data-[collapsible=icon]:w-full"/>
+      <LogoSvg className="h-20 w-full group-data-[collapsible=icon]:h-14 group-data-[collapsible=icon]:w-full"/>
     </div>
   );
 }
