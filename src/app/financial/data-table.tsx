@@ -176,6 +176,19 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
       setAppliedDateRange(undefined);
   };
 
+  const applyRangeShortcut = (range: string) => {
+    const now = new Date();
+    let from = startOfMonth(now);
+    let to = now;
+    if (range === 'today') from = startOfDay(now);
+    if (range === 'yesterday') { from = startOfDay(subDays(now, 1)); to = endOfDay(subDays(now, 1)); }
+    if (range === 'week') from = startOfDay(subDays(now, 7));
+    
+    setStartDateInput(format(from, 'dd/MM/yyyy'));
+    setEndDateInput(format(to, 'dd/MM/yyyy'));
+    setAppliedDateRange({ from, to: endOfDay(to) });
+  };
+
   const hasActiveFilters = statusFilter !== 'Todos' || bankFilters.length > 0 || promoterFilters.length > 0 || operatorFilters.length > 0 || !!globalFilter || !!appliedDateRange;
 
   React.useEffect(() => {
@@ -197,7 +210,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         const savedSizing = localStorage.getItem('lk-financial-sizing');
         if (savedSizing) setColumnSizing(JSON.parse(savedSizing));
 
-        // 🛡️ MEMÓRIA DE FILTROS: Carrega filtros persistidos
         const savedStatusFilter = localStorage.getItem('lk-financial-filter-status');
         if (savedStatusFilter) setStatusFilter(savedStatusFilter);
         const savedBankFilters = localStorage.getItem('lk-financial-filter-banks');
@@ -218,7 +230,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             localStorage.setItem('lk-financial-order', JSON.stringify(columnOrder));
             localStorage.setItem('lk-financial-sizing', JSON.stringify(columnSizing));
             
-            // 🛡️ PERSISTÊNCIA DE FILTROS
             localStorage.setItem('lk-financial-filter-status', statusFilter);
             localStorage.setItem('lk-financial-filter-banks', JSON.stringify(bankFilters));
             localStorage.setItem('lk-financial-filter-promoters', JSON.stringify(promoterFilters));
@@ -255,8 +266,27 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             return isValid(d) && d >= fromDate && d <= toDate;
         });
     }
+    
+    if (globalFilter) {
+        const normalizedSearch = normalizeString(globalFilter);
+        list = list.filter(p => {
+            const customer = p.customer;
+            const isPureNumber = /^\d+$/.test(globalFilter);
+            if (isPureNumber) {
+                if (String(customer?.numericId) === globalFilter) return true;
+                const cpfNumeric = (customer?.cpf || '').replace(/\D/g, '');
+                if (cpfNumeric.startsWith(globalFilter)) return true;
+                const pNum = (p.proposalNumber || '').replace(/\D/g, '');
+                if (pNum.startsWith(globalFilter)) return true;
+                return false;
+            }
+            const searchableFields = [customer?.name, customer?.cpf, p.proposalNumber, p.operator, p.bank, cleanBankName(p.bank), p.promoter, p.product];
+            return searchableFields.some(field => field && normalizeString(String(field)).includes(normalizedSearch));
+        });
+    }
+
     return list;
-  }, [data, statusFilter, bankFilters, promoterFilters, operatorFilters, appliedDateRange]);
+  }, [data, statusFilter, bankFilters, promoterFilters, operatorFilters, appliedDateRange, globalFilter]);
 
   const table = useReactTable({
     data: filteredData,
@@ -276,24 +306,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
     state: { sorting, globalFilter, rowSelection, columnVisibility, columnSizing, columnOrder, pagination },
-    globalFilterFn: (row, columnId, filterValue) => {
-        const searchTerm = String(filterValue ?? '').trim();
-        if (!searchTerm) return true;
-        const customer = row.original.customer;
-        const p = row.original;
-        const normalizedSearch = normalizeString(searchTerm);
-        const isPureNumber = /^\d+$/.test(searchTerm);
-        if (isPureNumber) {
-            if (String(customer?.numericId) === searchTerm) return true;
-            const cpfNumeric = (customer?.cpf || '').replace(/\D/g, '');
-            if (cpfNumeric.startsWith(searchTerm)) return true;
-            const pNum = (p.proposalNumber || '').replace(/\D/g, '');
-            if (pNum.startsWith(searchTerm)) return true;
-            return false;
-        }
-        const searchableFields = [customer?.name, customer?.cpf, p.proposalNumber, p.operator, p.bank, cleanBankName(p.bank), p.promoter, p.product];
-        return searchableFields.some(field => field && normalizeString(String(field)).includes(normalizedSearch));
-    },
     meta: { isPrivacyMode, userSettings, statusColors }
   });
 
@@ -333,7 +345,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
         <div className="space-y-4 w-full">
-            <FinancialSummary rows={data} currentMonthRange={startOfDay(currentMonthRange.from) as any} isPrivacyMode={isPrivacyMode} isFiltered={!!globalFilter} onShowDetails={onShowDetails} userSettings={userSettings} />
+            <FinancialSummary rows={filteredData} currentMonthRange={startOfDay(currentMonthRange.from) as any} isPrivacyMode={isPrivacyMode} isFiltered={!!globalFilter} onShowDetails={onShowDetails} userSettings={userSettings} />
             <div className="flex flex-wrap items-center justify-between gap-4 bg-muted/10 p-3 rounded-2xl border-2 border-zinc-200 shadow-sm">
                 <Tabs value={statusFilter} onValueChange={setStatusFilter}>
                     <TabsList className="bg-transparent p-0 gap-1 h-auto flex-wrap">
