@@ -29,14 +29,17 @@ export function Header({ className }: { className?: string }) {
   const router = useRouter();
   const firestore = useFirestore();
 
+  // 🛡️ BLINDAGEM DE RUNTIME: Adicionado optional chaining (auth?.currentUser) 
+  // para evitar falhas fatais de renderização no servidor.
   const userProfileDocRef = useMemoFirebase(() => {
-    if (!auth.currentUser || !firestore) return null;
+    if (!auth?.currentUser || !firestore) return null;
     return doc(firestore, 'users', auth.currentUser.uid);
-  }, [firestore, auth.currentUser]);
+  }, [firestore, auth?.currentUser]);
 
   const { data: userProfile } = useDoc<UserProfile>(userProfileDocRef);
 
   const handleSignOut = async () => {
+    if (!auth) return;
     try {
       await signOut(auth);
       toast({
@@ -62,13 +65,12 @@ export function Header({ className }: { className?: string }) {
     return name.substring(0, 2).toUpperCase();
   };
 
-  const displayName = userProfile?.displayName || userProfile?.fullName || auth.currentUser?.email;
+  const displayName = userProfile?.displayName || userProfile?.fullName || auth?.currentUser?.email;
 
   return (
     <header className={cn("flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6", className)}>
       <SidebarTrigger />
       <div className="flex-1 flex items-center gap-4">
-        {/* 🛡️ RESPONSIVIDADE HEADER: Esconde relógio em telas médias para evitar colisão com a busca */}
         <div className="hidden xl:block">
             <LiveClock />
         </div>

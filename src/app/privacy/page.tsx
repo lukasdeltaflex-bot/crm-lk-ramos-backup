@@ -1,14 +1,18 @@
-'use client';
 import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+/**
+ * 🔒 PÁGINA DE PRIVACIDADE (SERVER COMPONENT)
+ * Removido o 'use client' para garantir que a página seja renderizada de forma estática
+ * e estável pelo servidor, evitando falhas de hidratação em produção.
+ */
 export default function PrivacyPage() {
   return (
     <AppLayout>
       <PageHeader title="Política de Privacidade" />
-      <Card>
+      <Card className="border-2">
         <CardContent className="pt-6">
           <ScrollArea className="h-[60vh] pr-4">
             <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
