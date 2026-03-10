@@ -138,12 +138,28 @@ export function calculateBusinessDays(startDateStr: string | Date): number {
     return count;
 }
 
+/**
+ * ⚡ MOTOR DE INTELIGÊNCIA OPERACIONAL
+ * Determina se uma proposta está em atraso crítico.
+ * Resetado automaticamente quando o usuário altera o status OU adiciona uma nota no histórico.
+ */
 export function isProposalCritical(p: Proposal): boolean {
-    const referenceDate = p.statusAwaitingBalanceAt || p.statusUpdatedAt || p.dateDigitized;
-    if (!referenceDate) return false;
-    const bizDays = calculateBusinessDays(referenceDate);
-    
     if (p.status === 'Reprovado' || p.status === 'Pago' || p.status === 'Saldo Pago') return false;
+
+    // Captura a data da última ação no histórico (atuou na proposta)
+    const historyDates = (p.history || []).map(h => h.date);
+    const lastHistoryDate = historyDates.length > 0 ? [...historyDates].sort().reverse()[0] : null;
+
+    // Define a base de tempo por status
+    let baseDate = p.statusUpdatedAt || p.dateDigitized;
+    if (p.status === 'Aguardando Saldo' && p.statusAwaitingBalanceAt) {
+        baseDate = p.statusAwaitingBalanceAt;
+    }
+
+    // O Alerta deve considerar o que for mais RECENTE: a mudança de status ou a última nota
+    const referenceDate = (lastHistoryDate && lastHistoryDate > baseDate) ? lastHistoryDate : baseDate;
+    
+    const bizDays = calculateBusinessDays(referenceDate);
 
     return (p.status === 'Pendente' && bizDays >= 2) || 
            (p.status === 'Aguardando Saldo' && p.product === 'Portabilidade' && bizDays >= 5) || 

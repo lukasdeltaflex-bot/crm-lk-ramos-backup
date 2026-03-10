@@ -34,9 +34,9 @@ import {
     ShieldCheck,
     CopyPlus,
     Calendar as CalendarIcon
-} from 'lucide-react';
+} from 'lucide-center';
 import { Checkbox } from '@/components/ui/checkbox';
-import { formatCurrency, cleanBankName, cn, formatDateSafe, isWhatsApp, getWhatsAppUrl, calculateBusinessDays } from '@/lib/utils';
+import { formatCurrency, cleanBankName, cn, formatDateSafe, isWhatsApp, getWhatsAppUrl, calculateBusinessDays, isProposalCritical } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
 import { StatusCell } from './status-cell';
 import { useSortable } from '@dnd-kit/sortable';
@@ -164,9 +164,7 @@ const ProposalStatusCell = ({ p, onStatusChange }: { p: Proposal; onStatusChange
 
     if (!hasMounted) return <div className="h-8 w-full bg-muted animate-pulse rounded-full" />;
 
-    const referenceDate = p.statusAwaitingBalanceAt || p.statusUpdatedAt || p.dateDigitized;
-    const bizDays = referenceDate ? calculateBusinessDays(referenceDate) : 0;
-    const isCritical = (p.status === 'Pendente' && bizDays >= 2) || (p.status === 'Aguardando Saldo' && p.product === 'Portabilidade' && bizDays >= 5) || (p.status === 'Em Andamento' && bizDays >= 5);
+    const critical = isProposalCritical(p);
 
     return (
         <div className="flex items-center gap-2 w-full">
@@ -178,7 +176,7 @@ const ProposalStatusCell = ({ p, onStatusChange }: { p: Proposal; onStatusChange
                     onStatusChange={onStatusChange} 
                 />
             </div>
-            {isCritical && (
+            {critical && (
                 <div className="shrink-0 h-8 w-8 rounded-full bg-red-500/15 border-2 border-red-500/40 flex items-center justify-center text-red-600 animate-alert-pulse">
                     <Timer className="h-4.5 w-4.5 fill-current" />
                 </div>
