@@ -1,4 +1,3 @@
-
 'use client';
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -7,7 +6,7 @@ import { PageHeader } from '@/components/page-header';
 import { ProposalsDataTable, type ProposalsDataTableHandle } from './data-table';
 import { getColumns } from './columns';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, FileDown, Trash2, Printer, CheckCircle2, ChevronDown, FileSpreadsheet, FileText as FilePdf, FileBadge } from 'lucide-react';
+import { PlusCircle, FileDown, Trash2, CheckCircle2, ChevronDown, FileSpreadsheet, FileText as FilePdf, FileBadge } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -221,10 +220,6 @@ function ProposalsPageContent() {
     }
   };
 
-  /**
-   * 📄 SISTEMA DE CAPA DE PROPOSTA
-   * Gera um PDF formatado para impressão com os dados do cliente e contrato.
-   */
   const handlePrintCovers = async () => {
     const selectedProposals = proposalsWithCustomerData.filter(p => rowSelection[p.id]);
     if (selectedProposals.length === 0) {
@@ -561,6 +556,14 @@ function ProposalsPageContent() {
         <div className="flex items-center gap-3 flex-wrap">
             {selectedCount > 0 && (
                 <div className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-300">
+                    <Button 
+                        variant="outline" 
+                        className="h-10 px-6 rounded-full font-bold text-xs gap-2 text-primary border-primary/20 bg-primary/5"
+                        onClick={handlePrintCovers}
+                        disabled={isSaving}
+                    >
+                        <FileBadge className="h-4 w-4" /> Imprimir Capa ({selectedCount})
+                    </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" className="h-10 px-6 rounded-full font-bold border-primary/30 bg-primary/5 text-primary text-xs" disabled={isSaving}>
@@ -578,21 +581,6 @@ function ProposalsPageContent() {
                     </Button>
                 </div>
             )}
-
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="h-10 px-6 rounded-full font-bold text-xs gap-2">
-                        <Printer className="h-4 w-4" /> Imprimir <ChevronDown className="h-3 w-3 opacity-50" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={handlePrintCovers} className="font-bold text-primary gap-2">
-                        <FileBadge className="h-4 w-4" /> Imprimir Capa {selectedCount > 0 ? `(${selectedCount})` : ''}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={() => handlePrint(false)}>Imprimir Listagem</DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
 
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>

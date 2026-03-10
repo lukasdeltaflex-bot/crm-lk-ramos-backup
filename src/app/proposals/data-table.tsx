@@ -150,6 +150,14 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     });
   };
 
+  const handleDateMask = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, "").substring(0, 8);
+    if (value.length > 4) value = value.replace(/(\d{2})(\d{2})(\d)/, '$1/$2/$3');
+    else if (value.length > 2) value = value.replace(/(\d{2})(\d)/, '$1/$2');
+    e.target.value = value;
+    return value;
+  };
+
   const handleApplyFilter = () => {
     const startDate = parse(startDateInput, 'dd/MM/yyyy', new Date());
     const endDate = parse(endDateInput, 'dd/MM/yyyy', new Date());
@@ -161,6 +169,18 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
     } else {
         setAppliedDateRange(undefined);
     }
+  };
+
+  const applyRangeShortcut = (range: string) => {
+    const now = new Date();
+    let from = startOfMonth(now);
+    let to = now;
+    if (range === 'today') from = startOfDay(now);
+    if (range === 'yesterday') { from = startOfDay(subDays(now, 1)); to = endOfDay(subDays(now, 1)); }
+    if (range === 'week') from = startOfDay(subDays(now, 7));
+    setStartDateInput(format(from, 'dd/MM/yyyy'));
+    setEndDateInput(format(to, 'dd/MM/yyyy'));
+    setAppliedDateRange({ from, to: endOfDay(to) });
   };
 
   const handleClearAllFilters = () => {
@@ -221,18 +241,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         return arrayMove(items, oldIndex, newIndex);
       });
     }
-  };
-
-  const applyRangeShortcut = (range: string) => {
-    const now = new Date();
-    let from = startOfMonth(now);
-    let to = now;
-    if (range === 'today') from = startOfDay(now);
-    if (range === 'yesterday') { from = startOfDay(subDays(now, 1)); to = endOfDay(subDays(now, 1)); }
-    if (range === 'week') from = startOfDay(subDays(now, 7));
-    setStartDateInput(format(from, 'dd/MM/yyyy'));
-    setEndDateInput(format(to, 'dd/MM/yyyy'));
-    setAppliedDateRange({ from, to: endOfDay(to) });
   };
 
   const filteredData = React.useMemo(() => {
@@ -299,13 +307,6 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
   const totalGross = React.useMemo(() => selectedRows.reduce((acc, row) => acc + (row.original.grossAmount || 0), 0), [selectedRows]);
   const totalCommission = React.useMemo(() => selectedRows.reduce((acc, row) => acc + (row.original.commissionValue || 0), 0), [selectedRows]);
 
-  const handleDateMask = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, "").substring(0, 8);
-    value = value.replace(/(\d{2})(\d)/, '$1/$2').replace(/(\d{2})(\d)/, '$1/$2');
-    e.target.value = value;
-    return value;
-  };
-
   const totalTableWidth = table.getTotalSize();
 
   const toggleBankFilter = (bank: string) => { setBankFilters(prev => prev.includes(bank) ? prev.filter(b => b !== bank) : [...prev, bank]); };
@@ -328,7 +329,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                             return (
                                 <TabsTrigger 
                                     key={s} value={s} 
-                                    className="status-tab font-black uppercase text-[10px] tracking-widest px-4 h-9 border-2 border-transparent data-[state=active]:bg-background"
+                                    className="status-tab font-bold uppercase text-[10px] tracking-widest px-4 h-9 border-2 border-transparent data-[state=active]:bg-background"
                                     style={{ '--status-color': colorValue } as any}
                                 >{s}</TabsTrigger>
                             );
@@ -337,7 +338,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                 </Tabs>
                 <div className="flex items-center gap-3 ml-auto">
                     <Select value={String(frozenCount)} onValueChange={(val) => setFrozenCount(Number(val))}>
-                        <SelectTrigger className="h-10 min-w-[140px] rounded-full text-[10px] font-black uppercase border-2 border-zinc-300 bg-background shadow-sm">
+                        <SelectTrigger className="h-10 min-w-[140px] rounded-full text-[10px] font-bold uppercase border-2 border-zinc-300 bg-background shadow-sm">
                             <div className="flex items-center gap-2"><Snowflake className="h-3.5 w-3.5 text-blue-500" /><SelectValue placeholder="Congelar" /></div>
                         </SelectTrigger>
                         <SelectContent>
@@ -349,7 +350,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     </Select>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="h-11 rounded-full px-6 font-black border-2 border-zinc-300 bg-background shadow-md gap-2 text-xs uppercase tracking-widest">
+                            <Button variant="outline" className="h-11 rounded-full px-6 font-bold border-2 border-zinc-300 bg-background shadow-md gap-2 text-xs uppercase tracking-widest">
                                 Colunas <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
                             </Button>
                         </DropdownMenuTrigger>
@@ -368,7 +369,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
             <div className="flex flex-wrap items-center gap-3">
                 <div className="flex items-center gap-3 bg-background border-2 border-zinc-300 rounded-full px-3 py-1 shadow-sm">
                     <Select onValueChange={applyRangeShortcut}>
-                        <SelectTrigger className="h-7 w-[120px] border-none bg-transparent focus:ring-0 text-xs font-black uppercase p-0">
+                        <SelectTrigger className="h-7 w-[120px] border-none bg-transparent focus:ring-0 text-xs font-bold uppercase p-0">
                             <CalendarIcon className="mr-2 h-3.5 w-3.5 text-primary" /><SelectValue placeholder="PERÍODO" />
                         </SelectTrigger>
                         <SelectContent>
@@ -380,11 +381,11 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     </Select>
                     <Separator orientation="vertical" className="h-4 mx-1 bg-zinc-300" />
                     <div className="flex items-center gap-1">
-                        <Input placeholder="De" value={startDateInput} onChange={(e) => setStartDateInput(handleDateMask(e))} className="h-7 w-28 border-none bg-muted/40 text-[11px] text-center font-black rounded-full focus-visible:ring-primary/20" />
-                        <span className="text-muted-foreground font-black opacity-40">-</span>
-                        <Input placeholder="Até" value={endDateInput} onChange={(e) => setEndDateInput(handleDateMask(e))} className="h-7 w-28 border-none bg-muted/40 text-[11px] text-center font-black rounded-full focus-visible:ring-primary/20" />
+                        <Input placeholder="De" value={startDateInput} onChange={(e) => setStartDateInput(handleDateMask(e))} className="h-7 w-28 border-none bg-muted/40 text-[11px] text-center font-bold rounded-full focus-visible:ring-primary/20" />
+                        <span className="text-muted-foreground font-bold opacity-40">-</span>
+                        <Input placeholder="Até" value={endDateInput} onChange={(e) => setEndDateInput(handleDateMask(e))} className="h-7 w-28 border-none bg-muted/40 text-[11px] text-center font-bold rounded-full focus-visible:ring-primary/20" />
                     </div>
-                    <Button size="sm" onClick={handleApplyFilter} className="h-7 bg-primary text-white hover:bg-primary/90 rounded-full px-4 text-[10px] font-black uppercase shadow-sm gap-1.5 transition-all"><Filter className="h-3 w-3" /> APLICAR</Button>
+                    <Button size="sm" onClick={handleApplyFilter} className="h-7 bg-primary text-white hover:bg-primary/90 rounded-full px-4 text-[10px] font-bold uppercase shadow-sm gap-1.5 transition-all"><Filter className="h-3 w-3" /> APLICAR</Button>
                     {appliedDateRange && (
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => { setStartDateInput(''); setEndDateInput(''); setAppliedDateRange(undefined); }}><X className="h-3.5 w-3.5" /></Button>
                     )}
@@ -417,7 +418,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                         {uniquePromoters.map(prom => ( <DropdownMenuCheckboxItem key={prom} checked={promoterFilters.includes(prom)} onCheckedChange={() => togglePromoterFilter(prom)} className="font-bold text-xs uppercase"><div className="flex items-center gap-2"><BankIcon bankName={prom} domain={userSettings?.promoterDomains?.[prom]} showLogo={userSettings?.showPromoterLogos ?? true} className="h-3 w-3" /><span className="truncate">{prom}</span></div></DropdownMenuCheckboxItem> ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
-                {hasActiveFilters && ( <Button variant="ghost" size="sm" onClick={handleClearAllFilters} className="text-red-600 hover:text-red-700 hover:bg-red-50 font-black text-[10px] uppercase gap-1.5 rounded-full"><X className="h-3 w-3" /> Limpar Filtros</Button> )}
+                {hasActiveFilters && ( <Button variant="ghost" size="sm" onClick={handleClearAllFilters} className="text-red-600 hover:text-red-700 hover:bg-red-50 font-bold text-[10px] uppercase gap-1.5 rounded-full"><X className="h-3 w-3" /> Limpar Filtros</Button> )}
             </div>
             <div className='relative w-full group'>
                 <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary opacity-80' /><Input placeholder="Busca por ID exato, CPF, Nome ou Proposta..." value={globalFilter ?? ''} onChange={(e) => setGlobalFilter(e.target.value)} className="pl-10 h-11 bg-background border-2 border-zinc-300 rounded-full text-base font-bold shadow-md" />
@@ -427,7 +428,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                     <Table style={{ width: totalTableWidth, tableLayout: 'fixed' }}>
                         <TableHeader className="bg-background border-b-2 sticky top-0 z-50 shadow-sm">
                             {table.getHeaderGroups().map(hg => (
-                                <TableRow key={hg.id} className="hover:bg-transparent border-b-2">
+                                <TableRow key={hg.id} className="border-b hover:bg-transparent">
                                     <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
                                         {hg.headers.map((h, i) => (
                                             <DraggableHeader 
@@ -468,22 +469,22 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                     )
                                 })
                             ) : (
-                                <TableRow><TableCell colSpan={columns.length} className="h-32 text-center text-muted-foreground font-black uppercase text-[10px] tracking-widest opacity-40">Nenhuma proposta encontrada.</TableCell></TableRow>
+                                <TableRow><TableCell colSpan={columns.length} className="h-32 text-center text-muted-foreground font-bold uppercase text-[10px] tracking-widest opacity-40">Nenhuma proposta encontrada.</TableCell></TableRow>
                             )}
                         </TableBody>
                     </Table>
                     <ScrollBar orientation="horizontal" />
                     <ScrollBar orientation="vertical" />
                 </ScrollArea>
-                <div className="flex items-center justify-between px-6 py-4 border-t-2 bg-muted/10 font-black text-[11px] uppercase tracking-[0.1em] text-foreground/60 min-h-[64px]">
+                <div className="flex items-center justify-between px-6 py-4 border-t-2 bg-muted/10 font-bold text-[11px] uppercase tracking-[0.1em] text-foreground/60 min-h-[64px]">
                     <div className="flex items-center gap-4">
                         <div>{numSelected} SELECIONADOS.</div>
                         {numSelected > 0 && (
                             <>
                                 <Separator orientation="vertical" className="h-4 bg-zinc-300" />
-                                <div className="text-primary font-black">BRUTO: <span className="text-foreground">{formatCurrency(totalGross)}</span></div>
+                                <div className="text-primary font-bold">BRUTO: <span className="text-foreground">{formatCurrency(totalGross)}</span></div>
                                 <Separator orientation="vertical" className="h-4 bg-zinc-300" />
-                                <div className="text-primary font-black">COMISSÃO: <span className="text-foreground">{formatCurrency(totalCommission)}</span></div>
+                                <div className="text-primary font-bold">COMISSÃO: <span className="text-foreground">{formatCurrency(totalCommission)}</span></div>
                             </>
                         )}
                     </div>
@@ -491,13 +492,13 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                         <div className="flex items-center gap-2">
                             <span>LINHAS:</span>
                             <Select value={String(table.getState().pagination.pageSize)} onValueChange={(val) => table.setPageSize(Number(val))}>
-                                <SelectTrigger className="h-8 w-16 border-2 font-black text-[10px]"><SelectValue /></SelectTrigger>
+                                <SelectTrigger className="h-8 w-16 border-2 font-bold text-[10px]"><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                     {[10, 20, 30, 50, 100].map(size => ( <SelectItem key={size} value={String(size)} className="text-[10px] font-bold">{size}</SelectItem> ))}
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="text-primary font-black uppercase text-[11px] tracking-widest">PÁG {table.getState().pagination.pageIndex + 1} DE {table.getPageCount()}</div>
+                        <div className="text-primary font-bold uppercase text-[11px] tracking-widest">PÁG {table.getState().pagination.pageIndex + 1} DE {table.getPageCount()}</div>
                         <div className="flex items-center gap-2">
                             <Button variant="outline" size="icon" className="h-9 w-9 rounded-full border-2 bg-background shadow-sm transition-all hover:bg-primary/5 active:scale-95" onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()}><ChevronsLeft className="h-4 w-4" /></Button>
                             <Button variant="outline" size="icon" className="h-9 w-9 rounded-full border-2 bg-background shadow-sm transition-all hover:bg-primary/5 active:scale-95" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}><ChevronLeft className="h-4 w-4" /></Button>
