@@ -213,7 +213,6 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
     const cleanPhone = (watchPhone || '').replace(/\D/g, '');
     const cleanCpf = (watchCpf || '').replace(/\D/g, '');
     
-    // 🛡️ VALIDAÇÃO INTERNA DE NB: Verifica se o usuário digitou o mesmo número duas vezes na lista
     const currentNBs = watchBenefits
         .map(b => (b.number || '').replace(/\D/g, ''))
         .filter(n => n.length >= 5);
@@ -234,7 +233,6 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
             results.cpf = true;
         }
 
-        // 🛡️ TRAVA DE NB DUPLICADO (GLOBAL): Verifica se algum NB já pertence a outro cliente
         if (currentNBs.length > 0 && c.benefits && c.benefits.length > 0) {
             const existingNBs = c.benefits.map(b => (b.number || '').replace(/\D/g, ''));
             if (currentNBs.some(nb => existingNBs.includes(nb))) {
@@ -517,7 +515,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                             <FormItem>
                             <FormLabel className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                                 <Phone className="h-3.5 w-3.5 text-[#00AEEF]" /> Telefone 2
-                            </Label>
+                            </FormLabel>
                             <FormControl>
                                 <div className="relative">
                                     <Input 
@@ -601,7 +599,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                         )}
                     </div>
                     <div className="space-y-2">
-                        <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Etiquetas Sugeridas</p>
+                        <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Etiquetas Oficiais</p>
                         <div className="flex flex-wrap gap-2">
                             {availableTags.map(tag => {
                                 const isSelected = watchTags.includes(tag);
