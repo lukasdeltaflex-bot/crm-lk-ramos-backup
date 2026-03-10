@@ -5,9 +5,9 @@ buildConfig:
   runtime: nodejs20
 
 runConfig:
-  # Memória e CPU garantidos para o boot do Next.js 15
+  # Memória e CPU garantidos para o boot estável do Next.js 15
   memory: 1024Mi
   cpu: 1
-  maxInstances: 1
-  # Tempo limite estendido para evitar abortos em instâncias frias
+  maxInstances: 2
+  # Tempo limite estendido para evitar erros 500 no primeiro acesso
   timeoutSeconds: 60

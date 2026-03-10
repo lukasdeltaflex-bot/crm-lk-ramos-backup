@@ -1,4 +1,4 @@
-# dependências
+# dependencies
 node_modules/
 
 # next.js build
@@ -11,7 +11,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# variáveis de ambiente
+# environment variables
 .env
 .env.local
 .env.development.local
