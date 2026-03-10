@@ -5,8 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 /**
  * 🔒 PÁGINA DE PRIVACIDADE (SERVER COMPONENT)
- * Removido o 'use client' para garantir que a página seja renderizada de forma estática
- * e estável pelo servidor, evitando falhas de hidratação em produção.
+ * Renderização otimizada no servidor para máxima estabilidade no App Hosting.
  */
 export default function PrivacyPage() {
   return (
