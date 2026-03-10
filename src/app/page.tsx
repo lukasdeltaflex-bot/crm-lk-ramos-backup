@@ -28,7 +28,7 @@ import {
   Target
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, isValid, startOfDay, subDays, endOfDay, subMonths, parse, eachDayOfInterval } from 'date-fns';
-import { formatCurrency, cn, calculateBusinessDays, cleanFirestoreData } from '@/lib/utils';
+import { formatCurrency, cn, calculateBusinessDays, cleanFirestoreData, isProposalCritical } from '@/lib/utils';
 import type { Proposal, Customer, UserProfile, UserSettings, Lead, Expense } from '@/lib/types';
 import {
   Dialog,
@@ -66,7 +66,7 @@ export default function DashboardPage() {
   const { user } = useUser();
   const firestore = useFirestore();
 
-  const [dialogData, setDialogData] = setDialogData = useState<{ title: string; proposals: Proposal[] } | null>(null);
+  const [dialogData, setDialogData] = useState<{ title: string; proposals: Proposal[] } | null>(null);
   const [startDateInput, setStartDateInput] = useState('');
   const [endDateInput, setEndDateInput] = useState('');
   const [appliedDateRange, setAppliedDateRange] = useState<DateRange | undefined>(undefined);
@@ -225,11 +225,15 @@ export default function DashboardPage() {
     const statusAnalysis: any = {};
     Object.keys(statusLists).forEach(s => {
         const list = statusLists[s];
+        const criticalCount = list.filter(p => isProposalCritical(p)).length;
+        
         statusAnalysis[s] = { 
             total: getSum(list), 
             count: list.length, 
             proposals: list, 
             top: getTopOperator(list),
+            isCritical: criticalCount > 0,
+            criticalCount: criticalCount,
             trend: last7Days.map(day => {
                 const ds = startOfDay(day);
                 const de = endOfDay(day);
@@ -245,15 +249,12 @@ export default function DashboardPage() {
     const totalDigitizedPrev = getSum(digitizedInPrevPeriod);
     const digitizedTrendPercentage = totalDigitizedPrev > 0 ? ((totalDigitizedCurrent - totalDigitizedPrev) / totalDigitizedPrev) * 100 : 0;
 
-    const criticalPortabilityCount = proposals.filter(p => p.product === 'Portabilidade' && p.status === 'Aguardando Saldo' && p.dateDigitized && calculateBusinessDays(p.dateDigitized) >= 5).length;
-
     return { 
         totalDigitado: totalDigitizedCurrent, 
         digitizedTrendPercentage, 
         productionTrend, 
         topTotal: getTopOperator(digitizedInPeriod), 
         statusAnalysis, 
-        criticalPortabilityCount, 
         proposals: { digitadoNoMes: digitizedInPeriod, pagoNoMes: paidInPeriod },
         hotStatus: Object.entries(statusAnalysis).filter(([n]) => n !== 'Reprovado').sort((a: any, b: any) => b[1].total - a[1].total)[0]?.[0]
     };
@@ -356,8 +357,8 @@ export default function DashboardPage() {
                         description={s === 'Reprovado' ? "TOTAL REPROVADO NO MÊS" : "ESTEIRA ATUAL"} 
                         topContributor={stats.statusAnalysis[s].top} 
                         isHot={stats.hotStatus === s} 
-                        isCritical={s === 'Aguardando Saldo' && stats.criticalPortabilityCount > 0}
-                        subValue={s === 'Aguardando Saldo' && stats.criticalPortabilityCount > 0 ? `${stats.criticalPortabilityCount} CRÍTICAS` : undefined}
+                        isCritical={stats.statusAnalysis[s].isCritical}
+                        subValue={stats.statusAnalysis[s].isCritical ? `${stats.statusAnalysis[s].criticalCount} ITENS CRÍTICOS` : undefined}
                         sparklineData={stats.statusAnalysis[s].trend}
                     />
                 </div>

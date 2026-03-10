@@ -1,4 +1,3 @@
-
 'use client';
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -358,7 +357,7 @@ function ProposalsPageContent() {
             'Data Digitação': p.dateDigitized ? format(new Date(p.dateDigitized), 'dd/MM/yyyy') : '-',
             'Cliente': p.customer?.name || '-',
             'CPF': p.customer?.cpf || '-',
-            'Nº Proposta': p.proposalNumber,
+            'N° Proposta': p.proposalNumber,
             'Produto': p.product,
             'Valor Bruto': p.grossAmount,
             'Banco': cleanBankName(p.bank),
@@ -408,7 +407,7 @@ function ProposalsPageContent() {
 
     autoTable(doc, {
         startY: 30,
-        head: [['Data', 'Cliente', 'CPF', 'Nº Proposta', 'Produto', 'Vlr Bruto', 'Banco', 'Status']],
+        head: [['Data', 'Cliente', 'CPF', 'N° Proposta', 'Produto', 'Vlr Bruto', 'Banco', 'Status']],
         body: tableData,
         styles: { fontSize: 8 },
         headStyles: { fillColor: [40, 74, 127] }
@@ -493,7 +492,7 @@ function ProposalsPageContent() {
     } catch (error: any) {
         if (error.code === 'permission-denied') {
             errorEmitter.emit('permission-error', new FirestorePermissionError({
-                path: `loanProposals/${proposalId}`,
+                path: docRef.path,
                 operation: 'update',
                 requestResourceData: dataToUpdate
             }));

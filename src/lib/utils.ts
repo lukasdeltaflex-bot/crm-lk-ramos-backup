@@ -200,6 +200,8 @@ export function cleanFirestoreData(data: any): any {
     if (data === undefined) return undefined;
     if (data instanceof Date) return data.toISOString();
     
+    // 🛡️ BLINDAGEM DE SERIALIZAÇÃO: Permite passar objetos especiais do Firebase (ex: FieldValue) 
+    // sem tentar limpá-los recursivamente, o que causaria corrupção.
     const isPlainObject = (obj: any) => {
         return typeof obj === 'object' && obj !== null && Object.getPrototypeOf(obj) === Object.prototype;
     };
@@ -219,6 +221,7 @@ export function cleanFirestoreData(data: any): any {
         return cleaned;
     }
     
+    // Retorna o dado bruto se não for um objeto plano (ex: FieldValue, números, booleans)
     return data;
 }
 
