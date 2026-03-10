@@ -137,7 +137,7 @@ html, body, *, [data-sidebar="inset"] {
 .aura-desert { background: linear-gradient(45deg, hsla(40, 80%, 50%, 0.1) 0%, hsla(20, 80%, 50%, 0.1) 100%) !important; }
 .aura-velvet { background: radial-gradient(circle at top left, hsla(45, 100%, 50%, 0.08), transparent 40%), radial-gradient(circle at bottom right, hsla(45, 100%, 50%, 0.05), transparent 40%), #000 !important; }
 
-/* 🛡️ VISIBILIDADE DAS BARRAS DE ROLAGEM INDUSTRIAL V15 - CONTRASTE BLINDADO */
+/* 🛡️ VISIBILIDADE DAS BARRAS DE ROLAGEM INDUSTRIAL V16 - REALCE DE NAVEGAÇÃO */
 ::-webkit-scrollbar {
   width: 16px !important;
   height: 16px !important;
@@ -146,25 +146,32 @@ html, body, *, [data-sidebar="inset"] {
 ::-webkit-scrollbar-track {
   background: hsl(var(--muted) / 0.5) !important;
   border-radius: 8px !important;
-  border: 1px solid hsl(var(--border));
+  border: 1px solid hsl(var(--border) / 0.5);
 }
 
 ::-webkit-scrollbar-thumb {
   background: hsl(var(--primary)) !important;
   border-radius: 8px !important;
-  border: 2px solid hsl(var(--background)) !important;
+  border: 3px solid hsl(var(--background)) !important;
   background-clip: padding-box;
-  box-shadow: inset 0 0 0 1px hsla(0, 0%, 100%, 0.2);
+  box-shadow: inset 0 0 0 1px hsla(0, 0%, 100%, 0.3);
+  transition: background 0.3s ease;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: hsl(var(--primary) / 0.8) !important;
-  border: 2px solid hsl(var(--muted)) !important;
-  box-shadow: 0 0 10px hsla(0, 0%, 100%, 0.1);
+  background: hsl(var(--primary) / 0.9) !important;
+  border: 3px solid hsl(var(--muted)) !important;
+  box-shadow: 0 0 15px hsla(var(--primary), 0.4);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--primary) / 0.9) !important;
+  background: hsl(var(--primary) / 0.95) !important;
+  box-shadow: inset 0 0 0 1px white;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: hsl(var(--primary)) !important;
+  border-width: 2px !important;
 }
 
 /* Suporte para Firefox */

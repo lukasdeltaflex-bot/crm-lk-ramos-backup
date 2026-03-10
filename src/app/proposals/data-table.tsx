@@ -435,8 +435,8 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                                 header={h as any} 
                                                 className={cn(
                                                     i === 0 && frozenCount >= 1 && "sticky left-0 z-40 bg-background shadow-[4px_0_10px_rgba(0,0,0,0.12)] border-r-2",
-                                                    i === 1 && frozenCount >= 2 && "sticky left-[50px] z-40 bg-background shadow-[4px_0_10px_rgba(0,0,0,0.12)] border-r-2",
-                                                    i === 2 && frozenCount >= 3 && "sticky left-[150px] z-40 bg-background shadow-[4px_0_10px_rgba(0,0,0,0.12)] border-r-2"
+                                                    i === 1 && frozenCount >= 2 && "sticky left-[60px] z-40 bg-background shadow-[4px_0_10px_rgba(0,0,0,0.12)] border-r-2",
+                                                    i === 2 && frozenCount >= 3 && "sticky left-[190px] z-40 bg-background shadow-[4px_0_10px_rgba(0,0,0,0.12)] border-r-2"
                                                 )}
                                             />
                                         ))}
@@ -468,8 +468,8 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
                                                     className={cn(
                                                         "p-3 text-sm border-none bg-background",
                                                         i === 0 && frozenCount >= 1 && "sticky left-0 z-30 shadow-[4px_0_10px_rgba(0,0,0,0.08)] border-r-2",
-                                                        i === 1 && frozenCount >= 2 && "sticky left-[50px] z-30 shadow-[4px_0_10px_rgba(0,0,0,0.08)] border-r-2",
-                                                        i === 2 && frozenCount >= 3 && "sticky left-[150px] z-30 shadow-[4px_0_10px_rgba(0,0,0,0.08)] border-r-2"
+                                                        i === 1 && frozenCount >= 2 && "sticky left-[60px] z-30 shadow-[4px_0_10px_rgba(0,0,0,0.08)] border-r-2",
+                                                        i === 2 && frozenCount >= 3 && "sticky left-[190px] z-30 shadow-[4px_0_10px_rgba(0,0,0,0.08)] border-r-2"
                                                     )}
                                                 >
                                                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

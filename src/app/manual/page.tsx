@@ -55,7 +55,8 @@ import {
     DollarSign,
     CreditCard,
     GripVertical,
-    CopyPlus
+    CopyPlus,
+    Snowflake
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -129,11 +130,6 @@ export default function ManualPage() {
                                     A visão de **Calendário** agora exibe o horário agendado diretamente no quadrado do dia (ex: 14:00 - Cliente), permitindo gerir sua pauta sem precisar abrir cada registro.
                                 </p>
                             </div>
-                        </div>
-                        <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 mt-4">
-                            <p className="text-xs text-muted-foreground font-medium">
-                                <span className="font-black text-primary uppercase">Dica:</span> O título do retorno (Vínculo/Origem) agora aparece em destaque como uma etiqueta de botão, facilitando a triagem visual rápida.
-                            </p>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
@@ -245,6 +241,37 @@ export default function ManualPage() {
                                     Todos os campos de valor possuem formatação em tempo real, garantindo precisão total nos cálculos de comissão e volume bruto.
                                 </p>
                             </div>
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
+
+                {/* 7. NAVEGAÇÃO DE ALTA PRECISÃO */}
+                <AccordionItem value="ux-navigation" className="border-2 rounded-2xl bg-card px-4 shadow-sm border-blue-500/30">
+                    <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-xl bg-blue-100 text-blue-600"><Snowflake className="h-5 w-5" /></div>
+                            <div className="text-left">
+                                <p className="font-bold text-sm">7. Navegação de Alta Precisão (Frozen Columns)</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Controle Total de Tabelas Largas</p>
+                            </div>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2 pb-6 space-y-4 text-sm leading-relaxed">
+                        <div className="p-4 rounded-xl bg-blue-50/5 border border-blue-200">
+                            <h4 className="font-bold text-blue-700 flex items-center gap-2 mb-2">
+                                <Snowflake className="h-4 w-4" /> Congelamento de Colunas V2
+                            </h4>
+                            <p className="text-xs text-muted-foreground">
+                                As tabelas de Propostas, Clientes e Financeiro possuem o seletor **"Congelar"**. Agora com calibração de precisão milimétrica, você pode fixar até as 3 primeiras colunas simultaneamente sem desalinhamento. 
+                            </p>
+                        </div>
+                        <div className="p-4 rounded-xl bg-muted/20 border mt-4">
+                            <h4 className="font-bold text-foreground flex items-center gap-2 mb-2">
+                                <MoveHorizontal className="h-4 w-4 text-primary" /> Realce de Scroll Industrial
+                            </h4>
+                            <p className="text-xs text-muted-foreground">
+                                A barra de rolagem horizontal foi redesenhada para ser **ultra-visível (16px)**. Ela possui uma borda sólida e alto contraste, garantindo que você nunca perca a referência de navegação em telas ultra-wide.
+                            </p>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
