@@ -360,7 +360,11 @@ function CustomersPageContent() {
                 >
                     <Sparkles className="h-4 w-4 mr-2" /> Novo Cliente com IA
                 </Button>
-                <DialogContent className="max-w-xl" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+                <DialogContent 
+                    className="max-w-xl" 
+                    onPointerDownOutside={(e) => e.preventDefault()} 
+                    onInteractOutside={(e) => e.preventDefault()}
+                >
                     <DialogHeader><DialogTitle>Assistente Visual de Cadastro</DialogTitle></DialogHeader>
                     <CustomerAiForm onSubmit={handleAiFormSubmit} />
                 </DialogContent>

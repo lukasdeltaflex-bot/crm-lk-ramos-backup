@@ -37,7 +37,7 @@ import {
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatCurrency, cleanBankName, cn, formatDateSafe, isWhatsApp, getWhatsAppUrl, calculateBusinessDays } from '@/lib/utils';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusCell } from './status-cell';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -57,8 +57,8 @@ const CopyButton = ({ text, label }: { text: string | undefined; label: string }
         toast({ title: `${label} copiado!` });
     };
     return (
-        <Button variant="ghost" size="icon" className="h-6 w-6 opacity-40 hover:opacity-100 transition-opacity" onClick={handleCopy}>
-            <Copy className="h-3.5 w-3.5" />
+        <Button variant="ghost" size="icon" className="h-8 w-8 opacity-40 hover:opacity-100 transition-opacity" onClick={handleCopy}>
+            <Copy className="h-4 w-4" />
         </Button>
     );
 }
@@ -68,14 +68,14 @@ const ActionsCell = ({ row, onEdit, onView, onDelete, onDuplicate }: any) => {
     const [isAlertOpen, setIsAlertOpen] = useState(false);
 
     return (
-      <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-blue-600 hover:bg-blue-50" onClick={() => onDuplicate && onDuplicate(proposal)}>
-            <CopyPlus className="h-4 w-4" />
+      <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full text-blue-600 hover:bg-blue-50" onClick={() => onDuplicate && onDuplicate(proposal)}>
+            <CopyPlus className="h-5 w-5" />
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-muted transition-colors rounded-full">
-              <MoreHorizontal className="h-4 w-4" />
+            <Button variant="ghost" className="h-10 w-10 p-0 hover:bg-muted transition-colors rounded-full">
+              <MoreHorizontal className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48 shadow-xl border-2">
@@ -159,6 +159,11 @@ export const DraggableHeader = ({ header, className }: { header: Header<any, unk
 }
 
 const ProposalStatusCell = ({ p, onStatusChange }: { p: Proposal; onStatusChange: (pId: string, payload: { status: ProposalStatus; rejectionReason?: string; quickNote?: string; product?: string }) => void }) => {
+    const [hasMounted, setHasMounted] = useState(false);
+    useEffect(() => setHasMounted(true), []);
+
+    if (!hasMounted) return <div className="h-8 w-full bg-muted animate-pulse rounded-full" />;
+
     const referenceDate = p.statusAwaitingBalanceAt || p.statusUpdatedAt || p.dateDigitized;
     const bizDays = referenceDate ? calculateBusinessDays(referenceDate) : 0;
     const isCritical = (p.status === 'Pendente' && bizDays >= 2) || (p.status === 'Aguardando Saldo' && p.product === 'Portabilidade' && bizDays >= 5) || (p.status === 'Em Andamento' && bizDays >= 5);
@@ -174,8 +179,8 @@ const ProposalStatusCell = ({ p, onStatusChange }: { p: Proposal; onStatusChange
                 />
             </div>
             {isCritical && (
-                <div className="shrink-0 h-7 w-7 rounded-full bg-red-500/15 border-2 border-red-500/40 flex items-center justify-center text-red-600 animate-alert-pulse">
-                    <Timer className="h-4 w-4 fill-current" />
+                <div className="shrink-0 h-8 w-8 rounded-full bg-red-500/15 border-2 border-red-500/40 flex items-center justify-center text-red-600 animate-alert-pulse">
+                    <Timer className="h-4.5 w-4.5 fill-current" />
                 </div>
             )}
         </div>
@@ -193,24 +198,39 @@ export const getColumns = (
                 checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
                 onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
                 aria-label="Selecionar todos"
-                className="rounded-full h-5 w-5 border-2"
+                className="rounded-full h-6 w-6 border-2"
             />
         </div>
     ),
     cell: ({ row }) => (
         <div className="flex justify-center w-full">
-            <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} className="rounded-full h-5 w-5" onClick={(e) => e.stopPropagation()} />
+            <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} className="rounded-full h-6 w-6" onClick={(e) => e.stopPropagation()} />
         </div>
     ), 
     enableSorting: false, 
-    size: 50 
+    size: 60 
   },
   { id: 'col_date', accessorKey: 'dateDigitized', header: 'Data Digitação', cell: ({ row }) => <span className="text-sm font-bold text-muted-foreground">{formatDateSafe(row.original.dateDigitized)}</span>, size: 130 },
   { id: 'col_steps', header: 'Etapas', cell: ({ row }) => {
         const p = row.original;
         const steps = [{ id: 'formalization', icon: Send, color: 'text-blue-500' }, { id: 'documentation', icon: FileCheck, color: 'text-orange-500' }, { id: 'signature', icon: PenTool, color: 'text-purple-500' }, { id: 'approval', icon: ShieldCheck, color: 'text-green-500' }];
-        return (<div className="flex items-center gap-1.5">{steps.map(s => { const act = p.checklist?.[s.id]; return (<button key={s.id} onClick={(e) => { e.stopPropagation(); onToggleChecklist(p.id, s.id, !!act); }} className="hover:scale-125 transition-transform"><s.icon className={cn("h-3.5 w-3.5", act ? s.color : "text-muted-foreground/30")} /></button>) })}</div>)
-    }, size: 100 },
+        return (
+            <div className="flex items-center gap-3">
+                {steps.map(s => { 
+                    const act = p.checklist?.[s.id]; 
+                    return (
+                        <button 
+                            key={s.id} 
+                            onClick={(e) => { e.stopPropagation(); onToggleChecklist(p.id, s.id, !!act); }} 
+                            className="hover:scale-125 transition-transform p-1 rounded-md hover:bg-muted"
+                        >
+                            <s.icon className={cn("h-4.5 w-4.5", act ? s.color : "text-muted-foreground/30")} />
+                        </button>
+                    ) 
+                })}
+            </div>
+        )
+    }, size: 140 },
   { id: 'col_promoter', accessorKey: 'promoter', header: 'Promotora', cell: ({ row, table }) => {
         const prom = row.original.promoter;
         const sett = (table.options.meta as any)?.userSettings;
@@ -223,8 +243,8 @@ export const getColumns = (
         return (
             <div className="flex items-center gap-2 font-bold text-primary uppercase text-sm truncate">
                 {phone && isWhatsApp(phone) && (
-                    <span onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.open(getWhatsAppUrl(phone), '_blank'); }} className="text-green-500 hover:scale-125 transition-transform shrink-0">
-                        <WhatsAppIcon className="h-4 w-4" />
+                    <span onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.open(getWhatsAppUrl(phone), '_blank'); }} className="text-green-500 hover:scale-125 transition-transform shrink-0 p-1 rounded-md hover:bg-muted">
+                        <WhatsAppIcon className="h-4.5 w-4.5" />
                     </span>
                 )}
                 <span className="truncate">{customer?.name || '---'}</span>
@@ -232,7 +252,7 @@ export const getColumns = (
         );
     }, size: 220 },
   { id: 'col_cpf', accessorFn: (row) => row.customer?.cpf, header: 'CPF', cell: ({ row }) => (<div className="flex items-center gap-1 text-sm font-bold text-foreground/80"><span>{row.original.customer?.cpf || '-'}</span><CopyButton text={row.original.customer?.cpf} label="CPF" /></div>), size: 160 },
-  { id: 'col_product', accessorKey: 'product', header: 'Produto', cell: ({ row }) => <span className="text-sm font-bold text-foreground/80">{row.original.product}</span>, size: 120 },
+  { id: 'col_product', accessorKey: 'product', header: 'Produto', cell: ({ row }) => <span className="text-sm font-bold text-muted-foreground/80">{row.original.product}</span>, size: 120 },
   { id: 'col_gross', accessorKey: 'grossAmount', header: () => <div className="text-right">Valor Bruto</div>, cell: ({ row }) => <div className="text-right font-bold text-sm">{formatCurrency(row.original.grossAmount)}</div>, size: 120 },
   { id: 'col_comm', accessorKey: 'commissionValue', header: () => <div className="text-right">Comissão</div>, cell: ({ row }) => <div className="text-right font-bold text-emerald-600">{formatCurrency(row.original.commissionValue)}</div>, size: 120 },
   { id: 'col_bank', accessorKey: 'bank', header: 'Banco Digitado', cell: ({ row, table }) => {
@@ -240,10 +260,10 @@ export const getColumns = (
         const sett = (table.options.meta as any)?.userSettings;
         return (<div className="flex items-center gap-2"><BankIcon bankName={bank} domain={sett?.bankDomains?.[bank]} showLogo={sett?.showBankLogos ?? true} /><span className="truncate text-sm font-bold">{cleanBankName(bank)}</span></div>)
     }, size: 150 },
-  { id: 'col_status', accessorKey: 'status', header: 'Status', cell: ({ row }) => <ProposalStatusCell p={row.original} onStatusChange={onStatusChange} />, size: 160 },
+  { id: 'col_status', accessorKey: 'status', header: 'Status', cell: ({ row }) => <ProposalStatusCell p={row.original} onStatusChange={onStatusChange} />, size: 180 },
   { id: 'col_date_appr', accessorKey: 'dateApproved', header: 'Data Averbação', cell: ({ row }) => <span className="text-sm font-medium">{formatDateSafe(row.original.dateApproved)}</span>, size: 130 },
   { id: 'col_date_paid', accessorKey: 'datePaidToClient', header: 'Data Pgto. Cliente', cell: ({ row }) => <span className="text-sm font-medium">{formatDateSafe(row.original.datePaidToClient)}</span>, size: 130 },
   { id: 'col_date_debt', accessorKey: 'debtBalanceArrivalDate', header: 'Chegada Saldo', cell: ({ row }) => <span className="text-sm font-medium">{formatDateSafe(row.original.debtBalanceArrivalDate)}</span>, size: 130 },
   { id: 'col_operator', accessorKey: 'operator', header: 'Operador', cell: ({ row }) => <span className="text-xs font-bold">{row.original.operator || '-'}</span>, size: 120 },
-  { id: 'col_actions', header: 'Ações', cell: (cp) => (<ActionsCell row={cp.row} onEdit={onEdit} onView={onView} onDelete={onDelete} onDuplicate={onDuplicate} />), enableHiding: false, size: 80 },
+  { id: 'col_actions', header: 'Ações', cell: (cp) => (<ActionsCell row={cp.row} onEdit={onEdit} onView={onView} onDelete={onDelete} onDuplicate={onDuplicate} />), enableHiding: false, size: 100 },
 ];

@@ -35,7 +35,7 @@ export function parseDateSafe(dateStr: string | undefined | null): Date | null {
             if (isValid(date)) return date;
         }
 
-        // 3. Fallback genérico (pode falhar em meses/dias invertidos dependendo do browser)
+        // 3. Fallback genérico
         const fallback = new Date(dateStr);
         return isValid(fallback) ? fallback : null;
     } catch (e) {
@@ -101,10 +101,6 @@ export function handlePhoneMask(value: string): string {
     return v;
 }
 
-/**
- * 💰 MÁSCARA DE MOEDA EM TEMPO REAL
- * Formata números para o padrão visual BR (1.500,00) mantendo o valor numérico.
- */
 export function formatCurrencyInput(value: number | undefined): string {
     if (value === undefined || isNaN(value)) return "";
     return new Intl.NumberFormat('pt-BR', {
@@ -123,10 +119,13 @@ export function calculateBusinessDays(startDateStr: string | Date): number {
     if (!start || isNaN(start.getTime())) return 0;
     
     let count = 0;
-    const curDate = startOfDay(new Date(start));
-    const now = startOfDay(new Date());
+    // 🛡️ FIX HIDRATAÇÃO: Força o uso do início do dia local para evitar discrepâncias com o servidor
+    const curDate = new Date(start);
+    curDate.setHours(0, 0, 0, 0);
     
-    // Começa a contar a partir do dia seguinte
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    
     curDate.setDate(curDate.getDate() + 1);
 
     while (curDate <= now) {
@@ -139,10 +138,6 @@ export function calculateBusinessDays(startDateStr: string | Date): number {
     return count;
 }
 
-/**
- * 🛡️ DETECTOR DE CRITICIDADE
- * Centraliza a regra de negócio para propostas em atraso operacional.
- */
 export function isProposalCritical(p: Proposal): boolean {
     const referenceDate = p.statusAwaitingBalanceAt || p.statusUpdatedAt || p.dateDigitized;
     if (!referenceDate) return false;
@@ -156,7 +151,9 @@ export function isProposalCritical(p: Proposal): boolean {
 }
 
 export function validateCPF(cpf: string): boolean {
-    const cleanCPF = cpf.replace(/[^\d]+/g, '');
+    // 🛡️ SANITIZAÇÃO AGRESSIVA V20: Remove qualquer coisa que não seja dígito, incluindo espaços invisíveis da IA
+    const cleanCPF = String(cpf || '').replace(/[^\d]+/g, '');
+    
     if (cleanCPF.length !== 11) return false;
     if (/^(\d)\1+$/.test(cleanCPF)) return false;
     
@@ -182,17 +179,11 @@ export function cleanBankName(name?: string): string {
   return cleaned || name;
 }
 
-/**
- * 🧹 LIMPEZA DE DADOS FIREBASE V2
- * Remove campos 'undefined' e garante que apenas objetos planos sejam enviados.
- * Refinado para ser compatível com Safari iOS e minificação.
- */
 export function cleanFirestoreData(data: any): any {
     if (data === null) return null;
     if (data === undefined) return undefined;
     if (data instanceof Date) return data.toISOString();
     
-    // Verificação de objeto plano segura para Safari
     const isPlainObject = (obj: any) => {
         return typeof obj === 'object' && obj !== null && Object.getPrototypeOf(obj) === Object.prototype;
     };
@@ -219,10 +210,9 @@ export function getSmartTags(customer: Customer, proposals: Proposal[] = []): { 
     const tags: { label: string; color: string }[] = [];
     const now = new Date();
 
-    // 🛡️ ALERTA 75 ANOS: Identifica clientes se aproximando ou atingindo o limite de idade
     const age = getAge(customer.birthDate);
     if (age >= 74 && age <= 75) {
-        tags.push({ label: 'ALERTA 75 ANOS', color: 'bg-red-500' }); // Cor sólida para evitar invisibilidade
+        tags.push({ label: 'ALERTA 75 ANOS', color: 'bg-red-500' });
     }
 
     const customerProposals = proposals.filter(p => p.customerId === customer.id);

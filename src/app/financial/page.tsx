@@ -577,7 +577,11 @@ export default function FinancialPage() {
                 <Button variant="outline" className="h-10 px-6 rounded-full font-bold text-xs" onClick={() => setIsOperatorsDialogOpen(true)}>
                     <Users className="mr-2 h-4 w-4" /> Performance
                 </Button>
-                <DialogContent className="max-w-3xl">
+                <DialogContent 
+                    className="max-w-3xl"
+                    onPointerDownOutside={(e) => e.preventDefault()}
+                    onInteractOutside={(e) => e.preventDefault()}
+                >
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <TrendingUp className="h-5 w-5 text-primary" />
@@ -685,7 +689,11 @@ export default function FinancialPage() {
                 <Button variant="outline" className="h-10 px-6 rounded-full font-bold text-xs" onClick={() => setIsEfficiencyOpen(true)}>
                     <BarChart3 className="mr-2 h-4 w-4" /> Eficiência
                 </Button>
-                <DialogContent className="max-w-5xl h-[90vh] flex flex-col">
+                <DialogContent 
+                    className="max-w-5xl h-[90vh] flex flex-col"
+                    onPointerDownOutside={(e) => e.preventDefault()}
+                    onInteractOutside={(e) => e.preventDefault()}
+                >
                     <DialogHeader><DialogTitle>Análise de Eficiência dos Parceiros</DialogTitle></DialogHeader>
                     <div className="flex-1 overflow-y-auto"><PromoterEfficiencyReport proposals={summaryProposals} /></div>
                 </DialogContent>
@@ -695,7 +703,11 @@ export default function FinancialPage() {
                 <Button variant="outline" className="h-10 px-6 rounded-full font-bold text-xs" onClick={() => setIsReconciliationOpen(true)}>
                     <FileCheck2 className="mr-2 h-4 w-4" /> Conciliar IA
                 </Button>
-                <DialogContent className="max-w-4xl" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+                <DialogContent 
+                    className="max-w-4xl" 
+                    onPointerDownOutside={(e) => e.preventDefault()} 
+                    onInteractOutside={(e) => e.preventDefault()}
+                >
                     <DialogHeader><DialogTitle>Conciliação Financeira IA</DialogTitle></DialogHeader>
                     <CommissionReconciliation proposals={summaryProposals} onFinished={() => setIsReconciliationOpen(false)} />
                 </DialogContent>
@@ -766,14 +778,22 @@ export default function FinancialPage() {
       )}
 
       <Dialog open={isExpenseFormOpen} onOpenChange={setIsExpenseFormOpen}>
-        <DialogContent className="max-w-md" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+        <DialogContent 
+            className="max-w-md" 
+            onPointerDownOutside={(e) => e.preventDefault()} 
+            onInteractOutside={(e) => e.preventDefault()}
+        >
             <DialogHeader><DialogTitle>{selectedExpense ? 'Editar Pagamento' : 'Novo Gasto Operacional'}</DialogTitle></DialogHeader>
             <ExpenseForm expense={selectedExpense} categories={userSettings?.expenseCategories || initialExpenseCategories} onSubmit={handleExpenseSubmit} isSaving={isSaving} />
         </DialogContent>
       </Dialog>
 
       <Dialog open={!!dialogData} onOpenChange={(o) => !o && setDialogData(null)}>
-        <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+        <DialogContent 
+            className="max-w-4xl h-[90vh] flex flex-col"
+            onPointerDownOutside={(e) => e.preventDefault()}
+            onInteractOutside={(e) => e.preventDefault()}
+        >
             <DialogHeader><DialogTitle>{dialogData?.title}</DialogTitle></DialogHeader>
             <div className="flex-1 overflow-y-auto"><ProposalsStatusTable proposals={dialogData?.proposals || []} customers={customers || []} /></div>
         </DialogContent>
