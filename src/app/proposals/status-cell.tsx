@@ -36,7 +36,7 @@ interface StatusCellProps {
   proposalId: string;
   currentStatus: ProposalStatus;
   product?: string;
-  onStatusChange?: (proposalId: string, newStatus: ProposalStatus, product?: string) => void;
+  onStatusChange?: (proposalId: string, payload: { status: ProposalStatus; rejectionReason?: string; quickNote?: string; product?: string }) => void;
 }
 
 export function StatusCell({ proposalId, currentStatus, product, onStatusChange }: StatusCellProps) {
@@ -94,6 +94,20 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
         return;
     }
 
+    // 🛡️ OTIMIZAÇÃO: Se houver um handler pai, delega a gravação para evitar duplicidade
+    if (onStatusChange) {
+        onStatusChange(proposalId, {
+            status: pendingStatus,
+            rejectionReason,
+            quickNote,
+            product
+        });
+        setIsNoteModalOpen(false);
+        setPendingStatus(null);
+        return;
+    }
+
+    // Fallback: Se não houver handler (ex: Dashboard), faz a gravação direta
     setIsUpdating(true);
     const now = new Date().toISOString();
     const currentUser = auth?.currentUser;
@@ -109,25 +123,19 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
     if (pendingStatus === 'Pago') {
         dataToUpdate.dateApproved = now;
         dataToUpdate.datePaidToClient = now;
-    } 
-    else if (pendingStatus === 'Saldo Pago' && isPortability) {
+    } else if (pendingStatus === 'Saldo Pago' && isPortability) {
         dataToUpdate.debtBalanceArrivalDate = now;
-    }
-    else if (pendingStatus === 'Aguardando Saldo' && isPortability) {
+    } else if (pendingStatus === 'Aguardando Saldo' && isPortability) {
         dataToUpdate.statusAwaitingBalanceAt = now;
     }
 
-    if (pendingStatus === 'Reprovado') {
-        dataToUpdate.rejectionReason = rejectionReason;
-    } else {
-        dataToUpdate.rejectionReason = "";
-    }
+    dataToUpdate.rejectionReason = pendingStatus === 'Reprovado' ? rejectionReason : "";
 
     const historyMessage = pendingStatus === 'Reprovado'
         ? `⚙️ Status para "${pendingStatus}". MOTIVO: ${rejectionReason}${quickNote ? ` | NOTA: ${quickNote}` : ''}`
         : quickNote.trim() 
             ? `⚙️ Status para "${pendingStatus}". Nota: ${quickNote.trim()}`
-            : `⚙️ Status alterado rapidamente para "${pendingStatus}"`;
+            : `⚙️ Status alterado para "${pendingStatus}"`;
 
     const historyEntry: ProposalHistoryEntry = {
         id: crypto.randomUUID(),
@@ -140,15 +148,8 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
     try {
         const docRef = doc(firestore, 'loanProposals', proposalId);
         await updateDoc(docRef, cleanFirestoreData(dataToUpdate));
-        
-        toast({
-            title: 'Status Atualizado!',
-            description: `Alterado para "${pendingStatus}".`,
-        });
+        toast({ title: 'Status Atualizado!' });
         setIsNoteModalOpen(false);
-        if (onStatusChange) {
-            onStatusChange(proposalId, pendingStatus, product);
-        }
     } catch (error: any) {
         if (error.code === 'permission-denied') {
             errorEmitter.emit('permission-error', new FirestorePermissionError({
@@ -177,7 +178,7 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
             <Badge 
                 variant="outline" 
                 className={cn(
-                    "w-full justify-center text-[10px] font-black uppercase tracking-tighter py-1.5 px-4 border-2 transition-all status-custom rounded-full",
+                    "w-full justify-center text-[10px] font-bold uppercase tracking-tighter py-1.5 px-4 border-2 transition-all status-custom rounded-full",
                     containerStyle === 'glow' && "shadow-[0_0_10px_hsla(var(--status-color),0.3)]"
                 )}
                 style={colorValue ? { 
@@ -190,7 +191,7 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
       </SelectTrigger>
       <SelectContent>
         {proposalStatuses.map((status) => (
-          <SelectItem key={status} value={status} className="text-[10px] font-black uppercase">
+          <SelectItem key={status} value={status} className="text-[10px] font-bold uppercase">
             {status}
           </SelectItem>
         ))}
@@ -200,23 +201,23 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
     <Dialog open={isNoteModalOpen} onOpenChange={setIsNoteModalOpen}>
         <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2rem]">
             <DialogHeader className="p-6 pb-2">
-                <DialogTitle className="flex items-center gap-2 text-lg font-black uppercase tracking-tight">
-                    <MessageSquareText className="h-5 w-5 text-primary" /> 
+                <DialogTitle className="flex items-center gap-2 text-lg font-bold uppercase tracking-tight text-primary">
+                    <MessageSquareText className="h-5 w-5" /> 
                     {pendingStatus === 'Reprovado' ? 'Justificativa de Reprova' : 'Nota de Trâmite'}
                 </DialogTitle>
             </DialogHeader>
             <ScrollArea className="max-h-[70vh]">
                 <div className="p-6 space-y-6">
                     <div className="p-3 bg-muted/30 rounded-xl border border-dashed text-[10px] font-bold uppercase text-muted-foreground text-center">
-                        Alterando para: <span className={cn("font-black", pendingStatus === 'Reprovado' ? "text-red-600" : "text-primary")}>{pendingStatus}</span>
+                        Alterando para: <span className={cn("font-bold", pendingStatus === 'Reprovado' ? "text-red-600" : "text-primary")}>{pendingStatus}</span>
                     </div>
 
                     {pendingStatus === 'Reprovado' && (
-                        <div className="space-y-2 animate-in slide-in-from-top-2">
-                            <Label className="text-[9px] font-black uppercase tracking-widest text-red-600">Motivo da Reprova *</Label>
+                        <div className="space-y-2">
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-red-600">Motivo da Reprova *</Label>
                             <Select value={rejectionReason} onValueChange={setRejectionReason}>
                                 <SelectTrigger className="border-red-200 bg-red-50/50 font-bold h-11 rounded-xl">
-                                    <SelectValue placeholder="Selecione por que foi reprovado" />
+                                    <SelectValue placeholder="Selecione o motivo..." />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {finalRejectionReasons.map(r => (
@@ -230,7 +231,7 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
                     <div className="space-y-4">
                         <div className="flex items-center gap-2">
                             <Zap className="h-3.5 w-3.5 text-primary" />
-                            <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Tópicos Rápidos (Sub-status)</Label>
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Tópicos Rápidos (Sub-status)</Label>
                         </div>
                         <Select value={quickNote} onValueChange={setQuickNote}>
                             <SelectTrigger className="rounded-xl border-2 bg-background font-bold text-xs">
@@ -246,7 +247,7 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
 
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                            <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Comentário Adicional</Label>
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Comentário Adicional</Label>
                             <Button 
                                 type="button" 
                                 variant="outline" 
@@ -260,7 +261,7 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
                             </Button>
                         </div>
                         <Textarea 
-                            placeholder={pendingStatus === 'Reprovado' ? "Detalhes da negativa do banco..." : "Algo importante a registrar?"}
+                            placeholder={pendingStatus === 'Reprovado' ? "Detalhes da negativa..." : "Algo importante a registrar?"}
                             value={quickNote}
                             onChange={(e) => setQuickNote(e.target.value)}
                             className="min-h-[100px] rounded-2xl text-xs font-medium resize-none border-2"
@@ -275,7 +276,7 @@ export function StatusCell({ proposalId, currentStatus, product, onStatusChange 
                         onClick={handleUpdateConfirm} 
                         disabled={isUpdating || (pendingStatus === 'Reprovado' && !rejectionReason) || isSummarizing}
                         className={cn(
-                            "flex-[2] rounded-full font-black uppercase text-[10px] tracking-widest h-11 shadow-lg transition-all",
+                            "flex-[2] rounded-full font-bold uppercase text-[10px] tracking-widest h-11 shadow-lg transition-all",
                             pendingStatus === 'Reprovado' ? "bg-red-600 hover:bg-red-700 text-white" : "bg-primary text-white"
                         )}
                     >

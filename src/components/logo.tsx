@@ -10,7 +10,7 @@ const LogoSvg = ({ className }: { className?: string }) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 160 80"
-      className={cn("h-16 w-auto", className)}
+      className={cn("h-20 w-auto", className)}
       aria-label="LK Ramos Logo"
     >
         <defs>

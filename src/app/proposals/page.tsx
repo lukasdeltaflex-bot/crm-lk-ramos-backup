@@ -433,22 +433,23 @@ function ProposalsPageContent() {
     }
   }, [searchParams, isLoading, proposalsWithCustomerData, hasOpenedFromParam, handleNewProposal, handleEditProposal, router]);
 
-  const handleStatusChange = async (proposalId: string, newStatus: ProposalStatus, productType?: string) => {
+  // 🛡️ OTIMIZAÇÃO: Handler centralizado de status para evitar gravações duplicadas
+  const handleStatusChange = async (proposalId: string, payload: { status: ProposalStatus; rejectionReason?: string; quickNote?: string; product?: string }) => {
     if (!firestore || !user) return;
     
     const proposal = proposals?.find(p => p.id === proposalId);
-    if (!proposal || proposal.status === newStatus) return;
+    if (!proposal) return;
 
-    if (newStatus === 'Reprovado') return;
-
+    const { status: newStatus, rejectionReason, quickNote, product: productType } = payload;
     const now = new Date().toISOString();
     const userName = user.displayName || user.email || 'Sistema';
+    
     const dataToUpdate: any = { 
         status: newStatus,
         statusUpdatedAt: now
     };
 
-    const isPortability = productType === 'Portabilidade' || proposal.product === 'Portabilidade';
+    const isPortability = (productType || proposal.product) === 'Portabilidade';
 
     if (newStatus === 'Pago') {
         dataToUpdate.dateApproved = now;
@@ -456,12 +457,22 @@ function ProposalsPageContent() {
         if (!proposal.commissionStatus) dataToUpdate.commissionStatus = 'Pendente';
     } else if (newStatus === 'Saldo Pago' && isPortability) {
         dataToUpdate.debtBalanceArrivalDate = now;
+    } else if (newStatus === 'Aguardando Saldo' && isPortability) {
+        dataToUpdate.statusAwaitingBalanceAt = now;
     }
+
+    dataToUpdate.rejectionReason = newStatus === 'Reprovado' ? (rejectionReason || "") : "";
+
+    const historyMessage = newStatus === 'Reprovado'
+        ? `⚙️ Status para "${newStatus}". MOTIVO: ${rejectionReason}${quickNote ? ` | NOTA: ${quickNote}` : ''}`
+        : quickNote && quickNote.trim() 
+            ? `⚙️ Status para "${newStatus}". Nota: ${quickNote.trim()}`
+            : `⚙️ Status alterado para "${newStatus}"`;
 
     const historyEntry: ProposalHistoryEntry = {
         id: crypto.randomUUID(),
         date: now,
-        message: `⚙️ Status alterado de "${proposal.status}" para "${newStatus}"`,
+        message: historyMessage,
         userName: userName
     };
     dataToUpdate.history = arrayUnion(historyEntry);
@@ -575,7 +586,7 @@ function ProposalsPageContent() {
                                 className="h-10 px-6 rounded-full font-bold text-xs gap-2 text-primary border-primary/20 bg-primary/5"
                                 disabled={isSaving}
                             >
-                                <FileBadge className="h-4 w-4" /> Imprimir Capas ({selectedCount}) <ChevronDown className="h-3 w-3" />
+                                <FileBadge className="h-4 w-4" /> Capas ({selectedCount}) <ChevronDown className="h-3 w-3" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">

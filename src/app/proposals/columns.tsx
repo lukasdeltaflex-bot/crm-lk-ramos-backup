@@ -1,7 +1,7 @@
 'use client';
 
 import { ColumnDef, Header, flexRender } from '@tanstack/react-table';
-import type { Proposal, UserSettings } from '@/lib/types';
+import type { Proposal, UserSettings, ProposalStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -135,7 +135,7 @@ export const DraggableHeader = ({ header, className }: { header: Header<any, unk
                     )}
                     <div 
                         className={cn(
-                            "overflow-hidden font-black text-[12px] uppercase tracking-wider text-foreground leading-tight flex items-center gap-1", 
+                            "overflow-hidden font-bold text-[12px] uppercase tracking-wider text-foreground leading-tight flex items-center gap-1", 
                             isSortable && "cursor-pointer",
                             header.column.id === 'col_actions' && "text-right pr-2", 
                             isSelect && "justify-center w-full pr-0"
@@ -158,16 +158,25 @@ export const DraggableHeader = ({ header, className }: { header: Header<any, unk
     )
 }
 
-const ProposalStatusCell = ({ p, onStatusChange }: { p: Proposal; onStatusChange: any }) => {
+const ProposalStatusCell = ({ p, onStatusChange }: { p: Proposal; onStatusChange: (pId: string, payload: { status: ProposalStatus; rejectionReason?: string; quickNote?: string; product?: string }) => void }) => {
     const referenceDate = p.statusAwaitingBalanceAt || p.statusUpdatedAt || p.dateDigitized;
     const bizDays = referenceDate ? calculateBusinessDays(referenceDate) : 0;
     const isCritical = (p.status === 'Pendente' && bizDays >= 2) || (p.status === 'Aguardando Saldo' && p.product === 'Portabilidade' && bizDays >= 5) || (p.status === 'Em Andamento' && bizDays >= 5);
 
     return (
         <div className="flex items-center gap-2 w-full">
-            <div className="flex-1"><StatusCell proposalId={p.id} currentStatus={p.status} product={p.product} onStatusChange={onStatusChange} /></div>
+            <div className="flex-1">
+                <StatusCell 
+                    proposalId={p.id} 
+                    currentStatus={p.status} 
+                    product={p.product} 
+                    onStatusChange={onStatusChange} 
+                />
+            </div>
             {isCritical && (
-                <div className="shrink-0 h-7 w-7 rounded-full bg-red-500/15 border-2 border-red-500/40 flex items-center justify-center text-red-600 animate-alert-pulse"><Timer className="h-4 w-4 fill-current" /></div>
+                <div className="shrink-0 h-7 w-7 rounded-full bg-red-500/15 border-2 border-red-500/40 flex items-center justify-center text-red-600 animate-alert-pulse">
+                    <Timer className="h-4 w-4 fill-current" />
+                </div>
             )}
         </div>
     );
@@ -207,12 +216,12 @@ export const getColumns = (
         const sett = (table.options.meta as any)?.userSettings;
         return (<div className="flex items-center gap-2"><BankIcon bankName={prom} domain={sett?.promoterDomains?.[prom]} showLogo={sett?.showPromoterLogos ?? true} className="h-4 w-4" /><span className="truncate text-sm font-bold">{prom}</span></div>)
     }, size: 150 },
-  { id: 'col_pnum', accessorKey: 'proposalNumber', header: 'Nº Proposta', cell: ({ row }) => (<div className="flex items-center gap-1 text-sm font-black"><span>{row.original.proposalNumber}</span><CopyButton text={row.original.proposalNumber} label="Proposta" /></div>), size: 150 },
+  { id: 'col_pnum', accessorKey: 'proposalNumber', header: 'Nº Proposta', cell: ({ row }) => (<div className="flex items-center gap-1 text-sm font-bold"><span>{row.original.proposalNumber}</span><CopyButton text={row.original.proposalNumber} label="Proposta" /></div>), size: 150 },
   { id: 'col_customer', accessorFn: (row) => row.customer?.name, header: 'Cliente', cell: ({ row }) => {
         const customer = row.original.customer;
         const phone = customer?.phone;
         return (
-            <div className="flex items-center gap-2 font-black text-primary uppercase text-sm truncate">
+            <div className="flex items-center gap-2 font-bold text-primary uppercase text-sm truncate">
                 {phone && isWhatsApp(phone) && (
                     <span onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.open(getWhatsAppUrl(phone), '_blank'); }} className="text-green-500 hover:scale-125 transition-transform shrink-0">
                         <WhatsAppIcon className="h-4 w-4" />
@@ -222,9 +231,9 @@ export const getColumns = (
             </div>
         );
     }, size: 220 },
-  { id: 'col_cpf', accessorFn: (row) => row.customer?.cpf, header: 'CPF', cell: ({ row }) => (<div className="flex items-center gap-1 text-sm font-black text-foreground/80"><span>{row.original.customer?.cpf || '-'}</span><CopyButton text={row.original.customer?.cpf} label="CPF" /></div>), size: 160 },
+  { id: 'col_cpf', accessorFn: (row) => row.customer?.cpf, header: 'CPF', cell: ({ row }) => (<div className="flex items-center gap-1 text-sm font-bold text-foreground/80"><span>{row.original.customer?.cpf || '-'}</span><CopyButton text={row.original.customer?.cpf} label="CPF" /></div>), size: 160 },
   { id: 'col_product', accessorKey: 'product', header: 'Produto', cell: ({ row }) => <span className="text-sm font-bold text-foreground/80">{row.original.product}</span>, size: 120 },
-  { id: 'col_gross', accessorKey: 'grossAmount', header: () => <div className="text-right">Valor Bruto</div>, cell: ({ row }) => <div className="text-right font-black text-sm">{formatCurrency(row.original.grossAmount)}</div>, size: 120 },
+  { id: 'col_gross', accessorKey: 'grossAmount', header: () => <div className="text-right">Valor Bruto</div>, cell: ({ row }) => <div className="text-right font-bold text-sm">{formatCurrency(row.original.grossAmount)}</div>, size: 120 },
   { id: 'col_comm', accessorKey: 'commissionValue', header: () => <div className="text-right">Comissão</div>, cell: ({ row }) => <div className="text-right font-bold text-emerald-600">{formatCurrency(row.original.commissionValue)}</div>, size: 120 },
   { id: 'col_bank', accessorKey: 'bank', header: 'Banco Digitado', cell: ({ row, table }) => {
         const bank = row.original.bank;
