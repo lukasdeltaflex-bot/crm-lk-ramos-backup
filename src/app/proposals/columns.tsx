@@ -242,7 +242,7 @@ export const getColumns = (
             <div className="flex items-center gap-2 font-bold text-primary uppercase text-sm truncate">
                 {phone && isWhatsApp(phone) && (
                     <span onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.open(getWhatsAppUrl(phone), '_blank'); }} className="text-green-500 hover:scale-125 transition-transform shrink-0 p-1 rounded-md hover:bg-muted">
-                        <WhatsAppIcon className="h-4.5 w-4.5" />
+                        <WhatsAppIcon className="h-4 w-4" />
                     </span>
                 )}
                 <span className="truncate">{customer?.name || '---'}</span>
