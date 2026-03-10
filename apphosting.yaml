@@ -1,11 +1,11 @@
-# Settings to manage and configure a Firebase App Hosting backend.
+# Configurações para o Firebase App Hosting
 # https://firebase.google.com/docs/app-hosting/configure
 
 buildConfig:
   runtime: nodejs20
 
 runConfig:
-  # Memória e CPU otimizados para evitar erro 500 no boot do Next.js 15
+  # Memória e CPU aumentados para evitar erro 500 no boot do Next.js 15
   memory: 1024Mi
   cpu: 1
   maxInstances: 1
