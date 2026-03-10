@@ -64,7 +64,7 @@ import { Label } from '@/components/ui/label';
 import * as configData from '@/lib/config-data';
 
 const benefitSchema = z.object({
-    number: z.string().min(1, "O Nº do benefício é obrigatório."),
+    number: z.string().min(1, "O N° do benefício é obrigatório."),
     species: z.string().nullable().optional(),
     salary: z.coerce.number().min(0, "Valor inválido.").optional(),
     rmcBank: z.string().optional(),
@@ -192,6 +192,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
   const watchObservations = form.watch('observations');
   const watchCep = form.watch('cep');
   const watchTags = form.watch('tags') || [];
+  const watchBenefits = form.watch('benefits') || [];
 
   const customerAge = useMemo(() => {
     if (!isMounted || !watchBirthDate || watchBirthDate.length < 10) return null;
@@ -205,15 +206,17 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
   }, [watchBirthDate, isMounted]);
 
   const duplicity = useMemo(() => {
-    const results = { phone: false, email: false, cpf: false };
+    const results = { phone: false, email: false, cpf: false, nb: false };
     if (!allCustomers || allCustomers.length === 0) return results;
     
     const currentId = customer?.id || defaultValues?.id;
-    
     const cleanPhone = (watchPhone || '').replace(/\D/g, '');
     const cleanCpf = (watchCpf || '').replace(/\D/g, '');
-
-    if (cleanPhone.length < 10 && cleanCpf.length < 11) return results;
+    
+    // Extrai NBs atuais sendo digitados (números puros)
+    const currentNBs = watchBenefits
+        .map(b => (b.number || '').replace(/\D/g, ''))
+        .filter(n => n.length >= 5);
 
     allCustomers.forEach(c => {
         if (currentId && c.id === currentId) return;
@@ -225,9 +228,17 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
         if (cleanCpf.length >= 11 && c.cpf?.replace(/\D/g, '') === cleanCpf) {
             results.cpf = true;
         }
+
+        // 🛡️ TRAVA DE NB DUPLICADO: Verifica se algum NB digitado já pertence a outro cliente
+        if (currentNBs.length > 0 && c.benefits && c.benefits.length > 0) {
+            const existingNBs = c.benefits.map(b => (b.number || '').replace(/\D/g, ''));
+            if (currentNBs.some(nb => existingNBs.includes(nb))) {
+                results.nb = true;
+            }
+        }
     });
     return results;
-  }, [allCustomers, watchPhone, watchCpf, customer?.id, defaultValues?.id]);
+  }, [allCustomers, watchPhone, watchCpf, watchBenefits, customer?.id, defaultValues?.id]);
 
   const handleCepLookup = useCallback(async (cleanCep: string) => {
     if (cleanCep.length !== 8) return;
@@ -235,9 +246,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
     setIsFetchingCep(true);
     try {
         const response = await fetch(`/api/cep/${cleanCep}`);
-        
         if (!response.ok) return;
-
         const data = await response.json();
         
         if (data && data.erro) {
@@ -297,8 +306,8 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
   };
 
   const handleFormSubmit = (data: CustomerFormValues) => {
-    if (duplicity.phone || duplicity.cpf) {
-        toast({ variant: 'destructive', title: 'Acesso Bloqueado', description: 'Você não pode salvar um CPF que já existe na base.' });
+    if (duplicity.phone || duplicity.cpf || duplicity.nb) {
+        toast({ variant: 'destructive', title: 'Acesso Bloqueado', description: 'Existem dados duplicados que impedem o salvamento.' });
         return;
     }
     
@@ -338,17 +347,18 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="py-2">
-        <ScrollArea className="h-[75vh] pr-4">
-          <div className="space-y-10">
-            {(hasErrors || duplicity.cpf || duplicity.phone) && (
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="flex flex-col h-full overflow-hidden">
+        <ScrollArea className="flex-1 pr-4">
+          <div className="space-y-10 pb-6">
+            {(hasErrors || duplicity.cpf || duplicity.phone || duplicity.nb) && (
                 <Alert variant="destructive" className="rounded-2xl border-2 bg-red-50 border-red-500">
                     <AlertCircle className="h-5 w-5 text-red-600" />
                     <AlertTitle className="font-black uppercase text-sm tracking-widest text-red-700">Atenção: Correção Necessária</AlertTitle>
                     <AlertDescription className="text-xs font-bold text-red-600 space-y-1 mt-2">
                         {errors.name && <p>• O Nome Completo é obrigatório.</p>}
                         {errors.cpf && <p>• {errors.cpf.message}</p>}
-                        {duplicity.cpf && <p className="animate-bounce">• ESTE CPF JÁ EXISTE NA BASE DE DADOS EM OUTRO REGISTRO.</p>}
+                        {duplicity.cpf && <p className="animate-bounce">• ESTE CPF JÁ EXISTE NA BASE EM OUTRO REGISTRO.</p>}
+                        {duplicity.nb && <p className="animate-pulse">• UM DOS N°s DE BENEFÍCIO JÁ PERTENCE A OUTRO CLIENTE.</p>}
                         {errors.phone && <p>• O Telefone Principal é obrigatório.</p>}
                         {duplicity.phone && <p>• Este Telefone já está em uso por outro cliente.</p>}
                         {errors.birthDate && <p>• A Data de Nascimento é obrigatória e deve ser válida.</p>}
@@ -618,7 +628,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                         Benefícios e Reservas de Cartão
                     </h3>
                     <Button type="button" variant="outline" size="sm" onClick={() => appendBenefit({ number: '', species: '', salary: 0, rmcBank: '', rccBank: '' })} className="rounded-full h-9 px-5 border-[#00AEEF]/30 hover:bg-[#00AEEF]/5 text-[#00AEEF] font-bold">
-                        <PlusCircle className="h-4 w-4 mr-2" /> Adicionar NB
+                        <PlusCircle className="h-4 w-4 mr-2" /> Adicionar N° Benefício
                     </Button>
                 </div>
                 <div className="space-y-8">
@@ -628,7 +638,7 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
                                 <div className="w-full space-y-6">
                                     <div className="flex flex-col md:flex-row items-center gap-3 bg-background/60 border border-border/50 rounded-2xl p-1.5 shadow-sm h-auto md:h-20 w-full">
                                         <div className="flex-1 flex flex-col justify-center px-5 border-b md:border-b-0 md:border-r border-border/30 py-3 md:py-0 w-full">
-                                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1.5">Nº do Benefício</span>
+                                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1.5">N° do Benefício</span>
                                             <FormField
                                                 control={form.control}
                                                 name={`benefits.${index}.number`}
@@ -858,16 +868,16 @@ export function CustomerForm({ customer, allCustomers, userSettings, defaultValu
           </div>
         </ScrollArea>
         
-        <div className="flex justify-end pt-6 border-t mt-4 bg-white">
+        <div className="sticky bottom-0 pt-6 border-t mt-4 bg-background z-10 flex justify-end">
             <Button 
                 type="submit" 
-                disabled={isSaving || duplicity.phone || duplicity.cpf || hasErrors} 
+                disabled={isSaving || duplicity.phone || duplicity.cpf || duplicity.nb || hasErrors} 
                 className="rounded-full px-12 h-12 font-bold text-white bg-[#00AEEF] hover:bg-[#0096D1] shadow-lg shadow-[#00AEEF]/20 transition-all border-none"
             >
                 {isSaving ? (
                     <div className="flex items-center"><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Salvando...</div>
                 ) : (
-                    duplicity.cpf ? 'CPF Já Cadastrado' : <><Save className="mr-2 h-4 w-4" /> Salvar Cadastro</>
+                    duplicity.cpf ? 'CPF Já Cadastrado' : duplicity.nb ? 'N° Benefício Já Cadastrado' : <><Save className="mr-2 h-4 w-4" /> Salvar Cadastro</>
                 )}
             </Button>
         </div>

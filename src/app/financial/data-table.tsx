@@ -196,6 +196,16 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         }
         const savedSizing = localStorage.getItem('lk-financial-sizing');
         if (savedSizing) setColumnSizing(JSON.parse(savedSizing));
+
+        // 🛡️ MEMÓRIA DE FILTROS: Carrega filtros persistidos
+        const savedStatusFilter = localStorage.getItem('lk-financial-filter-status');
+        if (savedStatusFilter) setStatusFilter(savedStatusFilter);
+        const savedBankFilters = localStorage.getItem('lk-financial-filter-banks');
+        if (savedBankFilters) setBankFilters(JSON.parse(savedBankFilters));
+        const savedPromoterFilters = localStorage.getItem('lk-financial-filter-promoters');
+        if (savedPromoterFilters) setPromoterFilters(JSON.parse(savedPromoterFilters));
+        const savedOperatorFilters = localStorage.getItem('lk-financial-filter-operators');
+        if (savedOperatorFilters) setOperatorFilters(JSON.parse(savedOperatorFilters));
     } catch (e) {}
   }, [initialIds]);
 
@@ -207,9 +217,15 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             localStorage.setItem('lk-financial-visibility', JSON.stringify(columnVisibility));
             localStorage.setItem('lk-financial-order', JSON.stringify(columnOrder));
             localStorage.setItem('lk-financial-sizing', JSON.stringify(columnSizing));
+            
+            // 🛡️ PERSISTÊNCIA DE FILTROS
+            localStorage.setItem('lk-financial-filter-status', statusFilter);
+            localStorage.setItem('lk-financial-filter-banks', JSON.stringify(bankFilters));
+            localStorage.setItem('lk-financial-filter-promoters', JSON.stringify(promoterFilters));
+            localStorage.setItem('lk-financial-filter-operators', JSON.stringify(operatorFilters));
         } catch(e) {}
     }
-  }, [globalFilter, columnVisibility, columnOrder, columnSizing, frozenCount, isClient]);
+  }, [globalFilter, columnVisibility, columnOrder, columnSizing, frozenCount, statusFilter, bankFilters, promoterFilters, operatorFilters, isClient]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(KeyboardSensor));
 
@@ -222,18 +238,6 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         return arrayMove(items, oldIndex, newIndex);
       });
     }
-  };
-
-  const applyRangeShortcut = (range: string) => {
-    const now = new Date();
-    let from = startOfMonth(now);
-    let to = now;
-    if (range === 'today') from = startOfDay(now);
-    if (range === 'yesterday') { from = startOfDay(subDays(now, 1)); to = endOfDay(subDays(now, 1)); }
-    if (range === 'week') from = startOfDay(subDays(now, 7));
-    setStartDateInput(format(from, 'dd/MM/yyyy'));
-    setEndDateInput(format(to, 'dd/MM/yyyy'));
-    setAppliedDateRange({ from, to: endOfDay(to) });
   };
 
   const filteredData = React.useMemo(() => {

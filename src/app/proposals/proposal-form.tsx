@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -313,21 +312,16 @@ export function ProposalForm({
   }, [watchOriginalContract, allProposals, proposal?.id, productValue]);
 
   const isDuplicateProposal = useMemo(() => {
-    // 🛡️ BLINDAGEM V21: Normalização agressiva para evitar falsos positivos
     const cleanNum = (watchProposalNumber || '').trim().toUpperCase().replace(/[-\s]/g, '');
-    
-    // Trava: Ignora números vazios ou muito curtos para não piscar alerta falso durante digitação
     if (!cleanNum || cleanNum.length < 3) return false;
     
     return allProposals.some(p => {
         if (proposal?.id && p.id === proposal.id) return false;
-        
         const existingNum = (p.proposalNumber || '').trim().toUpperCase().replace(/[-\s]/g, '');
         return existingNum === cleanNum;
     });
   }, [watchProposalNumber, allProposals, proposal?.id]);
 
-  // 🛡️ LIMPEZA DE BENEFÍCIO E CONTRATOS (Aprovado #4): Reseta campos sensíveis ao trocar de contexto
   const prevCustomerIdRef = useRef(initialValues.customerId);
   useEffect(() => {
     if (selectedCustomerId && selectedCustomerId !== prevCustomerIdRef.current) {
@@ -342,7 +336,6 @@ export function ProposalForm({
     }
   }, [selectedCustomerId, selectedCustomer, setValue]);
 
-  // Limpeza de campos de portabilidade se mudar o produto
   useEffect(() => {
     if (productValue !== 'Portabilidade') {
         setValue('originalContractNumber', '', { shouldValidate: false });
@@ -397,14 +390,19 @@ export function ProposalForm({
         userName: user.displayName || user.email || 'Agente'
     };
 
+    // 🛡️ OPTIMISTIC UI: Adiciona à lista local imediatamente
+    setStagedHistory(prev => [entry, ...prev]);
+    setNewHistoryEntry('');
+
     if (proposal?.id && firestore) {
         const docRef = doc(firestore, 'loanProposals', proposal.id);
         updateDoc(docRef, {
             history: arrayUnion(entry)
         }).then(() => {
-            toast({ title: "Histórico Gravado!", description: "A anotação foi salva permanentemente." });
-            setNewHistoryEntry('');
+            toast({ title: "Histórico Gravado!" });
         }).catch(async (e) => {
+            // Em caso de erro, remove do staged para manter consistência
+            setStagedHistory(prev => prev.filter(item => item.id !== entry.id));
             errorEmitter.emit('permission-error', new FirestorePermissionError({
                 path: docRef.path,
                 operation: 'update',
@@ -414,21 +412,21 @@ export function ProposalForm({
             setIsAddingHistory(false);
         });
     } else {
-        setStagedHistory(prev => [entry, ...prev]);
-        setNewHistoryEntry('');
-        toast({ title: "Atualização reservada!", description: "Será gravada ao clicar em Salvar Proposta." });
+        toast({ title: "Atualização reservada!" });
         setIsAddingHistory(false);
     }
   };
 
   const displayHistory = useMemo(() => {
     const existing = Array.isArray(proposal?.history) ? proposal!.history : [];
-    return [...existing, ...stagedHistory].sort((a,b) => b.date.localeCompare(a.date));
+    // Filtra duplicatas entre existing e staged (casos onde a gravação já completou mas o componente ainda não remontou com dados do DB)
+    const stagedFiltered = stagedHistory.filter(s => !existing.some(e => e.id === s.id));
+    return [...existing, ...stagedFiltered].sort((a,b) => b.date.localeCompare(a.date));
   }, [proposal?.history, stagedHistory]);
 
   function handleFormSubmit(data: ProposalFormValues) {
     if (isDuplicateProposal) {
-        toast({ variant: 'destructive', title: '⚠️ BLOQUEIO', description: 'Número de proposta já existente no sistema.' });
+        toast({ variant: 'destructive', title: '⚠️ BLOQUEIO', description: 'N° de proposta já existente.' });
         return;
     }
 
@@ -451,31 +449,13 @@ export function ProposalForm({
         commissionPaymentDate: convertToIso(data.commissionPaymentDate),
     };
 
-    if (data.product === 'Portabilidade' || data.product === 'Cartão - Plástico') {
-        finalData.datePaidToClient = null;
-    }
-
-    if (data.product !== 'Portabilidade') {
-        finalData.originalContractNumber = "";
-        finalData.bankOrigin = "";
-        finalData.debtBalanceArrivalDate = null;
-    }
-
-    if (data.product === 'Cartão - Plástico') {
-        finalData.term = 1;
-    }
-
     const auditEntries: ProposalHistoryEntry[] = [];
     const userName = user?.displayName || user?.email || 'Sistema';
 
     const checkChange = (field: string, label: string, formatter?: (v: any) => string) => {
         const oldVal = proposal ? (proposal as any)[field] : undefined;
         const newVal = finalData[field];
-        
-        const normalizedOld = typeof oldVal === 'number' ? Number(oldVal) : String(oldVal || '').trim();
-        const normalizedNew = typeof newVal === 'number' ? Number(newVal) : String(newVal || '').trim();
-
-        if (oldVal !== undefined && normalizedOld !== normalizedNew) {
+        if (oldVal !== undefined && String(oldVal) !== String(newVal)) {
             auditEntries.push({
                 id: crypto.randomUUID(),
                 date: now,
@@ -488,15 +468,9 @@ export function ProposalForm({
     if (proposal) {
         checkChange('status', 'Status');
         checkChange('bank', 'Banco');
-        checkChange('grossAmount', 'Valor Bruto', formatCurrency);
-        checkChange('netAmount', 'Valor Líquido', formatCurrency);
-        checkChange('installmentAmount', 'Parcela', formatCurrency);
-        
-        if (finalData.status === 'Reprovado' && proposal.status !== 'Reprovado') {
-            auditEntries.push({ id: crypto.randomUUID(), date: now, message: `MOTIVO DA REPROVA: ${finalData.rejectionReason}`, userName });
-        }
+        checkChange('grossAmount', 'Vlr Bruto', formatCurrency);
     } else {
-        auditEntries.push({ id: crypto.randomUUID(), date: now, message: `Proposta criada com status inicial: ${finalData.status}`, userName });
+        auditEntries.push({ id: crypto.randomUUID(), date: now, message: `Proposta criada: ${finalData.status}`, userName });
     }
 
     const existingHistory = Array.isArray(proposal?.history) ? proposal!.history : [];
@@ -523,9 +497,9 @@ export function ProposalForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="py-4">
-        <ScrollArea className="h-[70vh] pr-4 print:h-auto">
-          <div className="space-y-8">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="flex flex-col h-full overflow-hidden">
+        <ScrollArea className="flex-1 pr-4">
+          <div className="space-y-8 pb-6">
             <div className="space-y-4">
               <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
                 <FolderLock className="h-4 w-4" /> Registro LK RAMOS
@@ -596,11 +570,11 @@ export function ProposalForm({
                   <div className="p-4 rounded-2xl border-2 border-dashed bg-primary/[0.02] space-y-3 animate-in fade-in duration-500">
                       <div className="flex items-center gap-2">
                           <Zap className="h-3.5 w-3.5 text-primary" />
-                          <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">Registrar Trâmite Instantâneo (Sub-status)</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">Registrar Trâmite Instantâneo</span>
                       </div>
                       <Select onValueChange={(val) => handleAddHistory(val)} disabled={isAddingHistory}>
                           <SelectTrigger className="rounded-xl border-2 bg-background font-bold text-xs h-11">
-                              <SelectValue placeholder="Selecione um tópico rápido para registrar..." />
+                              <SelectValue placeholder="Selecione um tópico rápido..." />
                           </SelectTrigger>
                           <SelectContent>
                               {historyTopics.map((topic) => (
@@ -617,11 +591,11 @@ export function ProposalForm({
                     name="rejectionReason"
                     render={({ field }) => (
                         <FormItem className="animate-in slide-in-from-left-2 duration-300">
-                            <FormLabel className="text-red-600 font-black uppercase text-[10px] tracking-widest">Motivo Obrigatório da Reprova *</FormLabel>
+                            <FormLabel className="text-red-600 font-black uppercase text-[10px] tracking-widest">Motivo da Reprova *</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isReadOnly || isSaving}>
                                 <FormControl>
                                     <SelectTrigger className="border-red-200 bg-red-50/50 font-bold h-11 rounded-xl">
-                                        <SelectValue placeholder="Selecione por que foi reprovado" />
+                                        <SelectValue placeholder="Selecione o motivo..." />
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -737,66 +711,12 @@ export function ProposalForm({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {productValue === 'Portabilidade' ? (
-                    <>
-                        <FormField
-                            control={form.control}
-                            name="bankOrigin"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Banco Portado (Origem)</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isReadOnly || isSaving}>
-                                        <FormControl>
-                                            <SelectTrigger className="font-bold w-full overflow-hidden">
-                                                <SelectValue placeholder="Origem" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {banks.map(b => (
-                                                <SelectItem key={b} value={b}>
-                                                    <div className="flex items-center gap-2 w-full overflow-hidden">
-                                                        <BankIcon bankName={b} domain={userSettings?.bankDomains?.[b]} showLogos={showLogos} className="h-4 w-4 shrink-0" />
-                                                        <span className="truncate flex-1">{cleanBankName(b)}</span>
-                                                    </div>
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="originalContractNumber"
-                            render={({ field }) => (
-                                <FormItem className="animate-in zoom-in-95 duration-300">
-                                <FormLabel className="text-primary font-black uppercase text-[10px] tracking-widest">N° Contrato Portado (Origem) *</FormLabel>
-                                <FormControl>
-                                    <div className="relative">
-                                        <Input 
-                                            placeholder="N° Contrato Banco Origem" 
-                                            {...field} 
-                                            value={field.value ?? ''} 
-                                            onChange={(e) => field.onChange(e.target.value.replace(/\s+/g, ''))}
-                                            readOnly={isReadOnly || isSaving} 
-                                            className="font-bold border-primary/20 bg-primary/[0.02]"
-                                        />
-                                    </div>
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </>
-                ) : <div className="hidden md:block" />}
-                
                 <FormField
                   control={form.control}
                   name="proposalNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>N° de Proposta (Nova) *</FormLabel>
+                      <FormLabel>N° de Proposta *</FormLabel>
                       <FormControl>
                         <div className="relative">
                             <Input 
@@ -805,21 +725,11 @@ export function ProposalForm({
                                 value={field.value ?? ''} 
                                 onChange={(e) => field.onChange(e.target.value.replace(/\s+/g, ''))}
                                 readOnly={isReadOnly || isSaving} 
-                                className={cn(
-                                    "font-bold",
-                                    isDuplicateProposal && "border-red-500 bg-red-50 ring-2 ring-red-500/20"
-                                )}
+                                className={cn("font-bold", isDuplicateProposal && "border-red-500 bg-red-50")}
                             />
-                            {isDuplicateProposal && (
-                                <AlertTriangle className="absolute right-4 top-3 h-4 w-4 text-red-500 animate-pulse" />
-                            )}
+                            {isDuplicateProposal && <AlertTriangle className="absolute right-4 top-3 h-4 w-4 text-red-500 animate-pulse" />}
                         </div>
                       </FormControl>
-                      {isDuplicateProposal && (
-                          <p className="text-[10px] font-black text-red-600 uppercase mt-1 animate-in fade-in slide-in-from-top-1">
-                              ⚠️ ESTE N° JÁ CONSTA NO SISTEMA
-                          </p>
-                      )}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -829,6 +739,13 @@ export function ProposalForm({
                   name="table"
                   render={({ field }) => (
                     <FormItem><FormLabel>Tabela *</FormLabel><FormControl><Input placeholder="Tabela" {...field} value={field.value ?? ''} readOnly={isReadOnly || isSaving} className="font-bold"/></FormControl><FormMessage /></FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="term"
+                  render={({ field }) => (
+                    <FormItem><FormLabel>Prazo (Meses)</FormLabel><FormControl><Input type="number" {...field} readOnly={isReadOnly || isSaving} /></FormControl></FormItem>
                   )}
                 />
               </div>
@@ -899,31 +816,6 @@ export function ProposalForm({
                 )} />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {productValue !== 'Cartão - Plástico' && (
-                    <FormField
-                        control={form.control}
-                        name="term"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="flex items-center gap-2"><TimerIcon className="h-3.5 w-3.5" /> Prazo (Meses) *</FormLabel>
-                                <FormControl><Input type="number" {...field} readOnly={isReadOnly || isSaving} /></FormControl>
-                            </FormItem>
-                        )}
-                    />
-                )}
-                <FormField
-                  control={form.control}
-                  name="interestRate"
-                  render={({ field }) => (
-                    <FormItem>
-                        <FormLabel className="flex items-center gap-2"><Percent className="h-3.5 w-3.5" /> Taxa de Juros (%)</FormLabel>
-                        <FormControl><Input type="number" step="0.01" {...field} readOnly={isReadOnly || isSaving} /></FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
-
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
@@ -936,59 +828,28 @@ export function ProposalForm({
                     </FormItem>
                   )}
                 />
-                {productValue === 'Portabilidade' ? (
-                    <>
-                        <FormField
-                            control={form.control}
-                            name="debtBalanceArrivalDate"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Retorno Saldo</FormLabel>
-                                <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(applyDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="dateApproved"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Data Averbação</FormLabel>
-                                <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(applyDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </>
-                ) : (
-                    <>
-                        <FormField
-                            control={form.control}
-                            name="dateApproved"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Data Averbação</FormLabel>
-                                <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(applyDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        {productValue !== 'Cartão - Plástico' && (
-                            <FormField
-                                control={form.control}
-                                name="datePaidToClient"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Pagamento Cliente</FormLabel>
-                                    <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(applyDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        )}
-                    </>
-                )}
+                <FormField
+                    control={form.control}
+                    name="dateApproved"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Data Averbação</FormLabel>
+                        <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(applyDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="datePaidToClient"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Pagamento Cliente</FormLabel>
+                        <FormControl><Input placeholder="dd/mm/aaaa" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(applyDateMask(e))} maxLength={10} readOnly={isReadOnly || isSaving} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -996,7 +857,7 @@ export function ProposalForm({
                   control={form.control}
                   name="operator"
                   render={({ field }) => (
-                    <FormItem><FormLabel>Operador *</FormLabel><FormControl><Input placeholder="Nome do Agente" {...field} value={field.value ?? ''} readOnly={isReadOnly || isSaving} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Operador *</FormLabel><FormControl><Input placeholder="Agente" {...field} value={field.value ?? ''} readOnly={isReadOnly || isSaving} /></FormControl><FormMessage /></FormItem>
                   )}
                 />
                 <FormField
@@ -1013,68 +874,13 @@ export function ProposalForm({
 
             <div className="space-y-4">
                 <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
-                    <CircleDollarSign className="h-4 w-4" /> REGRAS DE COMISSIONAMENTO
-                </h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField control={form.control} name="commissionBase" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Base do Cálculo *</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value ?? 'gross'} disabled={isReadOnly || isSaving}>
-                                <FormControl><SelectTrigger className="font-bold"><SelectValue /></SelectTrigger></FormControl>
-                                <SelectContent>
-                                    <SelectItem value="gross">Sobre o Bruto</SelectItem>
-                                    <SelectItem value="net">Sobre o Líquido</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </FormItem>
-                    )} />
-                    <FormField control={form.control} name="commissionPercentage" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Comissão (%) *</FormLabel>
-                            <FormControl>
-                                <div className="relative">
-                                    <Input type="number" step="0.01" className="pr-8 font-bold" {...field} value={field.value ?? 0} readOnly={isReadOnly || isSaving} />
-                                    <span className="absolute right-3 top-2.5 text-[10px] font-black text-muted-foreground">%</span>
-                                </div>
-                            </FormControl>
-                        </FormItem>
-                    )} />
-                    <FormField control={form.control} name="commissionValue" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Comissão (R$) *</FormLabel>
-                            <FormControl>
-                                <div className="relative">
-                                    <span className="absolute left-3 top-2.5 text-[10px] font-black text-muted-foreground">R$</span>
-                                    <Input 
-                                        type="text" 
-                                        className="pl-9 font-black text-primary" 
-                                        value={formatCurrencyInput(field.value)}
-                                        onChange={(e) => {
-                                            const val = e.target.value.replace(/\D/g, "");
-                                            const num = val ? parseInt(val) / 100 : 0;
-                                            field.onChange(num);
-                                        }}
-                                        readOnly={isReadOnly || isSaving} 
-                                    />
-                                </div>
-                            </FormControl>
-                        </FormItem>
-                    )} />
-                </div>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-4">
-                <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
-                    <History className="h-4 w-4" /> Histórico Completo
+                    <History className="h-4 w-4" /> Histórico Operacional
                 </h3>
                 {currentProposalId && (
                     <div className="space-y-6">
                         <div className="flex gap-2">
                             <Input 
-                                placeholder="Digite uma atualização personalizada..." 
+                                placeholder="Registrar atualização..." 
                                 value={newHistoryEntry} 
                                 onChange={e => setNewHistoryEntry(e.target.value)} 
                                 disabled={isAddingHistory || isReadOnly}
@@ -1096,15 +902,12 @@ export function ProposalForm({
                                             <span className="flex items-center gap-1.5"><MessageSquareText className="h-3 w-3" />{entry.userName || 'Agente'}</span>
                                             <span className="opacity-60">{format(parseISO(entry.date), "dd/MM/yy HH:mm")}</span>
                                         </div>
-                                        <p className={cn(
-                                            "leading-relaxed font-medium",
-                                            entry.message.startsWith("AUTOAUDIT") ? "text-blue-700 italic" : "text-foreground"
-                                        )}>
+                                        <p className="leading-relaxed font-medium">
                                             {entry.message.replace("AUTOAUDIT: ", "⚙️ ")}
                                         </p>
                                     </div>
                                 ))
-                            ) : <p className="text-center text-[10px] text-muted-foreground uppercase py-6 border-2 border-dashed rounded-lg opacity-40">Sem trâmites registrados nesta proposta.</p>}
+                            ) : <p className="text-center text-[10px] text-muted-foreground uppercase py-6 border-2 border-dashed rounded-lg opacity-40">Sem registros.</p>}
                         </div>
                     </div>
                 )}
@@ -1116,29 +919,17 @@ export function ProposalForm({
                 <h3 className="text-sm font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
                     <FolderLock className="h-4 w-4" /> Documentação
                 </h3>
-                {!currentProposalId ? (
-                    <Alert className="bg-secondary/50 border-none">
-                        <div className="flex items-center gap-3">
-                            <div className="mt-1 shrink-0"><Info className="h-4 w-4" /></div>
-                            <div>
-                                <AlertTitle className="text-xs font-bold uppercase">Upload Bloqueado</AlertTitle>
-                                <AlertDescription className='text-[10px]'>Salve a proposta antes de anexar arquivos.</AlertDescription>
-                            </div>
-                        </div>
-                    </Alert>
-                ) : (
-                    <ProposalAttachmentUploader 
-                        userId={user!.uid} 
-                        proposalId={currentProposalId!} 
-                        initialAttachments={form.getValues('attachments') || []} 
-                        onAttachmentsChange={handleAttachmentsChange} 
-                        isReadOnly={isReadOnly || isSaving} 
-                    />
-                )}
+                <ProposalAttachmentUploader 
+                    userId={user!.uid} 
+                    proposalId={currentProposalId!} 
+                    initialAttachments={form.getValues('attachments') || []} 
+                    onAttachmentsChange={handleAttachmentsChange} 
+                    isReadOnly={isReadOnly || isSaving} 
+                />
             </div>
           </div>
         </ScrollArea>
-        <div className="flex justify-end items-center pt-8 border-t bg-background">
+        <div className="sticky bottom-0 pt-8 border-t bg-background z-10 flex justify-end">
             {!isReadOnly && (
                 <Button 
                     type="submit" 
