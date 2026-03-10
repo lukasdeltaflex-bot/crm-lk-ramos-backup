@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -36,7 +35,7 @@ import {
     FileBadge,
     Calendar as CalendarIcon,
     AlertTriangle,
-    MessageSquareQuote,
+    MessageSquareText,
     Clock,
     FolderLock,
     Info,
@@ -62,7 +61,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { ProposalAttachmentUploader } from '@/components/proposals/proposal-attachment-uploader';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser, useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, collection, updateDoc, arrayUnion, setDoc } from 'firebase/firestore';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -372,7 +371,7 @@ export function ProposalForm({
     }
   }, [commissionBase, commissionPercentage, grossAmount, netAmount, setValue, isReadOnly]);
 
-  const handleAddHistory = async (customMessage: string) => {
+  const handleAddHistory = (customMessage: string) => {
     if (!customMessage || !user) return;
     
     setIsAddingHistory(true);
@@ -385,18 +384,21 @@ export function ProposalForm({
     };
 
     if (proposal?.id && firestore) {
-        try {
-            const docRef = doc(firestore, 'loanProposals', proposal.id);
-            await updateDoc(docRef, {
-                history: arrayUnion(entry)
-            });
+        const docRef = doc(firestore, 'loanProposals', proposal.id);
+        updateDoc(docRef, {
+            history: arrayUnion(entry)
+        }).then(() => {
             toast({ title: "Histórico Gravado!", description: "A anotação foi salva permanentemente." });
             setNewHistoryEntry('');
-        } catch (e) {
-            toast({ variant: 'destructive', title: "Erro ao salvar histórico" });
-        } finally {
+        }).catch(async (e) => {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'update',
+                requestResourceData: { history: arrayUnion(entry) }
+            }));
+        }).finally(() => {
             setIsAddingHistory(false);
-        }
+        });
     } else {
         setStagedHistory(prev => [entry, ...prev]);
         setNewHistoryEntry('');
@@ -449,7 +451,6 @@ export function ProposalForm({
         finalData.term = 1;
     }
 
-    // 🛡️ AUTO-AUDIT V2 (Aprovado #4)
     const auditEntries: ProposalHistoryEntry[] = [];
     const userName = user?.displayName || user?.email || 'Sistema';
 
@@ -457,7 +458,6 @@ export function ProposalForm({
         const oldVal = proposal ? (proposal as any)[field] : undefined;
         const newVal = finalData[field];
         
-        // Comparação robusta para números e strings
         const normalizedOld = typeof oldVal === 'number' ? Number(oldVal) : String(oldVal || '').trim();
         const normalizedNew = typeof newVal === 'number' ? Number(newVal) : String(newVal || '').trim();
 
@@ -1079,7 +1079,7 @@ export function ProposalForm({
                                         entry.message.startsWith("AUTOAUDIT") ? "bg-blue-50/30 border-blue-100" : "bg-muted/30 border-border"
                                     )}>
                                         <div className="flex justify-between font-black uppercase text-primary/70 mb-1">
-                                            <span className="flex items-center gap-1.5"><MessageSquareQuote className="h-3 w-3" />{entry.userName || 'Agente'}</span>
+                                            <span className="flex items-center gap-1.5"><MessageSquareText className="h-3 w-3" />{entry.userName || 'Agente'}</span>
                                             <span className="opacity-60">{format(parseISO(entry.date), "dd/MM/yy HH:mm")}</span>
                                         </div>
                                         <p className={cn(

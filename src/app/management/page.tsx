@@ -38,10 +38,20 @@ import {
     ImageIcon,
     PlayCircle
 } from 'lucide-react';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { collection, query, where, doc, setDoc, deleteDoc, orderBy } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { NewsForm } from './news-form';
 import { PromoterForm } from './promoter-form';
 import { BankForm } from './bank-form';
@@ -81,6 +91,9 @@ export default function ManagementPage() {
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ path: string, id: string } | null>(null);
+
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [selectedPromoterId, setSelectedPromoterId] = useState<string | null>(null);
   const [expandedPromoter, setExpandedPromoter] = useState<string | null>(null);
@@ -136,58 +149,73 @@ export default function ManagementPage() {
     }
   }, [expandedPromoter, user, firestore]);
 
-  const handleSave = async (collectionName: string, data: any, id?: string) => {
-    if (!user) return;
+  const handleSave = (collectionName: string, data: any, id?: string) => {
+    if (!user || !firestore) return;
     setIsSaving(true);
-    try {
-        const docId = id || doc(collection(firestore!, collectionName)).id;
-        const docRef = doc(firestore!, collectionName, docId);
-        await setDoc(docRef, cleanFirestoreData({ ...data, id: docId, ownerId: user.uid }), { merge: true });
-        toast({ title: 'Salvo com sucesso!' });
-        closeModals();
-    } catch (e) {
-        toast({ variant: 'destructive', title: 'Erro ao salvar' });
-    } finally {
-        setIsSaving(false);
-    }
+    const docId = id || doc(collection(firestore, collectionName)).id;
+    const docRef = doc(firestore, collectionName, docId);
+    const finalData = cleanFirestoreData({ ...data, id: docId, ownerId: user.uid });
+
+    setDoc(docRef, finalData, { merge: true })
+        .then(() => {
+            toast({ title: 'Salvo com sucesso!' });
+            closeModals();
+        })
+        .catch(async (e) => {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'write',
+                requestResourceData: finalData
+            }));
+        })
+        .finally(() => setIsSaving(false));
   };
 
-  const handleSaveBank = async (data: any, id?: string) => {
-    if (!user || !selectedPromoterId) return;
+  const handleSaveBank = (data: any, id?: string) => {
+    if (!user || !selectedPromoterId || !firestore) return;
     setIsSaving(true);
-    try {
-        const docId = id || doc(collection(firestore!, 'managementPromoters', selectedPromoterId, 'bankLogins')).id;
-        const docRef = doc(firestore!, 'managementPromoters', selectedPromoterId, 'bankLogins', docId);
-        await setDoc(docRef, cleanFirestoreData({ ...data, id: docId, ownerId: user.uid }), { merge: true });
-        toast({ title: 'Login Protegido!' });
-        
-        if (expandedPromoter === selectedPromoterId) {
-            setBankLogins(prev => {
-                const filtered = prev.filter(b => b.id !== docId);
-                return [...filtered, { ...data, id: docId, ownerId: user.uid }];
-            });
-        }
-        closeModals();
-    } catch (e) {
-        toast({ variant: 'destructive', title: 'Erro ao salvar login' });
-    } finally {
-        setIsSaving(false);
-    }
+    const docId = id || doc(collection(firestore, 'managementPromoters', selectedPromoterId, 'bankLogins')).id;
+    const docRef = doc(firestore, 'managementPromoters', selectedPromoterId, 'bankLogins', docId);
+    const finalData = cleanFirestoreData({ ...data, id: docId, ownerId: user.uid });
+
+    setDoc(docRef, finalData, { merge: true })
+        .then(() => {
+            toast({ title: 'Login Protegido!' });
+            if (expandedPromoter === selectedPromoterId) {
+                setBankLogins(prev => {
+                    const filtered = prev.filter(b => b.id !== docId);
+                    return [...filtered, { ...data, id: docId, ownerId: user.uid }];
+                });
+            }
+            closeModals();
+        })
+        .catch(async (e) => {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'write',
+                requestResourceData: finalData
+            }));
+        })
+        .finally(() => setIsSaving(false));
   };
 
-  const handleDelete = async (collectionPath: string, id: string) => {
-    if (!firestore) return;
-    if (!confirm("Tem certeza que deseja excluir permanentemente este item?")) return;
-    
+  const handleDelete = () => {
+    if (!firestore || !itemToDelete) return;
     setIsSaving(true);
-    try {
-        await deleteDoc(doc(firestore, collectionPath, id));
-        toast({ title: 'Item removido com sucesso!' });
-    } catch (e) { 
-        toast({ variant: 'destructive', title: 'Erro ao excluir' }); 
-    } finally {
-        setIsSaving(false);
-    }
+    const docRef = doc(firestore, itemToDelete.path, itemToDelete.id);
+    deleteDoc(docRef)
+        .then(() => {
+            toast({ title: 'Item removido com sucesso!' });
+            setDeleteConfirmOpen(false);
+            setItemToDelete(null);
+        })
+        .catch(async (e) => {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'delete'
+            }));
+        })
+        .finally(() => setIsSaving(false));
   };
 
   const handleShowPassword = async (bankId: string, encrypted: string) => {
@@ -281,7 +309,7 @@ export default function ManagementPage() {
                                         variant="destructive" 
                                         size="icon" 
                                         className="absolute top-3 left-3 h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10"
-                                        onClick={(e) => { e.stopPropagation(); handleDelete('managementNews', item.id); }}
+                                        onClick={(e) => { e.stopPropagation(); setItemToDelete({ path: 'managementNews', id: item.id }); setDeleteConfirmOpen(true); }}
                                         title="Excluir Notícia"
                                         disabled={isSaving}
                                     >
@@ -411,7 +439,7 @@ export default function ManagementPage() {
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full" onClick={(e) => { e.stopPropagation(); setSelectedItem(promoter); setIsPromoterModalOpen(true); }} disabled={isSaving}><Edit className="h-5 w-5" /></Button>
-                                    <Button variant="ghost" size="icon" className="h-10 w-10 text-red-500 rounded-full" onClick={(e) => { e.stopPropagation(); handleDelete('managementPromoters', promoter.id); }} disabled={isSaving}><Trash2 className="h-5 w-5" /></Button>
+                                    <Button variant="ghost" size="icon" className="h-10 w-10 text-red-500 rounded-full" onClick={(e) => { e.stopPropagation(); setItemToDelete({ path: 'managementPromoters', id: promoter.id }); setDeleteConfirmOpen(true); }} disabled={isSaving}><Trash2 className="h-5 w-5" /></Button>
                                     {expandedPromoter === promoter.id ? <ChevronUp className="h-6 w-6 text-muted-foreground" /> : <ChevronDown className="h-6 w-6 text-muted-foreground" />}
                                 </div>
                             </div>
@@ -442,7 +470,7 @@ export default function ManagementPage() {
                                                         </div>
                                                         <div className="flex gap-1.5 opacity-0 group-hover/bank:opacity-100 transition-opacity">
                                                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSelectedPromoterId(promoter.id); setSelectedItem(bank); setIsBankModalOpen(true); }} disabled={isSaving}><Edit className="h-4 w-4" /></Button>
-                                                            <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(`managementPromoters/${promoter.id}/bankLogins`, bank.id)} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
+                                                            <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => { setItemToDelete({ path: `managementPromoters/${promoter.id}/bankLogins`, id: bank.id }); setDeleteConfirmOpen(true); }} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
                                                         </div>
                                                     </div>
                                                     <div className="space-y-3 bg-muted/20 p-4 rounded-xl border">
@@ -513,7 +541,7 @@ export default function ManagementPage() {
                         {link.ownerId === user?.uid && (
                             <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button onClick={() => { setSelectedItem(link); setIsLinkModalOpen(true); }} className="p-1.5 bg-white shadow rounded-full text-muted-foreground hover:text-primary" disabled={isSaving}><Edit className="h-3 w-3" /></button>
-                                <button onClick={() => handleDelete('managementQuickLinks', link.id)} className="p-1.5 bg-white shadow rounded-full text-red-500 hover:text-red-600" disabled={isSaving}><Trash2 className="h-3 w-3" /></button>
+                                <button onClick={() => { setItemToDelete({ path: 'managementQuickLinks', id: link.id }); setDeleteConfirmOpen(true); }} className="p-1.5 bg-white shadow rounded-full text-red-500 hover:text-red-600" disabled={isSaving}><Trash2 className="h-3 w-3" /></button>
                             </div>
                         )}
                     </div>
@@ -679,6 +707,22 @@ export default function ManagementPage() {
             </ScrollArea>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                <AlertDialogDescription>Esta ação irá excluir permanentemente este item do sistema. Não é possível desfazer.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel disabled={isSaving}>Voltar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={isSaving}>
+                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Confirmar Exclusão
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
     </AppLayout>
   );

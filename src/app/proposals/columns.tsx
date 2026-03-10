@@ -1,7 +1,7 @@
 'use client';
 
 import { ColumnDef, Header, flexRender } from '@tanstack/react-table';
-import type { Proposal, UserSettings, ProposalStatus } from '@/lib/types';
+import type { Proposal, ProposalStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -34,7 +34,7 @@ import {
     ShieldCheck,
     CopyPlus,
     Calendar as CalendarIcon
-} from 'lucide-center';
+} from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatCurrency, cleanBankName, cn, formatDateSafe, isWhatsApp, getWhatsAppUrl, calculateBusinessDays, isProposalCritical } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';

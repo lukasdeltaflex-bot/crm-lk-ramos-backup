@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { LucideIcon, Zap, AlertTriangle, TrendingUp, TrendingDown, Timer } from 'lucide-react';
+import { type LucideIcon, Zap, TrendingUp, TrendingDown, Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/components/theme-provider';
 
@@ -88,11 +88,10 @@ export function StatsCard({
   };
 
   const renderSparkline = () => {
-    // 🛡️ BLINDAGEM MATEMÁTICA V2: Garante que o gráfico não quebre com 0 ou 1 dado
     if (!sparklineData || sparklineData.length < 2) return null;
     
     const validData = sparklineData.map(v => Number(v) || 0);
-    const max = Math.max(...validData, 1); // Evita divisão por zero
+    const max = Math.max(...validData, 1);
     const width = 60;
     const height = 20;
     
