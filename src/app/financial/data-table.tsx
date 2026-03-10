@@ -80,7 +80,8 @@ const COLUMN_LABELS: Record<string, string> = {
     col_product: "Produto",
     col_gross: "Valor Bruto",
     col_comm: "Comissão (%)",
-    col_comm_val: "Valor Comissão",
+    col_paga: "Vlr Pago",
+    col_comm_val: "Vlr Comissão",
     col_proposal_status: "Status Proposta",
     col_comm_status: "Status Comissão",
     col_payment_date: "Data Pagamento",
@@ -193,6 +194,8 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             const parsed = JSON.parse(savedOrder);
             if (parsed.length === initialIds.length) setColumnOrder(parsed);
         }
+        const savedSizing = localStorage.getItem('lk-financial-sizing');
+        if (savedSizing) setColumnSizing(JSON.parse(savedSizing));
     } catch (e) {}
   }, [initialIds]);
 
@@ -203,9 +206,10 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
             localStorage.setItem('lk-financial-filter-search', globalFilter);
             localStorage.setItem('lk-financial-visibility', JSON.stringify(columnVisibility));
             localStorage.setItem('lk-financial-order', JSON.stringify(columnOrder));
+            localStorage.setItem('lk-financial-sizing', JSON.stringify(columnSizing));
         } catch(e) {}
     }
-  }, [globalFilter, columnVisibility, columnOrder, frozenCount, isClient]);
+  }, [globalFilter, columnVisibility, columnOrder, columnSizing, frozenCount, isClient]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(KeyboardSensor));
 
@@ -305,7 +309,7 @@ export const FinancialDataTable = React.forwardRef<FinancialDataTableHandle, Dat
         currentOffset += col.getSize();
     });
     return offsets;
-  }, [table.getVisibleLeafColumns()]);
+  }, [table.getVisibleLeafColumns(), columnSizing]);
 
   const handleDateMask = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "").substring(0, 8);

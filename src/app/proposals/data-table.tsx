@@ -216,6 +216,9 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
             const parsed = JSON.parse(savedOrder);
             if (parsed.length === initialIds.length) setColumnOrder(parsed);
         }
+
+        const savedSizing = localStorage.getItem('lk-proposals-sizing');
+        if (savedSizing) setColumnSizing(JSON.parse(savedSizing));
     } catch (e) {}
   }, [initialIds]);
 
@@ -226,9 +229,10 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
             localStorage.setItem('lk-proposals-filter-search', globalFilter);
             localStorage.setItem('lk-proposals-visibility', JSON.stringify(columnVisibility));
             localStorage.setItem('lk-proposals-order', JSON.stringify(columnOrder));
+            localStorage.setItem('lk-proposals-sizing', JSON.stringify(columnSizing));
         } catch(e) {}
     }
-  }, [globalFilter, columnVisibility, columnOrder, frozenCount, isClient]);
+  }, [globalFilter, columnVisibility, columnOrder, columnSizing, frozenCount, isClient]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(KeyboardSensor));
 
@@ -325,7 +329,7 @@ export const ProposalsDataTable = React.forwardRef<ProposalsDataTableHandle, Dat
         currentOffset += col.getSize();
     });
     return offsets;
-  }, [table.getVisibleLeafColumns()]);
+  }, [table.getVisibleLeafColumns(), columnSizing]);
 
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>

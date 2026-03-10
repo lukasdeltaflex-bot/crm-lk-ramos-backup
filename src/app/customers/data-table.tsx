@@ -142,6 +142,9 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
             const parsed = JSON.parse(savedOrder);
             if (parsed.length === initialIds.length) setColumnOrder(parsed);
         }
+
+        const savedSizing = localStorage.getItem('lk-customers-sizing');
+        if (savedSizing) setColumnSizing(JSON.parse(savedSizing));
     } catch (e) {}
   }, [initialIds]);
 
@@ -152,9 +155,10 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         localStorage.setItem('lk-customers-filter-search', globalFilter);
         localStorage.setItem('lk-customers-visibility', JSON.stringify(columnVisibility));
         localStorage.setItem('lk-customers-order', JSON.stringify(columnOrder));
+        localStorage.setItem('lk-customers-sizing', JSON.stringify(columnSizing));
       } catch(e) {}
     }
-  }, [globalFilter, columnVisibility, columnOrder, frozenCount, isClient]);
+  }, [globalFilter, columnVisibility, columnOrder, columnSizing, frozenCount, isClient]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -220,7 +224,7 @@ export const CustomerDataTable = React.forwardRef<CustomerDataTableHandle, DataT
         currentOffset += col.getSize();
     });
     return offsets;
-  }, [table.getVisibleLeafColumns()]);
+  }, [table.getVisibleLeafColumns(), columnSizing]);
 
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
