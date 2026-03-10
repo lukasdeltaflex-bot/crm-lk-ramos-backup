@@ -83,7 +83,7 @@ const optionalDateString = z.string().optional().refine(val => !val || !isNaN(pa
 });
 
 const proposalSchema = z.object({
-  proposalNumber: z.string().min(1, "O Nº da proposta é obrigatório."),
+  proposalNumber: z.string().min(1, "O N° da proposta é obrigatório."),
   originalContractNumber: z.string().optional(),
   customerId: z.string({ required_error: 'Selecione um cliente.' }),
   product: z.string({ required_error: 'Selecione um produto.' }),
@@ -134,7 +134,7 @@ const proposalSchema = z.object({
   if (data.product === 'Portabilidade' && (!data.originalContractNumber || data.originalContractNumber.trim() === '')) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "O número do contrato portado é obrigatório para Portabilidade.",
+      message: "O N° do contrato portado é obrigatório para Portabilidade.",
       path: ["originalContractNumber"],
     });
   }
@@ -168,10 +168,9 @@ interface ProposalFormProps {
 }
 
 const applyDateMask = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, "");
-    if (value.length > 8) value = value.substring(0, 8);
-    value = value.replace(/(\d{2})(\d)/, '$1/$2');
-    value = value.replace(/(\d{2})(\d)/, '$1/$2');
+    let value = e.target.value.replace(/\D/g, "").substring(0, 8);
+    if (value.length > 4) value = value.replace(/(\d{2})(\d{2})(\d)/, '$1/$2/$3');
+    else if (value.length > 2) value = value.replace(/(\d{2})(\d)/, '$1/$2');
     return value;
 };
 
@@ -314,16 +313,21 @@ export function ProposalForm({
   }, [watchOriginalContract, allProposals, proposal?.id, productValue]);
 
   const isDuplicateProposal = useMemo(() => {
-    const cleanNum = watchProposalNumber?.trim().toUpperCase();
-    if (!cleanNum || cleanNum === '') return false;
+    // 🛡️ BLINDAGEM V21: Normalização agressiva para evitar falsos positivos
+    const cleanNum = (watchProposalNumber || '').trim().toUpperCase().replace(/[-\s]/g, '');
+    
+    // Trava: Ignora números vazios ou muito curtos para não piscar alerta falso durante digitação
+    if (!cleanNum || cleanNum.length < 3) return false;
     
     return allProposals.some(p => {
         if (proposal?.id && p.id === proposal.id) return false;
-        return p.proposalNumber?.trim().toUpperCase() === cleanNum;
+        
+        const existingNum = (p.proposalNumber || '').trim().toUpperCase().replace(/[-\s]/g, '');
+        return existingNum === cleanNum;
     });
   }, [watchProposalNumber, allProposals, proposal?.id]);
 
-  // 🛡️ LIMPEZA DE BENEFÍCIO (Aprovado #4): Reseta o campo de NB sempre que o cliente for alterado
+  // 🛡️ LIMPEZA DE BENEFÍCIO E CONTRATOS (Aprovado #4): Reseta campos sensíveis ao trocar de contexto
   const prevCustomerIdRef = useRef(initialValues.customerId);
   useEffect(() => {
     if (selectedCustomerId && selectedCustomerId !== prevCustomerIdRef.current) {
@@ -337,6 +341,14 @@ export function ProposalForm({
         prevCustomerIdRef.current = selectedCustomerId;
     }
   }, [selectedCustomerId, selectedCustomer, setValue]);
+
+  // Limpeza de campos de portabilidade se mudar o produto
+  useEffect(() => {
+    if (productValue !== 'Portabilidade') {
+        setValue('originalContractNumber', '', { shouldValidate: false });
+        setValue('bankOrigin', '', { shouldValidate: false });
+    }
+  }, [productValue, setValue]);
 
   useEffect(() => {
     if (sheetMode === 'new' && !watchDateDigitized) {
@@ -416,7 +428,7 @@ export function ProposalForm({
 
   function handleFormSubmit(data: ProposalFormValues) {
     if (isDuplicateProposal) {
-        toast({ variant: 'destructive', title: '⚠️ BLOQUEIO', description: 'Número de proposta já existente.' });
+        toast({ variant: 'destructive', title: '⚠️ BLOQUEIO', description: 'Número de proposta já existente no sistema.' });
         return;
     }
 
@@ -668,7 +680,7 @@ export function ProposalForm({
                   control={form.control}
                   name="selectedBenefitNumber"
                   render={({ field }) => (
-                    <FormItem><FormLabel>Nº do Benefício (NB)</FormLabel>
+                    <FormItem><FormLabel>N° do Benefício (NB)</FormLabel>
                       {selectedCustomer && selectedCustomer.benefits && selectedCustomer.benefits.length > 0 ? (
                         <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isReadOnly || isSaving}>
                           <FormControl><SelectTrigger className="font-mono font-bold"><SelectValue placeholder="Selecionar NB" /></SelectTrigger></FormControl>
@@ -759,11 +771,11 @@ export function ProposalForm({
                             name="originalContractNumber"
                             render={({ field }) => (
                                 <FormItem className="animate-in zoom-in-95 duration-300">
-                                <FormLabel className="text-primary font-black uppercase text-[10px] tracking-widest">Nº Contrato Portado (Origem) *</FormLabel>
+                                <FormLabel className="text-primary font-black uppercase text-[10px] tracking-widest">N° Contrato Portado (Origem) *</FormLabel>
                                 <FormControl>
                                     <div className="relative">
                                         <Input 
-                                            placeholder="Nº Contrato Banco Origem" 
+                                            placeholder="N° Contrato Banco Origem" 
                                             {...field} 
                                             value={field.value ?? ''} 
                                             onChange={(e) => field.onChange(e.target.value.replace(/\s+/g, ''))}
@@ -784,7 +796,7 @@ export function ProposalForm({
                   name="proposalNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nº de Proposta (Nova) *</FormLabel>
+                      <FormLabel>N° de Proposta (Nova) *</FormLabel>
                       <FormControl>
                         <div className="relative">
                             <Input 
@@ -805,7 +817,7 @@ export function ProposalForm({
                       </FormControl>
                       {isDuplicateProposal && (
                           <p className="text-[10px] font-black text-red-600 uppercase mt-1 animate-in fade-in slide-in-from-top-1">
-                              ⚠️ ESTE NÚMERO JÁ CONSTA NO SISTEMA
+                              ⚠️ ESTE N° JÁ CONSTA NO SISTEMA
                           </p>
                       )}
                       <FormMessage />
