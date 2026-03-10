@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, Cake, BadgePercent, X, CalendarClock, Bot, Loader2, MessageSquareText, Hourglass, Coins, Zap, AlertTriangle, Newspaper, UserPlus } from 'lucide-react';
+import { Bell, Cake, BadgePercent, X, CalendarClock, Bot, Loader2, MessageSquareText, Hourglass, Coins, Zap, AlertTriangle, Newspaper, UserPlus, ChevronRight } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -90,7 +90,6 @@ export function NotificationBell() {
   const { data: leads } = useCollection<Lead>(leadsQuery);
   const { data: userSettings } = useDoc<UserSettings>(settingsDocRef);
 
-  // 🕵️ MONITOR DE LEADS EM TEMPO REAL
   useEffect(() => {
     if (leads && leads.length > 0) {
         const latestLead = leads[0];
@@ -117,7 +116,6 @@ export function NotificationBell() {
     const todayIso = format(now, 'yyyy-MM-dd');
     const threeDaysAgo = subDays(now, 3);
 
-    // 🎯 ALERTA DE LEADS PENDENTES (Não dispensáveis até serem tratados)
     leads?.filter(l => l.status === 'pending').forEach(lead => {
         alerts.push({
             id: `lead-${lead.id}`,
@@ -128,7 +126,6 @@ export function NotificationBell() {
         });
     });
 
-    // 📰 NOTIFICAÇÕES DE NOTÍCIAS
     news?.forEach(item => {
         const publishDate = parseISO(item.date);
         if (isAfter(publishDate, threeDaysAgo)) {
@@ -277,7 +274,6 @@ export function NotificationBell() {
         const { message } = await generateBirthdayMessage({ customerName: customer.name });
         setGeneratedBdayMessage(message);
     } catch (error) {
-        toast({ variant: 'destructive', title: 'Erro na IA' });
         setIsBdayModalOpen(false);
     } finally {
         setIsGeneratingBday(false);
