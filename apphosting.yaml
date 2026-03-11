@@ -1,5 +1,4 @@
 
-# Configurações para o Firebase App Hosting (Next.js 15)
 kind: "apphosting.yaml"
 schemaVersion: "v1"
 
@@ -7,7 +6,7 @@ buildConfig:
   runtime: nodejs20
 
 runConfig:
-  # Memória e CPU para estabilidade do Next.js
+  # Memória e CPU para estabilidade do Next.js 15
   memory: 1024Mi
   cpu: 1
   maxInstances: 2
