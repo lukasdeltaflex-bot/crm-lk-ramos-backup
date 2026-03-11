@@ -5,7 +5,7 @@ buildConfig:
   runtime: nodejs20
 
 runConfig:
-  # Configuração industrial para estabilidade do Next.js 15
+  # Configuração para estabilidade do Next.js 15
   memory: 1024Mi
   cpu: 1
   maxInstances: 2
