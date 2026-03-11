@@ -1,7 +1,7 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
-  // Desativado: Strict Mode duplica listeners e causa erro ca9 no Firebase
+  // Desativado: Strict Mode duplica listeners e causa erros no Firebase
   reactStrictMode: false,
   typescript: {
     ignoreBuildErrors: true,
@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Essencial para App Hosting / Cloud Run
   output: 'standalone',
   images: {
     remotePatterns: [
