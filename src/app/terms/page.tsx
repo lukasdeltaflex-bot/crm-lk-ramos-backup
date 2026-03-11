@@ -1,3 +1,4 @@
+
 import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent } from '@/components/ui/card';
@@ -36,3 +37,4 @@ export default function TermsPage() {
     </AppLayout>
   );
 }
+    

@@ -4,7 +4,7 @@ import React, { createContext, useContext, ReactNode, useMemo, useState, useEffe
 import { Firestore } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged } from 'firebase/auth';
 import { Storage } from 'firebase/storage';
-import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import { auth as authInstance, db, storage as storageInstance } from './firebase';
 
 interface UserAuthState {
@@ -68,22 +68,28 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
   );
 };
 
+/**
+ * 🛡️ HOOKS BLINDADOS (Aprovado #3)
+ * Removemos o fallback de objetos uninitialized para evitar erros de 'undefined' 
+ * durante a fase crítica de avaliação de módulos no Next.js 15.
+ */
 export const useFirebase = () => {
   const context = useContext(FirebaseContext);
   if (!context) {
+    // Retorna null explicitamente para que componentes possam lidar com o estado 'não-pronto'
     return {
-        auth: authInstance,
-        firestore: db,
-        storage: storageInstance,
+        auth: null,
+        firestore: null,
+        storage: null,
         user: null,
-        isUserLoading: false,
+        isUserLoading: true,
         userError: null,
     };
   }
   return {
-    auth: context.auth!,
-    firestore: context.firestore!,
-    storage: context.storage!,
+    auth: context.auth,
+    firestore: context.firestore,
+    storage: context.storage,
     user: context.user,
     isUserLoading: context.isUserLoading,
     userError: context.userError,

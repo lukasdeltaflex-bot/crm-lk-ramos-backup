@@ -1,10 +1,11 @@
+
 import { AppLayout } from '@/components/app-layout';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 /**
- * 🔒 PÁGINA DE PRIVACIDADE (SERVER COMPONENT)
+ * 🔒 PRIVACIDADE (SERVER COMPONENT)
  * Renderização otimizada no servidor para máxima estabilidade no App Hosting.
  */
 export default function PrivacyPage() {
@@ -36,3 +37,4 @@ export default function PrivacyPage() {
     </AppLayout>
   );
 }
+    

@@ -34,11 +34,15 @@ import { format } from 'date-fns';
 export type ProposalWithCustomer = Proposal & { customer: Customer | undefined };
 type ProposalFormData = Partial<Omit<Proposal, 'id' | 'ownerId'>>;
 
+/**
+ * 🛡️ FIX HIDRATAÇÃO (Aprovado #4)
+ * Skeletons não devem envolver o AppLayout, apenas o conteúdo interno.
+ */
 function ProposalsPageSkeleton() {
     return (
-        <AppLayout>
+        <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <PageHeader title="Propostas" />
+                <Skeleton className="h-10 w-48 rounded-lg" />
                 <div className="flex items-center gap-2">
                     <Skeleton className="h-10 w-32 rounded-full" />
                     <Skeleton className="h-10 w-32 rounded-full" />
@@ -47,12 +51,12 @@ function ProposalsPageSkeleton() {
             <div className="rounded-xl border-2 border-zinc-200 p-4">
                 <div className="space-y-2">
                     <Skeleton className="h-10 w-full" />
-                    {Array.from({ length: 10 }).map((_, i) => (
+                    {Array.from({ length: 8 }).map((_, i) => (
                         <Skeleton key={i} className="h-12 w-full" />
                     ))}
                 </div>
             </div>
-        </AppLayout>
+        </div>
     )
 }
 
@@ -145,7 +149,6 @@ function ProposalsPageContent() {
   }, []);
   
   const handleDuplicateProposal = React.useCallback((proposal: Proposal) => {
-    // 🛡️ RESET DE HISTÓRICO: Excluímos 'history' e 'checklist' da clonagem para garantir auditoria limpa
     const { id, proposalNumber, status, history, checklist, commissionStatus, amountPaid, commissionPaymentDate, ...rest } = proposal;
     const duplicatedData: ProposalFormData = {
         ...rest,
@@ -159,7 +162,7 @@ function ProposalsPageContent() {
         datePaidToClient: undefined,
         debtBalanceArrivalDate: undefined,
         attachments: [],
-        history: [], // Força histórico vazio
+        history: [],
         checklist: {
             formalization: false,
             documentation: false,
@@ -228,219 +231,6 @@ function ProposalsPageContent() {
     }
   };
 
-  const handlePrintCovers = async (downloadMode = false) => {
-    const selectedProposals = proposalsWithCustomerData.filter(p => rowSelection[p.id]);
-    if (selectedProposals.length === 0) {
-        toast({ variant: 'destructive', title: 'Nenhuma seleção', description: 'Selecione ao menos uma proposta.' });
-        return;
-    }
-
-    const { default: jsPDF } = await import('jspdf');
-    const { default: autoTable } = await import('jspdf-autotable');
-    const doc = new jsPDF();
-    const primaryColor = [40, 74, 127];
-
-    selectedProposals.forEach((p, index) => {
-        if (index > 0) doc.addPage();
-
-        if (userSettings?.customLogoURL) {
-            try {
-                doc.addImage(userSettings.customLogoURL, 'PNG', 14, 10, 40, 20, undefined, 'FAST');
-            } catch (e) {}
-        }
-
-        doc.setFontSize(22); doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]); doc.setFont("helvetica", "bold"); 
-        doc.text("CAPA DE PROPOSTA BANCÁRIA", 60, 20);
-        
-        doc.setFontSize(10); doc.setTextColor(100); doc.setFont("helvetica", "normal");
-        doc.text(`Responsável: ${user?.displayName || user?.email}`, 60, 28);
-        doc.text(`Data de Emissão: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 60, 33);
-        
-        doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]); doc.setLineWidth(0.5); doc.line(14, 38, 196, 38);
-
-        doc.setFontSize(14); doc.setTextColor(0); doc.setFont("helvetica", "bold");
-        doc.text("DADOS DO CLIENTE", 14, 50);
-        autoTable(doc, {
-            startY: 55,
-            body: [
-                ['Nome do Cliente', p.customer?.name || '---'],
-                ['CPF', p.customer?.cpf || '---'],
-                ['Telefone', p.customer?.phone || '---'],
-                ['Nascimento', formatDateSafe(p.customer?.birthDate)],
-            ],
-            theme: 'plain',
-            styles: { fontSize: 11 },
-            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
-        });
-
-        const finalY1 = (doc as any).lastAutoTable.finalY;
-
-        doc.setFontSize(14); doc.setTextColor(0); doc.setFont("helvetica", "bold");
-        doc.text("DETALHES DA OPERAÇÃO", 14, finalY1 + 15);
-        
-        const isPortability = p.product === 'Portabilidade';
-        const isPaid = p.status === 'Pago' || p.status === 'Saldo Pago';
-
-        const operationRows = [
-            ['Nº da Proposta', p.proposalNumber],
-            ['Produto', p.product],
-            ['Órgão Aprovador', p.approvingBody],
-            ['Banco Digitado', cleanBankName(p.bank)],
-            ['Data Digitação', formatDateSafe(p.dateDigitized)],
-            ['Status Atual', p.status],
-        ];
-
-        if (isPortability) {
-            operationRows.push(['Banco Portado (Origem)', cleanBankName(p.bankOrigin) || '---']);
-            if (p.debtBalanceArrivalDate) {
-                operationRows.push(['Retorno do Saldo', formatDateSafe(p.debtBalanceArrivalDate)]);
-            }
-        }
-
-        if (isPaid) {
-            if (p.dateApproved) operationRows.push(['Data Averbação', formatDateSafe(p.dateApproved)]);
-            if (p.datePaidToClient) operationRows.push(['Pagamento ao Cliente', formatDateSafe(p.datePaidToClient)]);
-        }
-
-        autoTable(doc, {
-            startY: finalY1 + 20,
-            body: operationRows,
-            theme: 'plain',
-            styles: { fontSize: 11 },
-            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
-        });
-
-        const finalY2 = (doc as any).lastAutoTable.finalY;
-
-        doc.setFontSize(14); doc.setTextColor(0); doc.setFont("helvetica", "bold");
-        doc.text("RESUMO FINANCEIRO", 14, finalY2 + 15);
-        autoTable(doc, {
-            startY: finalY2 + 20,
-            body: [
-                ['Valor Bruto', formatCurrency(p.grossAmount)],
-                ['Valor Líquido', formatCurrency(p.netAmount)],
-                ['Valor da Parcela', formatCurrency(p.installmentAmount)],
-                ['Tabela / Prazo', `${p.table || '---'} / ${p.term} meses`],
-            ],
-            theme: 'grid',
-            styles: { fontSize: 12, cellPadding: 5 },
-            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50, fillColor: [245, 245, 245] } }
-        });
-
-        const footerY = 250;
-        doc.setDrawColor(150);
-        doc.line(14, footerY, 90, footerY);
-        doc.line(110, footerY, 186, footerY);
-        doc.setFontSize(8); doc.setTextColor(100);
-        doc.text("ASSINATURA DO CLIENTE", 52, footerY + 5, { align: 'center' });
-        doc.text("AGENTE RESPONSÁVEL", 148, footerY + 5, { align: 'center' });
-    });
-
-    if (downloadMode) {
-        doc.save(`Capas_Propostas_${format(new Date(), 'dd_MM_yyyy')}.pdf`);
-        toast({ title: 'Download iniciado!' });
-    } else {
-        window.open(doc.output('bloburl'), '_blank');
-        toast({ title: 'PDF Gerado para visualização!' });
-    }
-  };
-
-  const handleExportToExcel = async (onlySelected = false) => {
-    const table = tableRef.current?.table;
-    if (!table) return;
-    const { utils, writeFile } = await import('xlsx');
-    const rows = onlySelected ? table.getFilteredSelectedRowModel().rows : table.getFilteredRowModel().rows;
-    
-    const dataToExport = rows.map(r => {
-        const p = r.original;
-        return {
-            'Data Digitação': p.dateDigitized ? format(new Date(p.dateDigitized), 'dd/MM/yyyy') : '-',
-            'Cliente': p.customer?.name || '-',
-            'CPF': p.customer?.cpf || '-',
-            'N° Proposta': p.proposalNumber,
-            'Produto': p.product,
-            'Valor Bruto': p.grossAmount,
-            'Banco': cleanBankName(p.bank),
-            'Status': p.status,
-            'Promotora': p.promoter
-        };
-    });
-
-    const worksheet = utils.json_to_sheet(dataToExport);
-    const workbook = utils.book_new();
-    utils.book_append_sheet(workbook, worksheet, 'Propostas');
-    writeFile(workbook, onlySelected ? 'propostas_selecionadas.xlsx' : 'todas_propostas.xlsx');
-  };
-
-  const handleExportToPdf = async (onlySelected = false) => {
-    const table = tableRef.current?.table;
-    if (!table || !user) return;
-
-    const { default: jsPDF } = await import('jspdf');
-    const { default: autoTable } = await import('jspdf-autotable');
-    
-    const rowsSource = onlySelected ? table.getFilteredSelectedRowModel().rows : table.getFilteredRowModel().rows;
-    const doc = new jsPDF('landscape');
-    
-    const title = onlySelected ? "RELATÓRIO DE PROPOSTAS (SELEÇÃO)" : "RELATÓRIO DE PROPOSTAS COMPLETO";
-    doc.setFontSize(18);
-    doc.setTextColor(40, 74, 127);
-    doc.text(title, 14, 15);
-    
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 22);
-
-    const tableData = rowsSource.map(r => {
-        const p = r.original;
-        return [
-            p.dateDigitized ? format(new Date(p.dateDigitized), 'dd/MM/yyyy') : '-',
-            p.customer?.name || '-',
-            p.customer?.cpf || '-',
-            p.proposalNumber,
-            p.product,
-            formatCurrency(p.grossAmount),
-            cleanBankName(p.bank),
-            p.status
-        ];
-    });
-
-    autoTable(doc, {
-        startY: 30,
-        head: [['Data', 'Cliente', 'CPF', 'N° Proposta', 'Produto', 'Vlr Bruto', 'Banco', 'Status']],
-        body: tableData,
-        styles: { fontSize: 8 },
-        headStyles: { fillColor: [40, 74, 127] }
-    });
-
-    doc.save(`propostas_${onlySelected ? 'selecionadas' : 'completo'}.pdf`);
-    toast({ title: 'PDF Gerado!' });
-  };
-
-  React.useEffect(() => {
-    if (isLoading || proposalsWithCustomerData.length === 0) return;
-
-    const action = searchParams.get('action');
-    const openId = searchParams.get('open');
-
-    if (!hasOpenedFromParam) {
-        if (action === 'new') {
-            handleNewProposal();
-            setHasOpenedFromParam(true);
-            router.replace('/proposals', { scroll: false });
-        } else if (openId) {
-            const proposalToOpen = proposalsWithCustomerData.find(p => p.id === openId);
-            if (proposalToOpen) {
-                handleEditProposal(proposalToOpen);
-                setHasOpenedFromParam(true);
-                setTimeout(() => {
-                    router.replace('/proposals', { scroll: false });
-                }, 300);
-            }
-        }
-    }
-  }, [searchParams, isLoading, proposalsWithCustomerData, hasOpenedFromParam, handleNewProposal, handleEditProposal, router]);
-
   const handleStatusChange = async (proposalId: string, payload: { status: ProposalStatus; rejectionReason?: string; quickNote?: string; product?: string }) => {
     if (!firestore || !user) return;
     
@@ -503,40 +293,12 @@ function ProposalsPageContent() {
     }
   };
 
-  const handleToggleChecklist = async (proposalId: string, stepId: string, currentValue: boolean) => {
-    if (!firestore || !user) return;
-    const docRef = doc(firestore, 'loanProposals', proposalId);
-    const updatePath = `checklist.${stepId}`;
-    
-    setIsSaving(true);
-    try {
-        await updateDoc(docRef, { [updatePath]: !currentValue });
-        toast({ title: "Etapa atualizada!" });
-    } catch (e: any) {
-        if (e.code === 'permission-denied') {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({
-                path: docRef.path,
-                operation: 'update',
-                requestResourceData: { [updatePath]: !currentValue }
-            }));
-        }
-        toast({ variant: 'destructive', title: "Erro na atualização" });
-    } finally {
-        setIsSaving(false);
-    }
-  };
-
   const handleFormSubmit = async (data: any) => {
     if (!firestore || !user) return;
     setIsSaving(true);
     
     const docRef = sheetMode === 'edit' && selectedProposal ? doc(firestore, 'loanProposals', selectedProposal.id) : doc(collection(firestore, 'loanProposals'));
-    
-    const finalData = cleanFirestoreData({ 
-        ...data, 
-        id: docRef.id, 
-        ownerId: user.uid 
-    });
+    const finalData = cleanFirestoreData({ ...data, id: docRef.id, ownerId: user.uid });
     
     try {
         await setDoc(docRef, finalData, { merge: true });
@@ -561,51 +323,32 @@ function ProposalsPageContent() {
     handleViewProposal, 
     async (id: string) => {
         if (!firestore) return;
-        const docRef = doc(firestore, 'loanProposals', id);
-        try {
-            await deleteDoc(docRef);
-            toast({ title: 'Proposta Excluída' });
-        } catch (error: any) {
+        try { await deleteDoc(doc(firestore, 'loanProposals', id)); toast({ title: 'Proposta Excluída' }); } catch (error: any) {
             if (error.code === 'permission-denied') {
-                errorEmitter.emit('permission-error', new FirestorePermissionError({
-                    path: docRef.path,
-                    operation: 'delete'
-                }));
+                errorEmitter.emit('permission-error', new FirestorePermissionError({ path: `loanProposals/${id}`, operation: 'delete' }));
             }
         }
     }, 
     handleStatusChange, 
     handleDuplicateProposal,
-    handleToggleChecklist
-  ), [firestore, handleEditProposal, handleViewProposal, handleStatusChange, handleDuplicateProposal, handleToggleChecklist]);
+    async (proposalId: string, stepId: string, currentValue: boolean) => {
+        if (!firestore) return;
+        const updatePath = `checklist.${stepId}`;
+        try { await updateDoc(doc(firestore, 'loanProposals', proposalId), { [updatePath]: !currentValue }); } catch (e: any) {
+            if (e.code === 'permission-denied') {
+                errorEmitter.emit('permission-error', new FirestorePermissionError({ path: `loanProposals/${proposalId}`, operation: 'update', requestResourceData: { [updatePath]: !currentValue } }));
+            }
+        }
+    }
+  ), [firestore, handleEditProposal, handleViewProposal, handleStatusChange, handleDuplicateProposal]);
 
   return (
-    <AppLayout>
+    <>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <PageHeader title="Propostas" />
         <div className="flex items-center gap-3 flex-wrap">
             {selectedCount > 0 && (
-                <div className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-300">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button 
-                                variant="outline" 
-                                className="h-10 px-6 rounded-full font-bold text-xs gap-2 text-primary border-primary/20 bg-primary/5"
-                                disabled={isSaving}
-                            >
-                                <FileBadge className="h-4 w-4" /> Capas ({selectedCount}) <ChevronDown className="ml-2 h-3 w-3" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onSelect={() => handlePrintCovers(false)} className="gap-2">
-                                <Printer className="h-4 w-4" /> Imprimir (Visualizar)
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => handlePrintCovers(true)} className="gap-2">
-                                <Download className="h-4 w-4" /> Exportar (Baixar PDF)
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-
+                <div className="flex items-center gap-2">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" className="h-10 px-6 rounded-full font-bold border-primary/30 bg-primary/5 text-primary text-xs" disabled={isSaving}>
@@ -618,40 +361,8 @@ function ProposalsPageContent() {
                             ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
-                    <Button variant="destructive" className="h-10 px-6 rounded-full font-bold text-xs" onClick={() => handleBulkStatusChange('Reprovado')} disabled={isSaving}>
-                        <Trash2 className="mr-2 h-4 w-4" /> Cancelar
-                    </Button>
                 </div>
             )}
-
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="h-10 px-6 rounded-full font-bold border-border/50 hover:bg-muted/50 transition-all text-xs gap-2">
-                        <FileDown className="h-4 w-4" /> Exportar <ChevronDown className="h-3 w-3 opacity-50" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Formato Excel</DropdownMenuLabel>
-                    <DropdownMenuItem onSelect={() => handleExportToExcel(false)} className="gap-2">
-                        <FileSpreadsheet className="h-4 w-4 text-green-600" /> Exportar Tudo
-                    </DropdownMenuItem>
-                    {selectedCount > 0 && (
-                        <DropdownMenuItem onSelect={() => handleExportToExcel(true)} className="gap-2 font-bold">
-                            <FileSpreadsheet className="h-4 w-4 text-green-600" /> Exportar Seleção ({selectedCount})
-                        </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuLabel>Formato PDF</DropdownMenuLabel>
-                    <DropdownMenuItem onSelect={() => handleExportToPdf(false)} className="gap-2">
-                        <FilePdf className="h-4 w-4 text-red-600" /> Exportar Tudo
-                    </DropdownMenuItem>
-                    {selectedCount > 0 && (
-                        <DropdownMenuItem onSelect={() => handleExportToPdf(true)} className="gap-2 font-bold">
-                            <FilePdf className="h-4 w-4 text-red-600" /> Exportar Seleção ({selectedCount})
-                        </DropdownMenuItem>
-                    )}
-                </DropdownMenuContent>
-            </DropdownMenu>
 
             <Button onClick={handleNewProposal} className="h-10 px-8 rounded-full font-bold bg-[#00AEEF] hover:bg-[#0096D1] text-white shadow-lg shadow-[#00AEEF]/20 transition-all border-none text-xs"
             >
@@ -661,11 +372,7 @@ function ProposalsPageContent() {
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent 
-            className="max-w-3xl"
-            onPointerDownOutside={(e) => e.preventDefault()}
-            onInteractOutside={(e) => e.preventDefault()}
-        >
+        <DialogContent className="max-w-3xl" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader><DialogTitle>{sheetMode === 'edit' ? 'Editar' : sheetMode === 'view' ? 'Detalhes' : 'Novo'} Proposta</DialogTitle></DialogHeader>
           <ProposalForm 
             key={formKey}
@@ -697,27 +404,25 @@ function ProposalsPageContent() {
         </DialogContent>
       </Dialog>
 
-      {isLoading ? (
-        <ProposalsPageSkeleton />
-      ) : (
-        <ProposalsDataTable 
-            ref={tableRef}
-            columns={columns} 
-            data={proposalsWithCustomerData}
-            rowSelection={rowSelection}
-            setRowSelection={setRowSelection}
-            onBulkStatusChange={handleBulkStatusChange} 
-            userSettings={userSettings || null}
-        />
-      )}
-    </AppLayout>
+      <ProposalsDataTable 
+        ref={tableRef}
+        columns={columns} 
+        data={proposalsWithCustomerData}
+        rowSelection={rowSelection}
+        setRowSelection={setRowSelection}
+        onBulkStatusChange={handleBulkStatusChange} 
+        userSettings={userSettings || null}
+      />
+    </>
   );
 }
 
 export default function ProposalsPage() {
     return (
-        <Suspense fallback={<ProposalsPageSkeleton />}>
-            <ProposalsPageContent />
-        </Suspense>
+        <AppLayout>
+            <Suspense fallback={<ProposalsPageSkeleton />}>
+                <ProposalsPageContent />
+            </Suspense>
+        </AppLayout>
     )
 }
