@@ -1,15 +1,16 @@
-# Configurações para o Firebase App Hosting
-# https://firebase.google.com/docs/app-hosting/configure
+
+# Configurações para o Firebase App Hosting (Next.js 15)
+kind: "apphosting.yaml"
+schemaVersion: "v1"
 
 buildConfig:
   runtime: nodejs20
 
 runConfig:
-  # Memória e CPU garantidos para o boot estável do Next.js 15
+  # Memória e CPU para estabilidade do Next.js
   memory: 1024Mi
   cpu: 1
   maxInstances: 2
-  # Tempo limite estendido para o primeiro acesso
   timeoutSeconds: 60
 
 env:
